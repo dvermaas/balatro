@@ -143,13 +143,18 @@ class JevBot:
         self.emit("action", method=method, params=params)
         return self.game.call(method, params)
 
+    auto_actions = True  # legacy versions predate strategy.auto_action
+
+    def build_state(self, gs):
+        return {"rules": GAME_RULES, "game": summarize(gs)}
+
     def ask(self, qid, gs, instructions, options):
         """options: {key: (description, (method, params))}. Returns the chosen (method, params)."""
         if len(options) == 1:
             (k, (desc, action)), = options.items()
             self.emit("forced", question=qid, choice=k, desc=desc)
             return action
-        state = {"rules": GAME_RULES, "game": summarize(gs)}
+        state = self.build_state(gs)
         t0 = time.perf_counter()
         resp = self.jev.system_one(
             state=state,
@@ -185,7 +190,7 @@ class JevBot:
             time.sleep(TRANSITIONAL_WAIT)  # animation / transitional state
             return False
         try:
-            auto = strategy.auto_action(gs)
+            auto = strategy.auto_action(gs) if self.auto_actions else None
             auto_key = auto and json.dumps([auto[0], auto[1], gs.get("round_num"), st])
             if auto and auto_key not in self._auto_failed:
                 method, params, reason = auto

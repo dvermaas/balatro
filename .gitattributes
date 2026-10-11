@@ -1,3 +1,5 @@
-# Keep LF everywhere: prompt versions are hashes of exact file bytes (recorder.PROMPT_VERSION).
+# Prompt versions are hashes of exact file bytes (recorder.version_hash), so Python files are
+# stored byte-for-byte: no line-ending conversion, or checked-out versions would change id.
 * text=auto eol=lf
+*.py -text
 *.cmd text eol=crlf

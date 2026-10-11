@@ -19,8 +19,12 @@ HERE = Path(__file__).parent
 
 
 class Controller:
-    def __init__(self):
-        self.bot = JevBot()
+    def __init__(self, legacy=None):
+        if legacy:
+            import importlib
+            self.bot = importlib.import_module(f"legacy.{legacy}_bot").make_bot()
+        else:
+            self.bot = JevBot()
         self.mode = "paused"  # paused | running
         self.pending_steps = 0
         self.delay = 0.3
@@ -90,8 +94,9 @@ class Controller:
         now = time.time()
         events = list(self.bot.events)
         recent = [e for e in events if e["kind"] == "decision" and now - e["t"] <= 60]
-        label = next((v["label"] for v in prompt_versions() if v["version"] == PROMPT_VERSION), "?")
-        on_version = [r for r in analytics.all_runs() if r.get("prompt_version") == PROMPT_VERSION]
+        version = self.bot.recorder.version
+        label = next((v["label"] for v in prompt_versions() if v["version"] == version), "?")
+        on_version = [r for r in analytics.all_runs() if r.get("prompt_version") == version]
         durations = [r["ended"] - r["started"] for r in on_version if r.get("ended")]
         return {
             "mode": self.mode,
@@ -101,7 +106,7 @@ class Controller:
             "game_state": gs.get("state") if gs else None,
             "game": summarize(gs) if gs else None,
             "current_run": self.bot.recorder.run,
-            "version": {"id": PROMPT_VERSION, "label": label, "runs": len(on_version),
+            "version": {"id": version, "label": label, "legacy": version != PROMPT_VERSION, "runs": len(on_version),
                         "finished": sum(r["result"] in ("won", "lost") for r in on_version)},
             "rate": {"decisions_per_min": len(recent),
                      "avg_run_seconds": round(sum(durations) / len(durations)) if durations else None},
@@ -167,7 +172,9 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    ctl = Controller()
+    import sys
+    legacy = sys.argv[sys.argv.index("--legacy") + 1] if "--legacy" in sys.argv else None
+    ctl = Controller(legacy)
     srv = ThreadingHTTPServer(("127.0.0.1", 8765), Handler)
     print("JEV Balatro control panel: http://127.0.0.1:8765  (bot starts paused)")
     srv.serve_forever()

@@ -13,9 +13,12 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 PROMPTS_DIR = ROOT / "runs" / "_prompts"
 # Any edit to the prompts or candidate generation changes this, so runs can be grouped by version.
-PROMPT_VERSION = hashlib.sha1(
-    b"".join((ROOT / f).read_bytes() for f in ("prompts.py", "hands.py", "strategy.py") if (ROOT / f).exists())
-).hexdigest()[:8]
+def version_hash(files, root=ROOT):
+    """sha1 of the files' exact bytes (line endings included; .gitattributes stores them unconverted)."""
+    return hashlib.sha1(b"".join((root / f).read_bytes() for f in files if (root / f).exists())).hexdigest()[:8]
+
+
+PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py"))
 
 
 def snapshot_prompts():
@@ -50,6 +53,7 @@ class RunRecorder:
         self.root = root
         self.root.mkdir(exist_ok=True)
         snapshot_prompts()
+        self.version = PROMPT_VERSION  # legacy bots override this
         self.run = None
         self.dir = None
 
@@ -64,7 +68,7 @@ class RunRecorder:
         self.dir.mkdir(exist_ok=True)
         self.run = {
             "run_id": self.dir.name, "seed": seed, "deck": gs.get("deck") or deck,
-            "stake": gs.get("stake") or stake, "model": model, "prompt_version": PROMPT_VERSION,
+            "stake": gs.get("stake") or stake, "model": model, "prompt_version": self.version,
             "benchmark": bench, "started": time.time(), "ended": None, "result": "in_progress",
             "ante": gs.get("ante_num"), "round": gs.get("round_num"), "money": gs.get("money"),
             "decisions": 0, "forced": 0, "errors": 0, "input_tokens": 0, "output_tokens": 0, "jev_ms": 0,
