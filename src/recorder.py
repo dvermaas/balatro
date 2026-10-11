@@ -10,10 +10,11 @@ import json
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).parent
+SRC = Path(__file__).resolve().parent  # the hashed decision files live here
+ROOT = SRC.parent  # repo root: runs/
 PROMPTS_DIR = ROOT / "runs" / "_prompts"
 # Any edit to the prompts or candidate generation changes this, so runs can be grouped by version.
-def version_hash(files, root=ROOT):
+def version_hash(files, root=SRC):
     """sha1 of the files' exact bytes (line endings included; .gitattributes stores them unconverted)."""
     return hashlib.sha1(b"".join((root / f).read_bytes() for f in files if (root / f).exists())).hexdigest()[:8]
 

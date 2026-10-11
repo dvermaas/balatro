@@ -37,12 +37,12 @@ Already done on this machine; listed here so it can be redone.
 
 ## Running
 
-1. Close Balatro, then start it with **[`launch_fast.cmd`](launch_fast.cmd)**: BalatroBot fast
+1. Close Balatro, then start it with **[`scripts/launch_fast.cmd`](scripts/launch_fast.cmd)**: BalatroBot fast
    mode (10× game speed) with audio on. Launching from Steam also works, but at normal speed
    and muted.
 2. Start the control panel and open http://127.0.0.1:8765:
    ```
-   .venv\Scripts\python panel.py
+   .venv\Scripts\python src\panel.py
    ```
 3. Press **Run** (or Space). It starts paused.
 
@@ -61,9 +61,9 @@ Already done on this machine; listed here so it can be redone.
 
 ## Tuning prompts
 
-All text JEV reads lives in **[`prompts.py`](prompts.py)**: game rules, the question per decision
+All text JEV reads lives in **[`src/prompts.py`](src/prompts.py)**: game rules, the question per decision
 type, and the option templates. Always-right moves and the context JEV gets live in
-**[`strategy.py`](strategy.py)**: auto-using planets, keeping xMult jokers rightmost, and tagging
+**[`src/strategy.py`](src/strategy.py)**: auto-using planets, keeping xMult jokers rightmost, and tagging
 jokers by role and by synergy with the run's main hands. The version is a hash of `prompts.py` +
 `hands.py` + `strategy.py`, so **any edit creates a new version** (v1, v2, …) with its own stats.
 Update `VERSION_NOTE` to say what changed and restart the panel.
@@ -71,7 +71,7 @@ Update `VERSION_NOTE` to say what changed and restart the panel.
 ### Benchmark
 
 To compare versions cleanly, open the **Benchmark** tab and press **Benchmark current version**.
-The bot plays the same 10 fixed seeds ([`benchmark.py`](benchmark.py)) and stops when done. The tab
+The bot plays the same 10 fixed seeds ([`src/benchmark.py`](src/benchmark.py)) and stops when done. The tab
 shows a summary per version and a seed × version grid of the ante reached. Seeded runs don't
 trigger unlocks.
 
@@ -88,21 +88,25 @@ runs/
     <version>.json     # snapshot of the prompt text for that version
 ```
 
-## Files
+## Layout
 
-| File | What it does |
-|---|---|
-| `balatro.py` | JSON-RPC client for BalatroBot (`127.0.0.1:12346`) |
-| `hands.py` | Hand evaluation, score estimates, play and discard candidates |
-| `prompts.py` | Everything JEV reads (rules, questions, option templates) |
-| `strategy.py` | Code-level policy: auto planets, joker ordering, joker tags, interest |
-| `benchmark.py` | The fixed 10-seed benchmark set |
-| `jev_bot.py` | The game loop: one handler per game state, asks JEV, executes |
-| `recorder.py` | Per-run recording and prompt-version snapshots |
-| `analytics.py` | Per-run and per-version metrics |
-| `panel.py` / `panel.html` | Control panel server and single-page UI |
-| `mods/jev_tweaks/` | Companion mod that skips blocking "unlocked" popups |
-| `launch_fast.cmd` | Starts Balatro in fast mode with audio |
+```
+src/                    the bot and control panel (run: python src/panel.py)
+  balatro.py            JSON-RPC client for BalatroBot (127.0.0.1:12346)
+  hands.py              hand evaluation, score estimates, play and discard candidates
+  prompts.py            everything JEV reads (rules, questions, option templates)
+  strategy.py           code-level policy: auto planets, joker ordering, joker tags, interest
+  jev_bot.py            the game loop: one handler per game state, asks JEV, executes
+  recorder.py           per-run recording and prompt-version snapshots/ids
+  analytics.py          per-run, per-version and benchmark metrics
+  benchmark.py          the fixed 10-seed benchmark set
+  panel.py, panel.html  control panel server and single-page UI
+  legacy/               byte-exact rebuild of v1, runnable with `python src/panel.py --legacy v1`
+mods/jev_tweaks/        companion Balatro mod: skips blocking "unlocked" popups
+scripts/launch_fast.cmd starts Balatro in fast mode with audio
+docs/                   TypeSafe skill notes, sample game states
+runs/                   recordings (git-ignored except runs/_prompts version snapshots)
+```
 
 ## Known issues
 

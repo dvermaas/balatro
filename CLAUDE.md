@@ -6,10 +6,12 @@ local control panel for watching runs and comparing prompt versions. See README.
 ## Commands
 
 - Venv: `.venv/Scripts/python` (Python 3.14, `typesafe-sdk`). No other deps; panel is stdlib.
-- Panel: `.venv/Scripts/python panel.py` → http://127.0.0.1:8765, or `preview_start` with the
+- Layout: code in `src/` (flat modules, run as scripts; no package, so the hashed files never need
+  import edits), `scripts/`, `mods/`, `docs/`, `runs/` at the repo root.
+- Panel: `.venv/Scripts/python src/panel.py` → http://127.0.0.1:8765, or `preview_start` with the
   `jev-panel` config in `.claude/launch.json`. **Restart it after any `.py` change**;
   `panel.html` is re-read per request (just reload the page).
-- Game: close Balatro, run `launch_fast.cmd` (sets `BALATROBOT_FAST=1`, `BALATROBOT_AUDIO=1`;
+- Game: close Balatro, run `scripts/launch_fast.cmd` (sets `BALATROBOT_FAST=1`, `BALATROBOT_AUDIO=1`;
   the user wants shaders and music on, so don't add `NO_SHADERS`/headless). Health check:
   `curl -X POST 127.0.0.1:12346 -d '{"jsonrpc":"2.0","method":"health","id":1}'`.
 - Panel API: `GET /api/live?since=<event id>`, `/api/runs`, `/api/runs/<run_id>`, `/api/prompts`;
@@ -46,3 +48,8 @@ local control panel for watching runs and comparing prompt versions. See README.
   understand game behaviour. Logs: `Mods\lovely\log`.
 - `.env` holds `JEV_API_KEY`; never print it. HTTP 402 from TypeSafe = org has no usable credits.
 - The user's weekly Claude usage is tight: prefer targeted reads and avoid long polling loops.
+- Prompt-version ids hash the exact bytes of `src/prompts.py`, `src/hands.py`, `src/strategy.py`
+  (`.gitattributes` keeps `*.py` byte-exact). Moving them is fine; editing them (even an import or
+  line ending) makes a new version. `src/legacy/v1/` must stay byte-identical (id f67d4d14).
+- Write Python edits with a script that preserves each file's line endings, or the Edit tool; heredocs
+  in this shell mangle backslashes (use `chr(92)`).

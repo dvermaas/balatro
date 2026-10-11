@@ -5,7 +5,7 @@ from pathlib import Path
 
 from recorder import prompt_versions
 
-RUNS = Path(__file__).parent / "runs"
+RUNS = Path(__file__).resolve().parent.parent / "runs"
 _cache = {}
 
 

@@ -15,7 +15,7 @@ from hands import _d, describe, discard_candidates, play_candidates
 from prompts import GAME_RULES, INSTRUCTIONS, OPTIONS
 from recorder import RunRecorder
 
-ROOT = Path(__file__).parent
+ROOT = Path(__file__).resolve().parent.parent  # repo root: .env and runs/
 SHOP_ACTION_CAP = 8
 TRANSITIONAL_WAIT = 0.25
 
