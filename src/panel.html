@@ -347,11 +347,11 @@ function decisionHTML(e, opts = {}) {
   const show = opts.all ? entries : entries.slice(0, 3);
   const c = e.confidence ?? 0;
   const rows = show.map(([k, d]) => { const p = (e.probs[k] || 0) * 100;
-    return `<div class="opt ${k === e.choice ? 'chosen' : ''}"><div class="p"><i style="width:${p}%"></i><em>${p.toFixed(0)}%</em></div><div>${esc(d)}</div></div>`; }).join('');
+    return `<div class="opt ${k === e.choice ? 'chosen' : ''}"><div class="p"><i style="width:${p}%"></i><em>${e.display === 'score' ? (p / 25).toFixed(1) + '/4' : p.toFixed(0) + '%'}</em></div><div>${esc(d)}</div></div>`; }).join('');
   const t = opts.time ? `<span>${new Date(e.t * 1000).toLocaleTimeString()}</span><span>·</span>` : '';
   return `<div class="ev-head"><span class="q ${e.question}">${QLABEL[e.question] || e.question}</span>${t}
       <span class="conf" title="Jev confidence"><i style="--w:${c*100}%;--cc:${confColor(c)}"></i>${pct(c)}</span><span>·</span><span>${e.ms} ms</span>
-      <span>·</span><span>${entries.length} options</span></div>
+      <span>·</span><span>${entries.length} ${e.display === 'score' ? 'items rated' : 'options'}</span>${e.answers?.play_now ? `<span>·</span><span title="Jev: play now rather than discard">play now ${pct(e.answers.play_now.noul)}</span>` : ''}</div>
     <div class="opts">${rows}</div>
     ${entries.length > 3 && !opts.all ? `<button class="more" data-more>Show all ${entries.length} options</button>` : ''}
     ${opts.state && e.state_sent ? `<details style="border:0;padding:6px 0 0"><summary>State sent to Jev</summary><pre class="state">${esc(JSON.stringify(e.state_sent, null, 2))}</pre></details>` : ''}`;

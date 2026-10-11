@@ -12,7 +12,7 @@ import benchmark
 import strategy
 from balatro import Balatro, RPCError
 from hands import _d, describe, discard_candidates, play_candidates
-from prompts import GAME_RULES, INSTRUCTIONS, OPTIONS
+from prompts import GAME_RULES
 from recorder import RunRecorder
 
 ROOT = Path(__file__).resolve().parent.parent  # repo root: .env and runs/
@@ -168,6 +168,45 @@ class JevBot:
 
     auto_actions = True  # legacy versions predate strategy.auto_action
 
+    def query(self, gs, state, questions):
+        """One Jev call with several typed questions (v6+). Returns (answers, meta) for record_decision()."""
+        self.recorder.write_raw(self._event_id + 1, gs)
+        t0 = time.perf_counter()
+        resp = self.jev.system_one(state=state, questions=questions)
+        ms = int((time.perf_counter() - t0) * 1000)
+        tin = (resp.usage.input_tokens or 0) if resp.usage else 0
+        tout = (resp.usage.output_tokens or 0) if resp.usage else 0
+        self.stats["decisions"] += 1
+        self.stats["jev_ms"] += ms
+        self.stats["input_tokens"] += tin
+        self.stats["output_tokens"] += tout
+        meta = {"state_sent": state, "ms": ms, "input_tokens": tin, "output_tokens": tout, "model": resp.model,
+                "questions": {k: q.model_dump() for k, q in questions.items()},
+                "answers": {k: a.model_dump() for k, a in resp.answers.items()}}
+        return resp.answers, meta
+
+    def record_decision(self, question, gs, choice, action, options, probs, confidence, meta, display="prob"):
+        """Log a combined decision in the same shape as ask(), so the panel and analytics read it alike."""
+        self.emit("decision", question=question, game_state=gs.get("state"), ante=gs.get("ante_num"),
+                  round=gs.get("round_num"), choice=choice, action=action, confidence=confidence,
+                  probs=probs, options=options, display=display, **meta)
+
+    def on_blind_select(self, gs):
+        import decisions
+        decisions.blind_select(self, gs)
+
+    def on_selecting_hand(self, gs):
+        import decisions
+        decisions.selecting_hand(self, gs)
+
+    def on_shop(self, gs):
+        import decisions
+        decisions.shop(self, gs)
+
+    def on_smods_booster_opened(self, gs):
+        import decisions
+        decisions.booster(self, gs)
+
     def build_state(self, gs):
         return {"rules": GAME_RULES, "game": summarize(gs)}
 
@@ -278,134 +317,3 @@ class JevBot:
                   discards_left=rnd.get("discards_left"), money=gs.get("money"),
                   jokers=[c.get("label") for c in cards_of(gs, "jokers")])
         self.act("cash_out")
-
-    def on_blind_select(self, gs):
-        b = current_blind(gs)
-        if b.get("type") == "BOSS":
-            self.act("select")
-            return
-        fields = {k: b.get(k) for k in ("name", "score", "tag_name", "tag_effect")}
-        opts = {
-            "play": (OPTIONS["blind_play"].format(**fields), ("select", None)),
-            "skip": (OPTIONS["blind_skip"].format(**fields), ("skip", None)),
-        }
-        self.act(*self.ask("blind", gs, INSTRUCTIONS["blind"], opts))
-
-    def on_selecting_hand(self, gs):
-        rnd = _d(gs.get("round"))
-        need = max(0, (current_blind(gs).get("score") or 0) - (rnd.get("chips") or 0))
-        hands_left = rnd.get("hands_left") or 1
-        pace = max(1, round(need / hands_left))
-        hand = cards_of(gs, "hand")
-        opts = {}
-        for n, p in enumerate(play_candidates(hand, _d(gs.get("hands"))), 1):
-            if p["estimate"] >= need:
-                verdict = OPTIONS["verdict_clears"].format(need=need)
-            else:
-                verdict = OPTIONS["verdict_pace"].format(
-                    pct=round(100 * p["estimate"] / pace), pace=pace, need=need, hands=hands_left)
-            kicked = OPTIONS["play_kicked"].format(cards=", ".join(p["kicked"])) if p["kicked"] else ""
-            desc = OPTIONS["play"].format(hand=p["hand"], scoring=", ".join(p["scoring"]), kicked=kicked,
-                                          estimate=p["estimate"], verdict=verdict)
-            opts[f"play_{n}"] = (desc, ("play", {"cards": p["cards"]}))
-        if (rnd.get("discards_left") or 0) > 0:
-            for n, d in enumerate(discard_candidates(hand), 1):
-                desc = OPTIONS["discard"].format(label=d["label"], cards=", ".join(d["tossed"]))
-                opts[f"discard_{n}"] = (desc, ("discard", {"cards": d["cards"]}))
-        self.act(*self.ask("move", gs, INSTRUCTIONS["move"], opts))
-
-    def on_shop(self, gs):
-        key = (gs.get("ante_num"), gs.get("round_num"))
-        if key != self._shop_key:
-            self._shop_key, self._shop_actions, self._failed = key, 0, set()
-        money = gs.get("money") or 0
-        jok, cons = area(gs, "jokers"), area(gs, "consumables")
-        jokers_full = jok.get("count", 0) >= jok.get("limit", 5)
-        cons_full = cons.get("count", 0) >= cons.get("limit", 2)
-        mains = strategy.main_hands(gs)
-
-        def after(cost):
-            left = money - cost
-            before_i, after_i = strategy.interest(money), strategy.interest(left)
-            note = f"leaves ${left}"
-            if after_i != before_i:
-                note += f", interest drops ${before_i} -> ${after_i}/round"
-            return note
-
-        opts = {"leave": (OPTIONS["shop_leave"].format(interest=strategy.interest(money)), ("next_round", None))}
-        if self._shop_actions < SHOP_ACTION_CAP:
-            for i, c in enumerate(cards_of(gs, "shop")):
-                cost = _d(c.get("cost")).get("buy", 0)
-                if cost > money or (c.get("set") == "JOKER" and jokers_full) or (
-                        c.get("set") in ("TAROT", "PLANET", "SPECTRAL") and cons_full):
-                    continue
-                opts[f"buy_card_{i}"] = (OPTIONS["shop_buy_card"].format(
-                    item=item_desc(c, mains), cost=cost, after=after(cost)), ("buy", {"card": i}))
-            for i, c in enumerate(cards_of(gs, "vouchers")):
-                cost = _d(c.get("cost")).get("buy", 0)
-                if cost <= money:
-                    opts[f"buy_voucher_{i}"] = (OPTIONS["shop_buy_voucher"].format(
-                        item=item_desc(c), cost=cost, after=after(cost)), ("buy", {"voucher": i}))
-            for i, c in enumerate(cards_of(gs, "packs")):
-                cost = _d(c.get("cost")).get("buy", 0)
-                if cost <= money:
-                    opts[f"buy_pack_{i}"] = (OPTIONS["shop_buy_pack"].format(
-                        item=item_desc(c), cost=cost, after=after(cost)), ("buy", {"pack": i}))
-            reroll = _d(gs.get("round")).get("reroll_cost") or 5
-            if money - reroll >= 25:  # reroll only from surplus above the interest buffer
-                opts["reroll"] = (OPTIONS["shop_reroll"].format(cost=reroll, after=after(reroll)), ("reroll", None))
-            if jokers_full:
-                # One combined option per (owned joker, shop joker): Jev never chained a sell and a buy.
-                for j, owned in enumerate(cards_of(gs, "jokers")):
-                    if _d(owned.get("modifier")).get("eternal"):
-                        continue
-                    sell = _d(owned.get("cost")).get("sell", 0)
-                    for i, c in enumerate(cards_of(gs, "shop")):
-                        cost = _d(c.get("cost")).get("buy", 0)
-                        if c.get("set") == "JOKER" and cost <= money + sell:
-                            opts[f"replace_{j}_{i}"] = (OPTIONS["shop_replace"].format(
-                                old=item_desc(owned, mains), sell=sell, new=item_desc(c, mains), cost=cost,
-                                after=after(cost - sell)), ("replace", {"joker": j, "card": i}))
-        opts = {k: v for k, v in opts.items() if json.dumps(v[1]) not in self._failed}
-        shop = [f"${_d(c.get('cost')).get('buy', 0)} {item_desc(c)}"
-                for name in ("shop", "vouchers", "packs") for c in cards_of(gs, name)]
-        self.emit("info", msg=f"Shop (${money}): " + "; ".join(shop))
-        action = self.ask("shop", gs, INSTRUCTIONS["shop"], opts)
-        self._shop_actions += 1
-        if action[0] == "buy" and "pack" in (action[1] or {}):
-            self._last_pack_cost = _d(cards_of(gs, "packs")[action[1]["pack"]].get("cost")).get("buy", 0)
-        try:
-            if action[0] == "replace":
-                self.act("sell", {"joker": action[1]["joker"]})
-                self.act("buy", {"card": action[1]["card"]})
-            else:
-                self.act(*action)
-        except RPCError:
-            self._failed.add(json.dumps(action))
-            raise
-
-    def on_smods_booster_opened(self, gs):
-        jok = area(gs, "jokers")
-        jokers_full = jok.get("count", 0) >= jok.get("limit", 5)
-        opts = {}
-        for i, c in enumerate(cards_of(gs, "pack")):
-            if c.get("set") == "JOKER" and jokers_full:
-                continue
-            opts[f"take_{i}"] = (OPTIONS["pack_take"].format(item=item_desc(c, strategy.main_hands(gs))),
-                                 ("pack", {"card": i}))
-        opts["skip"] = (OPTIONS["pack_skip"].format(paid=self._last_pack_cost), ("pack", {"skip": True}))
-        method, params = self.ask("pack", gs, INSTRUCTIONS["pack"], opts)
-        try:
-            self.act(method, params)
-        except RPCError as e:
-            if params.get("skip"):
-                raise
-            # Tarot/Spectral that needs hand targets: aim at the first two cards, else give up on the pack.
-            self.emit("info", msg=f"Pack pick needs targets ({e}); retrying with targets")
-            try:
-                self.act("pack", {**params, "targets": [0, 1]})
-            except RPCError:
-                try:
-                    self.act("pack", {**params, "targets": [0]})
-                except RPCError:
-                    self.act("pack", {"skip": True})

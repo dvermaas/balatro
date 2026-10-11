@@ -31,14 +31,17 @@ def run_metrics(run_dir):
             rounds_won += 1
         if e["kind"] == "outcome" and e.get("method") == "play":
             final_chips = e.get("chips")
+        if e["kind"] == "forced" and e.get("question") == "move":  # v6 plays a sure clear without asking
+            m["plays" if e["choice"].startswith("play") else "discards"] += 1
         if e["kind"] != "decision":
             continue
         q, c = e["question"], e["choice"]
         conf.setdefault(q, []).append(e.get("confidence") or 0)
-        g = (e.get("state_sent") or {}).get("game", {})
+        sent = e.get("state_sent") or {}
+        g = sent.get("game") or sent  # v1-v5 nest the summary under "game"; v6 sends it flat
         m["jokers_at_end"] = len(g.get("jokers") or [])
         if q == "move":
-            last_move = g
+            last_move = {"discards_left": g.get("discards_left", (g["round"] if isinstance(g.get("round"), dict) else {}).get("discards_left"))}
             m["plays" if c.startswith("play") else "discards"] += 1
         elif q == "pack":
             m["pack_picks"] += 1

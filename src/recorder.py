@@ -20,7 +20,8 @@ def version_hash(files, root=SRC):
     return hashlib.sha1(b"".join((root / f).read_bytes() for f in files if (root / f).exists())).hexdigest()[:8]
 
 
-PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py"))
+# decisions.py joined in v6; earlier versions lack it, so their ids are unchanged.
+PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py", "decisions.py"))
 
 
 def snapshot_prompts():
