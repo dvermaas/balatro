@@ -97,6 +97,8 @@ src/                    the bot and control panel (run: python src/panel.py)
   decisions.py          v6+ handlers: batched typed questions per decision, thresholds in code
   jokers.py             joker-aware hand scoring and measured shop value, from live joker text (v8+)
   odds.py               draw odds and score-if-hit for discard plans (v9+)
+  build.py              the run's committed build (target hand + flush suit) (v10+)
+  tarots.py             tarot/spectral mechanics: targets for the build, auto-use (v10+)
   hands.py              hand evaluation, score estimates, play and discard candidates
   prompts.py            everything JEV reads (rules, questions, option templates)
   strategy.py           code-level policy: auto planets, joker ordering, joker tags, interest

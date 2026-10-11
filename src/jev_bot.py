@@ -10,6 +10,7 @@ from typesafe_sdk import Choice, TypeSafeClient
 
 import benchmark
 import strategy
+import tarots
 from balatro import Balatro, RPCError
 from hands import _d, describe, discard_candidates, play_candidates
 from prompts import GAME_RULES
@@ -125,6 +126,7 @@ class JevBot:
         self._event_id = 0
         self._last_pack_cost = 0
         self.bench_queue, self.bench_current, self.bench_done_pending = [], None, False
+        self.bench_name = benchmark.NAME
         self._auto_failed = set()
         self._round_blind = None
         self.stats = {"decisions": 0, "input_tokens": 0, "output_tokens": 0, "jev_ms": 0,
@@ -255,7 +257,7 @@ class JevBot:
             time.sleep(TRANSITIONAL_WAIT)  # animation / transitional state
             return False
         try:
-            auto = strategy.auto_action(gs) if self.auto_actions else None
+            auto = (strategy.auto_action(gs) or tarots.auto_use(gs)) if self.auto_actions else None
             auto_key = auto and json.dumps([auto[0], auto[1], gs.get("round_num"), st])
             if auto and auto_key not in self._auto_failed:
                 method, params, reason = auto
@@ -278,9 +280,10 @@ class JevBot:
             time.sleep(0.5)
         return True
 
-    def start_benchmark(self):
-        self.bench_queue = list(enumerate(benchmark.SEEDS))
-        self.emit("info", msg=f"Benchmark {benchmark.NAME}: {len(self.bench_queue)} seeded runs queued")
+    def start_benchmark(self, name=None):
+        self.bench_name = name if name in benchmark.SETS else benchmark.NAME
+        self.bench_queue = list(enumerate(benchmark.SETS[self.bench_name]))
+        self.emit("info", msg=f"Benchmark {self.bench_name}: {len(self.bench_queue)} seeded runs queued")
 
     def on_menu(self, gs):
         params = {"deck": self.deck, "stake": self.stake}
@@ -291,12 +294,13 @@ class JevBot:
             raise BenchmarkComplete()
         if self.bench_queue:
             idx, seed = self.bench_queue.pop(0)
-            params["seed"] = seed
-            self.bench_current = {"name": benchmark.NAME, "index": idx, "of": len(benchmark.SEEDS)}
-            self.emit("info", msg=f"Benchmark run {idx + 1}/{len(benchmark.SEEDS)} (seed {seed})")
+            params["seed"] = seed.split("#")[0]  # "SEED#n" labels a repeat of SEED
+            seeds = benchmark.SETS[self.bench_name]
+            self.bench_current = {"name": self.bench_name, "index": idx, "of": len(seeds)}
+            self.emit("info", msg=f"Benchmark run {idx + 1}/{len(seeds)} (seed {seed})")
         elif self.bench_done_pending:
             self.bench_done_pending = False
-            self.emit("info", msg=f"Benchmark {benchmark.NAME} complete")
+            self.emit("info", msg=f"Benchmark {self.bench_name} complete")
             raise BenchmarkComplete()
         elif not self.auto_new_run:
             time.sleep(0.5)
@@ -313,7 +317,7 @@ class JevBot:
         current version trails by more than 2 standard errors (v6 was obvious after 6 seeds)."""
         import statistics
         import analytics
-        m = analytics.benchmark_matrix(benchmark.NAME)
+        m = analytics.benchmark_matrix(self.bench_name)
         me = next((v for v in m["versions"] if v["version"] == self.recorder.version), None)
         done = [v for v in m["versions"] if v is not me and v["done"] == v["of"]]
         if not me or me["done"] < self.EARLY_STOP_AFTER or not done:

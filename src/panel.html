@@ -562,7 +562,7 @@ async function startBench() {
     if (!confirm('A run is in progress. Abandon it and start the benchmark?')) return;
     await api('abandon', {});
   }
-  await cmd('benchmark'); toast('Benchmark started');
+  await cmd('benchmark', benchSet ? {set: benchSet} : {}); toast(`Benchmark started: ${benchSet || 'active set'}`);
 }
 let benchSet = null, benchBase = null;
 // Seed-by-seed difference vs a baseline: both versions play the same seeds, so pairing removes seed luck.

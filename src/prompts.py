@@ -6,13 +6,14 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "Code measures, Jev weighs. Shop/pack items carry measured_gain: the score change the joker or planet "
-    "gives on this run's last 10 hands (jokers.py). Through ante 3 joker slots fill before interest (buy a "
-    "Useful joker regardless of the $25 buffer while under 4 jokers), and any joker measured at +50% is "
-    "bought. Discard plans carry exact draw odds and the score if they hit (odds.py, order-free deck "
-    "counts). Boss-aware: debuffed cards are tossed first and never chased; Psychic/Eye/Mouth filter "
-    "plays; Flint halves estimates; on the last hand, discards are used before a play that can't clear "
-    "(The Needle). Fixed suit order in deck counts. Builds on v8 (joker-aware estimates, pace gate)."
+    "From the BalatroBench dissection (top LLMs: ~4 jokers by ante 2, 11-18 consumables and 2-3 vouchers a "
+    "run, one committed hand type). Committed build (build.py: target hand + flush suit) is in every state; "
+    "discard plans say whether they fit it. Tarots and spectrals get used: tarots.py knows each card's "
+    "mechanics and picks targets for the build (pack picks pass targets; held ones auto-use, targeted ones "
+    "while a hand is showing); Jev sees what each would do. Vouchers carry their run-long worth, and strong "
+    "ones (Grabber, Wasteful, Paint Brush, Clearance Sale, Overstock, Antimatter) are bought when affordable. "
+    "Early rerolls down to $5 while a joker slot is empty. Discard budget: near pace with no spare discards, "
+    "dig only when a plan's odds x payoff clearly beats playing. Builds on v9."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
@@ -36,14 +37,16 @@ INSTRUCTIONS = {
     ),
     "best_discard": (
         "If we discard, which plan is best? Each plan gives `chance_to_hit` (exact odds from the cards left "
-        "in the deck) and what the hand scores `if_hit`, jokers included. Weigh odds times payoff against "
-        "what we need this round."
+        "in the deck) and what the hand scores `if_hit`, jokers included, and whether it fits `our_build`. "
+        "Weigh odds times payoff against what we need this round; prefer plans that grow our build."
     ),
     "item_value": (
         "How much would taking the item in `item` (described in this question) strengthen this run? "
         "`measured_gain` is its measured effect on the scores of our recent hands, jokers included: trust it "
         "for the immediate effect and add what it cannot see (scaling over the run, money, risk, future "
-        "hands). Consider `engine.missing`, `upcoming_boss` and what it costs."
+        "hands). `use` says what a tarot or spectral would do for us; `worth` says what a voucher gives for "
+        "the rest of the run. Favour items that fit `our_build`. Consider `engine.missing`, `upcoming_boss` "
+        "and what it costs."
     ),
 }
 

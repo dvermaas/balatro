@@ -81,7 +81,7 @@ class Controller:
                 self.bot.recorder.finish("abandoned")
                 self.bot.game.call("menu")
             elif cmd == "benchmark":
-                self.bot.start_benchmark()
+                self.bot.start_benchmark(body.get("set"))
                 self.mode = "running"
             elif cmd == "cancel_benchmark":
                 self.bot.bench_queue, self.bot.bench_done_pending = [], False
@@ -110,7 +110,7 @@ class Controller:
                         "finished": sum(r["result"] in ("won", "lost") for r in on_version)},
             "rate": {"decisions_per_min": len(recent),
                      "avg_run_seconds": round(sum(durations) / len(durations)) if durations else None},
-            "benchmark": {"name": benchmark.NAME, "current": self.bot.bench_current,
+            "benchmark": {"name": getattr(self.bot, "bench_name", benchmark.NAME), "current": self.bot.bench_current,
                           "remaining": len(self.bot.bench_queue)},
             "last_id": events[-1]["id"] if events else 0,
             "events": [{k: v for k, v in e.items() if k != "state_sent"} for e in events if e["id"] > since][-150:],

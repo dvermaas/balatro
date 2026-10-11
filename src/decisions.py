@@ -11,8 +11,10 @@ from collections import Counter
 
 from typesafe_sdk import Choice, Noul, Score
 
+import build
 import jokers
 import odds
+import tarots
 import strategy
 from balatro import RPCError
 from hands import RANK_NAMES, SUIT_NAMES, _d, card_info, classify, describe, discard_candidates, play_candidates
@@ -26,6 +28,42 @@ EARLY_JOKERS = 4       # v9: through ante 3, fill joker slots before saving for 
 EARLY_ANTE = 3
 SURE_GAIN = 0.5        # a joker that adds 50%+ to our recent hands is bought whenever a slot is free
 RECENT_PLAYS = 10
+EARLY_REROLL_FLOOR = 5  # v10: early with an empty joker slot, reroll down to $5 (top LLMs reroll 5-20x a run)
+NEAR_PACE = 0.8         # v10: near pace with no spare discards, digging must clearly pay off
+
+# v10: what each voucher is worth, in terms Jev can weigh; strong ones are bought by code when affordable.
+VOUCHERS = {
+    "Grabber": ("+1 hand every round for the rest of the run (~+25% chips per round)", True),
+    "Nacho Tong": ("+1 more hand every round for the rest of the run", True),
+    "Wasteful": ("+1 discard every round for the rest of the run", True),
+    "Recyclomancy": ("+1 more discard every round for the rest of the run", True),
+    "Paint Brush": ("+1 hand size: more cards to build hands from, every round", True),
+    "Palette": ("+1 more hand size, every round", True),
+    "Clearance Sale": ("everything in the shop costs 25% less for the rest of the run", True),
+    "Liquidation": ("everything in the shop costs 50% less for the rest of the run", True),
+    "Overstock": ("+1 card slot in every shop: more jokers to choose from", True),
+    "Overstock Plus": ("+1 more card slot in every shop", True),
+    "Antimatter": ("+1 joker slot", True),
+    "Reroll Surplus": ("rerolls cost $2 less", False), "Reroll Glut": ("rerolls cost $2 less again", False),
+    "Crystal Ball": ("+1 consumable slot", False),
+    "Telescope": ("Celestial packs always contain the planet for our most played hand", False),
+    "Observatory": ("useless for us: we use planets right away instead of holding them", False),
+    "Hone": ("Foil, Holo and Polychrome cards appear 2x more often", False),
+    "Glow Up": ("Foil, Holo and Polychrome cards appear 4x more often", False),
+    "Tarot Merchant": ("Tarot cards appear more often in the shop", False),
+    "Tarot Tycoon": ("Tarot cards appear much more often in the shop", False),
+    "Planet Merchant": ("Planet cards appear more often in the shop", False),
+    "Planet Tycoon": ("Planet cards appear much more often in the shop", False),
+    "Seed Money": ("interest cap $5 -> $10: only pays if we hold $50+", False),
+    "Money Tree": ("interest cap -> $20: only pays if we hold $100+", False),
+    "Blank": ("does nothing by itself (unlocks Antimatter, +1 joker slot)", False),
+    "Magic Trick": ("playing cards can appear in the shop", False),
+    "Illusion": ("shop playing cards may have editions or seals", False),
+    "Hieroglyph": ("-1 ante (easier blinds) but -1 hand every round", False),
+    "Petroglyph": ("-1 ante but -1 discard every round", False),
+    "Director's Cut": ("reroll the boss blind once per ante for $10", False),
+    "Retcon": ("reroll the boss blind any number of times for $10", False),
+}
 PACK_SCORE = 1.5       # the pack is already paid for: take anything better than marginal
 INTEREST_BUFFER = 25
 MAX_REROLLS = 2        # per shop, only from surplus above the buffer
@@ -170,6 +208,9 @@ def selecting_hand(bot, gs):
         return jokers.score(cs, list(range(len(cs))), name, sc, levels, js, rnd)
 
     odds.annotate(discards, infos, deck, score_cards)
+    b = build.decide(gs)
+    for d in discards:
+        d["fits_build"] = build.fits(d.get("goal"), b)
     clearing = [p for p in plays if _clears(p, info, margin)]
     if clearing:  # a sure clear wins the round: no question needed
         bot.emit("forced", question="move", choice="play_1",
@@ -187,6 +228,7 @@ def selecting_hand(bot, gs):
         "cards_in_hand": [describe(c) for c in hand],
         "deck_remaining": _deck_remaining(gs),
         "strongest_play": _play_obj(plays[0], info, margin),
+        "our_build": build.describe(b),
     }
     if jokers.unmodelled(js):
         state["jokers_not_in_estimates"] = jokers.unmodelled(js)
@@ -215,8 +257,14 @@ def selecting_hand(bot, gs):
     # Below pace with hands to spare, discards are free: only play when Jev is clearly sure.
     # On the last hand a play that can't clear loses anyway, so dig with the discards first (The Needle).
     under_pace = plays[0]["estimate"] < (info["chips_needed_per_remaining_hand"] or 0)
+    pace = info["chips_needed_per_remaining_hand"] or 0
+    spare = (info["discards_left"] or 0) >= info["hands_left"]
+    payoff = max((d.get("chance_to_hit") or 0) * (d.get("score_if_hit") or 0) for d in discards) if discards else 0
+    near_no_gain = plays[0]["estimate"] >= NEAR_PACE * pace and not spare and payoff < 1.2 * plays[0]["estimate"]
     if disc_opts and info["hands_left"] <= 1:
         bar = 1.01
+    elif under_pace and near_no_gain:
+        bar = 0.5  # close to pace, discards scarce and no plan clearly better: let Jev decide normally
     elif under_pace:
         bar = PLAY_NOW_UNDER_PACE
     else:
@@ -238,7 +286,7 @@ def selecting_hand(bot, gs):
 
 
 def _discard_obj(d):
-    o = {"plan": d["label"], "throws_away": d["tossed"]}
+    o = {"plan": d["label"], "throws_away": d["tossed"], "fits_our_build": d.get("fits_build", False)}
     if d.get("chance_to_hit") is not None:
         o["chance_to_hit"] = f"{round(100 * d['chance_to_hit'])}%"
         if d.get("score_if_hit"):
@@ -268,6 +316,8 @@ def shop(bot, gs):
     mains, state = _run_context(gs)
     boss = next((b for b in _d(gs.get("blinds")).values() if b.get("type") == "BOSS"), {})
     state["upcoming_boss"] = {"name": boss.get("name"), "effect": boss.get("effect"), "chip_target": boss.get("score")}
+    b = build.decide(gs)
+    state["our_build"] = build.describe(b)
 
     recent = _recent(bot, gs)
 
@@ -283,13 +333,19 @@ def shop(bot, gs):
             if cost > money or (c.get("set") == "JOKER" and jokers_full) or (
                     c.get("set") in ("TAROT", "PLANET", "SPECTRAL") and cons_full):
                 continue
-            items[f"buy_card_{i}"] = (item_desc(c, mains), obj(c, cost, c.get("set", "card").lower()),
-                                      ("buy", {"card": i}), cost)
+            o = obj(c, cost, c.get("set", "card").lower())
+            n = tarots.note(c, b, money, cards_of(gs, "jokers"))
+            if n:
+                o["use"] = n
+            items[f"buy_card_{i}"] = (item_desc(c, mains), o, ("buy", {"card": i}), cost)
         for i, c in enumerate(cards_of(gs, "vouchers")):
             cost = _d(c.get("cost")).get("buy", 0)
             if cost <= money:
-                items[f"buy_voucher_{i}"] = (item_desc(c), obj(c, cost, "voucher (permanent upgrade)"),
-                                             ("buy", {"voucher": i}), cost)
+                v = VOUCHERS.get(c.get("label"), (None, False))
+                o = obj(c, cost, "voucher (permanent upgrade for the rest of the run)")
+                if v[0]:
+                    o["worth"], o["_strong"] = v[0], v[1]
+                items[f"buy_voucher_{i}"] = (item_desc(c), o, ("buy", {"voucher": i}), cost)
         for i, c in enumerate(cards_of(gs, "packs")):
             cost = _d(c.get("cost")).get("buy", 0)
             if cost <= money:
@@ -315,7 +371,9 @@ def shop(bot, gs):
     bot.emit("info", msg=f"Shop (${money}): " + "; ".join(shown))
 
     reroll = _d(gs.get("round")).get("reroll_cost") or 5
-    can_reroll = money - reroll >= INTEREST_BUFFER and bot._rerolls < MAX_REROLLS
+    early_slot = (gs.get("ante_num") or 1) <= EARLY_ANTE and not jokers_full and jok.get("count", 0) < EARLY_JOKERS
+    floor = EARLY_REROLL_FLOOR if early_slot else INTEREST_BUFFER
+    can_reroll = money - reroll >= floor and bot._rerolls < MAX_REROLLS
     fallback = ("reroll", ("reroll", None)) if can_reroll else ("leave", ("next_round", None))
     if not items:
         bot.emit("forced", question="shop", choice=fallback[0], desc="nothing affordable to rate")
@@ -328,10 +386,17 @@ def shop(bot, gs):
     early = (gs.get("ante_num") or 1) <= EARLY_ANTE and jok.get("count", 0) < EARLY_JOKERS
     early_joker = early and best.startswith(("buy_card", "replace")) and "joker" in items[best][1]["kind"]
     # A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.
+    owned = jok.get("count", 0)
+    strong_v = [k for k, v in items.items() if v[1].get("_strong")
+                and money - v[3] >= (5 if owned >= EARLY_JOKERS - 1 else 15)]
     sure = [k for k, v in items.items() if k.startswith("buy_card") and v[1]["kind"] == "joker"
             and (v[1].get("_gain") or 0) >= SURE_GAIN and scores[k] >= 1]
     if s >= BUY_SCORE or (s >= BUY_SCORE_LOOSE and (money - cost >= INTEREST_BUFFER or early_joker)):
         choice, action = best, items[best][2]
+    elif strong_v:
+        choice = strong_v[0]
+        action = items[choice][2]
+        bot.emit("info", msg=f"Buying voucher {items[choice][0][:40]}: {items[choice][1]['worth']}")
     elif sure:
         choice = max(sure, key=lambda k: items[k][1]["_gain"])
         action = items[choice][2]
@@ -368,13 +433,25 @@ def booster(bot, gs):
     if cards_of(gs, "hand"):  # only arcana/spectral packs deal a hand to target
         state["cards_in_hand"] = [describe(c) for c in cards_of(gs, "hand")]
     items = {}
+    b = build.decide(gs)
+    state["our_build"] = build.describe(b)
+    hand = cards_of(gs, "hand")
     for i, c in enumerate(cards_of(gs, "pack")):
         if c.get("set") == "JOKER" and jokers_full:
             continue
-        items[f"take_{i}"] = (item_desc(c, mains),
-                              {"kind": (c.get("set") or "card").lower(), "what": item_desc(c, mains), "cost": 0,
-                               **_gain(gs, _recent(bot, gs), c)},
-                              ("pack", {"card": i}))
+        o = {"kind": (c.get("set") or "card").lower(), "what": item_desc(c, mains), "cost": 0,
+             **_gain(gs, _recent(bot, gs), c)}
+        params = {"card": i}
+        if (c.get("key") or "") in tarots.TARGETED:
+            p = tarots.plan(c.get("key"), hand, b)
+            o["use"] = p[1] if p else "no good target in this hand"
+            if p:
+                params["targets"] = p[0]
+        else:
+            n = tarots.note(c, b, gs.get("money") or 0, cards_of(gs, "jokers"))
+            if n:
+                o["use"] = n
+        items[f"take_{i}"] = (item_desc(c, mains), o, ("pack", params))
     skip = ("pack", {"skip": True})
     if not items:
         bot.emit("forced", question="pack", choice="skip", desc="nothing we can take")
@@ -412,7 +489,8 @@ def _gain(gs, recent, c, remove=None):
     else:
         return {}
     if not g:
-        return {"measured_gain": "no immediate effect on our recent hands' scores (scaling jokers may grow)",
-                "_gain": 0.0}
+        what = ("levels a hand we haven't played recently" if c.get("set") == "PLANET"
+                else "no immediate effect on our recent hands' scores (scaling jokers may grow)")
+        return {"measured_gain": what, "_gain": 0.0}
     basis = f"our last {len(recent)} hands" if len(recent) >= 4 else "our recent and typical hands"
     return {"measured_gain": f"{'+' if g >= 0 else ''}{round(100 * g)}% score on {basis}", "_gain": g}

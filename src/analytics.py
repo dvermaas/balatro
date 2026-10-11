@@ -129,7 +129,11 @@ def benchmark_matrix(name=None):
         rs = {}
         for r in sorted(runs, key=lambda r: r["started"]):  # latest attempt per seed wins
             if r["prompt_version"] == v["version"]:
-                rs[r["seed"]] = r
+                b = r.get("benchmark") or {}
+                i = b.get("index")
+                # sets may repeat a seed as "SEED#n": key cells by the set label at the run's index
+                rs[seeds[i] if isinstance(i, int) and i < len(seeds) and seeds[i].split("#")[0] == r["seed"]
+                   else r["seed"]] = r
         if not rs and not v["current"]:
             continue
         done = list(rs.values())
