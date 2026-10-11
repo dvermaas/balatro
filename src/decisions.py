@@ -9,6 +9,7 @@ from collections import Counter
 
 from typesafe_sdk import Choice, Noul, Score
 
+import jokers
 import strategy
 from balatro import RPCError
 from hands import RANK_NAMES, SUIT_NAMES, _d, card_info, describe, discard_candidates, play_candidates
@@ -85,23 +86,34 @@ def blind_select(bot, gs):
 
 # ---- hand -------------------------------------------------------------------
 
-def _play_obj(p, info):
+CLEAR_MARGIN = 1.1  # joker-aware estimates are within 10% on ~90% of recorded plays
+PLAY_NOW_UNDER_PACE = 0.85
+
+
+def _clears(p, info, margin):
+    return p["estimate"] >= info["chips_still_needed"] * margin
+
+
+def _play_obj(p, info, margin=1.0):
     pace = info["chips_needed_per_remaining_hand"] or 1
     return {
         "hand": p["hand"], "scoring_cards": p["scoring"], "also_played": p["kicked"],
-        "estimate_before_jokers": p["estimate"],
+        "estimated_score": p["estimate"],
         "share_of_pace": f"{round(100 * p['estimate'] / max(1, pace))}%",
-        "clears_blind_alone": p["estimate"] >= info["chips_still_needed"],
+        "clears_blind_alone": _clears(p, info, margin),
     }
 
 
 def selecting_hand(bot, gs):
     hand = cards_of(gs, "hand")
     info = _round_info(gs)
-    plays = play_candidates(hand, _d(gs.get("hands")))
+    levels, rnd, js = _d(gs.get("hands")), _d(gs.get("round")), jokers.build(gs)
+    plays = play_candidates(hand, levels, scorer=lambda infos, combo, name, sc: jokers.score(
+        infos, combo, name, sc, levels, js, rnd))
+    margin = CLEAR_MARGIN if js else 1.0
     discards = discard_candidates(hand) if (info["discards_left"] or 0) > 0 else []
-    clearing = [p for p in plays if p["estimate"] >= info["chips_still_needed"]]
-    if clearing:  # jokers only add, so this wins the round: no question needed
+    clearing = [p for p in plays if _clears(p, info, margin)]
+    if clearing:  # a sure clear wins the round: no question needed
         bot.emit("forced", question="move", choice="play_1",
                  desc=f"{clearing[0]['hand']} ({clearing[0]['estimate']}) clears the blind")
         bot.act("play", {"cards": clearing[0]["cards"]})
@@ -116,12 +128,14 @@ def selecting_hand(bot, gs):
         "hand_levels": _levels(gs, {p["hand"] for p in plays}),
         "cards_in_hand": [describe(c) for c in hand],
         "deck_remaining": _deck_remaining(gs),
-        "strongest_play": _play_obj(plays[0], info),
+        "strongest_play": _play_obj(plays[0], info, margin),
     }
+    if jokers.unmodelled(js):
+        state["jokers_not_in_estimates"] = jokers.unmodelled(js)
     questions = {}
     if len(play_opts) > 1:
         questions["best_play"] = Choice(instructions=INSTRUCTIONS["best_play"],
-                                        criteria={k: _play_obj(p, info) for k, p in play_opts.items()})
+                                        criteria={k: _play_obj(p, info, margin) for k, p in play_opts.items()})
     if disc_opts:
         questions["play_now"] = Noul(instructions=INSTRUCTIONS["play_now"], criteria=PLAY_NOW_CRITERIA)
         if len(disc_opts) > 1:
@@ -139,7 +153,11 @@ def selecting_hand(bot, gs):
     dp = dict(answers["best_discard"].probabilities) if "best_discard" in answers else (
         {"discard_1": 1.0} if disc_opts else {})
     probs = {k: p_play * pp.get(k, 0) for k in play_opts} | {k: (1 - p_play) * dp.get(k, 0) for k in disc_opts}
-    best = max(pp, key=pp.get) if p_play >= 0.5 else max(dp, key=dp.get)
+    # Jev's play_now leans yes (0.5-0.8) even far below pace, and v7 lost ante 1 with discards unused.
+    # Below pace with hands to spare, discards are free: only play when Jev is clearly sure.
+    under_pace = plays[0]["estimate"] < (info["chips_needed_per_remaining_hand"] or 0)
+    bar = PLAY_NOW_UNDER_PACE if under_pace and info["hands_left"] > 1 else 0.5
+    best = max(pp, key=pp.get) if p_play >= bar else max(dp, key=dp.get)
     if best.startswith("play"):
         p = play_opts[best]
         action = ("play", {"cards": p["cards"]})

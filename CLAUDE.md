@@ -29,7 +29,7 @@ local control panel for watching runs and comparing prompt versions. See README.
   pauses. Runs carry `summary.benchmark`; compare versions in the Benchmark tab
   (`GET /api/benchmark`). Keep the seed list fixed; change `NAME` if you ever change it.
 - `recorder.py`: one dir per run (keyed by seed) under `runs/`; `PROMPT_VERSION` = sha1 of
-  `prompts.py` + `hands.py` + `strategy.py` (+ `decisions.py` from v6). Snapshots in `runs/_prompts/` (v1 was reconstructed
+  `prompts.py` + `hands.py` + `strategy.py` (+ `decisions.py` from v6, `jokers.py` from v8). Snapshots in `runs/_prompts/` (v1 was reconstructed
   by hand).
 - `analytics.py`: metrics derived from `decisions.jsonl`, cached by mtime.
 
@@ -39,7 +39,7 @@ local control panel for watching runs and comparing prompt versions. See README.
 - Plain cards have label `"Base Card"`; build names from `value.rank`/`value.suit` (`describe()`).
 - BalatroBot handles one request at a time. If something blocks the game (an overlay pauses it),
   every call hangs; the 60 s client timeout makes the panel pause with a hint.
-- Editing `prompts.py`, `hands.py`, `strategy.py` or `decisions.py` creates a new prompt version: update `VERSION_NOTE`, and avoid
+- Editing `prompts.py`, `hands.py`, `strategy.py`, `decisions.py` or `jokers.py` creates a new prompt version: update `VERSION_NOTE`, and avoid
   stray edits mid-experiment.
 - Mods live outside the repo in `%APPDATA%\Balatro\Mods`. `mods/jev_tweaks` is the source of truth
   for our mod; copy it there after editing and restart the game. BalatroBot has a local patch in
@@ -48,7 +48,7 @@ local control panel for watching runs and comparing prompt versions. See README.
   understand game behaviour. Logs: `Mods\lovely\log`.
 - `.env` holds `JEV_API_KEY`; never print it. HTTP 402 from TypeSafe = org has no usable credits.
 - The user's weekly Claude usage is tight: prefer targeted reads and avoid long polling loops.
-- Prompt-version ids hash the exact bytes of `src/prompts.py`, `src/hands.py`, `src/strategy.py`, `src/decisions.py`
+- Prompt-version ids hash the exact bytes of `src/prompts.py`, `src/hands.py`, `src/strategy.py`, `src/decisions.py`, `src/jokers.py`
   (`.gitattributes` keeps `*.py` byte-exact). Moving them is fine; editing them (even an import or
   line ending) makes a new version. `src/legacy/v1/` must stay byte-identical (id f67d4d14).
 - Write Python edits with a script that preserves each file's line endings, or the Edit tool; heredocs

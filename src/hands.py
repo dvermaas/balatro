@@ -110,8 +110,10 @@ def estimate(cards, name, scoring, hand_levels):
     return int(chips * mult * xmult)
 
 
-def play_candidates(hand_cards, hand_levels, limit=8):
-    """Best play per distinct (hand type, scoring cards), padded with low junk cards to cycle them."""
+def play_candidates(hand_cards, hand_levels, limit=8, scorer=None):
+    """Best play per distinct (hand type, scoring cards), padded with low junk cards to cycle them.
+
+    scorer(infos, combo, name, scoring) replaces the joker-blind estimate when given (jokers.score)."""
     infos = [card_info(c) for c in hand_cards]
     best = {}
     for r in range(1, min(5, len(infos)) + 1):
@@ -123,7 +125,8 @@ def play_candidates(hand_cards, hand_levels, limit=8):
             pref = (len(combo), -sum(_rank_value(infos[i]) for i in junk))
             key = (name, scoring)
             if key not in best or pref > best[key][1]:
-                best[key] = (estimate(cs, name, sc, hand_levels), pref, list(combo))
+                est = scorer(infos, combo, name, sc) if scorer else estimate(cs, name, sc, hand_levels)
+                best[key] = (est, pref, list(combo))
     ranked = sorted(((v[0], k[0], v[2], k[1]) for k, v in best.items()), key=lambda x: -x[0])
     # One best play per hand type first, then fill with the next best overall.
     picked, seen = [], set()

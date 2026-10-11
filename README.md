@@ -65,7 +65,7 @@ All text JEV reads lives in **[`src/prompts.py`](src/prompts.py)**: game rules, 
 type, and the option templates. Always-right moves and the context JEV gets live in
 **[`src/strategy.py`](src/strategy.py)**: auto-using planets, keeping xMult jokers rightmost, and tagging
 jokers by role and by synergy with the run's main hands. The version is a hash of `prompts.py` +
-`hands.py` + `strategy.py` (+ `decisions.py` from v6, where the per-decision questions and buy/skip
+`hands.py` + `strategy.py` (+ `decisions.py` from v6 and `jokers.py` from v8, where the per-decision questions and buy/skip
 thresholds live), so **any edit creates a new version** (v1, v2, …) with its own stats.
 Update `VERSION_NOTE` to say what changed and restart the panel.
 
@@ -95,6 +95,7 @@ runs/
 src/                    the bot and control panel (run: python src/panel.py)
   balatro.py            JSON-RPC client for BalatroBot (127.0.0.1:12346)
   decisions.py          v6+ handlers: batched typed questions per decision, thresholds in code
+  jokers.py             joker-aware hand scoring parsed from live joker text (v8+)
   hands.py              hand evaluation, score estimates, play and discard candidates
   prompts.py            everything JEV reads (rules, questions, option templates)
   strategy.py           code-level policy: auto planets, joker ordering, joker tags, interest

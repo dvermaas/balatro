@@ -6,7 +6,13 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "v6 + fixes: buy/take thresholds moved to mid-scale (v6 bought once in 14 shops); never swap out a "
+    "Joker-aware hand estimates: jokers.py parses each joker's live effect text (incl. Currently values, "
+    "per-card, held-in-hand, retriggers, editions, Blueprint/Brainstorm) and scores plays in Balatro's order. "
+    "Median actual/estimate went from 6x (5 jokers) to 1.0 on 844 recorded plays. Candidates are ranked and "
+    "sure clears auto-played (10% margin) on that estimate; unparsed scoring jokers are listed for Jev. "
+    "Below pace with hands to spare, play only when Jev's play_now >= 0.85, else discard (v7 died in ante 1 "
+    "with discards unused). "
+    "Previous: v6 + fixes: buy/take thresholds moved to mid-scale (v6 bought once in 14 shops); never swap out a "
     "Negative joker (frees no slot); shop sees the upcoming boss; scaling xMult jokers tagged as scaling, "
     "Obelisk tagged with its reset condition; empty fields dropped. Base: "
     "Restructured per TypeSafe guidance. Hand: three questions in one call (play now? / best play / "
@@ -31,8 +37,9 @@ INSTRUCTIONS = {
         "discards left and how likely `deck_remaining` is to improve the hand."
     ),
     "best_play": (
-        "Which play will score the most chips this turn once the jokers in `jokers` apply? Estimates "
-        "exclude jokers; a joker that boosts a hand type can make a lower estimate the better play."
+        "Which play is best this turn? `estimated_score` already includes our jokers (except any in "
+        "`jokers_not_in_estimates`), so it is the real expected score. Prefer the higher score unless a "
+        "lower one keeps stronger cards or avoids resetting a scaling joker."
     ),
     "best_discard": (
         "If we discard, which discard gives the best chance of a strong next hand, given `cards_in_hand` "
