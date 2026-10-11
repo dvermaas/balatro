@@ -562,9 +562,18 @@ async function startBench() {
     if (!confirm('A run is in progress. Abandon it and start the benchmark?')) return;
     await api('abandon', {});
   }
-  await cmd('benchmark'); toast('Benchmark started: 10 seeded runs');
+  await cmd('benchmark'); toast('Benchmark started');
 }
-let benchSet = null;
+let benchSet = null, benchBase = null;
+// Seed-by-seed difference vs a baseline: both versions play the same seeds, so pairing removes seed luck.
+function paired(v, b) {
+  const d = Object.keys(v.cells).filter(s => b.cells[s] && v.cells[s].progress != null && b.cells[s].progress != null)
+    .map(s => v.cells[s].progress - b.cells[s].progress);
+  if (d.length < 2) return null;
+  const m = d.reduce((a, x) => a + x, 0) / d.length;
+  const sd = Math.sqrt(d.reduce((a, x) => a + (x - m) ** 2, 0) / (d.length - 1));
+  return {m, se: sd / Math.sqrt(d.length), n: d.length};
+}
 async function loadBench() {
   const d = await api('benchmark' + (benchSet ? '?set=' + benchSet : ''));
   benchSet = d.name;
@@ -572,11 +581,23 @@ async function loadBench() {
   const vs = d.versions;
   const best = Math.max(...vs.map(v => v.avg_progress || 0));
   const pm = (x, se) => x == null ? '–' : `${x}${se != null ? ` <span class="faint">± ${se}</span>` : ''}`;
-  $('bench-summary').innerHTML = `<tr><th>Version</th><th>Runs</th><th>Progress</th><th>Avg ante</th><th>Median ante</th><th>Avg round</th><th>Wins</th><th>Avg conf</th><th>Tokens/run</th><th>Time/run</th><th>Change</th></tr>` +
+  const finished = vs.filter(v => v.done === v.of);
+  if (!vs.some(v => v.label === benchBase))  // default baseline: best finished version
+    benchBase = (finished.sort((a, b) => b.avg_progress - a.avg_progress)[0] || vs[0] || {}).label;
+  const base = vs.find(v => v.label === benchBase);
+  const delta = v => {
+    if (v === base) return '<span class="faint">baseline</span>';
+    const p = base && paired(v, base);
+    if (!p) return '–';
+    const sig = p.m > 2 * p.se ? 'up' : p.m < -2 * p.se ? 'down' : '';
+    return `<span class="delta ${sig}" title="${sig ? 'Significant (beyond 2 SE)' : 'Within noise (2 SE)'}">${p.m >= 0 ? '+' : '−'}${Math.abs(p.m).toFixed(2)}</span> <span class="faint">± ${p.se.toFixed(2)} · ${p.n} seeds</span>`;
+  };
+  $('bench-summary').innerHTML = `<tr><th>Version</th><th>Runs</th><th>Progress</th><th title="Mean per-seed progress difference vs the baseline, ± paired standard error. Green/red = beyond 2 SE.">Seed by seed vs <select id="bench-base">${vs.map(v => `<option ${v === base ? 'selected' : ''}>${esc(v.label)}</option>`).join('')}</select></th><th>Avg ante</th><th>Median ante</th><th>Avg round</th><th>Wins</th><th>Avg conf</th><th>Tokens/run</th><th>Time/run</th><th>Change</th></tr>` +
     vs.map(v => `<tr><td><span class="vtag">${esc(v.label)}</span>${v.current ? ' <span class="badge in_progress">current</span>' : ''}</td>
-      <td>${v.done}/${v.of}</td><td style="font-weight:${v.avg_progress === best && v.done ? 700 : 400}">${pm(v.avg_progress, v.progress_se)}</td><td>${pm(v.avg_ante, v.ante_se)}</td><td>${v.median_ante ?? '–'}</td>
+      <td>${v.done}/${v.of}</td><td style="font-weight:${v.avg_progress === best && v.done ? 700 : 400}">${pm(v.avg_progress, v.progress_se)}</td><td>${delta(v)}</td><td>${pm(v.avg_ante, v.ante_se)}</td><td>${v.median_ante ?? '–'}</td>
       <td>${v.avg_round ?? '–'}</td><td>${v.wins}</td><td>${pct(v.avg_confidence)}</td><td>${fmt(v.avg_tokens)}</td><td>${dur(v.avg_seconds)}</td>
       <td class="muted" style="white-space:normal;min-width:260px;font-size:12px">${esc(v.note)}</td></tr>`).join('');
+  $('bench-base').onchange = e => { benchBase = e.target.value; loadBench(); };
   benchChart(vs, d.seeds);
   const shade = a => `background: color-mix(in srgb, var(--accent) ${Math.min(90, (a || 0) * 11)}%, transparent)`;
   $('bench-grid').innerHTML = `<tr><th>Seed</th>${vs.map(v => `<th>${esc(v.label)}</th>`).join('')}</tr>` +
