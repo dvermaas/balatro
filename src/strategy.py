@@ -72,8 +72,13 @@ def engine(jokers_effects):
 
 
 def joker_tags(effect, mains):
+    kind = joker_kind(effect)
     tags = [{"xmult": "xMult", "scaling": "scales over the run", "mult": "+Mult", "chips": "+Chips",
-             "economy": "economy", "utility": "utility"}[joker_kind(effect)]]
+             "economy": "economy", "utility": "utility"}[kind]]
+    if kind == "xmult" and re.search(r"\bgains\b", effect or ""):
+        tags[0] = "xMult that scales over the run"
+    if "without playing your most played poker hand" in (effect or "") and mains:
+        tags.append(f"resets whenever we play our most played hand (likely {mains[0]})")
     if (re.search(r"destroy (a random )?Joker|destroy Joker|this card is destroyed|is destroyed", effect or "", re.I)
             and "1 in 1000" not in (effect or "")):  # Cavendish: negligible risk
         tags.append("risky: destroys jokers or itself")

@@ -15,9 +15,11 @@ from hands import RANK_NAMES, SUIT_NAMES, _d, card_info, describe, discard_candi
 from jev_bot import SHOP_ACTION_CAP, area, cards_of, current_blind, item_desc
 from prompts import GAME_RULES, INSTRUCTIONS, ITEM_VALUE_LEVELS, OPTIONS, PLAY_NOW_CRITERIA
 
-BUY_SCORE = 3          # buy when Jev rates an item Strong or better...
-BUY_SCORE_RICH = 2     # ...or Useful when it keeps the $25 interest buffer
-PACK_SCORE = 3         # take a pack card when rated Strong or better
+# Jev's 0-4 scores cluster around 2-3, so thresholds sit mid-scale (v6 used 3 and starved: 1 buy in 14 shops).
+BUY_SCORE = 2.5        # buy the best-rated item at this score...
+BUY_SCORE_LOOSE = 2    # ...or at "Useful" when it keeps the $25 buffer, or is a joker while we own fewer than 3
+EARLY_JOKERS = 3
+PACK_SCORE = 1.5       # the pack is already paid for: take anything better than marginal
 INTEREST_BUFFER = 25
 MAX_REROLLS = 2        # per shop, only from surplus above the buffer
 
@@ -169,6 +171,8 @@ def shop(bot, gs):
     jokers_full = jok.get("count", 0) >= jok.get("limit", 5)
     cons_full = cons.get("count", 0) >= cons.get("limit", 2)
     mains, state = _run_context(gs)
+    boss = next((b for b in _d(gs.get("blinds")).values() if b.get("type") == "BOSS"), {})
+    state["upcoming_boss"] = {"name": boss.get("name"), "effect": boss.get("effect"), "chip_target": boss.get("score")}
 
     def obj(c, cost, kind, **extra):
         left = money - cost
@@ -196,7 +200,8 @@ def shop(bot, gs):
                                           ("buy", {"pack": i}), cost)
         if jokers_full:
             for j, owned in enumerate(cards_of(gs, "jokers")):
-                if _d(owned.get("modifier")).get("eternal"):
+                mod = _d(owned.get("modifier"))
+                if mod.get("eternal") or mod.get("edition") == "NEGATIVE":  # selling a Negative frees no slot
                     continue
                 sell = _d(owned.get("cost")).get("sell", 0)
                 for i, c in enumerate(cards_of(gs, "shop")):
@@ -223,7 +228,8 @@ def shop(bot, gs):
     scores, meta = _score_items(bot, gs, "shop", state, {k: v[:3] for k, v in items.items()})
     best = max(scores, key=scores.get)
     s, cost = scores[best], items[best][3]
-    if s >= BUY_SCORE or (s >= BUY_SCORE_RICH and money - cost >= INTEREST_BUFFER):
+    early_joker = best.startswith(("buy_card", "replace")) and "joker" in items[best][1]["kind"] and jok.get("count", 0) < EARLY_JOKERS
+    if s >= BUY_SCORE or (s >= BUY_SCORE_LOOSE and (money - cost >= INTEREST_BUFFER or early_joker)):
         choice, action = best, items[best][2]
     else:
         choice, action = fallback
@@ -254,7 +260,8 @@ def booster(bot, gs):
     jok = area(gs, "jokers")
     jokers_full = jok.get("count", 0) >= jok.get("limit", 5)
     mains, state = _run_context(gs)
-    state["cards_in_hand"] = [describe(c) for c in cards_of(gs, "hand")]
+    if cards_of(gs, "hand"):  # only arcana/spectral packs deal a hand to target
+        state["cards_in_hand"] = [describe(c) for c in cards_of(gs, "hand")]
     items = {}
     for i, c in enumerate(cards_of(gs, "pack")):
         if c.get("set") == "JOKER" and jokers_full:

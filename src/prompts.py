@@ -6,6 +6,9 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v6 + fixes: buy/take thresholds moved to mid-scale (v6 bought once in 14 shops); never swap out a "
+    "Negative joker (frees no slot); shop sees the upcoming boss; scaling xMult jokers tagged as scaling, "
+    "Obelisk tagged with its reset condition; empty fields dropped. Base: "
     "Restructured per TypeSafe guidance. Hand: three questions in one call (play now? / best play / "
     "best discard) combined in code; plays and discards are structured objects; state is the round, "
     "cards, jokers, relevant hand levels and the remaining deck. Shop and packs: a 0-4 Score per item "
