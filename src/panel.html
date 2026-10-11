@@ -269,22 +269,23 @@ table.grid td.empty-cell { text-align: center; color: var(--faint); }
   <section class="view" id="view-bench">
     <div class="panel" style="margin-bottom:16px">
       <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
-        <div><h2 style="margin:0 0 4px">Benchmark <code id="bench-name" class="faint"></code></h2>
-          <div class="muted" style="font-size:13px">Every prompt version plays the same 10 seeds, so differences come from the prompt, not the cards.</div></div>
+        <div><h2 style="margin:0 0 4px">Benchmark</h2>
+          <div class="muted" style="font-size:13px">Every prompt version plays the same seeds, so differences come from the prompt, not the cards.</div>
+          <div class="filters" id="bench-sets" style="margin:10px 0 0"></div></div>
         <div style="display:flex;gap:8px"><button class="btn danger" id="bench-cancel" onclick="cmd('cancel_benchmark')" hidden>Cancel</button>
           <button class="btn primary" id="bench-start" onclick="startBench()">Benchmark current version</button></div>
       </div>
     </div>
     <div class="panel" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
-        <h2 style="margin:0">Ante reached by version</h2>
+        <h2 style="margin:0">Progress by version <span class="faint" style="text-transform:none;letter-spacing:0;font-weight:400">(blinds cleared + share of the last blind)</span></h2>
         <span class="faint" style="font-size:12px"><span class="key-dot"></span> one benchmark seed &nbsp; <span class="key-line"></span> version average &nbsp; <span class="key-dot win"></span> won</span>
       </div>
       <div id="bench-chart" class="chart"></div>
     </div>
     <div class="panel" style="margin-bottom:16px"><h2>Summary</h2><div class="scroll-x"><table id="bench-summary"></table></div></div>
     <div class="panel"><h2>Ante reached per seed</h2><div class="scroll-x"><table id="bench-grid" class="grid"></table></div>
-      <div class="faint" style="font-size:12px;margin-top:8px">Click a cell to open that run. Green = won.</div></div>
+      <div class="faint" style="font-size:12px;margin-top:8px">Click a cell to open that run. Green = won. ± is the standard error: differences smaller than about twice it are likely noise.</div></div>
   </section>
 
   <!-- PROMPTS -->
@@ -563,14 +564,17 @@ async function startBench() {
   }
   await cmd('benchmark'); toast('Benchmark started: 10 seeded runs');
 }
+let benchSet = null;
 async function loadBench() {
-  const d = await api('benchmark');
-  $('bench-name').textContent = d.name;
+  const d = await api('benchmark' + (benchSet ? '?set=' + benchSet : ''));
+  benchSet = d.name;
+  $('bench-sets').innerHTML = d.sets.map(s => `<button class="fchip ${s === d.name ? 'on' : ''}" data-set="${esc(s)}">${esc(s)}${s === d.default ? ' (active)' : ''}</button>`).join('');
   const vs = d.versions;
-  const best = Math.max(...vs.map(v => v.avg_ante || 0));
-  $('bench-summary').innerHTML = `<tr><th>Version</th><th>Progress</th><th>Avg ante</th><th>Median ante</th><th>Avg round</th><th>Wins</th><th>Avg conf</th><th>Tokens/run</th><th>Time/run</th><th>Change</th></tr>` +
+  const best = Math.max(...vs.map(v => v.avg_progress || 0));
+  const pm = (x, se) => x == null ? '–' : `${x}${se != null ? ` <span class="faint">± ${se}</span>` : ''}`;
+  $('bench-summary').innerHTML = `<tr><th>Version</th><th>Runs</th><th>Progress</th><th>Avg ante</th><th>Median ante</th><th>Avg round</th><th>Wins</th><th>Avg conf</th><th>Tokens/run</th><th>Time/run</th><th>Change</th></tr>` +
     vs.map(v => `<tr><td><span class="vtag">${esc(v.label)}</span>${v.current ? ' <span class="badge in_progress">current</span>' : ''}</td>
-      <td>${v.done}/${v.of}</td><td style="font-weight:${v.avg_ante === best && v.done ? 700 : 400}">${v.avg_ante ?? '–'}</td><td>${v.median_ante ?? '–'}</td>
+      <td>${v.done}/${v.of}</td><td style="font-weight:${v.avg_progress === best && v.done ? 700 : 400}">${pm(v.avg_progress, v.progress_se)}</td><td>${pm(v.avg_ante, v.ante_se)}</td><td>${v.median_ante ?? '–'}</td>
       <td>${v.avg_round ?? '–'}</td><td>${v.wins}</td><td>${pct(v.avg_confidence)}</td><td>${fmt(v.avg_tokens)}</td><td>${dur(v.avg_seconds)}</td>
       <td class="muted" style="white-space:normal;min-width:260px;font-size:12px">${esc(v.note)}</td></tr>`).join('');
   benchChart(vs, d.seeds);
@@ -588,25 +592,26 @@ function benchChart(vs, seeds) {
   box.dataset.key = key;
   if (!shown.length) { box.innerHTML = '<div class="empty">No finished benchmark runs yet.</div>'; return; }
   const W = Math.max(320, box.clientWidth || 800), H = 260, m = {l: 34, r: 16, t: 22, b: 30};
-  const maxAnte = Math.max(8, ...shown.flatMap(v => Object.values(v.cells).map(c => c.ante || 0)));
-  const y = a => m.t + (H - m.t - m.b) * (1 - a / maxAnte);
+  const val = c => c.progress ?? ((c.round || 1) - 1);
+  const maxP = Math.max(24, ...shown.flatMap(v => Object.values(v.cells).map(val)));
+  const y = a => m.t + (H - m.t - m.b) * (1 - a / maxP);
   const band = (W - m.l - m.r) / shown.length, cx = i => m.l + band * (i + .5);
-  const spread = Math.min(band * .55, 90) / seeds.length;
+  const spread = Math.min(band * .6, 120) / seeds.length;
   let g = '<g class="grid axis">';
-  for (let a = 0; a <= maxAnte; a += 1) g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(a)}" y2="${y(a)}"/><text x="${m.l - 8}" y="${y(a) + 4}" text-anchor="end">${a}</text>`;
+  for (let a = 0; a <= maxP; a += 3) g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(a)}" y2="${y(a)}"/><text x="${m.l - 8}" y="${y(a) + 4}" text-anchor="end">A${a / 3 + 1}</text>`;
   g += `<text x="${m.l - 8}" y="${m.t - 10}" text-anchor="end">ante</text></g>`;
   let dots = '', pts = [], labels = '';
   shown.forEach((v, i) => {
     labels += `<text class="xlab" x="${cx(i)}" y="${H - 8}" text-anchor="middle">${esc(v.label)}${v.current ? ' ●' : ''}</text>`;
     seeds.forEach((s, k) => { const c = v.cells[s]; if (!c) return;
-      const x = cx(i) + (k - (seeds.length - 1) / 2) * spread, yy = y(c.ante || 0);
-      const tip = `${esc(v.label)} · seed ${esc(s)} · ${c.result === 'won' ? 'won' : `lost at ante ${c.ante}, round ${c.round}`}`;
+      const x = cx(i) + (k - (seeds.length - 1) / 2) * spread, yy = y(val(c));
+      const tip = `${esc(v.label)} · seed ${esc(s)} · ${c.result === 'won' ? 'won' : `lost at ante ${c.ante}, round ${c.round}`} · progress ${val(c)}`;
       dots += `<circle class="hit" cx="${x}" cy="${yy}" r="9" data-tip="${tip}" data-run="${esc(c.run_id)}"/><circle class="seed ${c.result === 'won' ? 'won' : ''}" cx="${x}" cy="${yy}" r="4"/>`; });
-    pts.push([cx(i), y(v.avg_ante), v]);
+    pts.push([cx(i), y(v.avg_progress ?? 0), v]);
   });
   const line = pts.length > 1 ? `<path class="avg-line" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ')}"/>` : '';
-  const avg = pts.map(([x, yy, v]) => `<circle class="hit" cx="${x}" cy="${yy}" r="12" data-tip="${esc(v.label)} · avg ante ${v.avg_ante} · median ${v.median_ante} · ${v.wins} wins · ${v.done}/${v.of} runs"/>` +
-    `<circle class="avg-pt" cx="${x}" cy="${yy}" r="6"/><text class="avg-lbl" x="${x + 12}" y="${yy - 8}">${v.avg_ante}</text>`).join('');
+  const avg = pts.map(([x, yy, v]) => `<circle class="hit" cx="${x}" cy="${yy}" r="12" data-tip="${esc(v.label)} · progress ${v.avg_progress} ± ${v.progress_se} · avg ante ${v.avg_ante} · ${v.wins} wins · ${v.done}/${v.of} runs"/>` +
+    `<circle class="avg-pt" cx="${x}" cy="${yy}" r="6"/><text class="avg-lbl" x="${x + 12}" y="${yy - 8}">${v.avg_progress}</text>`).join('');
   box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ante reached per benchmark seed and version average">${g}${dots}${line}${avg}${labels}</svg><div class="tip" id="bench-tip"></div>`;
   const tip = $('bench-tip'), svg = box.querySelector('svg');
   svg.addEventListener('mousemove', e => { const t = e.target.closest('[data-tip]');
@@ -616,6 +621,7 @@ function benchChart(vs, seeds) {
   svg.addEventListener('mouseleave', () => tip.classList.remove('show'));
   svg.addEventListener('click', e => { const t = e.target.closest('[data-run]'); if (t) location.hash = '#/run/' + t.dataset.run; });
 }
+$('bench-sets').addEventListener('click', e => { const s = e.target.dataset.set; if (s) { benchSet = s; $('bench-chart').dataset.key = ''; loadBench(); } });
 $('bench-grid').addEventListener('click', e => { const td = e.target.closest('[data-run]'); if (td) location.hash = '#/run/' + td.dataset.run; });
 
 /* ---------- router ---------- */

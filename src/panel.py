@@ -153,7 +153,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, {"summary": summary, "metrics": analytics.run_metrics(run_dir),
                              "events": analytics.load_decisions(run_dir)})
         elif p == "/api/benchmark":
-            self._send(200, analytics.benchmark_matrix())
+            self._send(200, analytics.benchmark_matrix(q.get("set", [None])[0]))
         elif p == "/api/prompts":
             self._send(200, analytics.version_stats())
         else:
