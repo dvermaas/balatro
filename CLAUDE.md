@@ -36,6 +36,8 @@ local control panel for watching runs and comparing prompt versions. See README.
 ## Gotchas
 
 - BalatroBot serialises empty Lua tables as `[]`, not `{}`; use `hands._d()` before `.get()`.
+- `gs["cards"]` (the draw pile) is in exact draw order: the next draws are its last entries. Never
+  send its order to JEV (that's seeing the future); only order-free aggregates like suit/rank counts.
 - Plain cards have label `"Base Card"`; build names from `value.rank`/`value.suit` (`describe()`).
 - BalatroBot handles one request at a time. If something blocks the game (an overlay pauses it),
   every call hangs; the 60 s client timeout makes the panel pause with a hint.
