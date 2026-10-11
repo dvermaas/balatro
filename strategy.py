@@ -41,9 +41,20 @@ def joker_kind(effect):
 
 
 def main_hands(gs, n=2):
-    """The run's most-played poker hands (at least 2 plays each)."""
-    played = [(h.get("played", 0), name) for name, h in _d(gs.get("hands")).items()]
-    return [name for count, name in sorted(played, reverse=True)[:n] if count >= 2]
+    """The hands the run is built around: levelled first, then strongest, then most played.
+
+    Frequency alone locked v3/v4 into Pair builds (early rounds mostly deal pairs, which then got
+    favoured by tags and planets). High Card and Pair only count once they have been levelled up.
+    """
+    picks = []
+    for name, h in _d(gs.get("hands")).items():
+        level, played = h.get("level", 1) or 1, h.get("played", 0) or 0
+        if name not in HAND_NAMES or (played < 2 and level < 2):
+            continue
+        if name in ("High Card", "Pair") and level < 2:
+            continue
+        picks.append((-level, HAND_NAMES.index(name), -played, name))
+    return [p[-1] for p in sorted(picks)[:n]]
 
 
 def engine(jokers_effects):

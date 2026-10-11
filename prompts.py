@@ -4,7 +4,9 @@ VERSION_NOTE is shown on the Prompts page; update it to describe what changed.
 """
 
 VERSION_NOTE = (
-    "v3 + engine focus and reroll discipline. Reroll is only offered when $25+ remains afterwards "
+    "v4 + main hands chosen by level and strength instead of play count (High Card/Pair only once "
+    "levelled), and the hand-play instruction no longer pushes toward main hands, as in v2. v3/v4 "
+    "had locked into Pair builds: fewer discards, more weak plays. | v4 base: v3 + engine focus and reroll discipline. Reroll is only offered when $25+ remains afterwards "
     "(v3 rerolled 31x and died broke). State gets an `engine` summary of what the joker lineup covers "
     "and is missing; shop asks what completes the engine. Jokers that destroy jokers are tagged risky. "
     "Money rule: spend only what is above $25. | v3 base: Build strategy from community guides + v2 data. Code now auto-uses planet cards and keeps xMult "
@@ -34,9 +36,8 @@ INSTRUCTIONS = {
     "move": (
         "Choose the best next move this round. Compare each play's estimate with "
         "`game.chips_needed_per_remaining_hand`. If the best play falls well short of that pace and "
-        "discards remain, discarding to build a stronger hand (ideally one of `game.main_hands`) is usually "
-        "better than spending a hand; if a play clears the blind, take it. Account for how the jokers "
-        "boost each hand type."
+        "discards remain, discarding to build a stronger hand is usually better than spending a hand; "
+        "if a play clears the blind, take it. Account for how the jokers boost each hand type."
     ),
     "shop": (
         "We are in the shop. Which single action best completes our scoring engine (see `game.engine.missing`)? "

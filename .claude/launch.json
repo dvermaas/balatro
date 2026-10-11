@@ -6,6 +6,12 @@
       "runtimeExecutable": ".venv/Scripts/python.exe",
       "runtimeArgs": ["-u", "panel.py"],
       "port": 8765
+    },
+    {
+      "name": "jev-panel-legacy-v1",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["-u", "panel.py", "--legacy", "v1"],
+      "port": 8765
     }
   ]
 }
