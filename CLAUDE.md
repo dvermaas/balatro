@@ -55,4 +55,4 @@ local control panel for watching runs and comparing prompt versions. See README.
   (`.gitattributes` keeps `*.py` byte-exact). Moving them is fine; editing them (even an import or
   line ending) makes a new version. `src/legacy/v1/` must stay byte-identical (id f67d4d14).
 - Write Python edits with a script that preserves each file's line endings, or the Edit tool; heredocs are fine with a quoted delimiter, but
-  inside non-raw Python strings `"b"` becomes a backspace: use raw strings, `chr(92)` or the Edit tool.
+  inside non-raw Python strings `"\b"` becomes a backspace: use raw strings, `chr(92)` or the Edit tool.
