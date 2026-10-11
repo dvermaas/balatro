@@ -126,6 +126,7 @@ class JevBot:
         self._last_pack_cost = 0
         self.bench_queue, self.bench_current, self.bench_done_pending = [], None, False
         self._auto_failed = set()
+        self._round_blind = None
         self.stats = {"decisions": 0, "input_tokens": 0, "output_tokens": 0, "jev_ms": 0,
                       "runs": 0, "wins": 0, "best_ante": 0, "errors": 0}
         self.last_state = None
@@ -141,7 +142,29 @@ class JevBot:
 
     def act(self, method, params=None):
         self.emit("action", method=method, params=params)
-        return self.game.call(method, params)
+        before = self.last_state or {}
+        result = self.game.call(method, params)
+        if isinstance(result, dict) and "state" in result:
+            snap = self._snapshot(result, before)
+            if method != "play":
+                snap.pop("chips_delta", None)  # only a played hand scores chips
+            self.emit("outcome", method=method, **snap)
+            self.last_state = result
+        return result
+
+    @staticmethod
+    def _snapshot(gs, before):
+        """Compact after-action facts: lets analytics measure real hand scores, spending and progress."""
+        rnd, prev = _d(gs.get("round")), _d(before.get("round"))
+        out = {
+            "state": gs.get("state"), "ante": gs.get("ante_num"), "round": gs.get("round_num"),
+            "money": gs.get("money"), "money_delta": (gs.get("money") or 0) - (before.get("money") or 0),
+            "chips": rnd.get("chips"), "hands_left": rnd.get("hands_left"), "discards_left": rnd.get("discards_left"),
+            "jokers": [c.get("label") for c in cards_of(gs, "jokers")],
+        }
+        if before.get("round_num") == gs.get("round_num") and prev.get("chips") is not None:
+            out["chips_delta"] = (rnd.get("chips") or 0) - (prev.get("chips") or 0)
+        return out
 
     auto_actions = True  # legacy versions predate strategy.auto_action
 
@@ -155,6 +178,7 @@ class JevBot:
             self.emit("forced", question=qid, choice=k, desc=desc)
             return action
         state = self.build_state(gs)
+        self.recorder.write_raw(self._event_id + 1, gs)  # id the decision event below will get
         t0 = time.perf_counter()
         resp = self.jev.system_one(
             state=state,
@@ -184,6 +208,8 @@ class JevBot:
         self.last_state = gs
         st = gs.get("state")
         self.recorder.ensure(gs, self.deck, self.stake, self.model, self.bench_current)
+        if st == "SELECTING_HAND":
+            self._round_blind = current_blind(gs)
         self.recorder.progress(gs)
         handler = getattr(self, f"on_{(st or '').lower()}", None)
         if handler is None:
@@ -246,6 +272,11 @@ class JevBot:
         self.act("menu")
 
     def on_round_eval(self, gs):
+        rnd, blind = _d(gs.get("round")), self._round_blind or {}  # already marked defeated here
+        self.emit("round_end", ante=gs.get("ante_num"), round=gs.get("round_num"), blind=blind.get("name"),
+                  target=blind.get("score"), scored=rnd.get("chips"), hands_left=rnd.get("hands_left"),
+                  discards_left=rnd.get("discards_left"), money=gs.get("money"),
+                  jokers=[c.get("label") for c in cards_of(gs, "jokers")])
         self.act("cash_out")
 
     def on_blind_select(self, gs):

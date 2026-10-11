@@ -374,6 +374,8 @@ function eventNode(e, opts = {}) {
     el.className = 'ev line err'; el.textContent = `${t} · ${e.msg}`;
   } else if (e.kind === 'forced') {
     el.className = 'ev line'; el.textContent = `${t} · ${QLABEL[e.question] || e.question}: only option → ${e.desc}`;
+  } else if (e.kind === 'round_end') {
+    el.className = 'ev line'; el.innerHTML = `${t} · <b style="color:var(--good)">✓ ${esc(e.blind)}</b>: ${fmt(e.scored)} / ${fmt(e.target)} chips, ${e.hands_left} hand${e.hands_left === 1 ? '' : 's'} to spare`;
   } else if (e.kind === 'auto') {
     el.className = 'ev line'; el.textContent = `${t} · ⚙ ${e.msg}`;
   } else if (e.kind === 'info') {
@@ -491,7 +493,7 @@ async function loadRun(id) {
   // group decisions by ante/round
   const groups = [];
   for (const e of d.events) {
-    if (!['decision', 'run_end', 'error', 'forced', 'auto'].includes(e.kind)) continue;
+    if (!['decision', 'run_end', 'error', 'forced', 'auto', 'round_end'].includes(e.kind)) continue;
     const g = e.state_sent?.game;
     const key = g ? `Ante ${g.ante} · Round ${g.round}` : (groups.at(-1)?.key || 'Start');
     if (!groups.length || groups.at(-1).key !== key) groups.push({key, blind: g?.blind, events: []});

@@ -5,6 +5,7 @@ decisions.jsonl has every Jev request (full state, instructions, option texts) w
 summary.json is rewritten as the run progresses, so an interrupted run still has one.
 """
 
+import gzip
 import hashlib
 import json
 import time
@@ -77,6 +78,13 @@ class RunRecorder:
         }
         self._conf_sum = 0.0
         self._save()
+
+    def write_raw(self, event_id, gs):
+        """Full BalatroBot gamestate (incl. remaining deck) per Jev decision, gzipped, keyed by event id."""
+        if not self.run:
+            return
+        with gzip.open(self.dir / "states.jsonl.gz", "at", encoding="utf-8") as f:
+            f.write(json.dumps({"id": event_id, "gs": gs}) + "\n")
 
     def write(self, ev):
         if not self.run:
