@@ -1,0 +1,8 @@
+# secrets
+.env
+# local env / caches
+.venv/
+__pycache__/
+# raw run recordings (large, machine-specific); prompt-version snapshots are kept
+runs/*
+!runs/_prompts/

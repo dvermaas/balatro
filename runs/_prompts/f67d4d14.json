@@ -1,0 +1,28 @@
+{
+  "version": "f67d4d14",
+  "created": 1791743463.7743485,
+  "note": "Baseline: first working prompt. One Choice per decision over code-generated candidates.",
+  "rules": "You are playing Balatro, a poker roguelike. Each round you must reach the blind's chip target before running out of hands. A played hand scores (chips) x (mult); jokers modify the score. Discards cost no hand but are limited. Money buys jokers, packs and vouchers in the shop; holding money earns interest ($1 per $5 held, up to $5).",
+  "instructions": {
+    "blind": "Should we play or skip the upcoming blind?",
+    "move": "Choose the best next move this round. Weigh playing now against discarding to build a stronger hand, given the chips still needed, hands left, discards left, and how the jokers boost each hand type.",
+    "shop": "We are in the shop. What is the single best next shop action to maximise the chance of winning the run?",
+    "pack": "A booster pack is open. Which card should we take, if any?"
+  },
+  "options": {
+    "blind_play": "Play the {name} (need {score} chips) and earn its cash reward",
+    "blind_skip": "Skip the {name} to gain the {tag_name}: {tag_effect}. Skipping forgoes the blind's money and shop visit.",
+    "play": "Play {hand} scoring {scoring}{kicked}. Estimated {estimate} chips before jokers; {need} still needed.",
+    "play_kicked": " (also plays away {cards})",
+    "discard": "Discard: {label}. Throws away {cards} and draws replacements.",
+    "shop_leave": "Leave the shop and go to the next blind, keeping the money",
+    "shop_buy_card": "Buy {item} for ${cost}",
+    "shop_buy_voucher": "Buy voucher {item} for ${cost}",
+    "shop_buy_pack": "Buy and open {item} for ${cost}",
+    "shop_reroll": "Reroll the shop for ${cost} to see new cards",
+    "shop_sell_joker": "Sell joker {item} for ${sell} to free a slot",
+    "shop_use": "Use {item} now",
+    "pack_skip": "Skip the rest of this pack (listed first)",
+    "pack_take": "Take {item}"
+  }
+}

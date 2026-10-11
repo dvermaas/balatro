@@ -1,0 +1,29 @@
+{
+  "version": "fba2d056",
+  "created": 1791746315.7069232,
+  "note": "Build strategy from community guides + v2 data. Code now auto-uses planet cards and keeps xMult jokers rightmost. Jokers are tagged (xMult / scales / +Mult / +Chips / economy) and by synergy with the run's main hands; state includes main hands and interest. Rules stress xMult and scaling jokers, jokers over packs, keeping ~$25 for interest and spending the surplus. Full joker slots get combined 'replace X with Y' options.",
+  "rules": "You are playing Balatro, a poker roguelike. Each round you must reach the blind's chip target before running out of hands. A played hand scores (chips) x (mult); jokers modify the score. Discards cost no hand but are limited, and any discards left when the round ends are simply wasted. Blind targets grow fast, so the run is won by building a strong joker lineup, not by single hands. Winning builds focus on one or two poker hands (`game.main_hands`), level those up with planets, and stack jokers that boost them: a source of chips, some +Mult, and above all xMult jokers, which multiply the whole score. Jokers that scale (grow over the run) are worth more than fixed bonuses. Jokers whose bonus needs a hand we rarely play add little. Early in a run a good joker beats a booster pack. Interest pays $1 per $5 held at the end of each round, capped at $5 (reached at $25): keep about $25 once affordable, and spend money above that on jokers rather than hoarding it.",
+  "instructions": {
+    "blind": "Should we play or skip the upcoming blind?",
+    "move": "Choose the best next move this round. Compare each play's estimate with `game.chips_needed_per_remaining_hand`. If the best play falls well short of that pace and discards remain, discarding to build a stronger hand (ideally one of `game.main_hands`) is usually better than spending a hand; if a play clears the blind, take it. Account for how the jokers boost each hand type.",
+    "shop": "We are in the shop. Which single action most improves our chance of winning the run? Prefer jokers tagged xMult or 'scales over the run', and jokers that boost our main hands. With full joker slots, replacing a weak or off-plan joker with a clearly better one is often right. Keep about $25 for interest when we can afford to, but don't sit on money far above that.",
+    "pack": "A booster pack we already paid for is open. Taking a card costs nothing extra. Which card helps this run the most? Skip only if every card would actively hurt the run."
+  },
+  "options": {
+    "blind_play": "Play the {name} (need {score} chips) and earn its cash reward",
+    "blind_skip": "Skip the {name} to gain the {tag_name}: {tag_effect}. Skipping forgoes the blind's money and shop visit.",
+    "play": "Play {hand} scoring {scoring}{kicked}. Estimated {estimate} chips before jokers: {verdict}.",
+    "play_kicked": " (also plays away {cards})",
+    "verdict_clears": "clears the blind ({need} still needed)",
+    "verdict_pace": "{pct}% of the {pace}/hand pace needed ({need} still needed over {hands} hands)",
+    "discard": "Discard: {label}. Throws away {cards} and draws replacements.",
+    "shop_leave": "Leave the shop and go to the next blind, keeping the money (earning ${interest} interest)",
+    "shop_buy_card": "Buy {item} for ${cost} ({after})",
+    "shop_buy_voucher": "Buy voucher {item} for ${cost} ({after})",
+    "shop_buy_pack": "Buy and open {item} for ${cost} ({after})",
+    "shop_reroll": "Reroll the shop for ${cost} to see new cards ({after})",
+    "shop_replace": "Replace joker {old} (sell for ${sell}) with {new} (costs ${cost}; {after})",
+    "pack_take": "Take {item}",
+    "pack_skip": "Skip taking anything; the ${paid} spent on this pack is wasted"
+  }
+}

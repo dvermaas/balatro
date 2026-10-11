@@ -1,0 +1,30 @@
+{
+  "version": "1a2596b8",
+  "created": 1791744190.0917091,
+  "note": "Pack picks: take options listed first, skipping says the money is wasted. Play options state the per-hand pace needed and whether they clear the blind. Discard instructions stress that unused discards are wasted. Flush/straight chases are no longer offered once already complete.",
+  "rules": "You are playing Balatro, a poker roguelike. Each round you must reach the blind's chip target before running out of hands. A played hand scores (chips) x (mult); jokers modify the score. Discards cost no hand but are limited, and any discards left when the round ends are simply wasted. Money buys jokers, packs and vouchers in the shop; holding money earns interest ($1 per $5 held, up to $5). Jokers are the main way to scale scores to beat later, much larger blinds.",
+  "instructions": {
+    "blind": "Should we play or skip the upcoming blind?",
+    "move": "Choose the best next move this round. Compare each play's estimate with `game.chips_needed_per_remaining_hand`. If the best play falls well short of that pace and discards remain, discarding to build a stronger hand is usually better than spending a hand; if a play clears the blind, take it. Account for how the jokers boost each hand type.",
+    "shop": "We are in the shop. What is the single best next shop action to maximise the chance of winning the run?",
+    "pack": "A booster pack we already paid for is open. Taking a card costs nothing extra. Which card helps this run the most? Skip only if every card would actively hurt the run."
+  },
+  "options": {
+    "blind_play": "Play the {name} (need {score} chips) and earn its cash reward",
+    "blind_skip": "Skip the {name} to gain the {tag_name}: {tag_effect}. Skipping forgoes the blind's money and shop visit.",
+    "play": "Play {hand} scoring {scoring}{kicked}. Estimated {estimate} chips before jokers: {verdict}.",
+    "play_kicked": " (also plays away {cards})",
+    "verdict_clears": "clears the blind ({need} still needed)",
+    "verdict_pace": "{pct}% of the {pace}/hand pace needed ({need} still needed over {hands} hands)",
+    "discard": "Discard: {label}. Throws away {cards} and draws replacements.",
+    "shop_leave": "Leave the shop and go to the next blind, keeping the money",
+    "shop_buy_card": "Buy {item} for ${cost}",
+    "shop_buy_voucher": "Buy voucher {item} for ${cost}",
+    "shop_buy_pack": "Buy and open {item} for ${cost}",
+    "shop_reroll": "Reroll the shop for ${cost} to see new cards",
+    "shop_sell_joker": "Sell joker {item} for ${sell} to free a slot",
+    "shop_use": "Use {item} now",
+    "pack_take": "Take {item}",
+    "pack_skip": "Skip taking anything; the ${paid} spent on this pack is wasted"
+  }
+}

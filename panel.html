@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JEV Balatro</title>
+<style>
+:root {
+  --bg: #f4f3ef; --panel: #ffffff; --panel-2: #f8f7f4; --ink: #1c1b1f; --muted: #6d6b73; --faint: #a3a1a8;
+  --line: #e4e2dc; --accent: #d9480f; --accent-soft: #ffe8d9; --good: #2b8a3e; --good-soft: #d3f9d8;
+  --bad: #c92a2a; --bad-soft: #ffe3e3; --warn: #e67700; --info: #1971c2; --info-soft: #dbeafe;
+  --card: #fffdf8; --red-suit: #d6336c; --bar: #ffd8bf; --bar-top: #d9480f;
+  --q-move: #1971c2; --q-shop: #9c36b5; --q-pack: #e67700; --q-blind: #2b8a3e;
+  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111113; --panel: #1a1a1d; --panel-2: #202024; --ink: #ececf0; --muted: #9b9aa3; --faint: #64636b;
+    --line: #2c2c31; --accent: #ff8a3d; --accent-soft: #3a2415; --good: #51cf66; --good-soft: #17321d;
+    --bad: #ff6b6b; --bad-soft: #3b1818; --warn: #ffa94d; --info: #4dabf7; --info-soft: #14283d;
+    --card: #26252a; --red-suit: #f06595; --bar: #4a2a17; --bar-top: #ff8a3d;
+    --q-move: #4dabf7; --q-shop: #da77f2; --q-pack: #ffa94d; --q-blind: #69db7c;
+    --shadow: none;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+body { font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+code, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+a { color: inherit; }
+
+/* nav */
+nav { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 4px; padding: 0 16px; height: 56px;
+      background: color-mix(in srgb, var(--panel) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.brand { font-weight: 700; letter-spacing: -.01em; margin-right: 14px; white-space: nowrap; }
+.brand span { color: var(--accent); }
+.tab { padding: 7px 12px; border-radius: 8px; text-decoration: none; color: var(--muted); font-weight: 500; }
+.tab:hover { background: var(--panel-2); color: var(--ink); }
+.tab.active { color: var(--ink); background: var(--panel-2); }
+.spacer { flex: 1; }
+.now { display: flex; align-items: center; gap: 10px; padding: 5px 10px 5px 8px; border: 1px solid var(--line); border-radius: 99px;
+       font-size: 12.5px; color: var(--muted); white-space: nowrap; margin-right: 8px; }
+.now b { color: var(--ink); font-weight: 600; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); flex: none; }
+.dot.running { background: var(--good); box-shadow: 0 0 0 0 var(--good); animation: pulse 1.6s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent); } 100% { box-shadow: 0 0 0 7px transparent; } }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 6px 12px; cursor: pointer; font-weight: 500;
+       transition: background .1s, transform .05s; white-space: nowrap; }
+.btn:hover { background: var(--panel-2); }
+.btn:active { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.danger { color: var(--bad); }
+.menu { position: relative; }
+.menu-pop { position: absolute; right: 0; top: 40px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px;
+            width: 240px; box-shadow: 0 8px 30px rgba(0,0,0,.18); display: none; }
+.menu-pop.open { display: block; }
+.menu-pop label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; color: var(--muted); }
+.menu-pop input[type=range] { width: 110px; }
+.kbd { font-size: 11px; color: var(--faint); margin-left: 4px; }
+
+main { max-width: 1320px; margin: 0 auto; padding: 18px 16px 60px; }
+.view { display: none; } .view.active { display: block; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); min-width: 0; }
+h2 { font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 0 0 12px; font-weight: 600; }
+h1 { font-size: 22px; margin: 0; letter-spacing: -.02em; }
+.muted { color: var(--muted); } .faint { color: var(--faint); }
+.grid-live { display: grid; grid-template-columns: minmax(300px, 380px) 1fr; gap: 16px; align-items: start; }
+@media (max-width: 900px) { .grid-live { grid-template-columns: 1fr; } nav { overflow-x: auto; } .now .hide-sm { display: none; } }
+
+/* live: round header */
+.round { display: grid; gap: 14px; margin-bottom: 16px; }
+.round-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; border-radius: 99px; background: var(--panel-2);
+        border: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.chip b { color: var(--ink); }
+.progress { height: 12px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; position: relative; }
+.progress i { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 70%, #ffd43b));
+              border-radius: 99px; transition: width .35s ease; }
+.progress-row { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.progress-row b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.pips { display: flex; gap: 18px; flex-wrap: wrap; }
+.pip-group { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.pip { width: 10px; height: 10px; border-radius: 3px; background: var(--line); }
+.pip.on.h { background: var(--info); } .pip.on.d { background: var(--bad); }
+.money { font-weight: 700; color: var(--warn); font-variant-numeric: tabular-nums; }
+
+/* cards */
+.hand { display: flex; flex-wrap: wrap; gap: 6px; }
+.pc { width: 46px; height: 64px; border-radius: 7px; background: var(--card); border: 1px solid var(--line); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; font-weight: 700; font-size: 16px; position: relative; box-shadow: var(--shadow); }
+.pc small { font-size: 18px; line-height: 1; }
+.pc.red { color: var(--red-suit); }
+.pc.debuff { opacity: .38; }
+.pc .mod { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 600; padding: 0 4px;
+           border-radius: 4px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; text-transform: uppercase; }
+.jokers { display: grid; gap: 8px; }
+.joker { padding: 9px 11px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); }
+.joker b { display: block; font-size: 13px; }
+.joker span { font-size: 12px; color: var(--muted); }
+.empty { color: var(--faint); font-size: 13px; padding: 4px 0; }
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.stat { padding: 10px 12px; border-radius: 10px; background: var(--panel-2); }
+.stat b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.stat span { color: var(--muted); font-size: 11.5px; }
+.stack > * + * { margin-top: 16px; }
+
+/* feed */
+.feed-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.feed { display: flex; flex-direction: column; }
+.ev { padding: 12px 2px; border-top: 1px solid var(--line); }
+.ev:first-child { border-top: 0; }
+.ev.new { animation: slidein .35s ease; }
+@keyframes slidein { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.ev-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.q { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 7px; border-radius: 5px;
+     color: var(--qc); background: color-mix(in srgb, var(--qc) 14%, transparent); }
+.q.move { --qc: var(--q-move); } .q.shop { --qc: var(--q-shop); } .q.pack { --qc: var(--q-pack); } .q.blind { --qc: var(--q-blind); }
+.conf { display: inline-flex; align-items: center; gap: 5px; }
+.conf i { display: inline-block; width: 36px; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; position: relative; }
+.conf i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); background: var(--cc); }
+.choice { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+.opt { display: grid; grid-template-columns: 44px 1fr; gap: 10px; align-items: center; font-size: 12.5px; color: var(--muted); padding: 1px 0; }
+.opt .p { height: 16px; border-radius: 4px; background: var(--panel-2); position: relative; overflow: hidden; }
+.opt .p i { position: absolute; inset: 0 auto 0 0; background: var(--bar); }
+.opt.chosen { color: var(--ink); }
+.opt.chosen .p i { background: var(--bar-top); }
+.opt .p em { position: relative; font-style: normal; font-size: 10.5px; padding-left: 5px; line-height: 16px; font-variant-numeric: tabular-nums; font-weight: 600; }
+.opt.chosen .p em { color: #fff; }
+.more { background: none; border: 0; color: var(--info); cursor: pointer; padding: 4px 0 0; font-size: 12px; }
+.ev.line { font-size: 12.5px; color: var(--muted); padding: 8px 2px; }
+.ev.err { color: var(--bad); }
+.banner { padding: 12px 14px; border-radius: 10px; font-weight: 600; margin: 8px 0; }
+.banner.lost { background: var(--bad-soft); color: var(--bad); }
+.banner.won { background: var(--good-soft); color: var(--good); }
+
+/* tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.click { cursor: pointer; } tr.click:hover td { background: var(--panel-2); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11.5px; font-weight: 600; }
+.badge.won { background: var(--good-soft); color: var(--good); } .badge.lost { background: var(--bad-soft); color: var(--bad); }
+.badge.in_progress { background: var(--info-soft); color: var(--info); } .badge.abandoned { background: var(--panel-2); color: var(--muted); }
+.vtag { font-weight: 600; padding: 2px 7px; border-radius: 6px; background: var(--accent-soft); color: var(--accent); font-size: 12px; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.fchip { border: 1px solid var(--line); background: var(--panel); border-radius: 99px; padding: 4px 11px; cursor: pointer; font-size: 12.5px; }
+.fchip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.scroll-x { overflow-x: auto; }
+
+/* prompts */
+.versions { display: grid; gap: 16px; }
+.vcard.current { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.vhead { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 6px; }
+.vhead h3 { margin: 0; font-size: 18px; }
+.note { color: var(--muted); margin: 0 0 14px; max-width: 900px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.tile { padding: 10px 12px; border-radius: 10px; background: var(--panel-2); }
+.tile b { font-size: 20px; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.tile span.lbl { display: block; color: var(--muted); font-size: 11.5px; margin-top: 2px; }
+.delta { font-size: 11.5px; font-weight: 600; margin-left: 6px; }
+.delta.up { color: var(--good); } .delta.down { color: var(--bad); }
+.qbars { display: grid; grid-template-columns: 60px 1fr 44px; gap: 6px 10px; align-items: center; font-size: 12.5px; max-width: 520px; margin-bottom: 12px; }
+.qbar { height: 8px; border-radius: 4px; background: var(--panel-2); overflow: hidden; }
+.qbar i { display: block; height: 100%; background: var(--qc); }
+details { border-top: 1px solid var(--line); padding-top: 10px; }
+summary { cursor: pointer; color: var(--info); font-size: 13px; font-weight: 500; }
+.ptext { display: grid; gap: 10px; margin-top: 12px; }
+.ptext .k { font-size: 11.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+.ptext .v { background: var(--panel-2); border-radius: 8px; padding: 9px 11px; white-space: pre-wrap; font-size: 13px; }
+.optlist { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 12.5px; }
+.diff-new { background: var(--good-soft); border-radius: 3px; }
+
+/* run detail */
+.back { display: inline-block; margin-bottom: 12px; color: var(--muted); text-decoration: none; }
+.rhead { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.round-group { margin-top: 18px; }
+.round-group > .rg-title { font-weight: 600; font-size: 13px; padding: 6px 0; border-bottom: 2px solid var(--line); display: flex; gap: 10px; align-items: baseline; }
+pre.state { background: var(--panel-2); border-radius: 8px; padding: 10px; overflow: auto; max-height: 340px; font-size: 11.5px; margin: 8px 0 0; }
+.chart { position: relative; margin-top: 10px; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart .grid line { stroke: var(--line); stroke-width: 1; }
+.chart .axis text { fill: var(--muted); font-size: 11px; }
+.chart .xlab { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.chart .seed { fill: var(--faint); opacity: .75; pointer-events: none; }
+.chart .seed.won { fill: var(--good); opacity: 1; }
+.chart .avg-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+.chart .avg-pt { fill: var(--accent); stroke: var(--panel); stroke-width: 2; pointer-events: none; }
+.chart .avg-lbl { fill: var(--ink); font-size: 12px; font-weight: 700; pointer-events: none; }
+.chart .avg-line { pointer-events: none; }
+.chart .hit { fill: transparent; cursor: pointer; }
+.chart .hit:hover + .seed, .chart .hit:hover + .avg-pt { stroke: var(--ink); stroke-width: 2; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); padding: 6px 9px; border-radius: 8px;
+       font-size: 12px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); opacity: 0; transition: opacity .1s; z-index: 2; }
+.tip.show { opacity: 1; }
+.key-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--faint); vertical-align: middle; }
+.key-dot.win { background: var(--good); }
+.key-line { display: inline-block; width: 16px; height: 2px; background: var(--accent); vertical-align: middle; }
+.bench-pill { font-weight: 600; color: var(--accent); }
+table.grid td.cell { text-align: center; font-weight: 600; cursor: pointer; border-radius: 6px; }
+table.grid td.cell:hover { outline: 2px solid var(--line); }
+table.grid td.empty-cell { text-align: center; color: var(--faint); }
+.toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 9px 16px;
+         border-radius: 10px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="brand">JEV <span>×</span> Balatro</div>
+  <a class="tab" href="#/live" data-tab="live">Live</a>
+  <a class="tab" href="#/runs" data-tab="runs">Runs</a>
+  <a class="tab" href="#/prompts" data-tab="prompts">Prompts</a>
+  <a class="tab" href="#/bench" data-tab="bench">Benchmark</a>
+  <div class="spacer"></div>
+  <div class="now" id="now" title="What's running right now">
+    <span class="dot" id="dot"></span>
+    <span id="now-mode"><b>paused</b></span>
+    <span class="hide-sm">·</span><span class="hide-sm" id="now-version"></span>
+    <span class="hide-sm">·</span><span class="hide-sm" id="now-rate"></span>
+    <span id="now-bench" class="bench-pill" hidden></span>
+  </div>
+  <button class="btn primary" id="runbtn" onclick="toggleRun()">Run</button>
+  <button class="btn" onclick="cmd('step')" title="One decision (S)">Step</button>
+  <div class="menu">
+    <button class="btn ghost" onclick="$('pop').classList.toggle('open')" aria-label="Settings">⋯</button>
+    <div class="menu-pop" id="pop">
+      <label>Delay <span><input id="delay" type="range" min="0" max="3" step="0.1" oninput="$('dl').textContent=(+this.value).toFixed(1)+'s'" onchange="saveSettings()"> <span id="dl" class="mono"></span></span></label>
+      <label>Auto-start next run <input id="auto" type="checkbox" onchange="saveSettings()"></label>
+      <button class="btn danger" style="width:100%" onclick="abandon()">Abandon current run</button>
+      <div class="faint" style="font-size:11.5px;margin-top:10px">Keys: <b>Space</b> run/pause · <b>S</b> step · <b>1/2/3</b> tabs</div>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <!-- LIVE -->
+  <section class="view" id="view-live">
+    <div class="panel round" id="round"><div class="empty">Waiting for the game… press Step or Run.</div></div>
+    <div class="grid-live">
+      <div class="stack">
+        <div class="panel"><h2>Hand</h2><div class="hand" id="hand"><div class="empty">–</div></div></div>
+        <div class="panel"><h2 id="jokers-title">Jokers</h2><div class="jokers" id="jokers"><div class="empty">No jokers</div></div>
+          <h2 style="margin-top:14px">Consumables</h2><div id="cons" class="empty">–</div></div>
+        <div class="panel"><h2>This session</h2><div class="stats" id="stats"></div></div>
+      </div>
+      <div class="panel">
+        <div class="feed-head"><h2 style="margin:0">Decisions</h2><span class="faint" style="font-size:12px">newest first · click to expand</span></div>
+        <div class="feed" id="feed"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RUNS -->
+  <section class="view" id="view-runs">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="margin:0">Recorded runs</h2><span class="faint" id="runs-count" style="font-size:12px"></span></div>
+      <div class="filters" id="run-filters"></div>
+      <div class="scroll-x"><table id="runs-table"></table></div>
+    </div>
+  </section>
+
+  <!-- RUN DETAIL -->
+  <section class="view" id="view-run"><div id="run-detail"></div></section>
+
+  <!-- BENCHMARK -->
+  <section class="view" id="view-bench">
+    <div class="panel" style="margin-bottom:16px">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+        <div><h2 style="margin:0 0 4px">Benchmark <code id="bench-name" class="faint"></code></h2>
+          <div class="muted" style="font-size:13px">Every prompt version plays the same 10 seeds, so differences come from the prompt, not the cards.</div></div>
+        <div style="display:flex;gap:8px"><button class="btn danger" id="bench-cancel" onclick="cmd('cancel_benchmark')" hidden>Cancel</button>
+          <button class="btn primary" id="bench-start" onclick="startBench()">Benchmark current version</button></div>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+        <h2 style="margin:0">Ante reached by version</h2>
+        <span class="faint" style="font-size:12px"><span class="key-dot"></span> one benchmark seed &nbsp; <span class="key-line"></span> version average &nbsp; <span class="key-dot win"></span> won</span>
+      </div>
+      <div id="bench-chart" class="chart"></div>
+    </div>
+    <div class="panel" style="margin-bottom:16px"><h2>Summary</h2><div class="scroll-x"><table id="bench-summary"></table></div></div>
+    <div class="panel"><h2>Ante reached per seed</h2><div class="scroll-x"><table id="bench-grid" class="grid"></table></div>
+      <div class="faint" style="font-size:12px;margin-top:8px">Click a cell to open that run. Green = won.</div></div>
+  </section>
+
+  <!-- PROMPTS -->
+  <section class="view" id="view-prompts">
+    <div class="versions" id="versions"></div>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = n => n == null ? '–' : Number(n).toLocaleString();
+const pct = n => n == null ? '–' : Math.round(n * 100) + '%';
+const ago = t => { const s = Math.max(0, Date.now()/1000 - t); return s < 60 ? Math.round(s)+'s ago' : s < 3600 ? Math.round(s/60)+'m ago' : s < 86400 ? Math.round(s/3600)+'h ago' : new Date(t*1000).toLocaleDateString(); };
+const dur = s => s == null ? '–' : s < 60 ? Math.round(s)+'s' : Math.floor(s/60)+'m '+String(Math.round(s%60)).padStart(2,'0')+'s';
+const confColor = c => c >= .7 ? 'var(--good)' : c >= .45 ? 'var(--warn)' : 'var(--bad)';
+const QLABEL = {move: 'Hand', shop: 'Shop', pack: 'Pack', blind: 'Blind'};
+
+function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1600); }
+async function api(path, body) {
+  const r = await fetch('/api/' + path, body ? {method: 'POST', body: JSON.stringify(body)} : {});
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.statusText);
+  return j;
+}
+async function cmd(c, body = {}) { try { await api(c, body); pollLive(true); } catch (e) { toast(e.message); } }
+let live = null;
+function toggleRun() { cmd(live && live.mode === 'running' ? 'pause' : 'run'); }
+function saveSettings() { cmd('settings', {delay: +$('delay').value, auto_new_run: $('auto').checked}); toast('Settings saved'); }
+function abandon() { if (confirm('Abandon the current run? It will be recorded as abandoned.')) { cmd('abandon'); $('pop').classList.remove('open'); } }
+document.addEventListener('click', e => { if (!e.target.closest('.menu')) $('pop').classList.remove('open'); });
+document.addEventListener('keydown', e => {
+  if (e.target.matches('input, textarea')) return;
+  if (e.code === 'Space') { e.preventDefault(); toggleRun(); }
+  else if (e.key === 's') cmd('step');
+  else if (e.key === '1') location.hash = '#/live'; else if (e.key === '2') location.hash = '#/runs'; else if (e.key === '3') location.hash = '#/prompts'; else if (e.key === '4') location.hash = '#/bench';
+});
+
+/* ---------- cards ---------- */
+const SUIT = {Hearts: ['♥', 1], Diamonds: ['♦', 1], Clubs: ['♣', 0], Spades: ['♠', 0]};
+const RANK = {Jack: 'J', Queen: 'Q', King: 'K', Ace: 'A'};
+function cardHTML(text) {
+  const m = /^(\w+) of (\w+)(?: \((.+)\))?$/.exec(text);
+  if (!m) return `<div class="pc" title="${esc(text)}"><small>◼</small><span class="mod">stone</span></div>`;
+  const [, r, s, extra] = m, [sym, red] = SUIT[s] || ['?', 0];
+  const mods = (extra || '').split(', ').filter(Boolean), deb = mods.includes('debuffed');
+  const mod = mods.filter(x => x !== 'debuffed')[0];
+  return `<div class="pc ${red ? 'red' : ''} ${deb ? 'debuff' : ''}" title="${esc(text)}">${esc(RANK[r] || r)}<small>${sym}</small>${mod ? `<span class="mod">${esc(mod)}</span>` : ''}</div>`;
+}
+function jokerHTML(text) {
+  const i = text.indexOf(': ');
+  return `<div class="joker"><b>${esc(i > 0 ? text.slice(0, i) : text)}</b>${i > 0 ? `<span>${esc(text.slice(i + 2))}</span>` : ''}</div>`;
+}
+
+/* ---------- decision rendering (shared by live + run detail) ---------- */
+function decisionHTML(e, opts = {}) {
+  const entries = Object.entries(e.options || {}).sort((a, b) => (e.probs[b[0]] || 0) - (e.probs[a[0]] || 0));
+  const show = opts.all ? entries : entries.slice(0, 3);
+  const c = e.confidence ?? 0;
+  const rows = show.map(([k, d]) => { const p = (e.probs[k] || 0) * 100;
+    return `<div class="opt ${k === e.choice ? 'chosen' : ''}"><div class="p"><i style="width:${p}%"></i><em>${p.toFixed(0)}%</em></div><div>${esc(d)}</div></div>`; }).join('');
+  const t = opts.time ? `<span>${new Date(e.t * 1000).toLocaleTimeString()}</span><span>·</span>` : '';
+  return `<div class="ev-head"><span class="q ${e.question}">${QLABEL[e.question] || e.question}</span>${t}
+      <span class="conf" title="Jev confidence"><i style="--w:${c*100}%;--cc:${confColor(c)}"></i>${pct(c)}</span><span>·</span><span>${e.ms} ms</span>
+      <span>·</span><span>${entries.length} options</span></div>
+    <div class="opts">${rows}</div>
+    ${entries.length > 3 && !opts.all ? `<button class="more" data-more>Show all ${entries.length} options</button>` : ''}
+    ${opts.state && e.state_sent ? `<details style="border:0;padding:6px 0 0"><summary>State sent to Jev</summary><pre class="state">${esc(JSON.stringify(e.state_sent, null, 2))}</pre></details>` : ''}`;
+}
+function eventNode(e, opts = {}) {
+  const el = document.createElement('div');
+  el.className = 'ev';
+  const t = new Date(e.t * 1000).toLocaleTimeString();
+  if (e.kind === 'decision') {
+    el.innerHTML = decisionHTML(e, {...opts, time: true});
+    el.addEventListener('click', ev => {
+      if (ev.target.closest('details')) return;
+      const expanded = el.dataset.all === '1';
+      el.dataset.all = expanded ? '' : '1';
+      el.innerHTML = decisionHTML(e, {...opts, time: true, all: !expanded});
+    });
+    el.style.cursor = 'pointer';
+  } else if (e.kind === 'run_end') {
+    el.innerHTML = `<div class="banner ${e.won ? 'won' : 'lost'}">${e.won ? '🏆 Run won' : 'Run lost'} at ante ${e.ante}, round ${e.round}</div>`;
+  } else if (e.kind === 'error') {
+    el.className = 'ev line err'; el.textContent = `${t} · ${e.msg}`;
+  } else if (e.kind === 'forced') {
+    el.className = 'ev line'; el.textContent = `${t} · ${QLABEL[e.question] || e.question}: only option → ${e.desc}`;
+  } else if (e.kind === 'auto') {
+    el.className = 'ev line'; el.textContent = `${t} · ⚙ ${e.msg}`;
+  } else if (e.kind === 'info') {
+    el.className = 'ev line'; el.textContent = `${t} · ${e.msg}`;
+  } else return null;
+  return el;
+}
+
+/* ---------- live ---------- */
+let lastId = 0, feedCount = 0;
+async function pollLive(force) {
+  let s;
+  try { s = await api('live?since=' + lastId); } catch { $('now-mode').innerHTML = '<b style="color:var(--bad)">panel offline</b>'; $('dot').className = 'dot'; return; }
+  live = s;
+  // nav indicator
+  $('dot').className = 'dot ' + s.mode;
+  $('now-mode').innerHTML = `<b>${s.mode === 'running' ? 'Running' : 'Paused'}</b>`;
+  $('now-version').innerHTML = `<b>${esc(s.version.label)}</b> · ${s.version.finished} run${s.version.finished === 1 ? '' : 's'} on this prompt`;
+  $('now-rate').innerHTML = `<b>${s.rate.decisions_per_min}</b> dec/min${s.rate.avg_run_seconds ? ` · ~${dur(s.rate.avg_run_seconds)}/run` : ''}`;
+  const b = s.benchmark, bp = $('now-bench');
+  bp.hidden = !(b.current || b.remaining);
+  if (!bp.hidden) bp.textContent = `· benchmark ${b.current ? `${b.current.index + 1}/${b.current.of}` : 'starting'}`;
+  $('bench-cancel').hidden = !(b.current || b.remaining);
+  $('runbtn').textContent = s.mode === 'running' ? 'Pause' : 'Run';
+  $('runbtn').className = 'btn ' + (s.mode === 'running' ? '' : 'primary');
+  if (!pollLive.init) { $('delay').value = s.delay; $('dl').textContent = (+s.delay).toFixed(1) + 's'; $('auto').checked = s.auto_new_run; pollLive.init = true; }
+  renderRound(s);
+  // feed: prepend only new events
+  const feed = $('feed');
+  const fresh = s.events.filter(e => e.id > lastId && e.kind !== 'action');
+  const frag = document.createDocumentFragment();
+  for (const e of fresh.reverse()) { const n = eventNode(e); if (n) { if (lastId) n.classList.add('new'); frag.appendChild(n); feedCount++; } }
+  feed.insertBefore(frag, feed.firstChild);
+  while (feed.children.length > 120) feed.lastChild.remove();
+  if (!feed.children.length) feed.innerHTML = '<div class="empty">No decisions yet.</div>';
+  else if (feed.lastChild.classList?.contains('empty')) feed.lastChild.remove();
+  lastId = Math.max(lastId, s.last_id);
+}
+function renderRound(s) {
+  const g = s.game, st = s.stats, run = s.current_run;
+  const dec = st.decisions || 0;
+  $('stats').innerHTML = [
+    [dec, 'Jev decisions'], [dec ? Math.round(st.jev_ms / dec) + ' ms' : '–', 'Avg latency'],
+    [fmt(st.input_tokens + st.output_tokens), 'Tokens'], [`${st.runs} / ${st.wins}`, 'Runs / wins'],
+    [st.best_ante || '–', 'Best ante'], [st.errors, 'Errors'],
+  ].map(([v, k]) => `<div class="stat"><b>${esc(v)}</b><span>${k}</span></div>`).join('');
+  if (!g) return;
+  const target = g.blind.chip_target || 0, have = g.chips_scored_this_round || 0;
+  const pctDone = target ? Math.min(100, 100 * have / target) : 0;
+  const pips = (n, cls) => Array.from({length: Math.max(n || 0, 0)}, () => `<span class="pip on ${cls}"></span>`).join('') || '<span class="faint">0</span>';
+  const inRound = s.game_state === 'SELECTING_HAND';
+  $('round').innerHTML = `
+    <div class="round-top">
+      <h1>${esc(g.blind.name || '–')}</h1>
+      ${g.blind.effect && g.blind.effect !== 'none' ? `<span class="chip">⚠ ${esc(g.blind.effect)}</span>` : ''}
+      <span class="spacer"></span>
+      <span class="chip">Ante <b>${g.ante ?? '–'}</b></span><span class="chip">Round <b>${g.round ?? '–'}</b></span>
+      <span class="chip"><span class="money">$${g.money ?? 0}</span></span>
+      <span class="chip">${esc((s.game_state || '').replace(/_/g, ' ').toLowerCase())}</span>
+      ${run ? `<span class="chip mono" title="${esc(run.run_id)}">seed ${esc(run.seed)}</span>` : ''}
+    </div>
+    <div>
+      <div class="progress"><i style="width:${pctDone}%"></i></div>
+      <div class="progress-row"><span><b>${fmt(have)}</b> / ${fmt(target)} chips</span>
+        <span>${inRound && g.chips_needed_per_remaining_hand != null ? `need <b>${fmt(g.chips_needed_per_remaining_hand)}</b> per hand` : ''}</span></div>
+    </div>
+    <div class="pips">
+      <div class="pip-group">Hands ${pips(g.hands_left, 'h')}</div>
+      <div class="pip-group">Discards ${pips(g.discards_left, 'd')}</div>
+    </div>`;
+  $('hand').innerHTML = g.cards_in_hand.length ? g.cards_in_hand.map(cardHTML).join('') : '<div class="empty">No cards in hand right now</div>';
+  $('jokers-title').textContent = `Jokers ${g.joker_slots}`;
+  $('jokers').innerHTML = g.jokers.length ? g.jokers.map(jokerHTML).join('') : '<div class="empty">No jokers</div>';
+  $('cons').innerHTML = g.consumables.length ? g.consumables.map(jokerHTML).join('') : '–';
+}
+$('feed').addEventListener('click', e => { if (e.target.matches('[data-more]')) e.stopPropagation(), e.target.closest('.ev').click(); });
+
+/* ---------- runs ---------- */
+let runsCache = [], runFilter = 'all';
+async function loadRuns() {
+  runsCache = await api('runs');
+  const labels = [...new Set(runsCache.map(r => r.prompt_label))].sort((a, b) => b.localeCompare(a, undefined, {numeric: true}));
+  $('run-filters').innerHTML = ['all', ...labels].map(l => `<button class="fchip ${runFilter === l ? 'on' : ''}" data-f="${esc(l)}">${l === 'all' ? 'All versions' : esc(l)}</button>`).join('');
+  const rows = runsCache.filter(r => runFilter === 'all' || r.prompt_label === runFilter);
+  $('runs-count').textContent = `${rows.length} run${rows.length === 1 ? '' : 's'}`;
+  $('runs-table').innerHTML = `<tr><th>Started</th><th>Seed</th><th>Prompt</th><th>Result</th><th>Ante</th><th>Round</th><th>Decisions</th><th>Avg conf</th>
+      <th title="Packs where a card was taken">Pack takes</th><th title="Discards left when the run was lost">Wasted discards</th><th>Jokers</th><th>Duration</th><th>Tokens</th></tr>` +
+    rows.map(r => { const m = r.metrics;
+      return `<tr class="click" data-run="${esc(r.run_id)}"><td>${ago(r.started)}</td><td class="mono">${esc(r.seed)}</td><td><span class="vtag">${esc(r.prompt_label)}</span></td>
+        <td><span class="badge ${r.result}">${esc(r.result.replace('_', ' '))}</span></td><td>${r.ante ?? '–'}</td><td>${r.round ?? '–'}</td><td>${r.decisions}</td>
+        <td><span style="color:${confColor(r.avg_confidence || 0)}">${pct(r.avg_confidence)}</span></td>
+        <td>${m.pack_picks ? `${m.pack_takes}/${m.pack_picks}` : '–'}</td><td>${r.result === 'lost' ? (m.wasted_discards ?? '–') : '–'}</td>
+        <td>${m.jokers_at_end}</td><td>${dur(r.ended ? r.ended - r.started : Date.now()/1000 - r.started)}</td><td>${fmt(r.input_tokens + r.output_tokens)}</td></tr>`; }).join('');
+}
+$('run-filters').addEventListener('click', e => { const f = e.target.dataset.f; if (f) { runFilter = f; loadRuns(); } });
+$('runs-table').addEventListener('click', e => { const tr = e.target.closest('[data-run]'); if (tr) location.hash = '#/run/' + tr.dataset.run; });
+
+async function loadRun(id) {
+  const box = $('run-detail');
+  box.innerHTML = '<div class="empty">Loading…</div>';
+  let d; try { d = await api('runs/' + id); } catch (e) { box.innerHTML = `<div class="panel">${esc(e.message)}</div>`; return; }
+  const s = d.summary, m = d.metrics;
+  const label = (runsCache.find(r => r.run_id === id) || {}).prompt_label || s.prompt_version;
+  const head = `<a class="back" href="#/runs">← All runs</a>
+    <div class="panel" style="margin-bottom:16px">
+      <div class="rhead"><h1 class="mono" style="font-size:20px">${esc(s.seed)}</h1><span class="badge ${s.result}">${esc(s.result.replace('_', ' '))}</span>
+        <span class="vtag">${esc(label)}</span><span class="faint">${new Date(s.started * 1000).toLocaleString()}</span></div>
+      <div class="tiles" style="margin:0">
+        ${[['Ante reached', s.ante], ['Round', s.round], ['Jev decisions', s.decisions], ['Avg confidence', pct(s.avg_confidence)],
+           ['Plays / discards', `${m.plays} / ${m.discards}`], ['Pack takes', m.pack_picks ? `${m.pack_takes}/${m.pack_picks}` : '–'],
+           ['Packs bought', m.packs_bought], ['Cards bought', m.cards_bought], ['Tokens', fmt(s.input_tokens + s.output_tokens)],
+           ['Duration', dur(s.ended ? s.ended - s.started : null)]]
+          .map(([k, v]) => `<div class="tile"><b>${esc(v ?? '–')}</b><span class="lbl">${k}</span></div>`).join('')}
+      </div></div>`;
+  // group decisions by ante/round
+  const groups = [];
+  for (const e of d.events) {
+    if (!['decision', 'run_end', 'error', 'forced', 'auto'].includes(e.kind)) continue;
+    const g = e.state_sent?.game;
+    const key = g ? `Ante ${g.ante} · Round ${g.round}` : (groups.at(-1)?.key || 'Start');
+    if (!groups.length || groups.at(-1).key !== key) groups.push({key, blind: g?.blind, events: []});
+    groups.at(-1).events.push(e);
+  }
+  box.innerHTML = head + `<div class="panel" id="timeline"><h2>Timeline</h2></div>`;
+  const tl = $('timeline');
+  for (const g of groups) {
+    const wrap = document.createElement('div');
+    wrap.className = 'round-group';
+    wrap.innerHTML = `<div class="rg-title">${esc(g.key)}${g.blind?.name ? `<span class="muted">${esc(g.blind.name)} · ${fmt(g.blind.chip_target)} chips</span>` : ''}</div>`;
+    for (const e of g.events) { const n = eventNode(e, {state: true}); if (n) wrap.appendChild(n); }
+    tl.appendChild(wrap);
+  }
+}
+
+/* ---------- prompts ---------- */
+const METRICS = [
+  ['finished', 'Finished runs', v => v, null],
+  ['avg_ante', 'Avg ante reached', v => v ?? '–', 1],
+  ['best_ante', 'Best ante', v => v ?? '–', 1],
+  ['wins', 'Wins', v => v, 1],
+  ['avg_confidence', 'Avg confidence', pct, 1],
+  ['pack_take_rate', 'Pack take rate', pct, 1],
+  ['avg_wasted_discards_on_loss', 'Wasted discards / loss', v => v ?? '–', -1],
+  ['avg_jokers_at_end', 'Jokers at end', v => v ?? '–', 1],
+  ['discard_share', 'Discard share', pct, 0],
+  ['avg_tokens', 'Tokens / run', fmt, 0],
+];
+async function loadPrompts() {
+  const vs = await api('prompts');
+  const box = $('versions');
+  box.innerHTML = vs.slice().reverse().map((v, ri) => {
+    const i = vs.length - 1 - ri, prev = vs[i - 1];
+    const tiles = METRICS.map(([k, label, f, dir]) => {
+      let delta = '';
+      if (prev && dir && v[k] != null && prev[k] != null && v.finished && prev.finished) {
+        const d = v[k] - prev[k];
+        if (Math.abs(d) > 1e-9) { const good = dir * d > 0; delta = `<span class="delta ${good ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} ${k.includes('rate') || k.includes('confidence') || k === 'discard_share' ? Math.abs(Math.round(d * 100)) + 'pt' : Math.abs(+d.toFixed(2))}</span>`; }
+      }
+      return `<div class="tile"><b>${esc(f(v[k]))}</b>${delta}<span class="lbl">${label}</span></div>`;
+    }).join('');
+    const qb = Object.entries(v.confidence_by_question).map(([q, c]) =>
+      `<span class="q ${q}">${QLABEL[q] || q}</span><div class="qbar" style="--qc:var(--q-${q})"><i style="width:${(c || 0) * 100}%;background:var(--q-${q})"></i></div><span class="mono">${pct(c)}</span>`).join('');
+    const changed = (a, b) => prev && JSON.stringify(a) !== JSON.stringify(b) ? 'diff-new' : '';
+    return `<div class="panel vcard ${v.current ? 'current' : ''}">
+      <div class="vhead"><h3>${esc(v.label)}</h3><code class="faint">${esc(v.version)}</code>
+        ${v.current ? '<span class="badge in_progress">current</span>' : ''}<span class="faint">${new Date(v.created * 1000).toLocaleString()}</span>
+        <span class="spacer"></span><a href="#/runs" onclick="runFilter='${esc(v.label)}'" class="muted" style="font-size:13px">${v.runs} runs →</a></div>
+      <p class="note">${esc(v.note)}</p>
+      ${v.runs ? `<div class="tiles">${tiles}</div>${qb ? `<h2>Confidence by decision type</h2><div class="qbars">${qb}</div>` : ''}` : '<p class="empty">No runs on this version yet. Press Run to collect some.</p>'}
+      <details><summary>Prompt text ${prev ? '<span class="faint">(changes vs ' + esc(prev.label) + ' highlighted)</span>' : ''}</summary>
+        <div class="ptext">
+          <div><div class="k">Game rules (sent with every decision)</div><div class="v ${changed(v.rules, prev?.rules)}">${esc(v.rules)}</div></div>
+          ${Object.entries(v.instructions).map(([q, t]) => `<div><div class="k">${QLABEL[q] || q} question</div><div class="v ${changed(t, prev?.instructions?.[q])}">${esc(t)}</div></div>`).join('')}
+          <div><div class="k">Option templates</div><div class="v optlist">${Object.entries(v.options).map(([k, t]) => `<code class="faint">${esc(k)}</code><span class="${changed(t, prev?.options?.[k])}">${esc(t)}</span>`).join('')}</div></div>
+        </div></details>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- benchmark ---------- */
+async function startBench() {
+  if (live && live.current_run && live.game_state !== 'MENU') {
+    if (!confirm('A run is in progress. Abandon it and start the benchmark?')) return;
+    await api('abandon', {});
+  }
+  await cmd('benchmark'); toast('Benchmark started: 10 seeded runs');
+}
+async function loadBench() {
+  const d = await api('benchmark');
+  $('bench-name').textContent = d.name;
+  const vs = d.versions;
+  const best = Math.max(...vs.map(v => v.avg_ante || 0));
+  $('bench-summary').innerHTML = `<tr><th>Version</th><th>Progress</th><th>Avg ante</th><th>Median ante</th><th>Avg round</th><th>Wins</th><th>Avg conf</th><th>Tokens/run</th><th>Time/run</th><th>Change</th></tr>` +
+    vs.map(v => `<tr><td><span class="vtag">${esc(v.label)}</span>${v.current ? ' <span class="badge in_progress">current</span>' : ''}</td>
+      <td>${v.done}/${v.of}</td><td style="font-weight:${v.avg_ante === best && v.done ? 700 : 400}">${v.avg_ante ?? '–'}</td><td>${v.median_ante ?? '–'}</td>
+      <td>${v.avg_round ?? '–'}</td><td>${v.wins}</td><td>${pct(v.avg_confidence)}</td><td>${fmt(v.avg_tokens)}</td><td>${dur(v.avg_seconds)}</td>
+      <td class="muted" style="white-space:normal;min-width:260px;font-size:12px">${esc(v.note)}</td></tr>`).join('');
+  benchChart(vs, d.seeds);
+  const shade = a => `background: color-mix(in srgb, var(--accent) ${Math.min(90, (a || 0) * 11)}%, transparent)`;
+  $('bench-grid').innerHTML = `<tr><th>Seed</th>${vs.map(v => `<th>${esc(v.label)}</th>`).join('')}</tr>` +
+    d.seeds.map(s => `<tr><td class="mono">${esc(s)}</td>${vs.map(v => { const c = v.cells[s];
+      return c ? `<td class="cell" data-run="${esc(c.run_id)}" style="${c.result === 'won' ? 'background:var(--good-soft);color:var(--good)' : shade(c.ante)}" title="round ${c.round}">${c.result === 'won' ? '🏆' : c.ante}</td>`
+               : '<td class="empty-cell">·</td>'; }).join('')}</tr>`).join('');
+}
+function benchChart(vs, seeds) {
+  const box = $('bench-chart');
+  const shown = vs.filter(v => v.done);
+  const key = JSON.stringify([shown, box.clientWidth]);
+  if (box.dataset.key === key) return;
+  box.dataset.key = key;
+  if (!shown.length) { box.innerHTML = '<div class="empty">No finished benchmark runs yet.</div>'; return; }
+  const W = Math.max(320, box.clientWidth || 800), H = 260, m = {l: 34, r: 16, t: 22, b: 30};
+  const maxAnte = Math.max(8, ...shown.flatMap(v => Object.values(v.cells).map(c => c.ante || 0)));
+  const y = a => m.t + (H - m.t - m.b) * (1 - a / maxAnte);
+  const band = (W - m.l - m.r) / shown.length, cx = i => m.l + band * (i + .5);
+  const spread = Math.min(band * .55, 90) / seeds.length;
+  let g = '<g class="grid axis">';
+  for (let a = 0; a <= maxAnte; a += 1) g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(a)}" y2="${y(a)}"/><text x="${m.l - 8}" y="${y(a) + 4}" text-anchor="end">${a}</text>`;
+  g += `<text x="${m.l - 8}" y="${m.t - 10}" text-anchor="end">ante</text></g>`;
+  let dots = '', pts = [], labels = '';
+  shown.forEach((v, i) => {
+    labels += `<text class="xlab" x="${cx(i)}" y="${H - 8}" text-anchor="middle">${esc(v.label)}${v.current ? ' ●' : ''}</text>`;
+    seeds.forEach((s, k) => { const c = v.cells[s]; if (!c) return;
+      const x = cx(i) + (k - (seeds.length - 1) / 2) * spread, yy = y(c.ante || 0);
+      const tip = `${esc(v.label)} · seed ${esc(s)} · ${c.result === 'won' ? 'won' : `lost at ante ${c.ante}, round ${c.round}`}`;
+      dots += `<circle class="hit" cx="${x}" cy="${yy}" r="9" data-tip="${tip}" data-run="${esc(c.run_id)}"/><circle class="seed ${c.result === 'won' ? 'won' : ''}" cx="${x}" cy="${yy}" r="4"/>`; });
+    pts.push([cx(i), y(v.avg_ante), v]);
+  });
+  const line = pts.length > 1 ? `<path class="avg-line" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ')}"/>` : '';
+  const avg = pts.map(([x, yy, v]) => `<circle class="hit" cx="${x}" cy="${yy}" r="12" data-tip="${esc(v.label)} · avg ante ${v.avg_ante} · median ${v.median_ante} · ${v.wins} wins · ${v.done}/${v.of} runs"/>` +
+    `<circle class="avg-pt" cx="${x}" cy="${yy}" r="6"/><text class="avg-lbl" x="${x + 12}" y="${yy - 8}">${v.avg_ante}</text>`).join('');
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ante reached per benchmark seed and version average">${g}${dots}${line}${avg}${labels}</svg><div class="tip" id="bench-tip"></div>`;
+  const tip = $('bench-tip'), svg = box.querySelector('svg');
+  svg.addEventListener('mousemove', e => { const t = e.target.closest('[data-tip]');
+    if (!t) { tip.classList.remove('show'); return; }
+    const r = box.getBoundingClientRect(), b = t.getBoundingClientRect();
+    tip.textContent = t.dataset.tip; tip.style.left = (b.left + b.width / 2 - r.left) + 'px'; tip.style.top = (b.top - r.top + 4) + 'px'; tip.classList.add('show'); });
+  svg.addEventListener('mouseleave', () => tip.classList.remove('show'));
+  svg.addEventListener('click', e => { const t = e.target.closest('[data-run]'); if (t) location.hash = '#/run/' + t.dataset.run; });
+}
+$('bench-grid').addEventListener('click', e => { const td = e.target.closest('[data-run]'); if (td) location.hash = '#/run/' + td.dataset.run; });
+
+/* ---------- router ---------- */
+function route() {
+  const h = location.hash.replace(/^#\/?/, '') || 'live';
+  const [name, arg] = h.split('/');
+  return {name: ['live', 'runs', 'run', 'prompts', 'bench'].includes(name) ? name : 'live', arg};
+}
+function render() {
+  const r = route();
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + r.name));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === (r.name === 'run' ? 'runs' : r.name)));
+  if (r.name === 'runs') loadRuns();
+  if (r.name === 'run') loadRun(r.arg);
+  if (r.name === 'prompts') loadPrompts();
+  if (r.name === 'bench') loadBench();
+  if (r.name === 'live') pollLive(true);
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', render);
+render();
+setInterval(pollLive, 700);
+setInterval(() => { const r = route().name; if (r === 'runs') loadRuns(); if (r === 'prompts') loadPrompts(); if (r === 'bench') loadBench(); }, 5000);
+</script>
+</body>
+</html>

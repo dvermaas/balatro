@@ -1,0 +1,121 @@
+"""Per-run recording: runs/<started>-<seed>/{decisions.jsonl, summary.json}.
+
+decisions.jsonl has every Jev request (full state, instructions, option texts) with its answer
+(choice, per-option probabilities, confidence), plus actions, errors and game events.
+summary.json is rewritten as the run progresses, so an interrupted run still has one.
+"""
+
+import hashlib
+import json
+import time
+from pathlib import Path
+
+ROOT = Path(__file__).parent
+PROMPTS_DIR = ROOT / "runs" / "_prompts"
+# Any edit to the prompts or candidate generation changes this, so runs can be grouped by version.
+PROMPT_VERSION = hashlib.sha1(
+    b"".join((ROOT / f).read_bytes() for f in ("prompts.py", "hands.py", "strategy.py") if (ROOT / f).exists())
+).hexdigest()[:8]
+
+
+def snapshot_prompts():
+    """Save the current prompt text under its version, labelled v1, v2... in order of first use."""
+    import prompts
+
+    PROMPTS_DIR.mkdir(parents=True, exist_ok=True)
+    index_path = PROMPTS_DIR / "index.json"
+    index = json.loads(index_path.read_text(encoding="utf-8")) if index_path.exists() else {"order": []}
+    if PROMPT_VERSION not in index["order"]:
+        index["order"].append(PROMPT_VERSION)
+        index_path.write_text(json.dumps(index, indent=2), encoding="utf-8")
+        (PROMPTS_DIR / f"{PROMPT_VERSION}.json").write_text(json.dumps({
+            "version": PROMPT_VERSION, "created": time.time(), "note": prompts.VERSION_NOTE,
+            "rules": prompts.GAME_RULES, "instructions": prompts.INSTRUCTIONS, "options": prompts.OPTIONS,
+        }, indent=2), encoding="utf-8")
+
+
+def prompt_versions():
+    index_path = PROMPTS_DIR / "index.json"
+    if not index_path.exists():
+        return []
+    out = []
+    for n, v in enumerate(json.loads(index_path.read_text(encoding="utf-8"))["order"], 1):
+        snap = json.loads((PROMPTS_DIR / f"{v}.json").read_text(encoding="utf-8"))
+        out.append({**snap, "label": f"v{n}", "current": v == PROMPT_VERSION})
+    return out
+
+
+class RunRecorder:
+    def __init__(self, root=ROOT / "runs"):
+        self.root = root
+        self.root.mkdir(exist_ok=True)
+        snapshot_prompts()
+        self.run = None
+        self.dir = None
+
+    def ensure(self, gs, deck, stake, model, bench=None):
+        seed = gs.get("seed")
+        if not seed or gs.get("state") == "MENU" or (self.run and self.run["seed"] == seed):
+            return
+        if self.run:
+            self.finish("abandoned", gs)
+        started = time.strftime("%Y%m%d-%H%M%S")
+        self.dir = self.root / f"{started}-{seed}"
+        self.dir.mkdir(exist_ok=True)
+        self.run = {
+            "run_id": self.dir.name, "seed": seed, "deck": gs.get("deck") or deck,
+            "stake": gs.get("stake") or stake, "model": model, "prompt_version": PROMPT_VERSION,
+            "benchmark": bench, "started": time.time(), "ended": None, "result": "in_progress",
+            "ante": gs.get("ante_num"), "round": gs.get("round_num"), "money": gs.get("money"),
+            "decisions": 0, "forced": 0, "errors": 0, "input_tokens": 0, "output_tokens": 0, "jev_ms": 0,
+            "avg_confidence": None, "low_confidence_decisions": 0, "by_question": {},
+        }
+        self._conf_sum = 0.0
+        self._save()
+
+    def write(self, ev):
+        if not self.run:
+            return
+        with open(self.dir / "decisions.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(ev) + "\n")
+        r = self.run
+        if ev["kind"] == "decision":
+            r["decisions"] += 1
+            r["jev_ms"] += ev.get("ms", 0)
+            r["input_tokens"] += ev.get("input_tokens", 0)
+            r["output_tokens"] += ev.get("output_tokens", 0)
+            self._conf_sum += ev.get("confidence") or 0
+            r["avg_confidence"] = round(self._conf_sum / r["decisions"], 3)
+            r["low_confidence_decisions"] += (ev.get("confidence") or 0) < 0.5
+            r["by_question"][ev["question"]] = r["by_question"].get(ev["question"], 0) + 1
+            self._save()
+        elif ev["kind"] == "forced":
+            r["forced"] += 1
+        elif ev["kind"] == "error":
+            r["errors"] += 1
+            self._save()
+
+    def progress(self, gs):
+        if self.run and gs.get("seed") == self.run["seed"]:
+            self.run.update(ante=gs.get("ante_num"), round=gs.get("round_num"), money=gs.get("money"))
+
+    def finish(self, result, gs=None):
+        if not self.run:
+            return
+        if gs and gs.get("seed") == self.run["seed"]:
+            self.progress(gs)
+        self.run.update(result=result, ended=time.time())
+        self._save()
+        self.run = None
+
+    def _save(self):
+        (self.dir / "summary.json").write_text(json.dumps(self.run, indent=2), encoding="utf-8")
+
+    def list_runs(self, limit=50):
+        out = []
+        for p in sorted(self.root.glob("*/summary.json"), reverse=True)[:limit or None]:
+            try:
+                out.append(json.loads(p.read_text(encoding="utf-8")))
+            except (OSError, json.JSONDecodeError):
+                pass
+        return out

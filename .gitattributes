@@ -1,0 +1,3 @@
+# Keep LF everywhere: prompt versions are hashes of exact file bytes (recorder.PROMPT_VERSION).
+* text=auto eol=lf
+*.cmd text eol=crlf

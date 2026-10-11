@@ -1,0 +1,11 @@
+{
+  "id": "jev_tweaks",
+  "name": "JEV Tweaks",
+  "author": ["jev-balatro"],
+  "description": "Small fixes so a bot can play unattended: skips the blocking 'unlocked' popups.",
+  "prefix": "JEVT",
+  "main_file": "jev_tweaks.lua",
+  "priority": 0,
+  "version": "1.0.0",
+  "dependencies": ["Steamodded (>=1.~)"]
+}
