@@ -95,7 +95,8 @@ runs/
 src/                    the bot and control panel (run: python src/panel.py)
   balatro.py            JSON-RPC client for BalatroBot (127.0.0.1:12346)
   decisions.py          v6+ handlers: batched typed questions per decision, thresholds in code
-  jokers.py             joker-aware hand scoring parsed from live joker text (v8+)
+  jokers.py             joker-aware hand scoring and measured shop value, from live joker text (v8+)
+  odds.py               draw odds and score-if-hit for discard plans (v9+)
   hands.py              hand evaluation, score estimates, play and discard candidates
   prompts.py            everything JEV reads (rules, questions, option templates)
   strategy.py           code-level policy: auto planets, joker ordering, joker tags, interest

@@ -155,46 +155,52 @@ def play_candidates(hand_cards, hand_levels, limit=8, scorer=None):
 
 
 def discard_candidates(hand_cards, max_discard=5):
+    """Discard plans. Debuffed cards (boss effects) count as junk: never kept for a draw, tossed first.
+    Each plan carries a goal for odds.annotate()."""
     infos = [card_info(c) for c in hand_cards]
     allidx = list(range(len(infos)))
+    live = [i for i in allidx if not infos[i]["debuff"]]
 
-    def toss(keep, label):
-        others = sorted((i for i in allidx if i not in keep), key=lambda i: _rank_value(infos[i]))
-        return label, others[:max_discard]
+    def toss(keep, label, goal):
+        others = sorted((i for i in allidx if i not in keep),
+                        key=lambda i: (not infos[i]["debuff"], _rank_value(infos[i])))
+        return label, others[:max_discard], goal
 
     out = []
     for s in "HDCS":
-        keep = [i for i in allidx if infos[i]["suit"] == s or infos[i]["enh"] == "WILD"]
+        keep = [i for i in live if infos[i]["suit"] == s or infos[i]["enh"] == "WILD"]
         if 3 <= len(keep) < 5:  # 5+ means the flush is already playable
-            out.append(toss(keep, f"Chase a {SUIT_NAMES[s]} flush (holding {len(keep)} of 5)"))
+            out.append(toss(keep, f"Chase a {SUIT_NAMES[s]} flush (holding {len(keep)} of 5)", ("flush", s)))
 
-    by_rank = Counter(i["rank"] for i in infos if i["rank"])
-    sets = [i for i in allidx if infos[i]["rank"] and by_rank[infos[i]["rank"]] >= 2]
+    by_rank = Counter(infos[i]["rank"] for i in live if infos[i]["rank"])
+    sets = [i for i in live if infos[i]["rank"] and by_rank[infos[i]["rank"]] >= 2]
     if sets:
-        out.append(toss(sets, "Keep pairs/sets, dig for more of a kind"))
+        out.append(toss(sets, "Keep pairs/sets, dig for more of a kind", ("sets", {infos[i]["rank"] for i in sets})))
 
     # Straight draw: the 5-rank window holding the most distinct ranks (A counts low too).
-    best_keep = []
+    best_keep, best_window = [], set()
     for lo in range(-1, 9):
         window = {RANK_ORDER[(lo + k) % 13] for k in range(5)} if lo >= 0 else set("A2345")
         keep, used = [], set()
-        for i in allidx:
+        for i in live:
             r = infos[i]["rank"]
             if r in window and r not in used:
                 keep.append(i)
                 used.add(r)
         if len(keep) > len(best_keep):
-            best_keep = keep
+            best_keep, best_window = keep, window
     if 3 <= len(best_keep) < 5:  # 5 means the straight is already playable
-        out.append(toss(best_keep, f"Chase a straight (holding {len(best_keep)} of 5 ranks)"))
+        missing = sorted(best_window - {infos[i]["rank"] for i in best_keep}, key=RANK_ORDER.index)
+        out.append(toss(best_keep, f"Chase a straight (holding {len(best_keep)} of 5 ranks)", ("straight", missing)))
 
-    high = sorted(allidx, key=lambda i: -_rank_value(infos[i]))[: max(0, len(allidx) - max_discard)]
-    out.append(toss(high, "Keep high cards, throw the lowest"))
+    high = sorted(live, key=lambda i: -_rank_value(infos[i]))[: max(0, len(allidx) - max_discard)]
+    out.append(toss(high, "Keep high cards, throw the lowest", ("high", {infos[i]["rank"] for i in high})))
 
     seen, result = set(), []
-    for label, cards in out:
+    for label, cards, goal in out:
         key = frozenset(cards)
         if cards and key not in seen:
             seen.add(key)
-            result.append({"label": label, "cards": cards, "tossed": [describe(hand_cards[i]) for i in cards]})
+            result.append({"label": label, "cards": cards, "goal": goal,
+                           "tossed": [describe(hand_cards[i]) for i in cards]})
     return result

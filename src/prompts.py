@@ -6,20 +6,13 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "Joker-aware hand estimates: jokers.py parses each joker's live effect text (incl. Currently values, "
-    "per-card, held-in-hand, retriggers, editions, Blueprint/Brainstorm) and scores plays in Balatro's order. "
-    "Median actual/estimate went from 6x (5 jokers) to 1.0 on 844 recorded plays. Candidates are ranked and "
-    "sure clears auto-played (10% margin) on that estimate; unparsed scoring jokers are listed for Jev. "
-    "Below pace with hands to spare, play only when Jev's play_now >= 0.85, else discard (v7 died in ante 1 "
-    "with discards unused). "
-    "Previous: v6 + fixes: buy/take thresholds moved to mid-scale (v6 bought once in 14 shops); never swap out a "
-    "Negative joker (frees no slot); shop sees the upcoming boss; scaling xMult jokers tagged as scaling, "
-    "Obelisk tagged with its reset condition; empty fields dropped. Base: "
-    "Restructured per TypeSafe guidance. Hand: three questions in one call (play now? / best play / "
-    "best discard) combined in code; plays and discards are structured objects; state is the round, "
-    "cards, jokers, relevant hand levels and the remaining deck. Shop and packs: a 0-4 Score per item "
-    "in one call; code buys the best item above a threshold (stricter when it dips under the $25 "
-    "interest buffer), rerolls only from surplus, else leaves. Strategy text moved out of the state."
+    "Code measures, Jev weighs. Shop/pack items carry measured_gain: the score change the joker or planet "
+    "gives on this run's last 10 hands (jokers.py). Through ante 3 joker slots fill before interest (buy a "
+    "Useful joker regardless of the $25 buffer while under 4 jokers), and any joker measured at +50% is "
+    "bought. Discard plans carry exact draw odds and the score if they hit (odds.py, order-free deck "
+    "counts). Boss-aware: debuffed cards are tossed first and never chased; Psychic/Eye/Mouth filter "
+    "plays; Flint halves estimates; on the last hand, discards are used before a play that can't clear "
+    "(The Needle). Fixed suit order in deck counts. Builds on v8 (joker-aware estimates, pace gate)."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
@@ -42,13 +35,15 @@ INSTRUCTIONS = {
         "lower one keeps stronger cards or avoids resetting a scaling joker."
     ),
     "best_discard": (
-        "If we discard, which discard gives the best chance of a strong next hand, given `cards_in_hand` "
-        "and the cards left in `deck_remaining`?"
+        "If we discard, which plan is best? Each plan gives `chance_to_hit` (exact odds from the cards left "
+        "in the deck) and what the hand scores `if_hit`, jokers included. Weigh odds times payoff against "
+        "what we need this round."
     ),
     "item_value": (
-        "How much would taking the item in `item` (described in this question) strengthen this run? A strong run combines a chips source, +Mult and "
-        "xMult jokers (xMult and jokers that scale over the run matter most), jokers that boost the hands "
-        "in `main_hands`, and levelled-up main hands. Consider `engine.missing` and what it costs."
+        "How much would taking the item in `item` (described in this question) strengthen this run? "
+        "`measured_gain` is its measured effect on the scores of our recent hands, jokers included: trust it "
+        "for the immediate effect and add what it cannot see (scaling over the run, money, risk, future "
+        "hands). Consider `engine.missing`, `upcoming_boss` and what it costs."
     ),
 }
 

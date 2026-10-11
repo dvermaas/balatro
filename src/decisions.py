@@ -1,7 +1,9 @@
-"""v6 decision handlers: narrow typed questions batched per Jev call, combined by code.
+"""Decision handlers (v6+): narrow typed questions batched per Jev call, combined by code.
 
-Hand: Noul play_now + Choice best_play + Choice best_discard in one call.
-Shop / packs: one 0-4 Score per item in one call; code applies the buy/skip thresholds.
+Hand: Noul play_now + Choice best_play + Choice best_discard in one call. v9: boss-aware candidates,
+draw odds and score-if-hit per discard plan, and the last hand discards first when it can't clear.
+Shop / packs: one 0-4 Score per item in one call; code applies the buy/skip thresholds. v9: each item
+carries its measured gain on this run's recent hands, and early antes prioritise filling joker slots.
 """
 
 import json
@@ -10,16 +12,20 @@ from collections import Counter
 from typesafe_sdk import Choice, Noul, Score
 
 import jokers
+import odds
 import strategy
 from balatro import RPCError
-from hands import RANK_NAMES, SUIT_NAMES, _d, card_info, describe, discard_candidates, play_candidates
+from hands import RANK_NAMES, SUIT_NAMES, _d, card_info, classify, describe, discard_candidates, play_candidates
 from jev_bot import SHOP_ACTION_CAP, area, cards_of, current_blind, item_desc
 from prompts import GAME_RULES, INSTRUCTIONS, ITEM_VALUE_LEVELS, OPTIONS, PLAY_NOW_CRITERIA
 
 # Jev's 0-4 scores cluster around 2-3, so thresholds sit mid-scale (v6 used 3 and starved: 1 buy in 14 shops).
 BUY_SCORE = 2.5        # buy the best-rated item at this score...
 BUY_SCORE_LOOSE = 2    # ...or at "Useful" when it keeps the $25 buffer, or is a joker while we own fewer than 3
-EARLY_JOKERS = 3
+EARLY_JOKERS = 4       # v9: through ante 3, fill joker slots before saving for interest
+EARLY_ANTE = 3
+SURE_GAIN = 0.5        # a joker that adds 50%+ to our recent hands is bought whenever a slot is free
+RECENT_PLAYS = 10
 PACK_SCORE = 1.5       # the pack is already paid for: take anything better than marginal
 INTEREST_BUFFER = 25
 MAX_REROLLS = 2        # per shop, only from surplus above the buffer
@@ -41,7 +47,9 @@ def _deck_remaining(gs):
     infos = [card_info(c) for c in cards_of(gs, "cards")]
     return {
         "cards": len(infos),
-        "by_suit": dict(Counter(SUIT_NAMES.get(i["suit"], "none") for i in infos if i["rank"])),
+        # fixed suit order: Counter order would reveal the bottom card of the pile
+        "by_suit": {SUIT_NAMES[s]: n for s in "HDCS"
+                    if (n := sum(i["suit"] == s for i in infos if i["rank"]))},
         "by_rank": {RANK_NAMES.get(r, r): n for r, n in sorted(
             Counter(i["rank"] for i in infos if i["rank"]).items(), key=lambda kv: "23456789TJQKA".index(kv[0]))},
     }
@@ -104,19 +112,69 @@ def _play_obj(p, info, margin=1.0):
     }
 
 
+def _remember(bot, gs, hand, combo):
+    """Keep this run's recent plays: the shop measures items on them."""
+    if getattr(bot, "_recent_seed", None) != gs.get("seed"):
+        bot._recent_seed, bot._recent = gs.get("seed"), []
+    rnd = _d(gs.get("round"))
+    bot._recent = (bot._recent + [{"infos": [card_info(c) for c in hand], "combo": combo,
+                                   "rnd": {"hands_left": rnd.get("hands_left"),
+                                           "discards_left": rnd.get("discards_left")}}])[-RECENT_PLAYS:]
+
+
+def _recent(bot, gs):
+    return bot._recent if getattr(bot, "_recent_seed", None) == gs.get("seed") else []
+
+
+def _play(bot, gs, hand, cards):
+    _remember(bot, gs, hand, cards)
+    bot.act("play", {"cards": cards})
+
+
+def _boss_levels(levels, boss):
+    if boss == "The Flint":  # base chips and mult are halved
+        return {n: {**h, "chips": int(h.get("chips", 0) / 2 + 0.5), "mult": max(1, int(h.get("mult", 1) / 2 + 0.5))}
+                for n, h in levels.items()}
+    return levels
+
+
+def _boss_filter(plays, levels, boss):
+    """Drop plays the boss blind forbids or punishes (keeps the list if nothing would remain)."""
+    played = {n for n, h in levels.items() if h.get("played_this_round")}
+    keep = plays
+    if boss == "The Psychic":
+        keep = [p for p in plays if len(p["cards"]) == 5]
+    elif boss == "The Eye":
+        keep = [p for p in plays if p["hand"] not in played]
+    elif boss == "The Mouth" and played:
+        keep = [p for p in plays if p["hand"] in played]
+    return keep or plays
+
+
 def selecting_hand(bot, gs):
     hand = cards_of(gs, "hand")
     info = _round_info(gs)
-    levels, rnd, js = _d(gs.get("hands")), _d(gs.get("round")), jokers.build(gs)
-    plays = play_candidates(hand, levels, scorer=lambda infos, combo, name, sc: jokers.score(
+    boss = info["blind"]
+    rnd, js = _d(gs.get("round")), jokers.build(gs)
+    levels = _boss_levels(_d(gs.get("hands")), boss)
+    infos = [card_info(c) for c in hand]
+    plays = play_candidates(hand, levels, limit=40, scorer=lambda infos, combo, name, sc: jokers.score(
         infos, combo, name, sc, levels, js, rnd))
+    plays = _boss_filter(plays, _d(gs.get("hands")), boss)[:8]
     margin = CLEAR_MARGIN if js else 1.0
     discards = discard_candidates(hand) if (info["discards_left"] or 0) > 0 else []
+    deck = [card_info(c) for c in cards_of(gs, "cards")]
+
+    def score_cards(cs):
+        name, sc = classify(cs)
+        return jokers.score(cs, list(range(len(cs))), name, sc, levels, js, rnd)
+
+    odds.annotate(discards, infos, deck, score_cards)
     clearing = [p for p in plays if _clears(p, info, margin)]
     if clearing:  # a sure clear wins the round: no question needed
         bot.emit("forced", question="move", choice="play_1",
                  desc=f"{clearing[0]['hand']} ({clearing[0]['estimate']}) clears the blind")
-        bot.act("play", {"cards": clearing[0]["cards"]})
+        _play(bot, gs, hand, clearing[0]["cards"])
         return
 
     play_opts = {f"play_{n}": p for n, p in enumerate(plays, 1)}
@@ -141,10 +199,10 @@ def selecting_hand(bot, gs):
         if len(disc_opts) > 1:
             questions["best_discard"] = Choice(
                 instructions=INSTRUCTIONS["best_discard"],
-                criteria={k: {"plan": d["label"], "throws_away": d["tossed"]} for k, d in disc_opts.items()})
+                criteria={k: _discard_obj(d) for k, d in disc_opts.items()})
     if not questions:
         bot.emit("forced", question="move", choice="play_1", desc=plays[0]["hand"])
-        bot.act("play", {"cards": plays[0]["cards"]})
+        _play(bot, gs, hand, plays[0]["cards"])
         return
 
     answers, meta = bot.query(gs, state, questions)
@@ -155,26 +213,45 @@ def selecting_hand(bot, gs):
     probs = {k: p_play * pp.get(k, 0) for k in play_opts} | {k: (1 - p_play) * dp.get(k, 0) for k in disc_opts}
     # Jev's play_now leans yes (0.5-0.8) even far below pace, and v7 lost ante 1 with discards unused.
     # Below pace with hands to spare, discards are free: only play when Jev is clearly sure.
+    # On the last hand a play that can't clear loses anyway, so dig with the discards first (The Needle).
     under_pace = plays[0]["estimate"] < (info["chips_needed_per_remaining_hand"] or 0)
-    bar = PLAY_NOW_UNDER_PACE if under_pace and info["hands_left"] > 1 else 0.5
-    best = max(pp, key=pp.get) if p_play >= bar else max(dp, key=dp.get)
-    if best.startswith("play"):
-        p = play_opts[best]
-        action = ("play", {"cards": p["cards"]})
+    if disc_opts and info["hands_left"] <= 1:
+        bar = 1.01
+    elif under_pace:
+        bar = PLAY_NOW_UNDER_PACE
     else:
-        action = ("discard", {"cards": disc_opts[best]["cards"]})
+        bar = 0.5
+    best = max(pp, key=pp.get) if p_play >= bar else max(dp, key=dp.get)
     options = {k: f"{p['hand']}: {', '.join(p['scoring'])}" + (f" (+{', '.join(p['kicked'])})" if p["kicked"] else "")
                + f" ~{p['estimate']}" for k, p in play_opts.items()}
-    options |= {k: f"{d['label']}: toss {', '.join(d['tossed'])}" for k, d in disc_opts.items()}
-    bot.record_decision("move", gs, best, action, options, probs, probs[best], meta)
-    bot.act(*action)
+    options |= {k: f"{d['label']}: toss {', '.join(d['tossed'])}"
+                + (f" ({round(100 * d['chance_to_hit'])}% hit)" if d.get("chance_to_hit") is not None else "")
+                for k, d in disc_opts.items()}
+    if best.startswith("play"):
+        bot.record_decision("move", gs, best, ("play", {"cards": play_opts[best]["cards"]}), options, probs,
+                            probs[best], meta)
+        _play(bot, gs, hand, play_opts[best]["cards"])
+    else:
+        action = ("discard", {"cards": disc_opts[best]["cards"]})
+        bot.record_decision("move", gs, best, action, options, probs, probs[best], meta)
+        bot.act(*action)
+
+
+def _discard_obj(d):
+    o = {"plan": d["label"], "throws_away": d["tossed"]}
+    if d.get("chance_to_hit") is not None:
+        o["chance_to_hit"] = f"{round(100 * d['chance_to_hit'])}%"
+        if d.get("score_if_hit"):
+            o["if_hit"] = f"{d.get('goal_hand')} scoring about {d['score_if_hit']}"
+    return o
 
 
 # ---- shop and packs ---------------------------------------------------------
 
 def _score_items(bot, gs, qname, state, items):
     """items: {key: (desc, item_obj, action)}. One Score per item in one call; returns (scores, meta)."""
-    questions = {k: Score(instructions={"question": INSTRUCTIONS["item_value"], "item": obj},
+    questions = {k: Score(instructions={"question": INSTRUCTIONS["item_value"],
+                                        "item": {f: v for f, v in obj.items() if not f.startswith("_")}},
                           criteria=ITEM_VALUE_LEVELS) for k, (_, obj, _) in items.items()}
     answers, meta = bot.query(gs, state, questions)
     return {k: answers[k].score for k in items}, meta
@@ -192,10 +269,12 @@ def shop(bot, gs):
     boss = next((b for b in _d(gs.get("blinds")).values() if b.get("type") == "BOSS"), {})
     state["upcoming_boss"] = {"name": boss.get("name"), "effect": boss.get("effect"), "chip_target": boss.get("score")}
 
-    def obj(c, cost, kind, **extra):
+    recent = _recent(bot, gs)
+
+    def obj(c, cost, kind, remove=None, **extra):
         left = money - cost
         return {"kind": kind, "what": item_desc(c, mains), "cost": cost, "money_after": left,
-                "interest_per_round_after": strategy.interest(left), **extra}
+                "interest_per_round_after": strategy.interest(left), **extra, **_gain(gs, recent, c, remove)}
 
     items = {}
     if bot._shop_actions < SHOP_ACTION_CAP:
@@ -227,7 +306,7 @@ def shop(bot, gs):
                     if c.get("set") == "JOKER" and cost <= money + sell:
                         items[f"replace_{j}_{i}"] = (
                             f"sell {owned.get('label')} for {c.get('label')}",
-                            obj(c, cost - sell, "joker swap", sells=item_desc(owned, mains), sell_value=sell),
+                            obj(c, cost - sell, "joker swap", remove=j, sells=item_desc(owned, mains), sell_value=sell),
                             ("replace", {"joker": j, "card": i}), cost - sell)
     items = {k: v for k, v in items.items() if json.dumps(v[2]) not in bot._failed}
 
@@ -246,9 +325,17 @@ def shop(bot, gs):
     scores, meta = _score_items(bot, gs, "shop", state, {k: v[:3] for k, v in items.items()})
     best = max(scores, key=scores.get)
     s, cost = scores[best], items[best][3]
-    early_joker = best.startswith(("buy_card", "replace")) and "joker" in items[best][1]["kind"] and jok.get("count", 0) < EARLY_JOKERS
+    early = (gs.get("ante_num") or 1) <= EARLY_ANTE and jok.get("count", 0) < EARLY_JOKERS
+    early_joker = early and best.startswith(("buy_card", "replace")) and "joker" in items[best][1]["kind"]
+    # A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.
+    sure = [k for k, v in items.items() if k.startswith("buy_card") and v[1]["kind"] == "joker"
+            and (v[1].get("_gain") or 0) >= SURE_GAIN and scores[k] >= 1]
     if s >= BUY_SCORE or (s >= BUY_SCORE_LOOSE and (money - cost >= INTEREST_BUFFER or early_joker)):
         choice, action = best, items[best][2]
+    elif sure:
+        choice = max(sure, key=lambda k: items[k][1]["_gain"])
+        action = items[choice][2]
+        bot.emit("info", msg=f"Buying {items[choice][0][:40]}: +{round(100 * items[choice][1]['_gain'])}% on recent hands")
     else:
         choice, action = fallback
     options = {k: f"${v[3]} {v[0]}" for k, v in items.items()}
@@ -285,7 +372,8 @@ def booster(bot, gs):
         if c.get("set") == "JOKER" and jokers_full:
             continue
         items[f"take_{i}"] = (item_desc(c, mains),
-                              {"kind": (c.get("set") or "card").lower(), "what": item_desc(c, mains), "cost": 0},
+                              {"kind": (c.get("set") or "card").lower(), "what": item_desc(c, mains), "cost": 0,
+                               **_gain(gs, _recent(bot, gs), c)},
                               ("pack", {"card": i}))
     skip = ("pack", {"skip": True})
     if not items:
@@ -311,3 +399,20 @@ def booster(bot, gs):
                 bot.act("pack", {**params, "targets": [0]})
             except RPCError:
                 bot.act("pack", {"skip": True})
+
+
+def _gain(gs, recent, c, remove=None):
+    """Measured effect of a joker or planet on this run's recent hands: {measured_gain: text, _gain: ratio}."""
+    if c.get("set") == "JOKER":
+        g = jokers.gain(gs, recent, add=c, remove=remove)
+        if g is None:
+            return {"measured_gain": "can't be measured from its text; judge it yourself"}
+    elif c.get("set") == "PLANET" and jokers.planet_level(_d(c.get("value")).get("effect")):
+        g = jokers.gain(gs, recent, level_up=jokers.planet_level(_d(c.get("value")).get("effect")))
+    else:
+        return {}
+    if not g:
+        return {"measured_gain": "no immediate effect on our recent hands' scores (scaling jokers may grow)",
+                "_gain": 0.0}
+    basis = f"our last {len(recent)} hands" if len(recent) >= 4 else "our recent and typical hands"
+    return {"measured_gain": f"{'+' if g >= 0 else ''}{round(100 * g)}% score on {basis}", "_gain": g}

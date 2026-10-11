@@ -1,0 +1,18 @@
+{
+  "version": "b40d6324",
+  "created": 1791750458.6827736,
+  "note": "Joker-aware hand estimates: jokers.py parses each joker's live effect text (incl. Currently values, per-card, held-in-hand, retriggers, editions, Blueprint/Brainstorm) and scores plays in Balatro's order. Median actual/estimate went from 6x (5 jokers) to 1.0 on 844 recorded plays. Candidates are ranked and sure clears auto-played (10% margin) on that estimate; unparsed scoring jokers are listed for Jev. Below pace with hands to spare, play only when Jev's play_now >= 0.85, else discard (v7 died in ante 1 with discards unused). Previous: v6 + fixes: buy/take thresholds moved to mid-scale (v6 bought once in 14 shops); never swap out a Negative joker (frees no slot); shop sees the upcoming boss; scaling xMult jokers tagged as scaling, Obelisk tagged with its reset condition; empty fields dropped. Base: Restructured per TypeSafe guidance. Hand: three questions in one call (play now? / best play / best discard) combined in code; plays and discards are structured objects; state is the round, cards, jokers, relevant hand levels and the remaining deck. Shop and packs: a 0-4 Score per item in one call; code buys the best item above a threshold (stricter when it dips under the $25 interest buffer), rerolls only from surplus, else leaves. Strategy text moved out of the state.",
+  "rules": "Balatro: reach each blind's chip target before hands run out. A hand scores chips x mult; jokers add chips or mult, or multiply mult (xMult). Discards are free but limited. Interest: $1 per $5 held at round end, max $5 (at $25).",
+  "instructions": {
+    "blind": "Should we play or skip the upcoming blind?",
+    "play_now": "Should we play our strongest hand (`strongest_play`) now instead of discarding first to build a better one? Compare its estimate with `round.chips_needed_per_remaining_hand`, and weigh hands left, discards left and how likely `deck_remaining` is to improve the hand.",
+    "best_play": "Which play is best this turn? `estimated_score` already includes our jokers (except any in `jokers_not_in_estimates`), so it is the real expected score. Prefer the higher score unless a lower one keeps stronger cards or avoids resetting a scaling joker.",
+    "best_discard": "If we discard, which discard gives the best chance of a strong next hand, given `cards_in_hand` and the cards left in `deck_remaining`?",
+    "item_value": "How much would taking the item in `item` (described in this question) strengthen this run? A strong run combines a chips source, +Mult and xMult jokers (xMult and jokers that scale over the run matter most), jokers that boost the hands in `main_hands`, and levelled-up main hands. Consider `engine.missing` and what it costs."
+  },
+  "options": {
+    "blind_play": "Play the {name} (need {score} chips) and earn its cash reward",
+    "blind_skip": "Skip the {name} to gain the {tag_name}: {tag_effect}. Skipping forgoes the blind's money and shop visit.",
+    "discard_plan": "{label}"
+  }
+}

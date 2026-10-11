@@ -186,13 +186,15 @@ def _nominal(i):
     return RANK_CHIPS[i["rank"]]
 
 
-def build(gs):
-    """Parse the run's jokers once per decision: [(label, rule or None, edition, scores_text)]."""
-    out = []
-    for c in _d(gs.get("jokers")).get("cards") or []:
-        eff = _d(c.get("value")).get("effect") or ""
-        out.append({"label": c.get("label"), "rule": parse(eff), "edition": _d(c.get("modifier")).get("edition"),
-                    "scoring": bool(re.search(r"Mult|Chips|Retrigger", eff))})
+def entry(c):
+    eff = _d(c.get("value")).get("effect") or ""
+    return {"label": c.get("label"), "rule": parse(eff), "edition": _d(c.get("modifier")).get("edition"),
+            "scoring": bool(re.search(r"Mult|Chips|Retrigger", eff))}
+
+
+def build(gs, cards=None):
+    """Parse the run's jokers once per decision: [{label, rule or None, edition, scoring}]."""
+    out = [entry(c) for c in (_d(gs.get("jokers")).get("cards") or [] if cards is None else cards)]
     # Blueprint copies the joker to its right, Brainstorm the leftmost.
     for n, j in enumerate(out):
         if j["label"] in ("Blueprint", "Brainstorm"):
@@ -263,3 +265,54 @@ def score(infos, combo, name, scoring, hand_levels, jokers, rnd):
             chips, mult = chips + cc, (mult + mm) * xx
         mult *= 1.5 if ed == "POLYCHROME" else 1
     return int(max(0, chips) * max(1, mult))
+
+
+# ---- measured value of a shop item (v9) ---------------------------------------
+
+def sample_plays(gs, recent):
+    """Hands to measure items on: this run's recent plays, else the example hands of our likely hands."""
+    from hands import classify
+    out = []
+    for r in recent:
+        played = [r["infos"][i] for i in r["combo"]]
+        name, sc = classify(played)
+        out.append((r["infos"], r["combo"], name, sc, r["rnd"]))
+    if len(out) >= 4:  # fewer recent hands are too noisy alone: mix in typical ones
+        return out
+    hands = _d(gs.get("hands"))
+    names = sorted(hands, key=lambda n: (-(hands[n].get("played") or 0), -(hands[n].get("level") or 1)))[:2] or ["Pair"]
+    for n in names:
+        ex = hands.get(n, {}).get("example") or []
+        infos = [{"rank": k.split("_")[1], "suit": k[0], "enh": None, "edition": None, "seal": None, "debuff": False}
+                 for k, _ in ex]
+        if infos:
+            name, sc = classify(infos)
+            out.append((infos, list(range(len(infos))), name, sc, {"hands_left": 2, "discards_left": 1}))
+    return out
+
+
+def gain(gs, recent, add=None, remove=None, level_up=None):
+    """Score ratio - 1 over sample hands after adding a joker card, removing joker index `remove`,
+    or levelling a hand (level_up=(hand, chips, mult)). None when the joker's effect can't be modelled."""
+    owned = list(_d(gs.get("jokers")).get("cards") or [])
+    if add is not None and entry(add)["rule"] is None:
+        return None if entry(add)["scoring"] else 0.0
+    base_js = build(gs, owned)
+    new_cards = [c for n, c in enumerate(owned) if n != remove] + ([add] if add is not None else [])
+    new_js = build(gs, new_cards)
+    levels = _d(gs.get("hands"))
+    new_levels = levels
+    if level_up:
+        h, c, m = level_up
+        new_levels = {**levels, h: {**levels.get(h, {}), "chips": levels.get(h, {}).get("chips", 0) + c,
+                                    "mult": levels.get(h, {}).get("mult", 1) + m}}
+    before = after = 0
+    for infos, combo, name, sc, rnd in sample_plays(gs, recent):
+        before += score(infos, combo, name, sc, levels, base_js, rnd)
+        after += score(infos, combo, name, sc, new_levels, new_js, rnd)
+    return after / before - 1 if before else None
+
+
+def planet_level(effect):
+    m = re.search(r"Level up (" + HAND_RE + r") \+(\d+) Mult and \+(\d+) chips", effect or "")
+    return (m.group(1), int(m.group(3)), int(m.group(2))) if m else None

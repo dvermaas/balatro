@@ -285,6 +285,10 @@ class JevBot:
     def on_menu(self, gs):
         params = {"deck": self.deck, "stake": self.stake}
         self.bench_current = None
+        if self.bench_queue and self._clearly_worse():
+            self.emit("info", msg=f"Benchmark stopped early: {self._clearly_worse()}")
+            self.bench_queue, self.bench_done_pending = [], False
+            raise BenchmarkComplete()
         if self.bench_queue:
             idx, seed = self.bench_queue.pop(0)
             params["seed"] = seed
@@ -301,6 +305,29 @@ class JevBot:
             self.emit("info", msg=f"Starting new run ({self.deck} deck, {self.stake} stake)")
         self.bench_done_pending = bool(self.bench_current) and not self.bench_queue
         self.act("start", params)
+
+    EARLY_STOP_AFTER = 10
+
+    def _clearly_worse(self):
+        """After 10 benchmark seeds, compare seed by seed with the best finished version: stop if the
+        current version trails by more than 2 standard errors (v6 was obvious after 6 seeds)."""
+        import statistics
+        import analytics
+        m = analytics.benchmark_matrix(benchmark.NAME)
+        me = next((v for v in m["versions"] if v["version"] == self.recorder.version), None)
+        done = [v for v in m["versions"] if v is not me and v["done"] == v["of"]]
+        if not me or me["done"] < self.EARLY_STOP_AFTER or not done:
+            return None
+        base = max(done, key=lambda v: v["avg_progress"] or 0)
+        d = [me["cells"][s]["progress"] - base["cells"][s]["progress"] for s in me["cells"]
+             if s in base["cells"] and me["cells"][s]["progress"] is not None
+             and base["cells"][s]["progress"] is not None]
+        if len(d) < self.EARLY_STOP_AFTER:
+            return None
+        mean, se = statistics.mean(d), statistics.stdev(d) / len(d) ** 0.5
+        if mean < -2 * se:
+            return f"{me['label']} trails {base['label']} by {abs(mean):.2f} ± {se:.2f} blinds over {len(d)} seeds"
+        return None
 
     def on_game_over(self, gs):
         self.stats["runs"] += 1
