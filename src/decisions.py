@@ -14,6 +14,7 @@ from typesafe_sdk import Choice, Noul, Score
 import build
 import jokers
 import odds
+import readiness
 import tarots
 import strategy
 from balatro import RPCError
@@ -66,6 +67,12 @@ VOUCHERS = {
 PACK_SCORE = 1.5       # the pack is already paid for: take anything better than marginal
 INTEREST_BUFFER = 25
 MAX_REROLLS = 2        # per shop, only from surplus above the buffer
+# v13: readiness = typical hand from our deck / per-hand pace of the next blinds (readiness.py). The starter
+# deck scores ~0.7 against the ante 1 boss with no discards counted, so these lines sit below 1.
+INVEST_BELOW = 0.6     # behind the next blinds: spend the interest buffer on power
+BANK_ABOVE = 1.2       # comfortably ahead: keep interest, buy only clear upgrades
+INVEST_FLOOR = 5       # money kept in invest mode
+INVEST_REROLL_FLOOR = 10
 
 
 def _round_info(gs):
@@ -365,11 +372,25 @@ def shop(bot, gs):
     state["our_build"] = build.describe(b)
 
     recent = _recent(bot, gs)
+    ready = readiness.assess(gs)
+    worst = ready["worst_ratio"] if ready else None
+    mode = "normal" if worst is None else "invest" if worst < INVEST_BELOW else "bank" if worst >= BANK_ABOVE else "normal"
+    buffer = INVEST_FLOOR if mode == "invest" else INTEREST_BUFFER
+    if ready:
+        state["readiness"] = {"next_blinds": [f"{r['blind']} ({r['target']} chips): {r['ratio']}" for r in ready["blinds"]],
+                              "typical_hand": ready["typical_hand"]}
+        state["plan"] = {"invest": f"priority: scoring power, we are behind the next blinds (readiness {worst})",
+                         "bank": f"priority: economy, we are ahead (readiness {worst}); buy only clear upgrades",
+                         "normal": f"priority: balanced (readiness {worst}); keep ~$25 for interest"}[mode]
+        bot.emit("info", msg=f"Readiness {worst} ({mode}): " + "; ".join(state["readiness"]["next_blinds"]))
 
     def obj(c, cost, kind, remove=None, **extra):
         left = money - cost
-        return {"kind": kind, "what": item_desc(c, mains), "cost": cost, "money_after": left,
-                "interest_per_round_after": strategy.interest(left), **extra, **_gain(gs, recent, c, remove)}
+        o = {"kind": kind, "what": item_desc(c, mains), "cost": cost, "money_after": left,
+             "interest_per_round_after": strategy.interest(left), **extra, **_gain(gs, recent, c, remove)}
+        if worst is not None and o.get("_gain") and kind in ("joker", "joker swap", "planet"):
+            o["readiness_after"] = f"{worst} -> {round(worst * (1 + o['_gain']), 2)}"
+        return o
 
     items = {}
     if bot._shop_actions < SHOP_ACTION_CAP:
@@ -418,7 +439,9 @@ def shop(bot, gs):
     reroll = _d(gs.get("round")).get("reroll_cost") or 5
     # v11: back to v9's rule. v10's early rerolls down to $5 cost ~$7.50 a run in ante 1-2, led to a joker
     # buy only 1 time in 5, and left ante 2-3 balances at $7-12 instead of $16-23 (lost interest).
-    can_reroll = money - reroll >= INTEREST_BUFFER and bot._rerolls < MAX_REROLLS
+    # v13: when readiness says we're behind, rerolls hunt for power down to a low floor.
+    can_reroll = money - reroll >= (INVEST_REROLL_FLOOR if mode == "invest" else INTEREST_BUFFER) \
+        and bot._rerolls < MAX_REROLLS
     fallback = ("reroll", ("reroll", None)) if can_reroll else ("leave", ("next_round", None))
     if not items:
         bot.emit("forced", question="shop", choice=fallback[0], desc="nothing affordable to rate")
@@ -431,11 +454,15 @@ def shop(bot, gs):
     early = (gs.get("ante_num") or 1) <= EARLY_ANTE and jok.get("count", 0) < EARLY_JOKERS
     early_joker = early and best.startswith(("buy_card", "replace")) and "joker" in items[best][1]["kind"]
     # A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.
-    strong_v = [k for k, v in items.items() if v[1].get("_strong")
+    strong_v = [k for k, v in items.items() if v[1].get("_strong") and mode != "invest"
                 and money - v[3] >= INTEREST_BUFFER]  # v11: from surplus only, never during the joker phase
-    sure = [k for k, v in items.items() if k.startswith("buy_card") and v[1]["kind"] == "joker"
-            and (v[1].get("_gain") or 0) >= SURE_GAIN and scores[k] >= 1]
-    if s >= BUY_SCORE or (s >= BUY_SCORE_LOOSE and (money - cost >= INTEREST_BUFFER or early_joker)):
+    sure = [k for k, v in items.items() if k.startswith(("buy_card", "replace")) and "joker" in v[1]["kind"]
+            and (v[1].get("_gain") or 0) >= SURE_GAIN and scores[k] >= 1
+            and (k.startswith("buy_card") or mode == "invest")]  # v13: behind, a big measured swap is sure too
+    loose_ok = money - cost >= buffer or early_joker
+    if mode == "bank" and not early_joker:
+        loose_ok = False  # ahead: only clear upgrades (BUY_SCORE) or sure jokers
+    if s >= BUY_SCORE or (s >= BUY_SCORE_LOOSE and loose_ok):
         choice, action = best, items[best][2]
     elif strong_v:
         choice = strong_v[0]

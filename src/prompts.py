@@ -6,14 +6,12 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "v12: survival-driven hand decisions, retaining v11's shop/economy policy. Score all play subsets "
-    "before pruning, so short plays and valuable held cards survive candidate generation; apply boss "
-    "restrictions before pruning. Forecast discards from 32 reproducible unordered draws (exact on tiny "
-    "piles), scoring the full resulting hand including misses and held cards. Account for spent discards, "
-    "Banner/Mystic Summit, Blue Joker, Ramen, Green Joker and Serpent draw count. Offer a plan that keeps "
-    "the current scoring core. Both play-now and discard questions see measured average/poor-draw scores "
-    "and clear/pace chances. Rank draws by survival value; build fit is only a tiebreaker. "
-    "These are approximate one-discard forecasts, not a complete game simulator."
+    "v13: readiness-driven shop on top of v12's hand play. readiness.py deals 24 random hands from our "
+    "current deck and scores the best play in each (jokers and hand levels included), then compares the "
+    "typical hand with the per-hand pace of the next 3 blinds. Behind (readiness < 0.6): invest, i.e. buy "
+    "Useful items down to $5, reroll down to $10, a joker swap measured at +50% is a sure buy, no vouchers. "
+    "Ahead (>= 1.2): bank, only clear upgrades. Between: v11/v12 rules. The shop state carries the "
+    "readiness per blind and a plan line, and jokers/planets show readiness before -> after."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
@@ -50,7 +48,8 @@ INSTRUCTIONS = {
         "for the immediate effect and add what it cannot see (scaling over the run, money, risk, future "
         "hands). `use` says what a tarot or spectral would do for us; `worth` says what a voucher gives for "
         "the rest of the run. Favour items that fit `our_build`. Consider `engine.missing`, `upcoming_boss` "
-        "and what it costs."
+        "and what it costs. `readiness` compares our typical hand with what the next blinds need per hand "
+        "and `plan` says whether to spend on power or save; `readiness_after` is the measured lift."
     ),
 }
 

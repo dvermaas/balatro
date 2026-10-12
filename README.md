@@ -99,6 +99,7 @@ src/                    the bot and control panel (run: python src/panel.py)
   odds.py               unordered-draw forecasts of the complete next hand (v12+), legacy draw odds
   build.py              the run's committed build (target hand + flush suit) (v10+)
   tarots.py             tarot/spectral mechanics: targets for the build, auto-use (v10+)
+  readiness.py          can the deck beat the next blinds? drives shop invest/bank mode (v13+)
   hands.py              hand evaluation, score estimates, play and discard candidates
   prompts.py            everything JEV reads (rules, questions, option templates)
   strategy.py           code-level policy: auto planets, joker ordering, joker tags, interest
