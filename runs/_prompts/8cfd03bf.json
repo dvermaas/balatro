@@ -1,0 +1,18 @@
+{
+  "version": "8cfd03bf",
+  "created": 1791825202.273521,
+  "note": "v9's economy with v10's mechanics. v10 tied v9 (-0.67 +/- 0.79) because it spent the ante 1-3 money wrong: rerolls down to $5 (~$7.50 a run, 1 in 5 led to a joker) and early vouchers left ante 2-3 balances at $7-12 vs $16-23. So: rerolls only from money above $25 again; strong vouchers bought by code only from surplus (money stays $25+). Tarots get a measured value like jokers: enhancement tarots are scored on our recent hands with the target card enhanced (+X% when it scores, ~+Y% per hand), and a paid-for pack with nothing rated well yields a tarot we have a good use for instead of a skip. Kept from v10: committed build, tarot targeting and auto-use, voucher value notes, discard budget, boss handling.",
+  "rules": "Balatro: reach each blind's chip target before hands run out. A hand scores chips x mult; jokers add chips or mult, or multiply mult (xMult). Discards are free but limited. Interest: $1 per $5 held at round end, max $5 (at $25).",
+  "instructions": {
+    "blind": "Should we play or skip the upcoming blind?",
+    "play_now": "Should we play our strongest hand (`strongest_play`) now instead of discarding first to build a better one? Compare its estimate with `round.chips_needed_per_remaining_hand`, and weigh hands left, discards left and how likely `deck_remaining` is to improve the hand.",
+    "best_play": "Which play is best this turn? `estimated_score` already includes our jokers (except any in `jokers_not_in_estimates`), so it is the real expected score. Prefer the higher score unless a lower one keeps stronger cards or avoids resetting a scaling joker.",
+    "best_discard": "If we discard, which plan is best? Each plan gives `chance_to_hit` (exact odds from the cards left in the deck) and what the hand scores `if_hit`, jokers included, and whether it fits `our_build`. Weigh odds times payoff against what we need this round; prefer plans that grow our build.",
+    "item_value": "How much would taking the item in `item` (described in this question) strengthen this run? `measured_gain` is its measured effect on the scores of our recent hands, jokers included: trust it for the immediate effect and add what it cannot see (scaling over the run, money, risk, future hands). `use` says what a tarot or spectral would do for us; `worth` says what a voucher gives for the rest of the run. Favour items that fit `our_build`. Consider `engine.missing`, `upcoming_boss` and what it costs."
+  },
+  "options": {
+    "blind_play": "Play the {name} (need {score} chips) and earn its cash reward",
+    "blind_skip": "Skip the {name} to gain the {tag_name}: {tag_effect}. Skipping forgoes the blind's money and shop visit.",
+    "discard_plan": "{label}"
+  }
+}

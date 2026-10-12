@@ -1,8 +1,7 @@
 """Poker-hand evaluation and candidate move generation.
 
-Code enumerates the legal, sensible moves; Jev only picks between them.
-Score estimates use the run's hand levels and card modifiers but ignore jokers
-(Jev sees the jokers and accounts for them).
+Code enumerates moves; Jev picks between them. The active bot supplies a
+joker-aware scorer. Without one, estimates use hand levels and card modifiers.
 """
 
 from collections import Counter
@@ -110,23 +109,35 @@ def estimate(cards, name, scoring, hand_levels):
     return int(chips * mult * xmult)
 
 
-def play_candidates(hand_cards, hand_levels, limit=8, scorer=None):
-    """Best play per distinct (hand type, scoring cards), padded with low junk cards to cycle them.
-
-    scorer(infos, combo, name, scoring) replaces the joker-blind estimate when given (jokers.score)."""
-    infos = [card_info(c) for c in hand_cards]
-    best = {}
+def evaluated_plays(infos, hand_levels, scorer=None, allowed=None):
+    """Score every subset before pruning; held cards and play length can change its value."""
     for r in range(1, min(5, len(infos)) + 1):
         for combo in combinations(range(len(infos)), r):
             cs = [infos[i] for i in combo]
             name, sc = classify(cs)
-            scoring = frozenset(combo[p] for p in sc)
-            junk = [i for i in combo if i not in scoring]
-            pref = (len(combo), -sum(_rank_value(infos[i]) for i in junk))
-            key = (name, scoring)
-            if key not in best or pref > best[key][1]:
-                est = scorer(infos, combo, name, sc) if scorer else estimate(cs, name, sc, hand_levels)
-                best[key] = (est, pref, list(combo))
+            if allowed is not None and not allowed(combo, name):
+                continue
+            score = scorer(infos, combo, name, sc) if scorer else estimate(cs, name, sc, hand_levels)
+            yield score, name, combo, frozenset(combo[p] for p in sc)
+
+
+def best_score(infos, scorer, allowed=None):
+    """Best modeled score in a complete future hand, including cards left held."""
+    return max((row[0] for row in evaluated_plays(infos, {}, scorer, allowed)), default=0)
+
+
+def play_candidates(hand_cards, hand_levels, limit=8, scorer=None, allowed=None):
+    """Best play per (hand type, scoring cards); cycle low junk only when scores tie.
+
+    scorer(infos, combo, name, scoring) replaces the joker-blind estimate when given (jokers.score)."""
+    infos = [card_info(c) for c in hand_cards]
+    best = {}
+    for est, name, combo, scoring in evaluated_plays(infos, hand_levels, scorer, allowed):
+        junk = [i for i in combo if i not in scoring]
+        pref = (est, len(combo), -sum(_rank_value(infos[i]) for i in junk))
+        key = (name, scoring)
+        if key not in best or pref > best[key][1]:
+            best[key] = (est, pref, list(combo))
     ranked = sorted(((v[0], k[0], v[2], k[1]) for k, v in best.items()), key=lambda x: -x[0])
     # One best play per hand type first, then fill with the next best overall.
     picked, seen = [], set()

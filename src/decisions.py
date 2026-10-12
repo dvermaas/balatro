@@ -1,7 +1,7 @@
 """Decision handlers (v6+): narrow typed questions batched per Jev call, combined by code.
 
-Hand: Noul play_now + Choice best_play + Choice best_discard in one call. v9: boss-aware candidates,
-draw odds and score-if-hit per discard plan, and the last hand discards first when it can't clear.
+Hand: Noul play_now + Choice best_play + Choice best_discard in one call. v12: boss-aware candidate
+scoring and full-hand forecasts after each discard, shared with the play-now question.
 Shop / packs: one 0-4 Score per item in one call; code applies the buy/skip thresholds. v9: each item
 carries its measured gain on this run's recent hands, and early antes prioritise filling joker slots.
 """
@@ -175,17 +175,41 @@ def _boss_levels(levels, boss):
     return levels
 
 
-def _boss_filter(plays, levels, boss):
-    """Drop plays the boss blind forbids or punishes (keeps the list if nothing would remain)."""
+def _boss_allows(combo, name, levels, boss):
+    """Apply boss restrictions before candidate pruning and to every forecasted hand."""
     played = {n for n, h in levels.items() if h.get("played_this_round")}
-    keep = plays
     if boss == "The Psychic":
-        keep = [p for p in plays if len(p["cards"]) == 5]
-    elif boss == "The Eye":
-        keep = [p for p in plays if p["hand"] not in played]
-    elif boss == "The Mouth" and played:
-        keep = [p for p in plays if p["hand"] in played]
-    return keep or plays
+        return len(combo) == 5
+    if boss == "The Eye":
+        return name not in played
+    if boss == "The Mouth" and played:
+        return name in played
+    return True
+
+
+def _preserve_discard(hand, play, scorer, max_discard=5):
+    """Cycle noncontributing cards without throwing away the current scoring core.
+
+    Held Steel/Baron/etc. contributors are detected by scoring the same play without them.
+    The forecast still evaluates the complete combined discard, including interactions.
+    """
+    infos = [card_info(c) for c in hand]
+    combo = play["cards"]
+    _, sc = classify([infos[i] for i in combo])
+    scoring = {combo[p] for p in sc}
+    toss = []
+    for i in range(len(infos)):
+        if i in scoring:
+            continue
+        remaining = infos[:i] + infos[i + 1:]
+        sub = [p - (p > i) for p in combo if p != i]
+        sub_name, sub_sc = classify([remaining[p] for p in sub])
+        if scorer(remaining, sub, sub_name, sub_sc) >= play["estimate"]:
+            toss.append(i)
+    toss = sorted(toss, key=lambda i: (not infos[i]["debuff"],
+                  "23456789TJQKA".find(infos[i]["rank"] or "")))[:max_discard]
+    return {"label": "Keep current scoring cards and useful held cards; cycle the rest",
+            "cards": toss, "tossed": [describe(hand[i]) for i in toss], "goal": ("preserve", None)}
 
 
 def selecting_hand(bot, gs):
@@ -195,27 +219,44 @@ def selecting_hand(bot, gs):
     rnd, js = _d(gs.get("round")), jokers.build(gs)
     levels = _boss_levels(_d(gs.get("hands")), boss)
     infos = [card_info(c) for c in hand]
-    plays = play_candidates(hand, levels, limit=40, scorer=lambda infos, combo, name, sc: jokers.score(
-        infos, combo, name, sc, levels, js, rnd))
-    plays = _boss_filter(plays, _d(gs.get("hands")), boss)[:8]
+    scorer = lambda infos, combo, name, sc: jokers.score(infos, combo, name, sc, levels, js, rnd)
+    allowed = lambda combo, name: _boss_allows(combo, name, _d(gs.get("hands")), boss)
+    plays = play_candidates(hand, levels, limit=8, scorer=scorer, allowed=allowed)
+    if not plays:
+        # Nothing scores under Eye/Mouth yet: a play may still cycle cards, but cannot be a sure clear.
+        plays = [{**p, "estimate": 0} for p in play_candidates(hand, levels, scorer=scorer)]
     margin = CLEAR_MARGIN if js else 1.0
-    discards = discard_candidates(hand) if (info["discards_left"] or 0) > 0 else []
-    deck = [card_info(c) for c in cards_of(gs, "cards")]
-
-    def score_cards(cs):
-        name, sc = classify(cs)
-        return jokers.score(cs, list(range(len(cs))), name, sc, levels, js, rnd)
-
-    odds.annotate(discards, infos, deck, score_cards)
-    b = build.decide(gs)
-    for d in discards:
-        d["fits_build"] = build.fits(d.get("goal"), b)
     clearing = [p for p in plays if _clears(p, info, margin)]
     if clearing:  # a sure clear wins the round: no question needed
         bot.emit("forced", question="move", choice="play_1",
                  desc=f"{clearing[0]['hand']} ({clearing[0]['estimate']}) clears the blind")
         _play(bot, gs, hand, clearing[0]["cards"])
         return
+
+    cap = area(gs, "hand").get("highlighted_limit") or 5
+    discards = discard_candidates(hand, max_discard=cap) if (info["discards_left"] or 0) > 0 else []
+    b = build.decide(gs)
+    if discards:
+        preserve = _preserve_discard(hand, plays[0], scorer, cap)
+        if preserve["cards"] and all(set(preserve["cards"]) != set(d["cards"]) for d in discards):
+            discards.append(preserve)
+        next_round = {**rnd, "discards_left": max(0, (rnd.get("discards_left") or 0) - 1)}
+
+        def score_after_discard(tossed, drawn):
+            next_js = jokers.after_discard(gs, tossed, drawn)
+            return lambda cs, combo, name, sc: jokers.score(cs, combo, name, sc, levels, next_js, next_round)
+
+        hand_size = area(gs, "hand").get("limit") or len(hand)
+        odds.forecast(discards, infos, [card_info(c) for c in cards_of(gs, "cards")],
+                      score_after_discard, allowed, need=info["chips_still_needed"] * margin,
+                      pace=info["chips_needed_per_remaining_hand"] or 0,
+                      draw_count=lambda n: 3 if boss == "The Serpent" else max(0, hand_size - len(hand) + n))
+        for d in discards:
+            d["fits_build"] = build.fits(d.get("goal"), b)
+            d["gain_percent"] = round(100 * (d["expected_score"] / max(1, plays[0]["estimate"]) - 1))
+        # Order the alternatives by measured survival value, not suit enumeration or build preference.
+        discards.sort(key=lambda d: (d["chance_to_clear"], d["expected_score"])
+                      if info["hands_left"] <= 1 else (d["expected_score"], d["chance_to_clear"]), reverse=True)
 
     play_opts = {f"play_{n}": p for n, p in enumerate(plays, 1)}
     disc_opts = {f"discard_{n}": d for n, d in enumerate(discards, 1)}
@@ -227,6 +268,7 @@ def selecting_hand(bot, gs):
         "cards_in_hand": [describe(c) for c in hand],
         "deck_remaining": _deck_remaining(gs),
         "strongest_play": _play_obj(plays[0], info, margin),
+        "best_draw_by_measurement": _discard_obj(discards[0]) if discards else None,
         "our_build": build.describe(b),
     }
     if jokers.unmodelled(js):
@@ -258,7 +300,7 @@ def selecting_hand(bot, gs):
     under_pace = plays[0]["estimate"] < (info["chips_needed_per_remaining_hand"] or 0)
     pace = info["chips_needed_per_remaining_hand"] or 0
     spare = (info["discards_left"] or 0) >= info["hands_left"]
-    payoff = max((d.get("chance_to_hit") or 0) * (d.get("score_if_hit") or 0) for d in discards) if discards else 0
+    payoff = max((d["expected_score"] for d in discards), default=0)
     near_no_gain = plays[0]["estimate"] >= NEAR_PACE * pace and not spare and payoff < 1.2 * plays[0]["estimate"]
     if disc_opts and info["hands_left"] <= 1:
         bar = 1.01
@@ -272,7 +314,7 @@ def selecting_hand(bot, gs):
     options = {k: f"{p['hand']}: {', '.join(p['scoring'])}" + (f" (+{', '.join(p['kicked'])})" if p["kicked"] else "")
                + f" ~{p['estimate']}" for k, p in play_opts.items()}
     options |= {k: f"{d['label']}: toss {', '.join(d['tossed'])}"
-                + (f" ({round(100 * d['chance_to_hit'])}% hit)" if d.get("chance_to_hit") is not None else "")
+                + f" (modeled next play ~{d['expected_score']}, {d['gain_percent']:+}% vs playing now)"
                 for k, d in disc_opts.items()}
     if best.startswith("play"):
         bot.record_decision("move", gs, best, ("play", {"cards": play_opts[best]["cards"]}), options, probs,
@@ -286,10 +328,14 @@ def selecting_hand(bot, gs):
 
 def _discard_obj(d):
     o = {"plan": d["label"], "throws_away": d["tossed"], "fits_our_build": d.get("fits_build", False)}
-    if d.get("chance_to_hit") is not None:
-        o["chance_to_hit"] = f"{round(100 * d['chance_to_hit'])}%"
-        if d.get("score_if_hit"):
-            o["if_hit"] = f"{d.get('goal_hand')} scoring about {d['score_if_hit']}"
+    if "expected_score" in d:
+        o.update(modeled_average_next_play=d["expected_score"], poor_draw_next_play=d["low_score"],
+                 poor_draw_definition="20th percentile, not a guaranteed minimum",
+                 average_change_vs_playing_now=f"{d['gain_percent']:+}%",
+                 chance_next_play_clears=f"{round(100 * d['chance_to_clear'])}%",
+                 chance_next_play_meets_pace=f"{round(100 * d['chance_to_meet_pace'])}%",
+                 cards_drawn=d["drawn"],
+                 basis=f"{d['samples']} {'all possible' if d['exact_draws'] else 'sampled'} unordered draws; scoring model estimate")
     return o
 
 

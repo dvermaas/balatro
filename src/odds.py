@@ -1,15 +1,62 @@
-"""Draw odds for discard plans (v9): chance to hit the plan's goal and the score if it hits.
+"""Discard forecasts (v12), plus the original v9 analytic draw-odds helpers.
 
 Uses only order-free facts about the draw pile (which cards remain, never their order: the pile is
-in draw order, see CLAUDE.md). Hypergeometric odds for drawing as many cards as we discard.
+in draw order, see CLAUDE.md). Forecasts score complete future hands after uniform unordered draws.
 
 Part of the prompt version hash (see recorder.PROMPT_VERSION).
 """
 
 from itertools import combinations
-from math import comb
+from math import comb, fsum
+from random import Random
 
-from hands import RANK_ORDER, classify
+from hands import RANK_ORDER, best_score, classify
+
+
+def _card_key(c):
+    # All observable scoring properties, never card IDs or the pile's input position.
+    return tuple(str(c.get(k) or "") for k in ("rank", "suit", "enh", "edition", "seal", "debuff"))
+
+
+def forecast(discards, hand_infos, deck_infos, scorer_factory, allowed=None, *,
+             need=0, pace=0, draw_count=None, samples=32):
+    """Model the best next play over unordered draws, including misses and held cards.
+
+    Small draw spaces are enumerated exactly; otherwise use reproducible uniform samples.
+    These are one-discard forecasts under our scoring model, not full-round win probabilities.
+    scorer_factory(discarded_infos, number_drawn) accounts for the spent discard and joker changes.
+    """
+    if samples < 1:
+        raise ValueError("samples must be positive")
+    deck = sorted(deck_infos, key=_card_key)
+    for plan in discards:
+        tossed = set(plan["cards"])
+        kept = [c for i, c in enumerate(hand_infos) if i not in tossed]
+        discarded = [hand_infos[i] for i in sorted(tossed)]
+        requested = draw_count(len(tossed)) if callable(draw_count) else draw_count
+        count = min(len(deck), max(0, len(tossed) if requested is None else requested))
+        possibilities = comb(len(deck), count)
+        exact = possibilities <= samples
+        if exact:
+            draws = combinations(range(len(deck)), count)
+        else:
+            rng = Random(12012)  # common random numbers reduce noise between competing plans
+            draws = (rng.sample(range(len(deck)), count) for _ in range(samples))
+        scorer = scorer_factory(discarded, count)
+        scores = []
+        for draw in draws:
+            future = kept + [deck[i] for i in draw]
+            # The live bot uses rank-sorted hands. Stable modifier ties also avoid pile-order leaks.
+            future.sort(key=lambda c: (-(RANK_ORDER.index(c["rank"]) + 2)
+                        if c.get("rank") and c.get("enh") != "STONE" else 0, _card_key(c)))
+            scores.append(best_score(future, scorer, allowed))
+        scores.sort()
+        plan.update(expected_score=round(fsum(scores) / len(scores)),
+                    low_score=scores[int((len(scores) - 1) * 0.2)],
+                    chance_to_clear=sum(s >= need for s in scores) / len(scores),
+                    chance_to_meet_pace=sum(s >= pace for s in scores) / len(scores),
+                    samples=len(scores), exact_draws=exact, drawn=count)
+    return discards
 
 
 def _p_none(n, k, d):
@@ -37,6 +84,7 @@ def annotate(discards, hand_infos, deck_infos, score_fn):
     """Add chance_to_hit, goal and score_if_hit to each discard plan from hands.discard_candidates.
 
     score_fn(cards) scores a list of card infos played as a hand (jokers included)."""
+    deck_infos = sorted(deck_infos, key=_card_key)
     n = len(deck_infos)
     for dsc in discards:
         keep = [i for i in range(len(hand_infos)) if i not in dsc["cards"]]

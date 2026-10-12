@@ -6,13 +6,14 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "v9's economy with v10's mechanics. v10 tied v9 (-0.67 +/- 0.79) because it spent the ante 1-3 money "
-    "wrong: rerolls down to $5 (~$7.50 a run, 1 in 5 led to a joker) and early vouchers left ante 2-3 "
-    "balances at $7-12 vs $16-23. So: rerolls only from money above $25 again; strong vouchers bought by "
-    "code only from surplus (money stays $25+). Tarots get a measured value like jokers: enhancement tarots "
-    "are scored on our recent hands with the target card enhanced (+X% when it scores, ~+Y% per hand), and a "
-    "paid-for pack with nothing rated well yields a tarot we have a good use for instead of a skip. Kept from "
-    "v10: committed build, tarot targeting and auto-use, voucher value notes, discard budget, boss handling."
+    "v12: survival-driven hand decisions, retaining v11's shop/economy policy. Score all play subsets "
+    "before pruning, so short plays and valuable held cards survive candidate generation; apply boss "
+    "restrictions before pruning. Forecast discards from 32 reproducible unordered draws (exact on tiny "
+    "piles), scoring the full resulting hand including misses and held cards. Account for spent discards, "
+    "Banner/Mystic Summit, Blue Joker, Ramen, Green Joker and Serpent draw count. Offer a plan that keeps "
+    "the current scoring core. Both play-now and discard questions see measured average/poor-draw scores "
+    "and clear/pace chances. Rank draws by survival value; build fit is only a tiebreaker. "
+    "These are approximate one-discard forecasts, not a complete game simulator."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
@@ -26,18 +27,22 @@ INSTRUCTIONS = {
     "blind": "Should we play or skip the upcoming blind?",
     "play_now": (
         "Should we play our strongest hand (`strongest_play`) now instead of discarding first to build a "
-        "better one? Compare its estimate with `round.chips_needed_per_remaining_hand`, and weigh hands left, "
-        "discards left and how likely `deck_remaining` is to improve the hand."
+        "better one? `best_draw_by_measurement` compares the best draw plan with playing now: its average "
+        "includes misses, and poor_draw_next_play shows downside. Weigh the measured improvement and "
+        "chance of meeting pace against spending one of our remaining discards. Preserve discards when "
+        "we are on pace and the improvement is small. Survival this round comes before build preference."
     ),
     "best_play": (
         "Which play is best this turn? `estimated_score` already includes our jokers (except any in "
-        "`jokers_not_in_estimates`), so it is the real expected score. Prefer the higher score unless a "
+        "`jokers_not_in_estimates`), but are approximate. Prefer the higher score unless a "
         "lower one keeps stronger cards or avoids resetting a scaling joker."
     ),
     "best_discard": (
-        "If we discard, which plan is best? Each plan gives `chance_to_hit` (exact odds from the cards left "
-        "in the deck) and what the hand scores `if_hit`, jokers included, and whether it fits `our_build`. "
-        "Weigh odds times payoff against what we need this round; prefer plans that grow our build."
+        "If we discard, which plan best helps us survive this round? Options are ordered by measured "
+        "survival value. Each models our best next play after the draw, including misses and cards held "
+        "for joker effects. Prefer better average score and downside; with one hand left, prefer the "
+        "chance to clear. These are sampled scoring estimates, so account for unmodeled joker effects. "
+        "Use build fit only to break close choices, never to justify a clearly worse survival outlook."
     ),
     "item_value": (
         "How much would taking the item in `item` (described in this question) strengthen this run? "

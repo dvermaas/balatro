@@ -208,6 +208,31 @@ def unmodelled(jokers):
     return [j["label"] for j in jokers if j["rule"] is None and j["scoring"]]
 
 
+def after_discard(gs, discarded, drawn):
+    """Forecast known discard-sensitive scoring values without mutating the live snapshot.
+
+    Banner/Mystic Summit use the decremented round counter in score(). Other event-driven
+    effects remain approximations, just as in the normal scorer.
+    """
+    cards = []
+    for card in _d(gs.get("jokers")).get("cards") or []:
+        effect = _d(card.get("value")).get("effect") or ""
+        label = card.get("label")
+        if label == "Blue Joker":
+            remaining = max(0, len(_d(gs.get("cards")).get("cards") or []) - drawn)
+            effect = f"+{2 * remaining} Chips"
+        elif label == "Ramen":
+            match = re.match(r"X" + NUM + r" Mult", effect)
+            if match:
+                effect = f"X{max(1, float(match.group(1)) - 0.01 * len(discarded)):.8f} Mult"
+        elif label == "Green Joker":
+            match = re.search(r"Currently \+" + NUM + r" Mult", effect)
+            if match:
+                effect = f"+{max(0, float(match.group(1)) - 1)} Mult"
+        cards.append({**card, "value": {**_d(card.get("value")), "effect": effect}})
+    return build(gs, cards)
+
+
 def score(infos, combo, name, scoring, hand_levels, jokers, rnd):
     """Expected score of playing hand positions `combo` (scoring = indices into combo)."""
     h = hand_levels.get(name, {})

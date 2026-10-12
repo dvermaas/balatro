@@ -96,7 +96,7 @@ src/                    the bot and control panel (run: python src/panel.py)
   balatro.py            JSON-RPC client for BalatroBot (127.0.0.1:12346)
   decisions.py          v6+ handlers: batched typed questions per decision, thresholds in code
   jokers.py             joker-aware hand scoring and measured shop value, from live joker text (v8+)
-  odds.py               draw odds and score-if-hit for discard plans (v9+)
+  odds.py               unordered-draw forecasts of the complete next hand (v12+), legacy draw odds
   build.py              the run's committed build (target hand + flush suit) (v10+)
   tarots.py             tarot/spectral mechanics: targets for the build, auto-use (v10+)
   hands.py              hand evaluation, score estimates, play and discard candidates
@@ -119,8 +119,10 @@ runs/                   recordings (git-ignored except runs/_prompts version sna
 - **Something blocks the game** (a popup, a menu): Balatro stops answering, and after 60 s the
   bot pauses with a hint in the feed. Clear it in the game and press Run. Unlock popups are
   handled by `jev_tweaks`.
-- **Consumables** in hand (tarots) are never used, and tarots that need targets from a pack get a
-  best-effort target (first two cards).
-- **Score estimates ignore jokers**; JEV is told this and sees the jokers' effects.
+- **Scoring is approximate.** Most joker effects are modeled, but some interactions and special
+  hand classifiers remain unsupported. V12's discard forecasts sample 32 unordered draws;
+  see [the experiment notes](docs/v12-experiment.md) for checks and limits.
+- **Consumables** are auto-used with build-aware targets. Some unsupported pack interactions
+  still use fallback targets after an API error.
 - The JEV API returns **HTTP 402** when the TypeSafe org has no usable API credits. The free
   monthly credit alone did not work for us; a paid top-up did.
