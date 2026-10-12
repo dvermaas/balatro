@@ -311,6 +311,7 @@ class JevBot:
         self.act("start", params)
 
     EARLY_STOP_AFTER = 10
+    FUTILITY_AFTER = 15  # by half-way, trailing by more than 1 SE means it is very unlikely to end up ahead
 
     def _clearly_worse(self):
         """After 10 benchmark seeds, compare seed by seed with the best finished version: stop if the
@@ -329,7 +330,7 @@ class JevBot:
         if len(d) < self.EARLY_STOP_AFTER:
             return None
         mean, se = statistics.mean(d), statistics.stdev(d) / len(d) ** 0.5
-        if mean < -2 * se:
+        if mean < -2 * se or (len(d) >= self.FUTILITY_AFTER and mean < -se):
             return f"{me['label']} trails {base['label']} by {abs(mean):.2f} ± {se:.2f} blinds over {len(d)} seeds"
         return None
 
