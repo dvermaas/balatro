@@ -49,7 +49,9 @@ def main_hands(gs, n=2):
     picks = []
     for name, h in _d(gs.get("hands")).items():
         level, played = h.get("level", 1) or 1, h.get("played", 0) or 0
-        if name not in HAND_NAMES or (played < 2 and level < 2):
+        # v15: a level alone no longer makes a main hand (one Jupiter made Flush "main", which then drew more
+        # Jupiters while we kept playing pairs); we must actually be playing it.
+        if name not in HAND_NAMES or played < 2:
             continue
         if name in ("High Card", "Pair") and level < 2:
             continue

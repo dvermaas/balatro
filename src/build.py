@@ -9,9 +9,12 @@ import re
 from collections import Counter
 
 from hands import RANK_ORDER, _d, card_info
+import readiness
 from strategy import main_hands
 
 PAIR_FAMILY = {"Pair", "Two Pair", "Three of a Kind", "Full House", "Four of a Kind", "Five of a Kind"}
+FLUSH_FAMILY = {"Flush", "Straight Flush", "Flush House", "Flush Five"}
+FLUSH_WITH_SUPPORT = 0.25  # flush share that suffices when a joker makes or rewards flushes
 SUITS = {"H": "Hearts", "D": "Diamonds", "C": "Clubs", "S": "Spades"}
 
 
@@ -31,6 +34,20 @@ def decide(gs):
     for letter, name in SUITS.items():  # suit jokers (Greedy, Lusty, ...) pull the build toward their suit
         suit_counts[letter] += 4 * len(re.findall(name[:-1], effects))
     suit = max(SUITS, key=lambda s: suit_counts[s])
+    mix = readiness.play_mix(gs)
+    if mix:
+        # v15: commit to the hand family the deck actually produces (score-weighted, jokers and levels
+        # included). A suit joker or one Jupiter no longer makes a Flush build on its own.
+        flush = sum(v for k, v in mix.items() if k in FLUSH_FAMILY)
+        sets = {k: v for k, v in mix.items() if k in PAIR_FAMILY}
+        groups = {"Flush": flush, "sets": sum(sets.values()), "Straight": mix.get("Straight", 0),
+                  "High Card": mix.get("High Card", 0)}
+        top = max(groups, key=groups.get)
+        if top == "Flush" or (flush >= FLUSH_WITH_SUPPORT and re.search(r"Flush|Smeared|Four Fingers", effects)):
+            return {"hand": "Flush", "suit": suit}
+        if top == "sets":
+            return {"hand": max(sets, key=sets.get), "suit": None}
+        return {"hand": "Straight" if top == "Straight" else "Pair", "suit": None}
     fl = hands.get("Flush", {})
     flush_signal = ((fl.get("level") or 1) - 1) + (fl.get("played") or 0) / 3 \
         + len(re.findall(r"Flush|Smeared|suit", effects))

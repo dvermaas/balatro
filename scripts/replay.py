@@ -85,6 +85,7 @@ def main():
     ap.add_argument("--question", default="shop", choices=list(HANDLERS))
     ap.add_argument("--ante-min", type=int, default=1)
     ap.add_argument("--limit", type=int, default=10)
+    ap.add_argument("--where", help="python expression on `e` (recorded event) and `gs`: keep matching decisions")
     ap.add_argument("--edit", action="append", default=[], help="python statement run on `gs` (forge a scenario)")
     ap.add_argument("--src", default=str(ROOT / "src"), help="code to test (default: working tree src/)")
     ap.add_argument("--show-state", action="store_true", help="print the state Jev was sent")
@@ -108,6 +109,8 @@ def main():
             if d.get("prompt_version") == args.version and d.get("benchmark"):
                 runs.append(s.parent)
     pairs = [p for r in runs for p in recorded(r, args.question, args.ante_min)]
+    if args.where:
+        pairs = [(e, gs) for e, gs in pairs if eval(args.where, {"e": e, "gs": gs, "json": json})]
     # Spread the sample over runs instead of taking the first run's decisions.
     step = max(1, len(pairs) // args.limit) if args.limit else 1
     pairs = pairs[::step][:args.limit]
@@ -134,6 +137,9 @@ def main():
         print(f"ante {e.get('ante')} round {e.get('round')} [{e.get('run_id', '')}]{'' if match else '  CHANGED'}")
         print(f"   was: {old_desc}")
         print(f"   now: {new.get('desc') or new['choice']}  (action {bot.action})")
+        was_b, now_b = ((x or {}).get("our_build") for x in (e.get("state_sent"), new.get("state_sent")))
+        if was_b != now_b:
+            print(f"   build: {was_b} -> {now_b}")
         for ev in bot.events:
             if ev["kind"] in ("info", "forced") and "Shop (" not in str(ev.get("msg", "")):
                 print(f"   . {ev.get('msg') or ev}")

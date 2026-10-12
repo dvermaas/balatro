@@ -6,12 +6,13 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "v14: v13 plans for the wall, not the next blind. v13 data: readiness peaks ~1.0 at ante 3 and falls to "
-    "~0.5 by ante 6 (15 of 18 deaths below 0.47); bank mode switched on at antes 2-3, right before targets "
-    "grow 2-2.5x an ante. Now: readiness also against the boss two antes ahead (`the_wall`), shown to Jev "
-    "with a plan line favouring xMult/scaling/main-hand levels when the wall is far; flat +Mult/+Chips gains "
-    "are discounted by sqrt(growth still needed) for the sure-buy rule and readiness_after; no banking "
-    "before ante 5. Builds on v13 (readiness invest/normal/bank) and v12 (hand forecasts)."
+    "v15: v13 + a build that matches what the deck produces. v13 committed to Flush in 25 of 29 losses (any "
+    "joker mentioning a suit, or one Jupiter, was enough) while final plays were Pair/Two Pair/High Card, and "
+    "the flush suit flip-flopped between shops. Now build.decide samples 24 deals of hand size + 3 cards "
+    "(jokers and levels included) and commits to the hand family with the largest share of best-play score "
+    "(Flush also at 25%+ with a flush joker): matches the best play in real ante 3+ hands 56% vs 42%. A "
+    "levelled hand counts as a main hand only once played twice. A paid Celestial pack takes the planet with "
+    "the biggest measured gain instead of skipping. v14's wall/flat-discount shop is dropped (trailed v13)."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
@@ -49,8 +50,7 @@ INSTRUCTIONS = {
         "hands). `use` says what a tarot or spectral would do for us; `worth` says what a voucher gives for "
         "the rest of the run. Favour items that fit `our_build`. Consider `engine.missing`, `upcoming_boss` "
         "and what it costs. `readiness` compares our typical hand with what the next blinds need per hand "
-        "and `plan` says whether to spend on power or save; `readiness_after` is the measured lift, now and at `the_wall` "
-        "(flat +Mult/+Chips fade as targets grow; xMult and scaling keep their share)."
+        "and `plan` says whether to spend on power or save; `readiness_after` is the measured lift."
     ),
 }
 

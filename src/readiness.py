@@ -13,7 +13,7 @@ from random import Random
 from statistics import median
 
 import jokers
-from hands import RANK_ORDER, _d, best_score, card_info
+from hands import RANK_ORDER, _d, best_score, card_info, evaluated_plays
 
 # Balatro's base blind amounts at White stake (get_blind_amount, scaling 1), antes 1-8.
 BASE = [300, 800, 2000, 5000, 11000, 20000, 35000, 50000]
@@ -93,6 +93,49 @@ def assess(gs, hands_per_round=None, samples=24):
 
 
 WALL_AHEAD = 2
+MIX_EXTRA = 3     # v15: deal hand size + 3 cards, roughly what one discard adds
+_MIX_CACHE = {}
+
+
+def play_mix(gs, samples=24):
+    """Which hand types our deck actually produces: {hand name: share of sampled best-play score}.
+
+    v15: v10-v14 committed to Flush in 25 of 29 v13 losses (any joker mentioning a suit, or one Jupiter,
+    was enough) while the final plays were Pair/Two Pair/High Card. Sampling includes jokers and levels,
+    so a levelled hand only wins when the deck can make it."""
+    deck = [card_info(c) for c in (_d(gs.get("cards")).get("cards") or [])]
+    deck += [card_info(c) for c in (_d(gs.get("hand")).get("cards") or [])]
+    deck = sorted(deck, key=_key)
+    js_cards = _d(gs.get("jokers")).get("cards") or []
+    levels = _d(gs.get("hands"))
+    # Once per round: discards barely change the deck's makeup, jokers and levels do.
+    sig = (gs.get("seed"), gs.get("ante_num"), gs.get("round_num"), gs.get("state") == "SHOP",
+           tuple(c.get("label") for c in js_cards),
+           tuple(sorted((k, _d(v).get("level")) for k, v in levels.items())))
+    if sig in _MIX_CACHE:
+        return _MIX_CACHE[sig]
+    size = (_d(gs.get("hand")).get("limit") or 8) + MIX_EXTRA
+    if len(deck) < size:
+        return {}
+    js = jokers.build(gs)
+    rnd = {"hands_left": 2, "discards_left": 1}
+
+    def scorer(infos, combo, name, sc):
+        return jokers.score(infos, combo, name, sc, levels, js, rnd)
+
+    rng = Random(15015)
+    total = {}
+    for _ in range(samples):
+        hand = rng.sample(deck, size)
+        best = max(((s, n) for s, n, _, _ in evaluated_plays(hand, levels, scorer)), default=(0, None))
+        if best[1]:
+            total[best[1]] = total.get(best[1], 0) + best[0]
+    norm = sum(total.values()) or 1
+    mix = {k: round(v / norm, 3) for k, v in sorted(total.items(), key=lambda kv: -kv[1])}
+    if len(_MIX_CACHE) > 256:
+        _MIX_CACHE.clear()
+    _MIX_CACHE[sig] = mix
+    return mix
 
 
 def lasting(gain, kind, wall_ratio):
