@@ -130,3 +130,47 @@ def auto_use(gs):
             if p:
                 return "use", {"consumable": i, "cards": p[0]}, f"use {label}: {p[1]}"
     return None
+
+
+# ---- measured value (v11) -------------------------------------------------------
+
+# Chance that a given card is among the scored cards of a hand (8-card hands from a ~52-card deck,
+# with discards): the enhanced card only pays when it shows up and scores.
+SHOW_RATE = 0.12
+MEASURABLE = {"MULT": "MULT", "BONUS": "BONUS", "GLASS": "GLASS", "LUCKY": "MULT", "STEEL": "STEEL"}
+
+
+def measured(c, gs, recent, b):
+    """(text, per_hand_gain) for an enhancement tarot, measured on our recent hands with jokers, or None.
+    Lucky counts as its average (+4 Mult). Steel is measured on a held card."""
+    import jokers
+    key = c.get("key") or ""
+    if key not in TARGETED or TARGETED[key][0] != "enhance" or TARGETED[key][2] not in MEASURABLE:
+        return None
+    _, n, arg = TARGETED[key]
+    enh = MEASURABLE[arg]
+    js, levels = jokers.build(gs), _d(gs.get("hands"))
+    before = after = 0
+    for infos, combo, name, sc, rnd in jokers.sample_plays(gs, recent):
+        new = [dict(i) for i in infos]
+        if enh == "STEEL":
+            held = [i for i in range(len(new)) if i not in combo]
+            if not held:
+                continue
+            t = min(held, key=lambda i: build.card_value(new[i], b))
+        else:
+            scoring = [combo[p] for p in sc]
+            if not scoring:
+                continue
+            t = max(scoring, key=lambda i: build.card_value(new[i], b))
+        new[t]["enh"] = enh
+        before += jokers.score(infos, combo, name, sc, levels, js, rnd)
+        after += jokers.score(new, combo, name, sc, levels, js, rnd)
+    if not before:
+        return None
+    when = after / before - 1
+    per_hand = when * n * SHOW_RATE
+    where = "is held" if enh == "STEEL" else "scores"
+    risk = " (Glass has a 1 in 4 chance to break when it scores)" if enh == "GLASS" else ""
+    return (f"permanent: +{round(100 * when)}% on a hand where the enhanced card {where}{risk}; "
+            f"{n} card{'s' if n > 1 else ''} = about +{round(100 * per_hand)}% per hand on average"), per_hand

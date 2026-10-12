@@ -6,14 +6,13 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "From the BalatroBench dissection (top LLMs: ~4 jokers by ante 2, 11-18 consumables and 2-3 vouchers a "
-    "run, one committed hand type). Committed build (build.py: target hand + flush suit) is in every state; "
-    "discard plans say whether they fit it. Tarots and spectrals get used: tarots.py knows each card's "
-    "mechanics and picks targets for the build (pack picks pass targets; held ones auto-use, targeted ones "
-    "while a hand is showing); Jev sees what each would do. Vouchers carry their run-long worth, and strong "
-    "ones (Grabber, Wasteful, Paint Brush, Clearance Sale, Overstock, Antimatter) are bought when affordable. "
-    "Early rerolls down to $5 while a joker slot is empty. Discard budget: near pace with no spare discards, "
-    "dig only when a plan's odds x payoff clearly beats playing. Builds on v9."
+    "v9's economy with v10's mechanics. v10 tied v9 (-0.67 +/- 0.79) because it spent the ante 1-3 money "
+    "wrong: rerolls down to $5 (~$7.50 a run, 1 in 5 led to a joker) and early vouchers left ante 2-3 "
+    "balances at $7-12 vs $16-23. So: rerolls only from money above $25 again; strong vouchers bought by "
+    "code only from surplus (money stays $25+). Tarots get a measured value like jokers: enhancement tarots "
+    "are scored on our recent hands with the target card enhanced (+X% when it scores, ~+Y% per hand), and a "
+    "paid-for pack with nothing rated well yields a tarot we have a good use for instead of a skip. Kept from "
+    "v10: committed build, tarot targeting and auto-use, voucher value notes, discard budget, boss handling."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.

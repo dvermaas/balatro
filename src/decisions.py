@@ -28,7 +28,6 @@ EARLY_JOKERS = 4       # v9: through ante 3, fill joker slots before saving for 
 EARLY_ANTE = 3
 SURE_GAIN = 0.5        # a joker that adds 50%+ to our recent hands is bought whenever a slot is free
 RECENT_PLAYS = 10
-EARLY_REROLL_FLOOR = 5  # v10: early with an empty joker slot, reroll down to $5 (top LLMs reroll 5-20x a run)
 NEAR_PACE = 0.8         # v10: near pace with no spare discards, digging must clearly pay off
 
 # v10: what each voucher is worth, in terms Jev can weigh; strong ones are bought by code when affordable.
@@ -371,9 +370,9 @@ def shop(bot, gs):
     bot.emit("info", msg=f"Shop (${money}): " + "; ".join(shown))
 
     reroll = _d(gs.get("round")).get("reroll_cost") or 5
-    early_slot = (gs.get("ante_num") or 1) <= EARLY_ANTE and not jokers_full and jok.get("count", 0) < EARLY_JOKERS
-    floor = EARLY_REROLL_FLOOR if early_slot else INTEREST_BUFFER
-    can_reroll = money - reroll >= floor and bot._rerolls < MAX_REROLLS
+    # v11: back to v9's rule. v10's early rerolls down to $5 cost ~$7.50 a run in ante 1-2, led to a joker
+    # buy only 1 time in 5, and left ante 2-3 balances at $7-12 instead of $16-23 (lost interest).
+    can_reroll = money - reroll >= INTEREST_BUFFER and bot._rerolls < MAX_REROLLS
     fallback = ("reroll", ("reroll", None)) if can_reroll else ("leave", ("next_round", None))
     if not items:
         bot.emit("forced", question="shop", choice=fallback[0], desc="nothing affordable to rate")
@@ -386,9 +385,8 @@ def shop(bot, gs):
     early = (gs.get("ante_num") or 1) <= EARLY_ANTE and jok.get("count", 0) < EARLY_JOKERS
     early_joker = early and best.startswith(("buy_card", "replace")) and "joker" in items[best][1]["kind"]
     # A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.
-    owned = jok.get("count", 0)
     strong_v = [k for k, v in items.items() if v[1].get("_strong")
-                and money - v[3] >= (5 if owned >= EARLY_JOKERS - 1 else 15)]
+                and money - v[3] >= INTEREST_BUFFER]  # v11: from surplus only, never during the joker phase
     sure = [k for k, v in items.items() if k.startswith("buy_card") and v[1]["kind"] == "joker"
             and (v[1].get("_gain") or 0) >= SURE_GAIN and scores[k] >= 1]
     if s >= BUY_SCORE or (s >= BUY_SCORE_LOOSE and (money - cost >= INTEREST_BUFFER or early_joker)):
@@ -460,6 +458,13 @@ def booster(bot, gs):
     scores, meta = _score_items(bot, gs, "pack", state, items)
     best = max(scores, key=scores.get)
     choice, (method, params) = (best, items[best][2]) if scores[best] >= PACK_SCORE else ("skip", skip)
+    if choice == "skip":
+        # v11: the pack is paid for, so a tarot we have a good use for is free value: take the best-rated one.
+        usable = [k for k, v in items.items() if "targets" in v[2][1]
+                  or (cards_of(gs, "pack")[v[2][1]["card"]].get("key") or "") in tarots.SAFE_UNTARGETED]
+        if usable:
+            choice = max(usable, key=scores.get)
+            method, params = items[choice][2]
     bot.record_decision("pack", gs, choice, (method, params), {k: v[0] for k, v in items.items()},
                         {k: v / 4 for k, v in scores.items()}, scores[best] / 4, meta, display="score")
     try:
@@ -486,6 +491,9 @@ def _gain(gs, recent, c, remove=None):
             return {"measured_gain": "can't be measured from its text; judge it yourself"}
     elif c.get("set") == "PLANET" and jokers.planet_level(_d(c.get("value")).get("effect")):
         g = jokers.gain(gs, recent, level_up=jokers.planet_level(_d(c.get("value")).get("effect")))
+    elif c.get("set") in ("TAROT", "SPECTRAL"):
+        m = tarots.measured(c, gs, recent, build.decide(gs))
+        return {"measured_gain": m[0], "_gain": m[1]} if m else {}
     else:
         return {}
     if not g:
