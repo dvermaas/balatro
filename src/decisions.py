@@ -73,6 +73,7 @@ INVEST_BELOW = 0.6     # behind the next blinds: spend the interest buffer on po
 BANK_ABOVE = 1.2       # comfortably ahead: keep interest, buy only clear upgrades
 INVEST_FLOOR = 5       # money kept in invest mode
 INVEST_REROLL_FLOOR = 10
+BANK_FROM_ANTE = 5     # v14: never bank before the steep antes
 
 
 def _round_info(gs):
@@ -374,14 +375,20 @@ def shop(bot, gs):
     recent = _recent(bot, gs)
     ready = readiness.assess(gs)
     worst = ready["worst_ratio"] if ready else None
+    wall = ready["wall"] if ready else None
     mode = "normal" if worst is None else "invest" if worst < INVEST_BELOW else "bank" if worst >= BANK_ABOVE else "normal"
+    if mode == "bank" and (gs.get("ante_num") or 1) < BANK_FROM_ANTE:
+        mode = "normal"  # v14: v13 banked at antes 2-3, right before targets start growing 2-2.5x an ante
     buffer = INVEST_FLOOR if mode == "invest" else INTEREST_BUFFER
     if ready:
         state["readiness"] = {"next_blinds": [f"{r['blind']} ({r['target']} chips): {r['ratio']}" for r in ready["blinds"]],
+                              "the_wall": f"{wall['blind']} ({wall['target']} chips): {wall['ratio']}",
                               "typical_hand": ready["typical_hand"]}
         state["plan"] = {"invest": f"priority: scoring power, we are behind the next blinds (readiness {worst})",
                          "bank": f"priority: economy, we are ahead (readiness {worst}); buy only clear upgrades",
-                         "normal": f"priority: balanced (readiness {worst}); keep ~$25 for interest"}[mode]
+                         "normal": f"priority: balanced (readiness {worst}); keep ~$25 for interest"}[mode] + (
+            f"; the wall: {wall['blind']} needs {round(1 / wall['ratio'], 1)}x our typical hand, so favour "
+            "xMult, scaling jokers and levels for our main hand over flat +Mult/+Chips" if wall["ratio"] < 0.7 else "")
         bot.emit("info", msg=f"Readiness {worst} ({mode}): " + "; ".join(state["readiness"]["next_blinds"]))
 
     def obj(c, cost, kind, remove=None, **extra):
@@ -389,7 +396,11 @@ def shop(bot, gs):
         o = {"kind": kind, "what": item_desc(c, mains), "cost": cost, "money_after": left,
              "interest_per_round_after": strategy.interest(left), **extra, **_gain(gs, recent, c, remove)}
         if worst is not None and o.get("_gain") and kind in ("joker", "joker swap", "planet"):
-            o["readiness_after"] = f"{worst} -> {round(worst * (1 + o['_gain']), 2)}"
+            role = strategy.joker_kind(_d(c.get("value")).get("effect")) if c.get("set") == "JOKER" else "planet"
+            o["_wall"] = (readiness.lasting(o["_gain"], role, wall["ratio"])  # early on, flat jokers are what survives
+                         if (gs.get("ante_num") or 1) >= EARLY_ANTE else o["_gain"])
+            o["readiness_after"] = (f"next blinds {worst} -> {round(worst * (1 + o['_gain']), 2)}; "
+                                    f"{wall['blind']} {wall['ratio']} -> {round(wall['ratio'] * (1 + o['_wall']), 2)}")
         return o
 
     items = {}
@@ -457,7 +468,7 @@ def shop(bot, gs):
     strong_v = [k for k, v in items.items() if v[1].get("_strong") and mode != "invest"
                 and money - v[3] >= INTEREST_BUFFER]  # v11: from surplus only, never during the joker phase
     sure = [k for k, v in items.items() if k.startswith(("buy_card", "replace")) and "joker" in v[1]["kind"]
-            and (v[1].get("_gain") or 0) >= SURE_GAIN and scores[k] >= 1
+            and v[1].get("_wall", v[1].get("_gain") or 0) >= SURE_GAIN and scores[k] >= 1
             and (k.startswith("buy_card") or mode == "invest")]  # v13: behind, a big measured swap is sure too
     loose_ok = money - cost >= buffer or early_joker
     if mode == "bank" and not early_joker:

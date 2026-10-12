@@ -83,5 +83,21 @@ def assess(gs, hands_per_round=None, samples=24):
         need = target / hands
         rows.append({"blind": label, "target": int(target), "ratio": round(p["median"] / need, 2)})
     worst = min(r["ratio"] for r in rows)
+    # v14: the wall. Targets grow 2-2.5x an ante from ante 3, so judge lasting power against the boss
+    # WALL_AHEAD antes on (v13 data: readiness peaks ~1.0 at ante 3 and falls to ~0.5 by ante 6).
+    a = min((gs.get("ante_num") or 1) + WALL_AHEAD, 8)
+    target = base_amount(a) * BLIND_MULT["boss"]
+    wall = {"blind": f"ante {a} boss", "target": int(target), "ratio": round(p["median"] / (target / hands), 2)}
     return {"typical_hand": int(p["median"]), "weak_hand": int(p["p20"]), "hands": hands,
-            "blinds": rows, "worst_ratio": worst}
+            "blinds": rows, "worst_ratio": worst, "wall": wall}
+
+
+WALL_AHEAD = 2
+
+
+def lasting(gain, kind, wall_ratio):
+    """A flat +Mult/+Chips gain shrinks as the rest of the build grows to meet the wall; xMult and
+    scaling jokers keep (or grow) their share. Rough model: flat gains divide by sqrt(growth needed)."""
+    if not gain or kind in ("xmult", "scaling") or not wall_ratio:
+        return gain
+    return gain / max(1.0, 1 / wall_ratio) ** 0.5

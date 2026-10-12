@@ -6,12 +6,12 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "v13: readiness-driven shop on top of v12's hand play. readiness.py deals 24 random hands from our "
-    "current deck and scores the best play in each (jokers and hand levels included), then compares the "
-    "typical hand with the per-hand pace of the next 3 blinds. Behind (readiness < 0.6): invest, i.e. buy "
-    "Useful items down to $5, reroll down to $10, a joker swap measured at +50% is a sure buy, no vouchers. "
-    "Ahead (>= 1.2): bank, only clear upgrades. Between: v11/v12 rules. The shop state carries the "
-    "readiness per blind and a plan line, and jokers/planets show readiness before -> after."
+    "v14: v13 plans for the wall, not the next blind. v13 data: readiness peaks ~1.0 at ante 3 and falls to "
+    "~0.5 by ante 6 (15 of 18 deaths below 0.47); bank mode switched on at antes 2-3, right before targets "
+    "grow 2-2.5x an ante. Now: readiness also against the boss two antes ahead (`the_wall`), shown to Jev "
+    "with a plan line favouring xMult/scaling/main-hand levels when the wall is far; flat +Mult/+Chips gains "
+    "are discounted by sqrt(growth still needed) for the sure-buy rule and readiness_after; no banking "
+    "before ante 5. Builds on v13 (readiness invest/normal/bank) and v12 (hand forecasts)."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
@@ -49,7 +49,8 @@ INSTRUCTIONS = {
         "hands). `use` says what a tarot or spectral would do for us; `worth` says what a voucher gives for "
         "the rest of the run. Favour items that fit `our_build`. Consider `engine.missing`, `upcoming_boss` "
         "and what it costs. `readiness` compares our typical hand with what the next blinds need per hand "
-        "and `plan` says whether to spend on power or save; `readiness_after` is the measured lift."
+        "and `plan` says whether to spend on power or save; `readiness_after` is the measured lift, now and at `the_wall` "
+        "(flat +Mult/+Chips fade as targets grow; xMult and scaling keep their share)."
     ),
 }
 
