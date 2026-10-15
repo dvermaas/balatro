@@ -1,0 +1,911 @@
+{
+  "scope": "Completed historical development runs only; running v18 untouched",
+  "versions": {
+    "v15": {
+      "version": "6725b5bb",
+      "runs": 30,
+      "counts": {
+        "decisions": 3091,
+        "blind": 323,
+        "move": 1315,
+        "moves_with_play_now": 1140,
+        "code_discards_despite_play_now_at_least_half": 125,
+        "forced_moves": 413,
+        "forced_clear_claims": 413,
+        "shop": 1175,
+        "pack": 278,
+        "moves_with_unmodelled_scoring": 182
+      },
+      "response_models": {
+        "jev-1.13.0": 3091
+      },
+      "scoring": {
+        "matched_plays": 923,
+        "exact": 814,
+        "within_10_percent": 853,
+        "over_25_percent": 27,
+        "median_absolute_relative_error": 0.0,
+        "large_error_examples": [
+          {
+            "run": "20261013-071444-U8AC5647",
+            "id": 6040,
+            "source": "jev_choice",
+            "estimate": 6726,
+            "boss": "The Head",
+            "unmodelled": [],
+            "actual": 3186,
+            "absolute_relative_error": 1.1111111111111112,
+            "jokers": [
+              "Ice Cream",
+              "Raised Fist",
+              "Crazy Joker",
+              "Popcorn",
+              "Vampire"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261013-192351-5V1F9XQ2",
+            "id": 2828,
+            "source": "jev_choice",
+            "estimate": 13666,
+            "boss": "Big Blind",
+            "unmodelled": [],
+            "actual": 43586,
+            "absolute_relative_error": 0.6864589547102281,
+            "jokers": [
+              "Scholar",
+              "Banner",
+              "Blue Joker",
+              "Fibonacci",
+              "Ancient Joker"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261013-191623-LRFULSLB",
+            "id": 1149,
+            "source": "forced_clear",
+            "estimate": 11760,
+            "boss": null,
+            "unmodelled": null,
+            "actual": 31360,
+            "absolute_relative_error": 0.625,
+            "jokers": [
+              "DNA",
+              "Madness"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261013-065902-PX8GK4E6",
+            "id": 2355,
+            "source": "jev_choice",
+            "estimate": 1296,
+            "boss": "Big Blind",
+            "unmodelled": [],
+            "actual": 810,
+            "absolute_relative_error": 0.6,
+            "jokers": [
+              "Supernova",
+              "Obelisk"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261012-224505-BAPQJMY5",
+            "id": 1170,
+            "source": "forced_clear",
+            "estimate": 3021,
+            "boss": null,
+            "unmodelled": null,
+            "actual": 6201,
+            "absolute_relative_error": 0.5128205128205128,
+            "jokers": [
+              "Odd Todd",
+              "Lusty Joker",
+              "Popcorn",
+              "Jolly Joker",
+              "Sly Joker"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261013-072020-A7YBUVWD",
+            "id": 7624,
+            "source": "jev_choice",
+            "estimate": 3663,
+            "boss": "The Eye",
+            "unmodelled": [],
+            "actual": 6963,
+            "absolute_relative_error": 0.47393364928909953,
+            "jokers": [
+              "Scholar",
+              "Sock and Buskin",
+              "Smiley Face",
+              "Ice Cream",
+              "Blue Joker",
+              "Card Sharp"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261013-193605-JV8CL6BQ",
+            "id": 5481,
+            "source": "jev_choice",
+            "estimate": 30,
+            "boss": "Big Blind",
+            "unmodelled": [
+              "Hiker"
+            ],
+            "actual": 50,
+            "absolute_relative_error": 0.4,
+            "jokers": [
+              "Hiker",
+              "Crazy Joker",
+              "Photograph"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261013-065902-PX8GK4E6",
+            "id": 2299,
+            "source": "jev_choice",
+            "estimate": 562,
+            "boss": "The Goad",
+            "unmodelled": [],
+            "actual": 402,
+            "absolute_relative_error": 0.39800995024875624,
+            "jokers": [
+              "Supernova",
+              "Obelisk"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261013-192136-MW6PBTW4",
+            "id": 2288,
+            "source": "jev_choice",
+            "estimate": 6200,
+            "boss": "Big Blind",
+            "unmodelled": [
+              "Hiker"
+            ],
+            "actual": 10200,
+            "absolute_relative_error": 0.39215686274509803,
+            "jokers": [
+              "Ice Cream",
+              "Droll Joker",
+              "Abstract Joker",
+              "Hiker",
+              "Campfire"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261013-070500-V98SL5G2",
+            "id": 3982,
+            "source": "forced_clear",
+            "estimate": 4900,
+            "boss": null,
+            "unmodelled": null,
+            "actual": 3520,
+            "absolute_relative_error": 0.39204545454545453,
+            "jokers": [
+              "Lusty Joker",
+              "Abstract Joker",
+              "Odd Todd",
+              "Raised Fist",
+              "Mad Joker",
+              "Dusk"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261013-191409-I9Q96AKF",
+            "id": 626,
+            "source": "jev_choice",
+            "estimate": 17523,
+            "boss": "The Goad",
+            "unmodelled": [],
+            "actual": 28143,
+            "absolute_relative_error": 0.37735849056603776,
+            "jokers": [
+              "Abstract Joker",
+              "Bull",
+              "Popcorn",
+              "Ice Cream",
+              "Card Sharp"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261013-065943-WWYTV5PP",
+            "id": 2943,
+            "source": "forced_clear",
+            "estimate": 33120,
+            "boss": null,
+            "unmodelled": null,
+            "actual": 51750,
+            "absolute_relative_error": 0.36,
+            "jokers": [
+              "Crafty Joker",
+              "Lusty Joker",
+              "Abstract Joker",
+              "Card Sharp",
+              "Baseball Card"
+            ],
+            "after_state": "ROUND_EVAL"
+          }
+        ]
+      },
+      "jev_selected_below_90_percent_of_best_immediate": 0,
+      "lower_choices_without_two_play_forecast": 0,
+      "lower_choice_examples": [],
+      "unmodelled_scoring_descriptions": {
+        "Baseball Card": 113,
+        "Hiker": 69
+      },
+      "boss_error_counts": {
+        "Small Blind": {
+          "matched_plays": 136,
+          "over_25_percent": 0
+        },
+        "The Water": {
+          "matched_plays": 29,
+          "over_25_percent": 0
+        },
+        "Big Blind": {
+          "matched_plays": 166,
+          "over_25_percent": 8
+        },
+        "The Goad": {
+          "matched_plays": 16,
+          "over_25_percent": 2
+        },
+        "The Tooth": {
+          "matched_plays": 17,
+          "over_25_percent": 1
+        },
+        "The Club": {
+          "matched_plays": 8,
+          "over_25_percent": 0
+        },
+        "The Flint": {
+          "matched_plays": 12,
+          "over_25_percent": 0
+        },
+        "The Hook": {
+          "matched_plays": 22,
+          "over_25_percent": 0
+        },
+        "The Wheel": {
+          "matched_plays": 10,
+          "over_25_percent": 0
+        },
+        "The Manacle": {
+          "matched_plays": 7,
+          "over_25_percent": 0
+        },
+        "Verdant Leaf": {
+          "matched_plays": 4,
+          "over_25_percent": 0
+        },
+        "The Head": {
+          "matched_plays": 11,
+          "over_25_percent": 1
+        },
+        "The Needle": {
+          "matched_plays": 3,
+          "over_25_percent": 1
+        },
+        "The Psychic": {
+          "matched_plays": 7,
+          "over_25_percent": 0
+        },
+        "The Arm": {
+          "matched_plays": 7,
+          "over_25_percent": 1
+        },
+        "The Fish": {
+          "matched_plays": 3,
+          "over_25_percent": 0
+        },
+        "The Serpent": {
+          "matched_plays": 4,
+          "over_25_percent": 0
+        },
+        "The Pillar": {
+          "matched_plays": 10,
+          "over_25_percent": 0
+        },
+        "The Window": {
+          "matched_plays": 7,
+          "over_25_percent": 0
+        },
+        "Violet Vessel": {
+          "matched_plays": 4,
+          "over_25_percent": 0
+        },
+        "The Mark": {
+          "matched_plays": 9,
+          "over_25_percent": 1
+        },
+        "The Eye": {
+          "matched_plays": 6,
+          "over_25_percent": 2
+        },
+        "The Ox": {
+          "matched_plays": 4,
+          "over_25_percent": 0
+        },
+        "Amber Acorn": {
+          "matched_plays": 2,
+          "over_25_percent": 0
+        },
+        "The House": {
+          "matched_plays": 2,
+          "over_25_percent": 0
+        },
+        "The Mouth": {
+          "matched_plays": 1,
+          "over_25_percent": 0
+        },
+        "The Plant": {
+          "matched_plays": 1,
+          "over_25_percent": 0
+        },
+        "The Wall": {
+          "matched_plays": 2,
+          "over_25_percent": 0
+        }
+      },
+      "gate_examples": [
+        {
+          "run": "20261012-224141-7X7WSDCX",
+          "id": 8,
+          "play_now": 0.51
+        },
+        {
+          "run": "20261012-224141-7X7WSDCX",
+          "id": 301,
+          "play_now": 0.51
+        },
+        {
+          "run": "20261012-224141-7X7WSDCX",
+          "id": 369,
+          "play_now": 0.52
+        },
+        {
+          "run": "20261012-224141-7X7WSDCX",
+          "id": 378,
+          "play_now": 0.55
+        },
+        {
+          "run": "20261012-224141-7X7WSDCX",
+          "id": 384,
+          "play_now": 0.56
+        },
+        {
+          "run": "20261012-224141-7X7WSDCX",
+          "id": 441,
+          "play_now": 0.54
+        },
+        {
+          "run": "20261012-224141-7X7WSDCX",
+          "id": 444,
+          "play_now": 0.63
+        },
+        {
+          "run": "20261012-224505-BAPQJMY5",
+          "id": 954,
+          "play_now": 0.56
+        }
+      ],
+      "limitations": "Observed chosen plays only; stochastic effects and unsupported mechanics can explain score differences. Lower immediate score is not necessarily a worse long-term choice. Forced clear after-state flags need individual verification. No alternative continuation was tested."
+    },
+    "v17": {
+      "version": "11845ce8",
+      "runs": 30,
+      "counts": {
+        "decisions": 2932,
+        "blind": 309,
+        "move": 1210,
+        "moves_with_play_now": 1041,
+        "code_discards_despite_play_now_at_least_half": 81,
+        "forced_moves": 404,
+        "forced_clear_claims": 404,
+        "shop": 1153,
+        "pack": 260,
+        "moves_with_unmodelled_scoring": 71,
+        "forced_clear_followed_by_selecting_hand": 1
+      },
+      "response_models": {
+        "jev-1.13.0": 2932
+      },
+      "scoring": {
+        "matched_plays": 902,
+        "exact": 812,
+        "within_10_percent": 840,
+        "over_25_percent": 31,
+        "median_absolute_relative_error": 0.0,
+        "large_error_examples": [
+          {
+            "run": "20261014-141234-WMAZ7HWJ",
+            "id": 8112,
+            "source": "jev_choice",
+            "estimate": 2730,
+            "boss": "The Pillar",
+            "unmodelled": [],
+            "actual": 630,
+            "absolute_relative_error": 3.3333333333333335,
+            "jokers": [
+              "Raised Fist",
+              "Supernova",
+              "Mad Joker",
+              "Clever Joker",
+              "Sock and Buskin"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261014-194148-JV8CL6BQ",
+            "id": 4157,
+            "source": "jev_choice",
+            "estimate": 352,
+            "boss": "The Water",
+            "unmodelled": [],
+            "actual": 1540,
+            "absolute_relative_error": 0.7714285714285715,
+            "jokers": [
+              "Lusty Joker",
+              "Smiley Face",
+              "Banner",
+              "Pareidolia",
+              "Photograph"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261014-141738-U8AC5647",
+            "id": 8860,
+            "source": "jev_choice",
+            "estimate": 5612,
+            "boss": "The Head",
+            "unmodelled": [],
+            "actual": 3172,
+            "absolute_relative_error": 0.7692307692307693,
+            "jokers": [
+              "Raised Fist",
+              "Joker",
+              "Walkie Talkie",
+              "Popcorn",
+              "Vampire"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261014-141234-WMAZ7HWJ",
+            "id": 7658,
+            "source": "forced_clear",
+            "estimate": 9401,
+            "boss": null,
+            "unmodelled": null,
+            "actual": 5413,
+            "absolute_relative_error": 0.7367448734527988,
+            "jokers": [
+              "Raised Fist",
+              "Supernova",
+              "Mad Joker",
+              "Clever Joker",
+              "Ramen"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261014-141738-U8AC5647",
+            "id": 9135,
+            "source": "jev_choice",
+            "estimate": 16065,
+            "boss": "The Club",
+            "unmodelled": [],
+            "actual": 9639,
+            "absolute_relative_error": 0.6666666666666666,
+            "jokers": [
+              "Raised Fist",
+              "Walkie Talkie",
+              "Wily Joker",
+              "Ice Cream",
+              "Gros Michel"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261014-143436-LRFULSLB",
+            "id": 12885,
+            "source": "jev_choice",
+            "estimate": 9832,
+            "boss": "Big Blind",
+            "unmodelled": [],
+            "actual": 28057,
+            "absolute_relative_error": 0.6495705171614927,
+            "jokers": [
+              "Scholar",
+              "Jolly Joker",
+              "Odd Todd",
+              "Ancient Joker"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261014-192725-MW6PBTW4",
+            "id": 803,
+            "source": "jev_choice",
+            "estimate": 8361,
+            "boss": "Big Blind",
+            "unmodelled": [],
+            "actual": 23650,
+            "absolute_relative_error": 0.6464693446088795,
+            "jokers": [
+              "Droll Joker",
+              "Abstract Joker",
+              "Crafty Joker",
+              "Ancient Joker"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261014-143436-LRFULSLB",
+            "id": 12658,
+            "source": "forced_clear",
+            "estimate": 9385,
+            "boss": null,
+            "unmodelled": null,
+            "actual": 25029,
+            "absolute_relative_error": 0.6250349594470415,
+            "jokers": [
+              "Scholar",
+              "Lusty Joker",
+              "Jolly Joker",
+              "Ancient Joker"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261014-194148-JV8CL6BQ",
+            "id": 3948,
+            "source": "jev_choice",
+            "estimate": 3634,
+            "boss": "The Window",
+            "unmodelled": [],
+            "actual": 8858,
+            "absolute_relative_error": 0.5897493790923459,
+            "jokers": [
+              "Lusty Joker",
+              "Smiley Face",
+              "Sock and Buskin",
+              "Pareidolia",
+              "Photograph"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261014-141738-U8AC5647",
+            "id": 8866,
+            "source": "forced_clear",
+            "estimate": 6400,
+            "boss": null,
+            "unmodelled": null,
+            "actual": 4160,
+            "absolute_relative_error": 0.5384615384615384,
+            "jokers": [
+              "Raised Fist",
+              "Joker",
+              "Walkie Talkie",
+              "Popcorn",
+              "Vampire"
+            ],
+            "after_state": "ROUND_EVAL"
+          },
+          {
+            "run": "20261014-140930-V98SL5G2",
+            "id": 7174,
+            "source": "jev_choice",
+            "estimate": 5320,
+            "boss": "The Arm",
+            "unmodelled": [],
+            "actual": 3520,
+            "absolute_relative_error": 0.5113636363636364,
+            "jokers": [
+              "Scholar",
+              "Mystic Summit",
+              "Lusty Joker",
+              "Odd Todd",
+              "Abstract Joker"
+            ],
+            "after_state": "SELECTING_HAND"
+          },
+          {
+            "run": "20261014-135502-6CAXN9I6",
+            "id": 3829,
+            "source": "forced_clear",
+            "estimate": 5340,
+            "boss": null,
+            "unmodelled": null,
+            "actual": 10692,
+            "absolute_relative_error": 0.500561167227834,
+            "jokers": [
+              "Walkie Talkie",
+              "Blue Joker",
+              "Ice Cream",
+              "Even Steven",
+              "Seltzer"
+            ],
+            "after_state": "ROUND_EVAL"
+          }
+        ]
+      },
+      "jev_selected_below_90_percent_of_best_immediate": 15,
+      "lower_choices_without_two_play_forecast": 0,
+      "lower_choice_examples": [
+        {
+          "run": "20261014-140138-PX8GK4E6",
+          "id": 5273,
+          "chosen_estimate": 30,
+          "best_immediate": 66,
+          "two_play_forecast_present": true,
+          "boss": "The Water",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140138-PX8GK4E6",
+          "id": 5276,
+          "chosen_estimate": 66,
+          "best_immediate": 184,
+          "two_play_forecast_present": true,
+          "boss": "The Water",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140502-DHPB8Q1L",
+          "id": 5921,
+          "chosen_estimate": 60,
+          "best_immediate": 120,
+          "two_play_forecast_present": true,
+          "boss": "Big Blind",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140502-DHPB8Q1L",
+          "id": 5948,
+          "chosen_estimate": 15,
+          "best_immediate": 36,
+          "two_play_forecast_present": true,
+          "boss": "The Goad",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140502-DHPB8Q1L",
+          "id": 5957,
+          "chosen_estimate": 5,
+          "best_immediate": 102,
+          "two_play_forecast_present": true,
+          "boss": "The Goad",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140502-DHPB8Q1L",
+          "id": 6075,
+          "chosen_estimate": 15,
+          "best_immediate": 180,
+          "two_play_forecast_present": true,
+          "boss": "Small Blind",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140502-DHPB8Q1L",
+          "id": 6115,
+          "chosen_estimate": 130,
+          "best_immediate": 220,
+          "two_play_forecast_present": true,
+          "boss": "Big Blind",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140502-DHPB8Q1L",
+          "id": 6159,
+          "chosen_estimate": 60,
+          "best_immediate": 248,
+          "two_play_forecast_present": true,
+          "boss": "The Wall",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140627-XUTRVN1Y",
+          "id": 6284,
+          "chosen_estimate": 60,
+          "best_immediate": 100,
+          "two_play_forecast_present": true,
+          "boss": "Small Blind",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-140930-V98SL5G2",
+          "id": 6901,
+          "chosen_estimate": 15,
+          "best_immediate": 100,
+          "two_play_forecast_present": true,
+          "boss": "The Club",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-142903-JRE681Y8",
+          "id": 11679,
+          "chosen_estimate": 9898,
+          "best_immediate": 12740,
+          "two_play_forecast_present": true,
+          "boss": "Big Blind",
+          "unmodelled": []
+        },
+        {
+          "run": "20261014-143144-75WVKF42",
+          "id": 11855,
+          "chosen_estimate": 15,
+          "best_immediate": 36,
+          "two_play_forecast_present": true,
+          "boss": "The Water",
+          "unmodelled": []
+        }
+      ],
+      "unmodelled_scoring_descriptions": {
+        "Baseball Card": 37,
+        "Hiker": 34
+      },
+      "boss_error_counts": {
+        "Small Blind": {
+          "matched_plays": 128,
+          "over_25_percent": 3
+        },
+        "Big Blind": {
+          "matched_plays": 151,
+          "over_25_percent": 5
+        },
+        "The Water": {
+          "matched_plays": 28,
+          "over_25_percent": 3
+        },
+        "The Goad": {
+          "matched_plays": 16,
+          "over_25_percent": 0
+        },
+        "The Tooth": {
+          "matched_plays": 19,
+          "over_25_percent": 0
+        },
+        "The Mouth": {
+          "matched_plays": 8,
+          "over_25_percent": 0
+        },
+        "The Club": {
+          "matched_plays": 11,
+          "over_25_percent": 1
+        },
+        "The Flint": {
+          "matched_plays": 15,
+          "over_25_percent": 0
+        },
+        "The Hook": {
+          "matched_plays": 20,
+          "over_25_percent": 0
+        },
+        "The Head": {
+          "matched_plays": 8,
+          "over_25_percent": 1
+        },
+        "The Window": {
+          "matched_plays": 7,
+          "over_25_percent": 1
+        },
+        "The Needle": {
+          "matched_plays": 2,
+          "over_25_percent": 2
+        },
+        "The Wall": {
+          "matched_plays": 8,
+          "over_25_percent": 0
+        },
+        "The Psychic": {
+          "matched_plays": 6,
+          "over_25_percent": 0
+        },
+        "The Mark": {
+          "matched_plays": 10,
+          "over_25_percent": 1
+        },
+        "The Arm": {
+          "matched_plays": 8,
+          "over_25_percent": 2
+        },
+        "The Fish": {
+          "matched_plays": 4,
+          "over_25_percent": 0
+        },
+        "The Serpent": {
+          "matched_plays": 3,
+          "over_25_percent": 0
+        },
+        "The Pillar": {
+          "matched_plays": 9,
+          "over_25_percent": 1
+        },
+        "The Manacle": {
+          "matched_plays": 13,
+          "over_25_percent": 0
+        },
+        "The Wheel": {
+          "matched_plays": 6,
+          "over_25_percent": 0
+        },
+        "The Eye": {
+          "matched_plays": 7,
+          "over_25_percent": 1
+        },
+        "The House": {
+          "matched_plays": 5,
+          "over_25_percent": 0
+        },
+        "The Plant": {
+          "matched_plays": 4,
+          "over_25_percent": 0
+        },
+        "The Ox": {
+          "matched_plays": 2,
+          "over_25_percent": 0
+        }
+      },
+      "gate_examples": [
+        {
+          "run": "20261014-135248-7X7WSDCX",
+          "id": 3145,
+          "play_now": 0.52
+        },
+        {
+          "run": "20261014-135248-7X7WSDCX",
+          "id": 3466,
+          "play_now": 0.53
+        },
+        {
+          "run": "20261014-135248-7X7WSDCX",
+          "id": 3475,
+          "play_now": 0.54
+        },
+        {
+          "run": "20261014-135248-7X7WSDCX",
+          "id": 3478,
+          "play_now": 0.75
+        },
+        {
+          "run": "20261014-135248-7X7WSDCX",
+          "id": 3563,
+          "play_now": 0.56
+        },
+        {
+          "run": "20261014-135248-7X7WSDCX",
+          "id": 3572,
+          "play_now": 0.54
+        },
+        {
+          "run": "20261014-135248-7X7WSDCX",
+          "id": 3575,
+          "play_now": 0.59
+        },
+        {
+          "run": "20261014-135248-7X7WSDCX",
+          "id": 3621,
+          "play_now": 0.51
+        }
+      ],
+      "limitations": "Observed chosen plays only; stochastic effects and unsupported mechanics can explain score differences. Lower immediate score is not necessarily a worse long-term choice. Forced clear after-state flags need individual verification. No alternative continuation was tested."
+    }
+  }
+}

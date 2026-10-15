@@ -1,0 +1,34 @@
+{
+  "mode": "paused",
+  "version": {
+    "id": "11845ce8",
+    "label": "v17",
+    "legacy": false,
+    "runs": 37,
+    "finished": 37
+  },
+  "current_run": null,
+  "benchmark": {
+    "name": "bench30-a",
+    "current": null,
+    "remaining": 0
+  },
+  "stats": {
+    "decisions": 2932,
+    "input_tokens": 8548748,
+    "output_tokens": 315919,
+    "jev_ms": 727754,
+    "runs": 30,
+    "wins": 0,
+    "best_ante": 7,
+    "errors": 0
+  },
+  "events": [
+    {
+      "id": 4754,
+      "t": 1791999970.9951541,
+      "kind": "info",
+      "msg": "Benchmark bench30-a complete"
+    }
+  ]
+}

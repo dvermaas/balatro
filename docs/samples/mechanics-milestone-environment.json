@@ -1,0 +1,34 @@
+{
+  "production_version": "d22adb59",
+  "exact_snapshot_match": true,
+  "decision_files_sha256": {
+    "prompts.py": "228b529e9e32f0d7c57d1fe90d3561c1e8ff083738bff8a13410af55afa7c3ec",
+    "hands.py": "6db5ee8367f78cfde1e53c0509dd0002e45ad0e6048e293251d1cd7168565d6b",
+    "strategy.py": "2575da18a40c3c4560fe2c40ef417895b0422ece35d4c6ec2182227ccc2382a8",
+    "decisions.py": "d4b148bbb1409966d70ebbdc4f121a1ff23f690c867e7ec4d6cf0b8327d65285",
+    "jokers.py": "4f19d1c5ebb1d643d45da86b4b8215592c1fa88427c3f838dee96d3cbd446d9d",
+    "odds.py": "d8ef0c239eac731b75ff1635564ddd1214aef62fae111107bd26c0c72a733669",
+    "build.py": "1a2a9c4c22e7fe5b5f02d4c908845c66dba9120a5767a76a2b6836a90cbe2bd0",
+    "tarots.py": "30bb5543af59cd4b07359819e4f713d11dcc6325fa4496a770d6993532170b63",
+    "readiness.py": "5e638ffc61fc4103dfc3d5a6556161d2101c1b617d86b4bbc5e5847997f62a78"
+  },
+  "python": "3.14.6 (main, Jun 11 2026, 04:05:02) [MSC v.1944 64 bit (AMD64)]",
+  "typesafe_sdk": "0.7.4",
+  "jev_requested_and_resolved": "jev-1.13.0",
+  "jackdaw_commit": "e66de78855df84755d3af7d9a016129f3449f878",
+  "jackdaw_license": "MIT; original license retained in research checkout",
+  "upstream_tests": {
+    "tests": "194",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "2"
+  },
+  "project_tests": {
+    "ran": 76,
+    "passed": 76
+  },
+  "installed_patched_card_lua_sha256": "6aa840806f5094a867e67d6b2227fdecd37783714035fe922a9f25fe0313e723",
+  "bank_sha256": "e6ecffa0c1d2e88b5c3bc96ed1bc73e7cf7fa1e4b6d81f5f035deef7b9446c80",
+  "candidate_patch_sha256": "2d6d176b9d70a78e9dc028490ca5b8e0467c18f97cbdd1414277bb625cedbc2c",
+  "scope": "Offline one-play diagnostics; no future draw order or live policy changes"
+}

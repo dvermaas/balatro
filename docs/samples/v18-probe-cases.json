@@ -1,0 +1,47 @@
+[
+  {
+    "name": "cash_hermit_profit",
+    "run_id": "20261014-140627-XUTRVN1Y",
+    "event_id": 6544
+  },
+  {
+    "name": "cash_temperance_profit",
+    "run_id": "20261014-135248-7X7WSDCX",
+    "event_id": 3448
+  },
+  {
+    "name": "cash_hermit_before_pack",
+    "run_id": "20261014-135701-BAPQJMY5",
+    "event_id": 4139
+  },
+  {
+    "name": "cash_hermit_loss_control",
+    "run_id": "20261014-135701-BAPQJMY5",
+    "event_id": 4147
+  },
+  {
+    "name": "cash_free_pack",
+    "run_id": "20261014-135248-7X7WSDCX",
+    "event_id": 3589
+  },
+  {
+    "name": "ante1_riff_raff",
+    "run_id": "20261014-140906-2RGEX6EN",
+    "event_id": 6768
+  },
+  {
+    "name": "water_crafty_control",
+    "run_id": "20261014-143144-75WVKF42",
+    "event_id": 11714
+  },
+  {
+    "name": "economy_pack_control",
+    "run_id": "20261014-135701-BAPQJMY5",
+    "event_id": 4142
+  },
+  {
+    "name": "strong_pack_control",
+    "run_id": "20261014-193421-2CM51JLD",
+    "event_id": 2134
+  }
+]

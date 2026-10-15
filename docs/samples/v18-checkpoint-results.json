@@ -1,0 +1,326 @@
+{
+  "protocol": {
+    "seeds": [
+      "2RGEX6EN",
+      "BAPQJMY5",
+      "75WVKF42"
+    ],
+    "repeats": 2,
+    "horizon_ante": 4,
+    "versions": {
+      "v17": "11845ce8",
+      "draft": "d22adb59"
+    },
+    "purpose": "Exploratory paired checkpoint continuations; not complete benchmark games"
+  },
+  "completion": "All 12 planned continuations completed; 1 separate interrupted partial retained",
+  "interpretation": "Exploratory selected checkpoints capped after ante 3, not full games or win-rate evidence; repetitions are not independent seeds",
+  "aggregate": {
+    "v17": {
+      "trials": 6,
+      "mean_cleared_blinds": 6.5,
+      "reached_ante_4": 3,
+      "lost": 3,
+      "errors": 0,
+      "cash_transactions": 0
+    },
+    "draft": {
+      "trials": 6,
+      "mean_cleared_blinds": 7.6667,
+      "reached_ante_4": 4,
+      "lost": 2,
+      "errors": 0,
+      "cash_transactions": 3
+    }
+  },
+  "paired": {
+    "better": 1,
+    "same": 5,
+    "worse": 0,
+    "mean_difference": 1.1667
+  },
+  "pairs": [
+    {
+      "seed": "2RGEX6EN",
+      "repeat": 0,
+      "v17_clears": 2,
+      "draft_clears": 9,
+      "difference": 7
+    },
+    {
+      "seed": "2RGEX6EN",
+      "repeat": 1,
+      "v17_clears": 9,
+      "draft_clears": 9,
+      "difference": 0
+    },
+    {
+      "seed": "BAPQJMY5",
+      "repeat": 0,
+      "v17_clears": 9,
+      "draft_clears": 9,
+      "difference": 0
+    },
+    {
+      "seed": "BAPQJMY5",
+      "repeat": 1,
+      "v17_clears": 9,
+      "draft_clears": 9,
+      "difference": 0
+    },
+    {
+      "seed": "75WVKF42",
+      "repeat": 0,
+      "v17_clears": 5,
+      "draft_clears": 5,
+      "difference": 0
+    },
+    {
+      "seed": "75WVKF42",
+      "repeat": 1,
+      "v17_clears": 5,
+      "draft_clears": 5,
+      "difference": 0
+    }
+  ],
+  "trials": [
+    {
+      "seed": "2RGEX6EN",
+      "condition": "v17",
+      "repeat": 0,
+      "version": "11845ce8",
+      "result": "lost",
+      "ante": 1,
+      "cleared_blinds_including_first": 2,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 15,
+      "seconds": 15.5,
+      "cash_transactions": 0,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\2RGEX6EN-v17-0\\records\\20261014-201259-2RGEX6EN"
+    },
+    {
+      "seed": "2RGEX6EN",
+      "condition": "draft",
+      "repeat": 0,
+      "version": "d22adb59",
+      "result": "horizon",
+      "ante": 4,
+      "cleared_blinds_including_first": 9,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 36,
+      "seconds": 47.8,
+      "cash_transactions": 0,
+      "riff_raff_taken": true,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\2RGEX6EN-draft-0\\records\\20261014-201550-2RGEX6EN"
+    },
+    {
+      "seed": "BAPQJMY5",
+      "condition": "v17",
+      "repeat": 0,
+      "version": "11845ce8",
+      "result": "horizon",
+      "ante": 4,
+      "cleared_blinds_including_first": 9,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 60,
+      "seconds": 73.2,
+      "cash_transactions": 0,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\BAPQJMY5-v17-0\\records\\20261014-201639-BAPQJMY5"
+    },
+    {
+      "seed": "BAPQJMY5",
+      "condition": "draft",
+      "repeat": 0,
+      "version": "d22adb59",
+      "result": "horizon",
+      "ante": 4,
+      "cleared_blinds_including_first": 9,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 61,
+      "seconds": 71.6,
+      "cash_transactions": 2,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\BAPQJMY5-draft-0\\records\\20261014-201753-BAPQJMY5"
+    },
+    {
+      "seed": "75WVKF42",
+      "condition": "v17",
+      "repeat": 0,
+      "version": "11845ce8",
+      "result": "lost",
+      "ante": 2,
+      "cleared_blinds_including_first": 5,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 34,
+      "seconds": 39.4,
+      "cash_transactions": 0,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\75WVKF42-v17-0\\records\\20261014-201906-75WVKF42"
+    },
+    {
+      "seed": "75WVKF42",
+      "condition": "draft",
+      "repeat": 0,
+      "version": "d22adb59",
+      "result": "lost",
+      "ante": 2,
+      "cleared_blinds_including_first": 5,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 34,
+      "seconds": 39.4,
+      "cash_transactions": 0,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\75WVKF42-draft-0\\records\\20261014-201947-75WVKF42"
+    },
+    {
+      "seed": "2RGEX6EN",
+      "condition": "draft",
+      "repeat": 1,
+      "version": "d22adb59",
+      "result": "horizon",
+      "ante": 4,
+      "cleared_blinds_including_first": 9,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 36,
+      "seconds": 47.2,
+      "cash_transactions": 0,
+      "riff_raff_taken": true,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\2RGEX6EN-draft-1\\records\\20261014-202028-2RGEX6EN"
+    },
+    {
+      "seed": "2RGEX6EN",
+      "condition": "v17",
+      "repeat": 1,
+      "version": "11845ce8",
+      "result": "horizon",
+      "ante": 4,
+      "cleared_blinds_including_first": 9,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 31,
+      "seconds": 44.3,
+      "cash_transactions": 0,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\2RGEX6EN-v17-1\\records\\20261014-202117-2RGEX6EN"
+    },
+    {
+      "seed": "BAPQJMY5",
+      "condition": "draft",
+      "repeat": 1,
+      "version": "d22adb59",
+      "result": "horizon",
+      "ante": 4,
+      "cleared_blinds_including_first": 9,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 52,
+      "seconds": 62.8,
+      "cash_transactions": 1,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\BAPQJMY5-draft-1\\records\\20261014-202202-BAPQJMY5"
+    },
+    {
+      "seed": "BAPQJMY5",
+      "condition": "v17",
+      "repeat": 1,
+      "version": "11845ce8",
+      "result": "horizon",
+      "ante": 4,
+      "cleared_blinds_including_first": 9,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 50,
+      "seconds": 63.1,
+      "cash_transactions": 0,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\BAPQJMY5-v17-1-recovery1\\records\\20261015-023543-BAPQJMY5"
+    },
+    {
+      "seed": "75WVKF42",
+      "condition": "draft",
+      "repeat": 1,
+      "version": "d22adb59",
+      "result": "lost",
+      "ante": 2,
+      "cleared_blinds_including_first": 5,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 34,
+      "seconds": 39.1,
+      "cash_transactions": 0,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\75WVKF42-draft-1\\records\\20261015-023647-75WVKF42"
+    },
+    {
+      "seed": "75WVKF42",
+      "condition": "v17",
+      "repeat": 1,
+      "version": "11845ce8",
+      "result": "lost",
+      "ante": 2,
+      "cleared_blinds_including_first": 5,
+      "skipped_blinds": 0,
+      "errors": 0,
+      "decisions": 34,
+      "seconds": 39.0,
+      "cash_transactions": 0,
+      "riff_raff_taken": false,
+      "records": "runs\\_experiments\\v18-paired-checkpoints\\75WVKF42-v17-1\\records\\20261015-023727-75WVKF42"
+    }
+  ],
+  "interruptions": [
+    {
+      "trial": "BAPQJMY5-v17-1",
+      "interrupted": "BAPQJMY5-v17-1",
+      "replacement": "BAPQJMY5-v17-1-recovery1",
+      "recorded_at": 1792024542.632203,
+      "partial_summary": {
+        "run_id": "20261014-202306-BAPQJMY5",
+        "seed": "BAPQJMY5",
+        "deck": "RED",
+        "stake": "WHITE",
+        "model": "jev-latest",
+        "prompt_version": "11845ce8",
+        "benchmark": null,
+        "started": 1792002186.9552958,
+        "ended": null,
+        "result": "in_progress",
+        "ante": 2,
+        "round": 4,
+        "money": 21,
+        "decisions": 26,
+        "forced": 3,
+        "errors": 0,
+        "input_tokens": 59955,
+        "output_tokens": 2383,
+        "jev_ms": 5601,
+        "avg_confidence": 0.513,
+        "low_confidence_decisions": 8,
+        "by_question": {
+          "shop": 8,
+          "pack": 5,
+          "blind": 2,
+          "move": 11
+        }
+      },
+      "reason": "Explicit restart from original checkpoint after interruption; not a terminal performance result"
+    }
+  ],
+  "baseline_variation": {
+    "seed": "2RGEX6EN",
+    "first_different_decision_id": 36,
+    "situation": "Ante 1 Hook, third round, same options and previously skipped Riff-raff",
+    "repeat_0": "Played the current three of a kind; ultimately lost at ante 1",
+    "repeat_1": "Discarded five while keeping the three of a kind; ultimately reached the ante 4 cap"
+  },
+  "sources": "Only public decision logs and summary files used for this report; no raw ordered-deck states read"
+}

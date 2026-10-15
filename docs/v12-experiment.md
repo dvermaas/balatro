@@ -115,8 +115,25 @@ Live validation uses the same Red Deck, White Stake, JEV model setting, panel de
 `bench30-a` seeds and early-stop rule. No edits to versioned source during that benchmark.
 The automatic heartbeat remains paused at the user's request.
 
-**Live result: pending; benchmark started at 20:04 Europe/Berlin on 2026-10-12.**
-The panel reports v12 `d1c693b2`; its first run is `20261012-200418-7X7WSDCX`.
-The opening decisions reached Ante 2 with zero execution errors.
-Do not claim v12 beats v11 or v9 until the benchmark is complete and
-paired results are available. A single victory alone will not establish an average improvement.
+**Live result: completed, 30/30 terminal summaries**, checked on 2026-10-13 while
+continuing the user's later v15 benchmark. V12 `d1c693b2` started at 20:04
+Europe/Berlin on 2026-10-12; its first run is `20261012-200418-7X7WSDCX`.
+
+| Version | Mean blinds cleared | Mean ante reached | Wins |
+| --- | ---: | ---: | ---: |
+| v9 | 12.77 | 4.77 | 0/30 |
+| v11 | 11.97 | 4.50 | 0/30 |
+| v12 | 13.90 | 5.17 | 0/30 |
+
+Win counts above are audited. V11's originally reported victory was an ante-8
+boss loss mislabeled by the game's terminal win flag: 14,497 / 100,000 chips on
+`2RGEX6EN`. See `v15-benchmark-resume.md` for the evidence and preserved originals.
+This correction does not change the cleared-blind comparisons below.
+
+Using the existing panel's progress metric and pairing identical seeds, v12 minus
+v11 is **+1.93 blinds, SE 0.93** (17 better, 5 tied, 8 worse). Against v9 it is
+**+1.13 blinds, SE 0.79** (14 better, 8 tied, 8 worse). V12 improved the observed
+average on this fixed set, but did not improve the observed win count. The v9
+comparison is particularly uncertain; 30 seeds and repeated development against
+the same set do not establish general superiority or isolate which v12 change
+helped. These numbers describe the recorded runs, not a fresh held-out evaluation.

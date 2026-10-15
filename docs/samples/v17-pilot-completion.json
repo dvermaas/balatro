@@ -1,0 +1,43 @@
+{
+  "mode": "paused",
+  "version": {
+    "id": "11845ce8",
+    "label": "v17",
+    "legacy": false,
+    "runs": 7,
+    "finished": 7
+  },
+  "current_run": null,
+  "benchmark": {
+    "name": "weak7-a",
+    "current": null,
+    "remaining": 0
+  },
+  "stats": {
+    "decisions": 639,
+    "input_tokens": 2098555,
+    "output_tokens": 76507,
+    "jev_ms": 163314,
+    "runs": 7,
+    "wins": 1,
+    "best_ante": 9,
+    "errors": 0
+  },
+  "events": [
+    {
+      "id": 3134,
+      "t": 1791978699.9662602,
+      "kind": "run_end",
+      "won": true,
+      "reported_won": true,
+      "ante": 9,
+      "round": 24
+    },
+    {
+      "id": 3137,
+      "t": 1791978700.7898264,
+      "kind": "info",
+      "msg": "Benchmark weak7-a complete"
+    }
+  ]
+}

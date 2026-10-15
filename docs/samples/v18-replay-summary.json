@@ -1,0 +1,709 @@
+{
+  "scope": "Recorded public request replays; top item ratings are not full shop-policy outcomes. All repetitions retained.",
+  "calls": 156,
+  "input_tokens": 346224,
+  "output_tokens": 10419,
+  "groups": [
+    {
+      "case": "cash_hermit_profit",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "buy_pack_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.9567,
+        "buy_voucher_0": 0.4233,
+        "buy_pack_0": 1.1567
+      }
+    },
+    {
+      "case": "cash_hermit_profit",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "buy_card_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 1.3233,
+        "buy_voucher_0": 0.4567,
+        "buy_pack_0": 1.17
+      }
+    },
+    {
+      "case": "cash_hermit_profit",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "buy_card_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 2.1633,
+        "buy_voucher_0": 0.43,
+        "buy_pack_0": 1.1667
+      }
+    },
+    {
+      "case": "cash_temperance_profit",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "buy_pack_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.96,
+        "buy_voucher_0": 1.18,
+        "buy_pack_0": 1.97,
+        "buy_pack_1": 1.1467,
+        "replace_0_1": 0.0,
+        "replace_1_1": 0.0,
+        "replace_2_1": 0.0,
+        "replace_3_1": 0.1133,
+        "replace_4_1": 0.0667
+      }
+    },
+    {
+      "case": "cash_temperance_profit",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "buy_pack_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 1.0733,
+        "buy_voucher_0": 1.1633,
+        "buy_pack_0": 2.06,
+        "buy_pack_1": 1.14,
+        "replace_0_1": 0.0,
+        "replace_1_1": 0.0,
+        "replace_2_1": 0.0033,
+        "replace_3_1": 0.1167,
+        "replace_4_1": 0.0767
+      }
+    },
+    {
+      "case": "cash_temperance_profit",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "buy_pack_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 1.6033,
+        "buy_voucher_0": 1.1633,
+        "buy_pack_0": 2.0233,
+        "buy_pack_1": 1.1733,
+        "replace_0_1": 0.0,
+        "replace_1_1": 0.0,
+        "replace_2_1": 0.0,
+        "replace_3_1": 0.13,
+        "replace_4_1": 0.06
+      }
+    },
+    {
+      "case": "cash_hermit_before_pack",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "buy_pack_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 1.1867,
+        "buy_card_1": 0.8033,
+        "buy_pack_0": 2.5333,
+        "buy_pack_1": 1.7667
+      }
+    },
+    {
+      "case": "cash_hermit_before_pack",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "buy_pack_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 1.2367,
+        "buy_card_1": 0.8333,
+        "buy_pack_0": 2.53,
+        "buy_pack_1": 1.8067
+      }
+    },
+    {
+      "case": "cash_hermit_before_pack",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "buy_pack_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 1.9667,
+        "buy_card_1": 0.7867,
+        "buy_pack_0": 2.5333,
+        "buy_pack_1": 1.8233
+      }
+    },
+    {
+      "case": "cash_hermit_loss_control",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "buy_card_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.84,
+        "buy_card_1": 0.4967
+      }
+    },
+    {
+      "case": "cash_hermit_loss_control",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "buy_card_1": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.36,
+        "buy_card_1": 0.5033
+      }
+    },
+    {
+      "case": "cash_hermit_loss_control",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "buy_card_1": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.2933,
+        "buy_card_1": 0.53
+      }
+    },
+    {
+      "case": "cash_free_pack",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 1.68,
+        "take_1": 1.89,
+        "take_2": 1.3533,
+        "take_3": 1.1633,
+        "take_4": 1.0633
+      }
+    },
+    {
+      "case": "cash_free_pack",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "take_1": 2,
+        "take_2": 1
+      },
+      "mean_values": {
+        "take_0": 1.63,
+        "take_1": 1.9067,
+        "take_2": 1.8467,
+        "take_3": 1.2,
+        "take_4": 1.0933
+      }
+    },
+    {
+      "case": "cash_free_pack",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "take_2": 3
+      },
+      "mean_values": {
+        "take_0": 1.6233,
+        "take_1": 1.8733,
+        "take_2": 2.4233,
+        "take_3": 1.22,
+        "take_4": 1.0267
+      }
+    },
+    {
+      "case": "ante1_riff_raff",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "below_pack_threshold": 3
+      },
+      "mean_values": {
+        "take_0": 1.0167,
+        "take_1": 1.2067
+      }
+    },
+    {
+      "case": "ante1_riff_raff",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 1.0233,
+        "take_1": 1.7067
+      }
+    },
+    {
+      "case": "ante1_riff_raff",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 0.2833,
+        "take_1": 0.5467,
+        "skip": 0.17
+      }
+    },
+    {
+      "case": "water_crafty_control",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.8067,
+        "take_1": 0.6267
+      }
+    },
+    {
+      "case": "water_crafty_control",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.8033,
+        "take_1": 0.6433
+      }
+    },
+    {
+      "case": "water_crafty_control",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 0.95,
+        "take_1": 0.01,
+        "skip": 0.04
+      }
+    },
+    {
+      "case": "economy_pack_control",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.1267,
+        "take_1": 1.3133
+      }
+    },
+    {
+      "case": "economy_pack_control",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.1467,
+        "take_1": 1.3067
+      }
+    },
+    {
+      "case": "economy_pack_control",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 0.8067,
+        "take_1": 0.0833,
+        "skip": 0.11
+      }
+    },
+    {
+      "case": "strong_pack_control",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 1.11,
+        "take_1": 2.0767
+      }
+    },
+    {
+      "case": "strong_pack_control",
+      "variant": "facts",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 1.0967,
+        "take_1": 2.1333
+      }
+    },
+    {
+      "case": "strong_pack_control",
+      "variant": "focused",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 0.21,
+        "take_1": 0.6833,
+        "skip": 0.1067
+      }
+    },
+    {
+      "case": "cash_hermit_profit",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "buy_card_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.7233,
+        "continue_shopping": 0.2767
+      }
+    },
+    {
+      "case": "cash_temperance_profit",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "buy_card_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.6867,
+        "continue_shopping": 0.3133
+      }
+    },
+    {
+      "case": "cash_hermit_before_pack",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "buy_card_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.7733,
+        "continue_shopping": 0.2267
+      }
+    },
+    {
+      "case": "cash_hermit_loss_control",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "buy_card_1": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.2933,
+        "buy_card_1": 0.52
+      }
+    },
+    {
+      "case": "cash_free_pack",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_2": 3
+      },
+      "mean_values": {
+        "take_0": 1.6233,
+        "take_1": 1.8833,
+        "take_2": 2.3667,
+        "take_3": 1.21,
+        "take_4": 0.9933
+      }
+    },
+    {
+      "case": "ante1_riff_raff",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 1.0167,
+        "take_1": 1.71
+      }
+    },
+    {
+      "case": "water_crafty_control",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.8033,
+        "take_1": 0.6533
+      }
+    },
+    {
+      "case": "economy_pack_control",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.14,
+        "take_1": 1.3367
+      }
+    },
+    {
+      "case": "strong_pack_control",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 1.11,
+        "take_1": 2.1833
+      }
+    },
+    {
+      "case": "validation_hermit_26",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "buy_voucher_0": 2,
+        "buy_card_0": 1
+      },
+      "mean_values": {
+        "buy_card_0": 0.98,
+        "buy_voucher_0": 1.0133,
+        "replace_0_1": 0.0,
+        "replace_1_1": 0.0,
+        "replace_3_1": 0.0033,
+        "replace_4_1": 0.0,
+        "replace_5_1": 0.01
+      }
+    },
+    {
+      "case": "validation_hermit_26",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "buy_card_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.7233,
+        "continue_shopping": 0.2767
+      }
+    },
+    {
+      "case": "validation_pack_money14",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 1.9033,
+        "take_1": 2.4867,
+        "take_2": 0.1
+      }
+    },
+    {
+      "case": "validation_pack_money14",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.6533,
+        "take_1": 2.5133,
+        "take_2": 0.1067
+      }
+    },
+    {
+      "case": "validation_pack_tempreance",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "below_pack_threshold": 3
+      },
+      "mean_values": {
+        "take_0": 1.4167,
+        "take_1": 1.25,
+        "take_2": 1.02
+      }
+    },
+    {
+      "case": "validation_pack_tempreance",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_1": 3
+      },
+      "mean_values": {
+        "take_0": 1.39,
+        "take_1": 2.3867,
+        "take_2": 1.0767
+      }
+    },
+    {
+      "case": "validation_hermit_37",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 1.5267,
+        "take_1": 1.0433,
+        "take_2": 1.34
+      }
+    },
+    {
+      "case": "validation_hermit_37",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_2": 3
+      },
+      "mean_values": {
+        "take_0": 1.4833,
+        "take_1": 1.04,
+        "take_2": 2.1267
+      }
+    },
+    {
+      "case": "validation_cash_vs_mult",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "below_pack_threshold": 3
+      },
+      "mean_values": {
+        "take_0": 1.1267,
+        "take_1": 1.4,
+        "take_2": 1.43,
+        "take_3": 0.1867,
+        "take_4": 1.12
+      }
+    },
+    {
+      "case": "validation_cash_vs_mult",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.1067,
+        "take_1": 1.4067,
+        "take_2": 1.3733,
+        "take_3": 0.2,
+        "take_4": 1.1467
+      }
+    },
+    {
+      "case": "validation_temperance_weakseed",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "take_4": 2,
+        "take_3": 1
+      },
+      "mean_values": {
+        "take_0": 1.1033,
+        "take_1": 0.9567,
+        "take_2": 1.2367,
+        "take_3": 2.1333,
+        "take_4": 2.17
+      }
+    },
+    {
+      "case": "validation_temperance_weakseed",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "take_0": 3
+      },
+      "mean_values": {
+        "take_0": 2.3633,
+        "take_1": 0.9733,
+        "take_2": 1.2,
+        "take_3": 2.0467,
+        "take_4": 2.11
+      }
+    },
+    {
+      "case": "validation_control_profit",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "buy_pack_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 1.0033,
+        "buy_card_1": 1.9567,
+        "buy_voucher_0": 0.9033,
+        "buy_pack_0": 2.3733,
+        "buy_pack_1": 0.8333
+      }
+    },
+    {
+      "case": "validation_control_profit",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "buy_card_0": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.7667,
+        "continue_shopping": 0.2333
+      }
+    },
+    {
+      "case": "validation_control_break_even",
+      "variant": "baseline",
+      "n": 3,
+      "choices": {
+        "buy_card_1": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.82,
+        "buy_card_1": 1.4467,
+        "buy_pack_0": 0.8533
+      }
+    },
+    {
+      "case": "validation_control_break_even",
+      "variant": "cash_step",
+      "n": 3,
+      "choices": {
+        "buy_card_1": 3
+      },
+      "mean_values": {
+        "buy_card_0": 0.39,
+        "buy_card_1": 1.38,
+        "buy_pack_0": 0.8633
+      }
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "run": "20261014-140502-DHPB8Q1L",
+  "pack_choice": "Burglar: When Blind is selected, gain +3 Hands and lose all discards [utility]",
+  "pack_ratings": {
+    "take_0": 0.385,
+    "take_1": 0.1875
+  },
+  "forecasts_offered": 21,
+  "setup_chosen": 10,
+  "last_round": {
+    "blind": "The Wall",
+    "boss_effect": "Extra large blind",
+    "chip_target": 8000,
+    "chips_scored": 4820,
+    "chips_still_needed": 3180,
+    "hands_left": 1,
+    "discards_left": 0,
+    "chips_needed_per_remaining_hand": 3180
+  },
+  "final_chips": 5008
+}

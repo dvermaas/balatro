@@ -1,0 +1,76 @@
+{
+  "started": 1792086813.943317,
+  "version": "d22adb59",
+  "set": "bench30-a",
+  "seeds": [
+    "7X7WSDCX",
+    "6CAXN9I6",
+    "BAPQJMY5",
+    "TBIR2XMU",
+    "PX8GK4E6",
+    "WWYTV5PP",
+    "DHPB8Q1L",
+    "XUTRVN1Y",
+    "2RGEX6EN",
+    "V98SL5G2",
+    "WMAZ7HWJ",
+    "W4YA1M4U",
+    "U8AC5647",
+    "8XNG984V",
+    "SDNUURBN",
+    "A7YBUVWD",
+    "X62IZYJ4",
+    "JRE681Y8",
+    "75WVKF42",
+    "I9Q96AKF",
+    "LRFULSLB",
+    "8GWNFCSN",
+    "MW6PBTW4",
+    "5V1F9XQ2",
+    "2S38V5NR",
+    "2CM51JLD",
+    "UR3ZTT24",
+    "C3XPB74B",
+    "JV8CL6BQ",
+    "57AXFNDP"
+  ],
+  "deck": "RED",
+  "stake": "WHITE",
+  "model": "jev-latest",
+  "delay": 0.3,
+  "auto_new_run": false,
+  "performance_early_stop": false,
+  "early_stop_after": 31,
+  "startup_verification": {
+    "mode": "running",
+    "benchmark": {
+      "name": "bench30-a",
+      "current": {
+        "name": "bench30-a",
+        "index": 0,
+        "of": 30
+      },
+      "remaining": 29
+    },
+    "version": {
+      "id": "d22adb59",
+      "label": "v18",
+      "legacy": false,
+      "runs": 1,
+      "finished": 0
+    },
+    "stats": {
+      "decisions": 27,
+      "input_tokens": 60451,
+      "output_tokens": 2311,
+      "jev_ms": 6081,
+      "runs": 0,
+      "wins": 0,
+      "best_ante": 0,
+      "errors": 0
+    },
+    "delay": 0.3,
+    "auto_new_run": false,
+    "run_id": "20261015-195336-7X7WSDCX"
+  }
+}

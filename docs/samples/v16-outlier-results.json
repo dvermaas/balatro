@@ -1,0 +1,172 @@
+{
+  "version": "503b35ff",
+  "set": "weak7-a",
+  "done": 7,
+  "wins": 0,
+  "errors": 0,
+  "pairs": [
+    {
+      "seed": "75WVKF42",
+      "group": "weak",
+      "v15": 5,
+      "v13": 4,
+      "v16": 5,
+      "result": "lost",
+      "v16_run": "20261014-061534-75WVKF42",
+      "v15_run": "20261013-191328-75WVKF42"
+    },
+    {
+      "seed": "DHPB8Q1L",
+      "group": "weak",
+      "v15": 5,
+      "v13": 6,
+      "v16": 2,
+      "result": "lost",
+      "v16_run": "20261014-061621-DHPB8Q1L",
+      "v15_run": "20261013-070220-DHPB8Q1L"
+    },
+    {
+      "seed": "PX8GK4E6",
+      "group": "weak",
+      "v15": 5,
+      "v13": 13,
+      "v16": 8,
+      "result": "lost",
+      "v16_run": "20261014-061640-PX8GK4E6",
+      "v15_run": "20261013-065902-PX8GK4E6"
+    },
+    {
+      "seed": "JV8CL6BQ",
+      "group": "weak",
+      "v15": 7,
+      "v13": 20,
+      "v16": 14,
+      "result": "lost",
+      "v16_run": "20261014-061747-JV8CL6BQ",
+      "v15_run": "20261013-193605-JV8CL6BQ"
+    },
+    {
+      "seed": "2RGEX6EN",
+      "group": "weak",
+      "v15": 2,
+      "v13": 17,
+      "v16": 17,
+      "result": "lost",
+      "v16_run": "20261014-061928-2RGEX6EN",
+      "v15_run": "20261013-070438-2RGEX6EN"
+    },
+    {
+      "seed": "2CM51JLD",
+      "group": "control",
+      "v15": 20,
+      "v13": 19,
+      "v16": 20,
+      "result": "lost",
+      "v16_run": "20261014-062139-2CM51JLD",
+      "v15_run": "20261013-192845-2CM51JLD"
+    },
+    {
+      "seed": "BAPQJMY5",
+      "group": "control",
+      "v15": 24,
+      "v13": 14,
+      "v16": 12,
+      "result": "lost",
+      "v16_run": "20261014-062400-BAPQJMY5",
+      "v15_run": "20261012-224505-BAPQJMY5"
+    }
+  ],
+  "comparisons": {
+    "weak": {
+      "v15": {
+        "n": 5,
+        "v16_mean": 9.2,
+        "baseline": "v15",
+        "baseline_mean": 4.8,
+        "difference": 4.4,
+        "paired_se": 3.1240998703626617,
+        "better": 3,
+        "tied": 1,
+        "worse": 1
+      },
+      "v13": {
+        "n": 5,
+        "v16_mean": 9.2,
+        "baseline": "v13",
+        "baseline_mean": 12,
+        "difference": -2.8,
+        "paired_se": 1.3928388277184118,
+        "better": 1,
+        "tied": 1,
+        "worse": 3
+      }
+    },
+    "control": {
+      "v15": {
+        "n": 2,
+        "v16_mean": 16,
+        "baseline": "v15",
+        "baseline_mean": 22,
+        "difference": -6,
+        "paired_se": 5.999999999999999,
+        "better": 0,
+        "tied": 1,
+        "worse": 1
+      },
+      "v13": {
+        "n": 2,
+        "v16_mean": 16,
+        "baseline": "v13",
+        "baseline_mean": 16.5,
+        "difference": -0.5,
+        "paired_se": 1.4999999999999998,
+        "better": 1,
+        "tied": 0,
+        "worse": 1
+      }
+    },
+    "all": {
+      "v15": {
+        "n": 7,
+        "v16_mean": 11.142857142857142,
+        "baseline": "v15",
+        "baseline_mean": 9.714285714285714,
+        "difference": 1.4285714285714286,
+        "paired_se": 3.168724716116976,
+        "better": 3,
+        "tied": 2,
+        "worse": 2
+      },
+      "v13": {
+        "n": 7,
+        "v16_mean": 11.142857142857142,
+        "baseline": "v13",
+        "baseline_mean": 13.285714285714286,
+        "difference": -2.142857142857143,
+        "paired_se": 1.1004019055515564,
+        "better": 2,
+        "tied": 1,
+        "worse": 4
+      }
+    }
+  },
+  "completion": {
+    "mode": "paused",
+    "current_run": null,
+    "remaining": 0,
+    "events": [
+      {
+        "id": 2504,
+        "t": 1791951957.9317684,
+        "kind": "info",
+        "msg": "Benchmark weak7-a complete"
+      }
+    ]
+  },
+  "limitations": [
+    "Preselected development subset; not held out",
+    "One run per version per seed, with no fresh v15 replicate",
+    "Three policy/information changes are bundled; causal contribution is not isolated"
+  ],
+  "recommendation": "Do not claim or promote a general upgrade; persistent weakest pair not improved and winning control regressed. Investigate no-discard setup plays next."
+}

@@ -16,6 +16,9 @@ SETS = {
     # their LLM leaderboard (balatrobench.com, v1.0.8, final round reached). "SEED#n" = repeat n.
     "balatrobench-15": [f"{s}#{n}" for s in ("AAAAAAA", "BBBBBBB", "CCCCCCC", "DDDDDDD", "EEEEEEE")
                         for n in (1, 2, 3)],
+    # Development pilot fixed before v16: persistent weak seeds, a regression, two strong controls.
+    # Selected from bench30-a history; never present this as a held-out win-rate evaluation.
+    "weak7-a": ["75WVKF42", "DHPB8Q1L", "PX8GK4E6", "JV8CL6BQ", "2RGEX6EN", "2CM51JLD", "BAPQJMY5"],
 }
 NAME = "bench30-a"  # the set the "Benchmark" button runs
 SEEDS = SETS[NAME]

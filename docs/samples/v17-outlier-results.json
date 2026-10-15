@@ -1,0 +1,305 @@
+{
+  "version": "11845ce8",
+  "set": "weak7-a",
+  "done": 7,
+  "wins": 1,
+  "errors": 0,
+  "pairs": [
+    {
+      "seed": "75WVKF42",
+      "group": "weak",
+      "v13": 4,
+      "v13_run": "20261012-215719-75WVKF42",
+      "v15": 5,
+      "v15_run": "20261013-191328-75WVKF42",
+      "v16": 5,
+      "v16_run": "20261014-061534-75WVKF42",
+      "candidate": 5,
+      "candidate_run": "20261014-133705-75WVKF42",
+      "result": "lost",
+      "errors": 0,
+      "ante": 2,
+      "forecast_decision_events": [
+        163,
+        166,
+        169
+      ],
+      "setup_chosen_events": [
+        166
+      ]
+    },
+    {
+      "seed": "DHPB8Q1L",
+      "group": "weak",
+      "v13": 6,
+      "v13_run": "20261012-213631-DHPB8Q1L",
+      "v15": 5,
+      "v15_run": "20261013-070220-DHPB8Q1L",
+      "v16": 2,
+      "v16_run": "20261014-061621-DHPB8Q1L",
+      "candidate": 23,
+      "candidate_run": "20261014-133753-DHPB8Q1L",
+      "result": "lost",
+      "errors": 0,
+      "ante": 8,
+      "forecast_decision_events": [
+        209,
+        212,
+        215,
+        218,
+        242,
+        245,
+        291,
+        294,
+        356,
+        359,
+        362,
+        365,
+        403,
+        419,
+        422,
+        425,
+        442,
+        445,
+        517,
+        520
+      ],
+      "setup_chosen_events": [
+        212,
+        242,
+        245,
+        291,
+        294,
+        362,
+        365,
+        419,
+        442,
+        445
+      ]
+    },
+    {
+      "seed": "PX8GK4E6",
+      "group": "weak",
+      "v13": 13,
+      "v13_run": "20261012-213242-PX8GK4E6",
+      "v15": 5,
+      "v15_run": "20261013-065902-PX8GK4E6",
+      "v16": 8,
+      "v16_run": "20261014-061640-PX8GK4E6",
+      "candidate": 5,
+      "candidate_run": "20261014-134136-PX8GK4E6",
+      "result": "lost",
+      "errors": 0,
+      "ante": 2,
+      "forecast_decision_events": [
+        1119,
+        1122,
+        1125
+      ],
+      "setup_chosen_events": [
+        1122
+      ]
+    },
+    {
+      "seed": "JV8CL6BQ",
+      "group": "weak",
+      "v13": 20,
+      "v13_run": "20261012-221355-JV8CL6BQ",
+      "v15": 7,
+      "v15_run": "20261013-193605-JV8CL6BQ",
+      "v16": 14,
+      "v16_run": "20261014-061747-JV8CL6BQ",
+      "candidate": 14,
+      "candidate_run": "20261014-134220-JV8CL6BQ",
+      "result": "lost",
+      "errors": 0,
+      "ante": 5,
+      "forecast_decision_events": [
+        1504,
+        1507,
+        1510
+      ],
+      "setup_chosen_events": [
+        1507
+      ]
+    },
+    {
+      "seed": "2RGEX6EN",
+      "group": "weak",
+      "v13": 17,
+      "v13_run": "20261012-213841-2RGEX6EN",
+      "v15": 2,
+      "v15_run": "20261013-070438-2RGEX6EN",
+      "v16": 17,
+      "v16_run": "20261014-061928-2RGEX6EN",
+      "candidate": 2,
+      "candidate_run": "20261014-134407-2RGEX6EN",
+      "result": "lost",
+      "errors": 0,
+      "ante": 1,
+      "forecast_decision_events": [],
+      "setup_chosen_events": []
+    },
+    {
+      "seed": "2CM51JLD",
+      "group": "control",
+      "v13": 19,
+      "v13_run": "20261012-220749-2CM51JLD",
+      "v15": 20,
+      "v15_run": "20261013-192845-2CM51JLD",
+      "v16": 20,
+      "v16_run": "20261014-062139-2CM51JLD",
+      "candidate": 20,
+      "candidate_run": "20261014-134429-2CM51JLD",
+      "result": "lost",
+      "errors": 0,
+      "ante": 7,
+      "forecast_decision_events": [],
+      "setup_chosen_events": []
+    },
+    {
+      "seed": "BAPQJMY5",
+      "group": "control",
+      "v13": 14,
+      "v13_run": "20261012-212917-BAPQJMY5",
+      "v15": 24,
+      "v15_run": "20261012-224505-BAPQJMY5",
+      "v16": 12,
+      "v16_run": "20261014-062400-BAPQJMY5",
+      "candidate": 24,
+      "candidate_run": "20261014-134658-BAPQJMY5",
+      "result": "won",
+      "errors": 0,
+      "ante": 9,
+      "forecast_decision_events": [
+        2648,
+        2682,
+        2685,
+        2688
+      ],
+      "setup_chosen_events": [
+        2685
+      ]
+    }
+  ],
+  "comparisons": {
+    "weak": {
+      "v13": {
+        "n": 5,
+        "candidate_mean": 9.8,
+        "baseline_mean": 12,
+        "difference": -2.2,
+        "paired_se": 5.435071296680477,
+        "better": 2,
+        "tied": 0,
+        "worse": 3
+      },
+      "v15": {
+        "n": 5,
+        "candidate_mean": 9.8,
+        "baseline_mean": 4.8,
+        "difference": 5,
+        "paired_se": 3.521363372331802,
+        "better": 2,
+        "tied": 3,
+        "worse": 0
+      },
+      "v16": {
+        "n": 5,
+        "candidate_mean": 9.8,
+        "baseline_mean": 9.2,
+        "difference": 0.6,
+        "paired_se": 5.801723881744115,
+        "better": 1,
+        "tied": 2,
+        "worse": 2
+      }
+    },
+    "control": {
+      "v13": {
+        "n": 2,
+        "candidate_mean": 22,
+        "baseline_mean": 16.5,
+        "difference": 5.5,
+        "paired_se": 4.5,
+        "better": 2,
+        "tied": 0,
+        "worse": 0
+      },
+      "v15": {
+        "n": 2,
+        "candidate_mean": 22,
+        "baseline_mean": 22,
+        "difference": 0,
+        "paired_se": 0.0,
+        "better": 0,
+        "tied": 2,
+        "worse": 0
+      },
+      "v16": {
+        "n": 2,
+        "candidate_mean": 22,
+        "baseline_mean": 16,
+        "difference": 6,
+        "paired_se": 5.999999999999999,
+        "better": 1,
+        "tied": 1,
+        "worse": 0
+      }
+    },
+    "all": {
+      "v13": {
+        "n": 7,
+        "candidate_mean": 13.285714285714286,
+        "baseline_mean": 13.285714285714286,
+        "difference": 0,
+        "paired_se": 4.12887624513245,
+        "better": 4,
+        "tied": 0,
+        "worse": 3
+      },
+      "v15": {
+        "n": 7,
+        "candidate_mean": 13.285714285714286,
+        "baseline_mean": 9.714285714285714,
+        "difference": 3.5714285714285716,
+        "paired_se": 2.5990579140943217,
+        "better": 2,
+        "tied": 5,
+        "worse": 0
+      },
+      "v16": {
+        "n": 7,
+        "candidate_mean": 13.285714285714286,
+        "baseline_mean": 11.142857142857142,
+        "difference": 2.142857142857143,
+        "paired_se": 4.328359259298034,
+        "better": 2,
+        "tied": 3,
+        "worse": 2
+      }
+    }
+  },
+  "win_audits": [
+    {
+      "run_id": "20261014-134658-BAPQJMY5",
+      "seed": "BAPQJMY5",
+      "version": "11845ce8",
+      "recorded_result": "won",
+      "verdict": "verified_win",
+      "round_end_event": 3133,
+      "blind": "Verdant Leaf",
+      "scored": 109650,
+      "target": 100000
+    }
+  ],
+  "advancement_checks": {
+    "bottom_pair_improves_without_v15_regression": true,
+    "weak_mean_at_least_v16": true,
+    "controls_within_three_blinds_of_v15": true,
+    "no_execution_errors": true,
+    "all_recorded_wins_verified": true
+  },
+  "advance_to_bench30": true,
+  "limitations": "Selected development subset; one stochastic run per seed; no fresh baseline replicate; bundled threshold rollback and planning change."
+}

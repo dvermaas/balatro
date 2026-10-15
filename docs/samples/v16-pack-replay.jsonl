@@ -1,0 +1,3 @@
+{"id": 3010, "ante": 1, "was": "skip", "now": "Burglar: When Blind is selected, gain +3 Hands and lose all discards [utility]", "action": ["pack", {"card": 0}], "probs": {"take_0": 0.405, "take_1": 0.18}}
+{"id": 3569, "ante": 1, "was": "skip", "now": "Riff-raff: When Blind is selected, create 2 Common Jokers (Must have room) [utility]", "action": ["pack", {"card": 1}], "probs": {"take_0": 0.2575, "take_1": 0.3125}}
+{"id": 5248, "ante": 1, "was": "skip", "now": "Showman: Joker, Tarot, Planet, and Spectral cards may appear multiple times [utility]", "action": ["pack", {"card": 0}], "probs": {"take_0": 0.3775, "take_1": 0.3075}}

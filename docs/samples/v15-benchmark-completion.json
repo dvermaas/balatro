@@ -1,0 +1,34 @@
+{
+  "mode": "paused",
+  "version": {
+    "id": "6725b5bb",
+    "label": "v15",
+    "legacy": false,
+    "runs": 30,
+    "finished": 30
+  },
+  "benchmark": {
+    "name": "bench30-a",
+    "current": null,
+    "remaining": 0
+  },
+  "stats": {
+    "decisions": 3091,
+    "input_tokens": 8419076,
+    "output_tokens": 335533,
+    "jev_ms": 717939,
+    "runs": 30,
+    "wins": 2,
+    "best_ante": 9,
+    "errors": 2
+  },
+  "game_state": "MENU",
+  "completion_events": [
+    {
+      "id": 6054,
+      "t": 1791913186.3151412,
+      "kind": "info",
+      "msg": "Benchmark bench30-a complete"
+    }
+  ]
+}

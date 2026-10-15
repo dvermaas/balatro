@@ -1,0 +1,811 @@
+{
+  "recorded_version": "503b35ff",
+  "eligible_no_discard_states": 25,
+  "states_with_setup_choices": 12,
+  "seconds_median": 0.392,
+  "seconds_max": 0.822,
+  "note": "Candidate coverage and model estimates, not counterfactual wins. No JEV or game calls.",
+  "reports": [
+    {
+      "run": "20261014-061534-75WVKF42",
+      "event": 166,
+      "new_setup_options": 3,
+      "best_two_play_option": "play_6",
+      "best": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "9 of Spades",
+          "9 of Diamonds"
+        ],
+        "also_played": [
+          "King of Spades",
+          "10 of Diamonds",
+          "3 of Clubs"
+        ],
+        "estimated_score": 56,
+        "share_of_pace": "14%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 603,
+          "average_two_play_total": 659,
+          "poor_draw_two_play_total": 120,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "King of Hearts",
+            "Queen of Hearts",
+            "4 of Hearts"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Chase a Hearts flush (holding 3 of 5)"
+      },
+      "strongest_now": {
+        "hand": "Two Pair",
+        "scoring_cards": [
+          "King of Spades",
+          "King of Hearts",
+          "9 of Spades",
+          "9 of Diamonds"
+        ],
+        "also_played": [
+          "3 of Clubs"
+        ],
+        "estimated_score": 234,
+        "share_of_pace": "58%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 334,
+          "average_two_play_total": 568,
+          "poor_draw_two_play_total": 286,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Queen of Hearts",
+            "10 of Diamonds",
+            "4 of Hearts"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 2
+        }
+      }
+    },
+    {
+      "run": "20261014-061534-75WVKF42",
+      "event": 169,
+      "new_setup_options": 3,
+      "best_two_play_option": "play_4",
+      "best": {
+        "hand": "High Card",
+        "scoring_cards": [
+          "Jack of Spades"
+        ],
+        "also_played": [
+          "10 of Diamonds",
+          "9 of Clubs",
+          "6 of Clubs"
+        ],
+        "estimated_score": 15,
+        "share_of_pace": "3%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 923,
+          "average_two_play_total": 938,
+          "poor_draw_two_play_total": 987,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Ace of Hearts",
+            "Queen of Hearts",
+            "4 of Hearts",
+            "4 of Hearts"
+          ],
+          "cards_drawn": 4,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Chase a Hearts flush (holding 4 of 5)"
+      },
+      "strongest_now": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "4 of Hearts",
+          "4 of Hearts"
+        ],
+        "also_played": [
+          "10 of Diamonds",
+          "9 of Clubs",
+          "6 of Clubs"
+        ],
+        "estimated_score": 36,
+        "share_of_pace": "8%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 306,
+          "average_two_play_total": 342,
+          "poor_draw_two_play_total": 96,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Ace of Hearts",
+            "Queen of Hearts",
+            "Jack of Spades"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 3
+        }
+      }
+    },
+    {
+      "run": "20261014-061534-75WVKF42",
+      "event": 172,
+      "new_setup_options": 4,
+      "best_two_play_option": "play_4",
+      "best": {
+        "hand": "High Card",
+        "scoring_cards": [
+          "Ace of Diamonds"
+        ],
+        "also_played": [
+          "Jack of Spades",
+          "8 of Spades",
+          "2 of Spades"
+        ],
+        "estimated_score": 16,
+        "share_of_pace": "2%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 681,
+          "average_two_play_total": 697,
+          "poor_draw_two_play_total": 232,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Ace of Hearts",
+            "Queen of Hearts",
+            "6 of Hearts",
+            "3 of Hearts"
+          ],
+          "cards_drawn": 4,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Chase a Hearts flush (holding 4 of 5)"
+      },
+      "strongest_now": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "Ace of Hearts",
+          "Ace of Diamonds"
+        ],
+        "also_played": [
+          "6 of Hearts",
+          "3 of Hearts",
+          "2 of Spades"
+        ],
+        "estimated_score": 64,
+        "share_of_pace": "10%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 300,
+          "average_two_play_total": 364,
+          "poor_draw_two_play_total": 124,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Queen of Hearts",
+            "Jack of Spades",
+            "8 of Spades"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 4
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 212,
+      "new_setup_options": 3,
+      "best_two_play_option": "play_6",
+      "best": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "2 of Hearts",
+          "2 of Diamonds"
+        ],
+        "also_played": [
+          "Ace of Hearts",
+          "6 of Diamonds"
+        ],
+        "estimated_score": 28,
+        "share_of_pace": "44%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 222,
+          "average_two_play_total": 250,
+          "poor_draw_two_play_total": 88,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Ace of Spades",
+            "Queen of Spades",
+            "Jack of Spades",
+            "3 of Spades"
+          ],
+          "cards_drawn": 4,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Chase a Spades flush (holding 4 of 5)"
+      },
+      "strongest_now": {
+        "hand": "Two Pair",
+        "scoring_cards": [
+          "Ace of Spades",
+          "Ace of Hearts",
+          "2 of Hearts",
+          "2 of Diamonds"
+        ],
+        "also_played": [
+          "3 of Spades"
+        ],
+        "estimated_score": 92,
+        "share_of_pace": "144%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 120,
+          "average_two_play_total": 212,
+          "poor_draw_two_play_total": 136,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Queen of Spades",
+            "Jack of Spades",
+            "6 of Diamonds"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 2
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 215,
+      "new_setup_options": 3,
+      "best_two_play_option": "play_6",
+      "best": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "6 of Hearts",
+          "6 of Diamonds"
+        ],
+        "also_played": [
+          "Ace of Clubs",
+          "4 of Diamonds"
+        ],
+        "estimated_score": 44,
+        "share_of_pace": "73%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 200,
+          "average_two_play_total": 244,
+          "poor_draw_two_play_total": 104,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "3%",
+          "keeps": [
+            "Queen of Spades",
+            "Jack of Spades",
+            "10 of Diamonds",
+            "8 of Clubs"
+          ],
+          "cards_drawn": 4,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Chase a straight (holding 4 of 5 ranks)"
+      },
+      "strongest_now": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "6 of Hearts",
+          "6 of Diamonds"
+        ],
+        "also_played": [
+          "10 of Diamonds",
+          "8 of Clubs",
+          "4 of Diamonds"
+        ],
+        "estimated_score": 44,
+        "share_of_pace": "73%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 172,
+          "average_two_play_total": 216,
+          "poor_draw_two_play_total": 104,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "6%",
+          "keeps": [
+            "Ace of Clubs",
+            "Queen of Spades",
+            "Jack of Spades"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 2
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 218,
+      "new_setup_options": 3,
+      "best_two_play_option": "play_5",
+      "best": {
+        "hand": "High Card",
+        "scoring_cards": [
+          "Ace of Clubs"
+        ],
+        "also_played": [
+          "6 of Clubs",
+          "3 of Hearts",
+          "2 of Clubs"
+        ],
+        "estimated_score": 16,
+        "share_of_pace": "25%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 428,
+          "average_two_play_total": 444,
+          "poor_draw_two_play_total": 332,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "34%",
+          "keeps": [
+            "King of Spades",
+            "Queen of Spades",
+            "Jack of Spades",
+            "10 of Spades"
+          ],
+          "cards_drawn": 4,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Chase a Spades flush (holding 4 of 5)"
+      },
+      "strongest_now": {
+        "hand": "Straight",
+        "scoring_cards": [
+          "Ace of Clubs",
+          "King of Spades",
+          "Queen of Spades",
+          "Jack of Spades",
+          "10 of Spades"
+        ],
+        "also_played": [],
+        "estimated_score": 324,
+        "share_of_pace": "514%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 110,
+          "average_two_play_total": 434,
+          "poor_draw_two_play_total": 356,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "84%",
+          "keeps": [
+            "6 of Clubs",
+            "3 of Hearts",
+            "2 of Clubs"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 2
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 231,
+      "new_setup_options": 2,
+      "best_two_play_option": "play_1",
+      "best": {
+        "hand": "Two Pair",
+        "scoring_cards": [
+          "10 of Spades (debuffed)",
+          "10 of Clubs",
+          "3 of Spades (debuffed)",
+          "3 of Diamonds"
+        ],
+        "also_played": [
+          "7 of Clubs"
+        ],
+        "estimated_score": 66,
+        "share_of_pace": "77%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 121,
+          "average_two_play_total": 187,
+          "poor_draw_two_play_total": 126,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "King of Hearts",
+            "9 of Hearts",
+            "8 of Spades (debuffed)"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        }
+      },
+      "strongest_now": {
+        "hand": "Two Pair",
+        "scoring_cards": [
+          "10 of Spades (debuffed)",
+          "10 of Clubs",
+          "3 of Spades (debuffed)",
+          "3 of Diamonds"
+        ],
+        "also_played": [
+          "7 of Clubs"
+        ],
+        "estimated_score": 66,
+        "share_of_pace": "77%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 121,
+          "average_two_play_total": 187,
+          "poor_draw_two_play_total": 126,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "King of Hearts",
+            "9 of Hearts",
+            "8 of Spades (debuffed)"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 234,
+      "new_setup_options": 3,
+      "best_two_play_option": "play_4",
+      "best": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "8 of Spades (debuffed)",
+          "8 of Diamonds"
+        ],
+        "also_played": [
+          "7 of Diamonds",
+          "5 of Spades (debuffed)",
+          "4 of Spades (debuffed)"
+        ],
+        "estimated_score": 36,
+        "share_of_pace": "40%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 141,
+          "average_two_play_total": 177,
+          "poor_draw_two_play_total": 80,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "King of Hearts",
+            "9 of Hearts",
+            "3 of Hearts"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Chase a Hearts flush (holding 3 of 5)"
+      },
+      "strongest_now": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "8 of Spades (debuffed)",
+          "8 of Diamonds"
+        ],
+        "also_played": [
+          "5 of Spades (debuffed)",
+          "4 of Spades (debuffed)",
+          "3 of Hearts"
+        ],
+        "estimated_score": 36,
+        "share_of_pace": "40%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 115,
+          "average_two_play_total": 151,
+          "poor_draw_two_play_total": 74,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "King of Hearts",
+            "9 of Hearts",
+            "7 of Diamonds"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 5
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 237,
+      "new_setup_options": 3,
+      "best_two_play_option": "play_2",
+      "best": {
+        "hand": "High Card",
+        "scoring_cards": [
+          "Ace of Clubs"
+        ],
+        "also_played": [
+          "7 of Diamonds",
+          "6 of Diamonds",
+          "4 of Clubs",
+          "3 of Clubs"
+        ],
+        "estimated_score": 16,
+        "share_of_pace": "16%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 219,
+          "average_two_play_total": 235,
+          "poor_draw_two_play_total": 114,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "6%",
+          "keeps": [
+            "King of Hearts",
+            "9 of Spades (debuffed)",
+            "9 of Hearts"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        }
+      },
+      "strongest_now": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "9 of Spades (debuffed)",
+          "9 of Hearts"
+        ],
+        "also_played": [
+          "6 of Diamonds",
+          "4 of Clubs",
+          "3 of Clubs"
+        ],
+        "estimated_score": 38,
+        "share_of_pace": "38%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 135,
+          "average_two_play_total": 173,
+          "poor_draw_two_play_total": 86,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Ace of Clubs",
+            "King of Hearts",
+            "7 of Diamonds"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 4
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 240,
+      "new_setup_options": 4,
+      "best_two_play_option": "play_4",
+      "best": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "Ace of Hearts",
+          "Ace of Clubs"
+        ],
+        "also_played": [
+          "King of Hearts",
+          "8 of Clubs",
+          "6 of Clubs"
+        ],
+        "estimated_score": 64,
+        "share_of_pace": "56%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 202,
+          "average_two_play_total": 266,
+          "poor_draw_two_play_total": 160,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "Jack of Diamonds",
+            "9 of Diamonds",
+            "7 of Diamonds"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Chase a Diamonds flush (holding 3 of 5)"
+      },
+      "strongest_now": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "Ace of Hearts",
+          "Ace of Clubs"
+        ],
+        "also_played": [
+          "8 of Clubs",
+          "7 of Diamonds",
+          "6 of Clubs"
+        ],
+        "estimated_score": 64,
+        "share_of_pace": "56%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 195,
+          "average_two_play_total": 259,
+          "poor_draw_two_play_total": 160,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "0%",
+          "keeps": [
+            "King of Hearts",
+            "Jack of Diamonds",
+            "9 of Diamonds"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 3
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 243,
+      "new_setup_options": 5,
+      "best_two_play_option": "play_8",
+      "best": {
+        "hand": "High Card",
+        "scoring_cards": [
+          "Ace of Spades (debuffed)"
+        ],
+        "also_played": [
+          "King of Hearts",
+          "9 of Diamonds",
+          "5 of Diamonds",
+          "4 of Hearts"
+        ],
+        "estimated_score": 5,
+        "share_of_pace": "4%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 356,
+          "average_two_play_total": 361,
+          "poor_draw_two_play_total": 185,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "25%",
+          "keeps": [
+            "Jack of Hearts",
+            "Jack of Clubs",
+            "Jack of Diamonds"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Keep pairs/sets, dig for more of a kind"
+      },
+      "strongest_now": {
+        "hand": "Three of a Kind",
+        "scoring_cards": [
+          "Jack of Hearts",
+          "Jack of Clubs",
+          "Jack of Diamonds"
+        ],
+        "also_played": [
+          "5 of Diamonds",
+          "4 of Hearts"
+        ],
+        "estimated_score": 180,
+        "share_of_pace": "136%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 118,
+          "average_two_play_total": 298,
+          "poor_draw_two_play_total": 220,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "19%",
+          "keeps": [
+            "Ace of Spades (debuffed)",
+            "King of Hearts",
+            "9 of Diamonds"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 2
+        }
+      }
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 246,
+      "new_setup_options": 3,
+      "best_two_play_option": "play_5",
+      "best": {
+        "hand": "High Card",
+        "scoring_cards": [
+          "Ace of Spades (debuffed)"
+        ],
+        "also_played": [
+          "10 of Diamonds",
+          "9 of Diamonds",
+          "7 of Hearts",
+          "2 of Hearts"
+        ],
+        "estimated_score": 5,
+        "share_of_pace": "5%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 245,
+          "average_two_play_total": 250,
+          "poor_draw_two_play_total": 125,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "53%",
+          "keeps": [
+            "King of Hearts",
+            "King of Clubs",
+            "Queen of Clubs"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 1
+        },
+        "setup": "Use a hand to cycle cards: Keep pairs/sets, dig for more of a kind"
+      },
+      "strongest_now": {
+        "hand": "Pair",
+        "scoring_cards": [
+          "King of Hearts",
+          "King of Clubs"
+        ],
+        "also_played": [
+          "9 of Diamonds",
+          "7 of Hearts",
+          "2 of Hearts"
+        ],
+        "estimated_score": 60,
+        "share_of_pace": "56%",
+        "clears_blind_alone": false,
+        "next_hand_outlook": {
+          "average_next_play": 139,
+          "average_two_play_total": 199,
+          "poor_draw_two_play_total": 120,
+          "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+          "chance_two_plays_clear": "25%",
+          "keeps": [
+            "Ace of Spades (debuffed)",
+            "Queen of Clubs",
+            "10 of Diamonds"
+          ],
+          "cards_drawn": 5,
+          "basis": "32 sampled unordered draws; best modeled next play, not a full-round win probability",
+          "rank_by_two_play_average": 2
+        }
+      }
+    }
+  ]
+}

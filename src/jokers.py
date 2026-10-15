@@ -233,6 +233,45 @@ def after_discard(gs, discarded, drawn):
     return build(gs, cards)
 
 
+# Only effects whose transition is modeled below or which stay fixed between plays.
+# Unknown, scaling, destructive, random and copy jokers fall back to normal hand play.
+PLAY_STABLE = {
+    "Joker", "Greedy Joker", "Lusty Joker", "Wrathful Joker", "Gluttonous Joker",
+    "Jolly Joker", "Zany Joker", "Mad Joker", "Crazy Joker", "Droll Joker",
+    "Sly Joker", "Wily Joker", "Clever Joker", "Devious Joker", "Crafty Joker",
+    "Half Joker", "Banner", "Mystic Summit", "Dusk", "Raised Fist", "Fibonacci",
+    "Scary Face", "Abstract Joker", "Even Steven", "Odd Todd", "Scholar",
+    "Supernova", "Blackboard", "Blue Joker", "Baron", "Photograph", "Acrobat",
+    "Sock and Buskin", "Hanging Chad", "Smiley Face", "Walkie Talkie",
+    "Shoot the Moon", "Stuntman", "The Duo", "The Trio", "The Family", "The Order", "The Tribe",
+    "Arrowhead", "Onyx Agate",
+}
+PLAY_UTILITY = {"Burglar", "Riff-raff", "Golden Joker", "Showman", "Juggler", "Drunkard", "Troubadour"}
+
+
+def play_forecast_supported(gs):
+    for c in _d(gs.get("jokers")).get("cards") or []:
+        if _d(c.get("state")).get("debuff"):
+            return False
+        label = c.get("label")
+        if label in PLAY_UTILITY:
+            continue
+        if label not in PLAY_STABLE or entry(c)["rule"] is None:
+            return False
+    return True
+
+
+def after_play(gs, drawn):
+    """Supported joker state after a play; hand counters are updated by the caller."""
+    cards = []
+    for c in _d(gs.get("jokers")).get("cards") or []:
+        if c.get("label") == "Blue Joker":
+            remaining = max(0, len(_d(gs.get("cards")).get("cards") or []) - drawn)
+            c = {**c, "value": {**_d(c.get("value")), "effect": f"+{2 * remaining} Chips"}}
+        cards.append(c)
+    return build(gs, cards)
+
+
 def score(infos, combo, name, scoring, hand_levels, jokers, rnd):
     """Expected score of playing hand positions `combo` (scoring = indices into combo)."""
     h = hand_levels.get(name, {})

@@ -1,0 +1,414 @@
+{
+  "baseline": "6725b5bb",
+  "ranking_versions": [
+    "v9",
+    "v10",
+    "v11",
+    "v12",
+    "v13",
+    "v15"
+  ],
+  "ranking": [
+    {
+      "seed": "75WVKF42",
+      "recent_complete_mean": 4.5,
+      "progress": {
+        "v9": 4,
+        "v10": 5,
+        "v11": 5,
+        "v12": 4,
+        "v13": 4,
+        "v15": 5
+      },
+      "latest_run": "20261013-191328-75WVKF42"
+    },
+    {
+      "seed": "DHPB8Q1L",
+      "recent_complete_mean": 5.166666666666667,
+      "progress": {
+        "v9": 5,
+        "v10": 2,
+        "v11": 2,
+        "v12": 11,
+        "v13": 6,
+        "v15": 5
+      },
+      "latest_run": "20261013-070220-DHPB8Q1L"
+    },
+    {
+      "seed": "PX8GK4E6",
+      "recent_complete_mean": 7.833333333333333,
+      "progress": {
+        "v9": 5,
+        "v10": 14,
+        "v11": 5,
+        "v12": 5,
+        "v13": 13,
+        "v15": 5
+      },
+      "latest_run": "20261013-065902-PX8GK4E6"
+    },
+    {
+      "seed": "JV8CL6BQ",
+      "recent_complete_mean": 9.166666666666666,
+      "progress": {
+        "v9": 3,
+        "v10": 8,
+        "v11": 3,
+        "v12": 14,
+        "v13": 20,
+        "v15": 7
+      },
+      "latest_run": "20261013-193605-JV8CL6BQ"
+    },
+    {
+      "seed": "8GWNFCSN",
+      "recent_complete_mean": 9.666666666666666,
+      "progress": {
+        "v9": 13,
+        "v10": 12,
+        "v11": 12,
+        "v12": 4,
+        "v13": 4,
+        "v15": 13
+      },
+      "latest_run": "20261013-191933-8GWNFCSN"
+    },
+    {
+      "seed": "TBIR2XMU",
+      "recent_complete_mean": 9.833333333333334,
+      "progress": {
+        "v9": 14,
+        "v10": 5,
+        "v11": 4,
+        "v12": 12,
+        "v13": 10,
+        "v15": 14
+      },
+      "latest_run": "20261013-065652-TBIR2XMU"
+    },
+    {
+      "seed": "SDNUURBN",
+      "recent_complete_mean": 11,
+      "progress": {
+        "v9": 11,
+        "v10": 11,
+        "v11": 11,
+        "v12": 8,
+        "v13": 14,
+        "v15": 11
+      },
+      "latest_run": "20261013-071851-SDNUURBN"
+    },
+    {
+      "seed": "UR3ZTT24",
+      "recent_complete_mean": 11,
+      "progress": {
+        "v9": 14,
+        "v10": 4,
+        "v11": 4,
+        "v12": 16,
+        "v13": 14,
+        "v15": 14
+      },
+      "latest_run": "20261013-193134-UR3ZTT24"
+    },
+    {
+      "seed": "XUTRVN1Y",
+      "recent_complete_mean": 12.333333333333334,
+      "progress": {
+        "v9": 13,
+        "v10": 10,
+        "v11": 16,
+        "v12": 13,
+        "v13": 11,
+        "v15": 11
+      },
+      "latest_run": "20261013-070305-XUTRVN1Y"
+    },
+    {
+      "seed": "8XNG984V",
+      "recent_complete_mean": 12.833333333333334,
+      "progress": {
+        "v9": 13,
+        "v10": 11,
+        "v11": 11,
+        "v12": 16,
+        "v13": 13,
+        "v15": 13
+      },
+      "latest_run": "20261013-071647-8XNG984V"
+    },
+    {
+      "seed": "MW6PBTW4",
+      "recent_complete_mean": 12.833333333333334,
+      "progress": {
+        "v9": 10,
+        "v10": 13,
+        "v11": 10,
+        "v12": 14,
+        "v13": 14,
+        "v15": 16
+      },
+      "latest_run": "20261013-192136-MW6PBTW4"
+    },
+    {
+      "seed": "7X7WSDCX",
+      "recent_complete_mean": 13.833333333333334,
+      "progress": {
+        "v9": 13,
+        "v10": 10,
+        "v11": 16,
+        "v12": 13,
+        "v13": 17,
+        "v15": 14
+      },
+      "latest_run": "20261012-224141-7X7WSDCX"
+    },
+    {
+      "seed": "LRFULSLB",
+      "recent_complete_mean": 13.833333333333334,
+      "progress": {
+        "v9": 11,
+        "v10": 11,
+        "v11": 11,
+        "v12": 16,
+        "v13": 14,
+        "v15": 20
+      },
+      "latest_run": "20261013-191623-LRFULSLB"
+    },
+    {
+      "seed": "I9Q96AKF",
+      "recent_complete_mean": 14,
+      "progress": {
+        "v9": 13,
+        "v10": 13,
+        "v11": 11,
+        "v12": 14,
+        "v13": 17,
+        "v15": 16
+      },
+      "latest_run": "20261013-191409-I9Q96AKF"
+    },
+    {
+      "seed": "2S38V5NR",
+      "recent_complete_mean": 14.5,
+      "progress": {
+        "v9": 16,
+        "v10": 10,
+        "v11": 14,
+        "v12": 14,
+        "v13": 16,
+        "v15": 17
+      },
+      "latest_run": "20261013-192612-2S38V5NR"
+    },
+    {
+      "seed": "C3XPB74B",
+      "recent_complete_mean": 14.5,
+      "progress": {
+        "v9": 12,
+        "v10": 14,
+        "v11": 13,
+        "v12": 16,
+        "v13": 16,
+        "v15": 16
+      },
+      "latest_run": "20261013-193341-C3XPB74B"
+    },
+    {
+      "seed": "WWYTV5PP",
+      "recent_complete_mean": 14.666666666666666,
+      "progress": {
+        "v9": 14,
+        "v10": 13,
+        "v11": 13,
+        "v12": 14,
+        "v13": 17,
+        "v15": 17
+      },
+      "latest_run": "20261013-065943-WWYTV5PP"
+    },
+    {
+      "seed": "W4YA1M4U",
+      "recent_complete_mean": 14.833333333333334,
+      "progress": {
+        "v9": 11,
+        "v10": 13,
+        "v11": 14,
+        "v12": 14,
+        "v13": 14,
+        "v15": 23
+      },
+      "latest_run": "20261013-071114-W4YA1M4U"
+    },
+    {
+      "seed": "U8AC5647",
+      "recent_complete_mean": 14.833333333333334,
+      "progress": {
+        "v9": 17,
+        "v10": 9,
+        "v11": 16,
+        "v12": 17,
+        "v13": 15,
+        "v15": 15
+      },
+      "latest_run": "20261013-071444-U8AC5647"
+    },
+    {
+      "seed": "WMAZ7HWJ",
+      "recent_complete_mean": 15,
+      "progress": {
+        "v9": 17,
+        "v10": 14,
+        "v11": 14,
+        "v12": 14,
+        "v13": 11,
+        "v15": 20
+      },
+      "latest_run": "20261013-070750-WMAZ7HWJ"
+    },
+    {
+      "seed": "6CAXN9I6",
+      "recent_complete_mean": 15.666666666666666,
+      "progress": {
+        "v9": 17,
+        "v10": 14,
+        "v11": 17,
+        "v12": 14,
+        "v13": 18,
+        "v15": 14
+      },
+      "latest_run": "20261012-224336-6CAXN9I6"
+    },
+    {
+      "seed": "BAPQJMY5",
+      "recent_complete_mean": 15.666666666666666,
+      "progress": {
+        "v9": 11,
+        "v10": 13,
+        "v11": 13,
+        "v12": 19,
+        "v13": 14,
+        "v15": 24
+      },
+      "latest_run": "20261012-224505-BAPQJMY5"
+    },
+    {
+      "seed": "A7YBUVWD",
+      "recent_complete_mean": 15.833333333333334,
+      "progress": {
+        "v9": 16,
+        "v10": 17,
+        "v11": 16,
+        "v12": 9,
+        "v13": 17,
+        "v15": 20
+      },
+      "latest_run": "20261013-072020-A7YBUVWD"
+    },
+    {
+      "seed": "V98SL5G2",
+      "recent_complete_mean": 16.166666666666668,
+      "progress": {
+        "v9": 13,
+        "v10": 16,
+        "v11": 17,
+        "v12": 17,
+        "v13": 17,
+        "v15": 17
+      },
+      "latest_run": "20261013-070500-V98SL5G2"
+    },
+    {
+      "seed": "X62IZYJ4",
+      "recent_complete_mean": 16.166666666666668,
+      "progress": {
+        "v9": 14,
+        "v10": 19,
+        "v11": 7,
+        "v12": 17,
+        "v13": 16,
+        "v15": 24
+      },
+      "latest_run": "20261013-072352-X62IZYJ4"
+    },
+    {
+      "seed": "JRE681Y8",
+      "recent_complete_mean": 16.333333333333332,
+      "progress": {
+        "v9": 16,
+        "v10": 14,
+        "v11": 14,
+        "v12": 16,
+        "v13": 19,
+        "v15": 19
+      },
+      "latest_run": "20261013-190554-JRE681Y8"
+    },
+    {
+      "seed": "57AXFNDP",
+      "recent_complete_mean": 16.5,
+      "progress": {
+        "v9": 11,
+        "v10": 17,
+        "v11": 17,
+        "v12": 20,
+        "v13": 17,
+        "v15": 17
+      },
+      "latest_run": "20261013-193717-57AXFNDP"
+    },
+    {
+      "seed": "2RGEX6EN",
+      "recent_complete_mean": 16.666666666666668,
+      "progress": {
+        "v9": 20,
+        "v10": 20,
+        "v11": 23,
+        "v12": 18,
+        "v13": 17,
+        "v15": 2
+      },
+      "latest_run": "20261013-070438-2RGEX6EN"
+    },
+    {
+      "seed": "5V1F9XQ2",
+      "recent_complete_mean": 16.666666666666668,
+      "progress": {
+        "v9": 16,
+        "v10": 12,
+        "v11": 16,
+        "v12": 18,
+        "v13": 20,
+        "v15": 18
+      },
+      "latest_run": "20261013-192351-5V1F9XQ2"
+    },
+    {
+      "seed": "2CM51JLD",
+      "recent_complete_mean": 18.666666666666668,
+      "progress": {
+        "v9": 20,
+        "v10": 19,
+        "v11": 14,
+        "v12": 20,
+        "v13": 19,
+        "v15": 20
+      },
+      "latest_run": "20261013-192845-2CM51JLD"
+    }
+  ],
+  "pilot_set": "weak7-a",
+  "pilot_seeds": [
+    "75WVKF42",
+    "DHPB8Q1L",
+    "PX8GK4E6",
+    "JV8CL6BQ",
+    "2RGEX6EN",
+    "2CM51JLD",
+    "BAPQJMY5"
+  ],
+  "selection": "Four lowest mean seeds across completed v9-v15 versions, plus largest v15 regression, and two strong controls. Development set, not held out."
+}

@@ -1,0 +1,536 @@
+{
+  "model": "jev-1.13.0",
+  "bank_sha256": "e6ecffa0c1d2e88b5c3bc96ed1bc73e7cf7fa1e4b6d81f5f035deef7b9446c80",
+  "calls": [
+    {
+      "case_id": "D01",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D01",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D04",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D04",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D10",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D10",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D12",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D12",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D15",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D15",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D26",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D26",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D31",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D32",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D33",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D34",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D35",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D36",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D37",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D38",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D39",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D40",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 0
+    },
+    {
+      "case_id": "D01",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D01",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D04",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D04",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D10",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D10",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D12",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D12",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D15",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D15",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D26",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D26",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D31",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D32",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D33",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D34",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D35",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D36",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D37",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D38",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D39",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D40",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 0
+    },
+    {
+      "case_id": "D01",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D01",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D04",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D04",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D10",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D10",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D12",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D12",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D15",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D15",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D26",
+      "condition": "candidate",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D26",
+      "condition": "baseline",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D31",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D32",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D33",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D34",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D35",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D36",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D37",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D38",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D39",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D40",
+      "condition": "recorded_shop",
+      "order": "original",
+      "repeat": 1
+    },
+    {
+      "case_id": "D01",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D01",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D04",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D04",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D10",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D10",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D12",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D12",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D15",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D15",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D26",
+      "condition": "baseline",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D26",
+      "condition": "candidate",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D31",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D32",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D33",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D34",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D35",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D36",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D37",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D38",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D39",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    },
+    {
+      "case_id": "D40",
+      "condition": "recorded_shop",
+      "order": "reverse",
+      "repeat": 1
+    }
+  ],
+  "primary_diagnostic": "Selected immediate reference score, with identical instruction and bounded candidates",
+  "limits": "Neither full-policy replay nor continuation; order and stochastic sensitivity reported together, no win-rate inference"
+}

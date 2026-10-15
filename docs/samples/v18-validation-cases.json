@@ -1,0 +1,42 @@
+[
+  {
+    "name": "validation_hermit_26",
+    "run_id": "20261014-141234-WMAZ7HWJ",
+    "event_id": 7839
+  },
+  {
+    "name": "validation_pack_money14",
+    "run_id": "20261014-140223-WWYTV5PP",
+    "event_id": 5436
+  },
+  {
+    "name": "validation_pack_tempreance",
+    "run_id": "20261014-140502-DHPB8Q1L",
+    "event_id": 6129
+  },
+  {
+    "name": "validation_hermit_37",
+    "run_id": "20261014-142022-8XNG984V",
+    "event_id": 9379
+  },
+  {
+    "name": "validation_cash_vs_mult",
+    "run_id": "20261014-142903-JRE681Y8",
+    "event_id": 11430
+  },
+  {
+    "name": "validation_temperance_weakseed",
+    "run_id": "20261014-194148-JV8CL6BQ",
+    "event_id": 3932
+  },
+  {
+    "name": "validation_control_profit",
+    "run_id": "20261014-193421-2CM51JLD",
+    "event_id": 2100
+  },
+  {
+    "name": "validation_control_break_even",
+    "run_id": "20261014-193421-2CM51JLD",
+    "event_id": 2108
+  }
+]

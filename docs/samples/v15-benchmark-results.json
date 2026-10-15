@@ -1,0 +1,2202 @@
+{
+  "version": "6725b5bb",
+  "set": "bench30-a",
+  "done": 30,
+  "wins": 2,
+  "mean_progress": 14.9,
+  "mean_ante": 5.47,
+  "cells": {
+    "7X7WSDCX": {
+      "result": "lost",
+      "ante": 5,
+      "round": 15,
+      "run_id": "20261012-224141-7X7WSDCX",
+      "progress": 14
+    },
+    "6CAXN9I6": {
+      "result": "lost",
+      "ante": 5,
+      "round": 15,
+      "run_id": "20261012-224336-6CAXN9I6",
+      "progress": 14
+    },
+    "BAPQJMY5": {
+      "result": "won",
+      "ante": 9,
+      "round": 24,
+      "run_id": "20261012-224505-BAPQJMY5",
+      "progress": 24
+    },
+    "TBIR2XMU": {
+      "result": "lost",
+      "ante": 5,
+      "round": 15,
+      "run_id": "20261013-065652-TBIR2XMU",
+      "progress": 14
+    },
+    "PX8GK4E6": {
+      "result": "lost",
+      "ante": 2,
+      "round": 6,
+      "run_id": "20261013-065902-PX8GK4E6",
+      "progress": 5
+    },
+    "WWYTV5PP": {
+      "result": "lost",
+      "ante": 6,
+      "round": 18,
+      "run_id": "20261013-065943-WWYTV5PP",
+      "progress": 17
+    },
+    "DHPB8Q1L": {
+      "result": "lost",
+      "ante": 2,
+      "round": 6,
+      "run_id": "20261013-070220-DHPB8Q1L",
+      "progress": 5
+    },
+    "XUTRVN1Y": {
+      "result": "lost",
+      "ante": 4,
+      "round": 12,
+      "run_id": "20261013-070305-XUTRVN1Y",
+      "progress": 11
+    },
+    "2RGEX6EN": {
+      "result": "lost",
+      "ante": 1,
+      "round": 3,
+      "run_id": "20261013-070438-2RGEX6EN",
+      "progress": 2
+    },
+    "V98SL5G2": {
+      "result": "lost",
+      "ante": 6,
+      "round": 18,
+      "run_id": "20261013-070500-V98SL5G2",
+      "progress": 17
+    },
+    "WMAZ7HWJ": {
+      "result": "lost",
+      "ante": 7,
+      "round": 21,
+      "run_id": "20261013-070750-WMAZ7HWJ",
+      "progress": 20
+    },
+    "W4YA1M4U": {
+      "result": "lost",
+      "ante": 8,
+      "round": 24,
+      "run_id": "20261013-071114-W4YA1M4U",
+      "progress": 23
+    },
+    "U8AC5647": {
+      "result": "lost",
+      "ante": 6,
+      "round": 16,
+      "run_id": "20261013-071444-U8AC5647",
+      "progress": 15
+    },
+    "8XNG984V": {
+      "result": "lost",
+      "ante": 5,
+      "round": 14,
+      "run_id": "20261013-071647-8XNG984V",
+      "progress": 13
+    },
+    "SDNUURBN": {
+      "result": "lost",
+      "ante": 4,
+      "round": 12,
+      "run_id": "20261013-071851-SDNUURBN",
+      "progress": 11
+    },
+    "A7YBUVWD": {
+      "result": "lost",
+      "ante": 7,
+      "round": 21,
+      "run_id": "20261013-072020-A7YBUVWD",
+      "progress": 20
+    },
+    "X62IZYJ4": {
+      "result": "won",
+      "ante": 9,
+      "round": 25,
+      "run_id": "20261013-072352-X62IZYJ4",
+      "progress": 24
+    },
+    "JRE681Y8": {
+      "result": "lost",
+      "ante": 7,
+      "round": 20,
+      "run_id": "20261013-190554-JRE681Y8",
+      "progress": 19
+    },
+    "75WVKF42": {
+      "result": "lost",
+      "ante": 2,
+      "round": 6,
+      "run_id": "20261013-191328-75WVKF42",
+      "progress": 5
+    },
+    "I9Q96AKF": {
+      "result": "lost",
+      "ante": 6,
+      "round": 17,
+      "run_id": "20261013-191409-I9Q96AKF",
+      "progress": 16
+    },
+    "LRFULSLB": {
+      "result": "lost",
+      "ante": 7,
+      "round": 21,
+      "run_id": "20261013-191623-LRFULSLB",
+      "progress": 20
+    },
+    "8GWNFCSN": {
+      "result": "lost",
+      "ante": 5,
+      "round": 14,
+      "run_id": "20261013-191933-8GWNFCSN",
+      "progress": 13
+    },
+    "MW6PBTW4": {
+      "result": "lost",
+      "ante": 6,
+      "round": 17,
+      "run_id": "20261013-192136-MW6PBTW4",
+      "progress": 16
+    },
+    "5V1F9XQ2": {
+      "result": "lost",
+      "ante": 7,
+      "round": 19,
+      "run_id": "20261013-192351-5V1F9XQ2",
+      "progress": 18
+    },
+    "2S38V5NR": {
+      "result": "lost",
+      "ante": 6,
+      "round": 18,
+      "run_id": "20261013-192612-2S38V5NR",
+      "progress": 17
+    },
+    "2CM51JLD": {
+      "result": "lost",
+      "ante": 7,
+      "round": 21,
+      "run_id": "20261013-192845-2CM51JLD",
+      "progress": 20
+    },
+    "UR3ZTT24": {
+      "result": "lost",
+      "ante": 5,
+      "round": 15,
+      "run_id": "20261013-193134-UR3ZTT24",
+      "progress": 14
+    },
+    "C3XPB74B": {
+      "result": "lost",
+      "ante": 6,
+      "round": 17,
+      "run_id": "20261013-193341-C3XPB74B",
+      "progress": 16
+    },
+    "JV8CL6BQ": {
+      "result": "lost",
+      "ante": 3,
+      "round": 8,
+      "run_id": "20261013-193605-JV8CL6BQ",
+      "progress": 7
+    },
+    "57AXFNDP": {
+      "result": "lost",
+      "ante": 6,
+      "round": 18,
+      "run_id": "20261013-193717-57AXFNDP",
+      "progress": 17
+    }
+  },
+  "win_audit": [
+    {
+      "run_id": "20261012-192347-2RGEX6EN",
+      "seed": "2RGEX6EN",
+      "version": "8cfd03bf",
+      "recorded_result": "lost",
+      "verdict": "false_positive",
+      "last_play_event": 3212,
+      "blind": "Verdant Leaf",
+      "scored": 14497,
+      "target": 100000,
+      "reason": "Lost the final boss below target; won=False in the last preterminal state"
+    },
+    {
+      "run_id": "20261012-224505-BAPQJMY5",
+      "seed": "BAPQJMY5",
+      "version": "6725b5bb",
+      "recorded_result": "won",
+      "verdict": "verified_win",
+      "round_end_event": 1733,
+      "blind": "Verdant Leaf",
+      "scored": 122980,
+      "target": 100000
+    },
+    {
+      "run_id": "20261013-071114-W4YA1M4U",
+      "seed": "W4YA1M4U",
+      "version": "6725b5bb",
+      "recorded_result": "lost",
+      "verdict": "false_positive",
+      "last_play_event": 5769,
+      "blind": "Violet Vessel",
+      "scored": 32942,
+      "target": 300000,
+      "reason": "Lost the final boss below target; won=False in the last preterminal state"
+    },
+    {
+      "run_id": "20261013-072352-X62IZYJ4",
+      "seed": "X62IZYJ4",
+      "version": "6725b5bb",
+      "recorded_result": "won",
+      "verdict": "verified_win",
+      "round_end_event": 8521,
+      "blind": "Amber Acorn",
+      "scored": 137034,
+      "target": 100000
+    }
+  ],
+  "comparisons": {
+    "v13": {
+      "all_seeds": {
+        "n": 30,
+        "v15_mean": 14.9,
+        "baseline_mean": 14.466666666666667,
+        "mean_difference": 0.43333333333333335,
+        "paired_se": 1.0544741385222591,
+        "better": 12,
+        "tied": 9,
+        "worse": 9,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 18
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 14
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 10
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 13
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 6
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 17
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 15
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 14
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 17
+          },
+          {
+            "seed": "X62IZYJ4",
+            "v15": 24,
+            "baseline": 16
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 19
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 17
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 4
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 20
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 16
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 19
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 16
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 20
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 17
+          }
+        ]
+      },
+      "excluding_resumed_game_17": {
+        "n": 29,
+        "v15_mean": 14.586206896551724,
+        "baseline_mean": 14.413793103448276,
+        "mean_difference": 0.1724137931034483,
+        "paired_se": 1.0575426548330025,
+        "better": 11,
+        "tied": 9,
+        "worse": 9,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 18
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 14
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 10
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 13
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 6
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 17
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 15
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 14
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 17
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 19
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 17
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 4
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 20
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 16
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 19
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 16
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 20
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 17
+          }
+        ]
+      },
+      "capped_at_24": {
+        "n": 30,
+        "v15_mean": 14.9,
+        "baseline_mean": 14.466666666666667,
+        "mean_difference": 0.43333333333333335,
+        "paired_se": 1.0544741385222591,
+        "better": 12,
+        "tied": 9,
+        "worse": 9,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 18
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 14
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 10
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 13
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 6
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 17
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 15
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 14
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 17
+          },
+          {
+            "seed": "X62IZYJ4",
+            "v15": 24,
+            "baseline": 16
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 19
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 17
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 4
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 20
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 16
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 19
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 16
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 20
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 17
+          }
+        ]
+      }
+    },
+    "v12": {
+      "all_seeds": {
+        "n": 30,
+        "v15_mean": 14.9,
+        "baseline_mean": 13.9,
+        "mean_difference": 1,
+        "paired_se": 0.9589266029707684,
+        "better": 16,
+        "tied": 6,
+        "worse": 8,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 13
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 19
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 12
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 11
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 13
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 18
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 17
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 16
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 8
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 9
+          },
+          {
+            "seed": "X62IZYJ4",
+            "v15": 24,
+            "baseline": 17
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 16
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 4
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 18
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 20
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 16
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 16
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 14
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 20
+          }
+        ]
+      },
+      "excluding_resumed_game_17": {
+        "n": 29,
+        "v15_mean": 14.586206896551724,
+        "baseline_mean": 13.793103448275861,
+        "mean_difference": 0.7931034482758621,
+        "paired_se": 0.9692047808658757,
+        "better": 15,
+        "tied": 6,
+        "worse": 8,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 13
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 19
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 12
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 11
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 13
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 18
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 17
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 16
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 8
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 9
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 16
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 4
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 18
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 20
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 16
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 16
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 14
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 20
+          }
+        ]
+      },
+      "capped_at_24": {
+        "n": 30,
+        "v15_mean": 14.9,
+        "baseline_mean": 13.9,
+        "mean_difference": 1,
+        "paired_se": 0.9589266029707684,
+        "better": 16,
+        "tied": 6,
+        "worse": 8,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 13
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 19
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 12
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 11
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 13
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 18
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 17
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 16
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 8
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 9
+          },
+          {
+            "seed": "X62IZYJ4",
+            "v15": 24,
+            "baseline": 17
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 16
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 4
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 14
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 18
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 20
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 16
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 16
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 14
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 20
+          }
+        ]
+      }
+    },
+    "v11": {
+      "all_seeds": {
+        "n": 30,
+        "v15_mean": 14.9,
+        "baseline_mean": 11.966666666666667,
+        "mean_difference": 2.933333333333333,
+        "paired_se": 1.191862575327975,
+        "better": 20,
+        "tied": 5,
+        "worse": 5,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 16
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 13
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 4
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 13
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 2
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 16
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 23
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 16
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 11
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "X62IZYJ4",
+            "v15": 24,
+            "baseline": 7
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 14
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 11
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 12
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 10
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 16
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 4
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 13
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 3
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 17
+          }
+        ]
+      },
+      "excluding_resumed_game_17": {
+        "n": 29,
+        "v15_mean": 14.586206896551724,
+        "baseline_mean": 12.137931034482758,
+        "mean_difference": 2.4482758620689653,
+        "paired_se": 1.126905837128841,
+        "better": 19,
+        "tied": 5,
+        "worse": 5,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 16
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 13
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 4
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 13
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 2
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 16
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 23
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 16
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 11
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 14
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 11
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 12
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 10
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 16
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 4
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 13
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 3
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 17
+          }
+        ]
+      },
+      "capped_at_24": {
+        "n": 30,
+        "v15_mean": 14.9,
+        "baseline_mean": 11.966666666666667,
+        "mean_difference": 2.933333333333333,
+        "paired_se": 1.191862575327975,
+        "better": 20,
+        "tied": 5,
+        "worse": 5,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 16
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 13
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 4
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 13
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 2
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 16
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 23
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 17
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 14
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 16
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 11
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "X62IZYJ4",
+            "v15": 24,
+            "baseline": 7
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 14
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 11
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 12
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 10
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 16
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 14
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 4
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 13
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 3
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 17
+          }
+        ]
+      }
+    },
+    "v9": {
+      "all_seeds": {
+        "n": 30,
+        "v15_mean": 14.9,
+        "baseline_mean": 12.766666666666667,
+        "mean_difference": 2.1333333333333333,
+        "paired_se": 1.0042820198922846,
+        "better": 18,
+        "tied": 8,
+        "worse": 4,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 13
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 11
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 13
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 20
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 13
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 17
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 11
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 17
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "X62IZYJ4",
+            "v15": 24,
+            "baseline": 14
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 16
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 13
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 10
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 16
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 16
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 20
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 12
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 3
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 11
+          }
+        ]
+      },
+      "excluding_resumed_game_17": {
+        "n": 29,
+        "v15_mean": 14.586206896551724,
+        "baseline_mean": 12.724137931034482,
+        "mean_difference": 1.8620689655172413,
+        "paired_se": 1.0008913981862064,
+        "better": 17,
+        "tied": 8,
+        "worse": 4,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 13
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 11
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 13
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 20
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 13
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 17
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 11
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 17
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 16
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 13
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 10
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 16
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 16
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 20
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 12
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 3
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 11
+          }
+        ]
+      },
+      "capped_at_24": {
+        "n": 30,
+        "v15_mean": 14.9,
+        "baseline_mean": 12.766666666666667,
+        "mean_difference": 2.1333333333333333,
+        "paired_se": 1.0042820198922846,
+        "better": 18,
+        "tied": 8,
+        "worse": 4,
+        "pairs": [
+          {
+            "seed": "7X7WSDCX",
+            "v15": 14,
+            "baseline": 13
+          },
+          {
+            "seed": "6CAXN9I6",
+            "v15": 14,
+            "baseline": 17
+          },
+          {
+            "seed": "BAPQJMY5",
+            "v15": 24,
+            "baseline": 11
+          },
+          {
+            "seed": "TBIR2XMU",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "PX8GK4E6",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "WWYTV5PP",
+            "v15": 17,
+            "baseline": 14
+          },
+          {
+            "seed": "DHPB8Q1L",
+            "v15": 5,
+            "baseline": 5
+          },
+          {
+            "seed": "XUTRVN1Y",
+            "v15": 11,
+            "baseline": 13
+          },
+          {
+            "seed": "2RGEX6EN",
+            "v15": 2,
+            "baseline": 20
+          },
+          {
+            "seed": "V98SL5G2",
+            "v15": 17,
+            "baseline": 13
+          },
+          {
+            "seed": "WMAZ7HWJ",
+            "v15": 20,
+            "baseline": 17
+          },
+          {
+            "seed": "W4YA1M4U",
+            "v15": 23,
+            "baseline": 11
+          },
+          {
+            "seed": "U8AC5647",
+            "v15": 15,
+            "baseline": 17
+          },
+          {
+            "seed": "8XNG984V",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "SDNUURBN",
+            "v15": 11,
+            "baseline": 11
+          },
+          {
+            "seed": "A7YBUVWD",
+            "v15": 20,
+            "baseline": 16
+          },
+          {
+            "seed": "X62IZYJ4",
+            "v15": 24,
+            "baseline": 14
+          },
+          {
+            "seed": "JRE681Y8",
+            "v15": 19,
+            "baseline": 16
+          },
+          {
+            "seed": "75WVKF42",
+            "v15": 5,
+            "baseline": 4
+          },
+          {
+            "seed": "I9Q96AKF",
+            "v15": 16,
+            "baseline": 13
+          },
+          {
+            "seed": "LRFULSLB",
+            "v15": 20,
+            "baseline": 11
+          },
+          {
+            "seed": "8GWNFCSN",
+            "v15": 13,
+            "baseline": 13
+          },
+          {
+            "seed": "MW6PBTW4",
+            "v15": 16,
+            "baseline": 10
+          },
+          {
+            "seed": "5V1F9XQ2",
+            "v15": 18,
+            "baseline": 16
+          },
+          {
+            "seed": "2S38V5NR",
+            "v15": 17,
+            "baseline": 16
+          },
+          {
+            "seed": "2CM51JLD",
+            "v15": 20,
+            "baseline": 20
+          },
+          {
+            "seed": "UR3ZTT24",
+            "v15": 14,
+            "baseline": 14
+          },
+          {
+            "seed": "C3XPB74B",
+            "v15": 16,
+            "baseline": 12
+          },
+          {
+            "seed": "JV8CL6BQ",
+            "v15": 7,
+            "baseline": 3
+          },
+          {
+            "seed": "57AXFNDP",
+            "v15": 17,
+            "baseline": 11
+          }
+        ]
+      }
+    }
+  }
+}

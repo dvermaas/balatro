@@ -20,7 +20,8 @@ import strategy
 from balatro import RPCError
 from hands import RANK_NAMES, SUIT_NAMES, _d, card_info, classify, describe, discard_candidates, play_candidates
 from jev_bot import SHOP_ACTION_CAP, area, cards_of, current_blind, item_desc
-from prompts import GAME_RULES, INSTRUCTIONS, ITEM_VALUE_LEVELS, OPTIONS, PLAY_NOW_CRITERIA
+from prompts import (CASH_ITEM_QUESTION, CASH_STEP_QUESTION, GAME_RULES, INSTRUCTIONS,
+                     ITEM_VALUE_LEVELS, OPTIONS, PLAY_NOW_CRITERIA)
 
 # Jev's 0-4 scores cluster around 2-3, so thresholds sit mid-scale (v6 used 3 and starved: 1 buy in 14 shops).
 BUY_SCORE = 2.5        # buy the best-rated item at this score...
@@ -148,12 +149,17 @@ def _clears(p, info, margin):
 
 def _play_obj(p, info, margin=1.0):
     pace = info["chips_needed_per_remaining_hand"] or 1
-    return {
+    obj = {
         "hand": p["hand"], "scoring_cards": p["scoring"], "also_played": p["kicked"],
         "estimated_score": p["estimate"],
         "share_of_pace": f"{round(100 * p['estimate'] / max(1, pace))}%",
         "clears_blind_alone": _clears(p, info, margin),
     }
+    if "outlook" in p:
+        obj["next_hand_outlook"] = p["outlook"]
+    if p.get("setup"):
+        obj["setup"] = p["setup"]
+    return obj
 
 
 def _remember(bot, gs, hand, combo):
@@ -219,6 +225,85 @@ def _preserve_discard(hand, play, scorer, max_discard=5):
             "cards": toss, "tossed": [describe(hand[i]) for i in toss], "goal": ("preserve", None)}
 
 
+PLAY_FORECAST_BOSSES = {
+    "Small Blind", "Big Blind", "The Water", "The Goad", "The Club", "The Head",
+    "The Window", "The Plant", "The Psychic", "The Eye", "The Mouth", "The Flint",
+    "The Needle", "The Serpent", "The Wall", "The Manacle", "Violet Vessel",
+}
+
+
+def _setup_plays(gs, hand, plays, levels, scorer, allowed, info, margin):
+    """Offer setup plays only with no discards, a next hand, and supported transitions.
+
+    Both ordinary and setup plays get the same two-play forecast. JEV makes the
+    choice; the forecast never forces a speculative play or overrides a clear.
+    """
+    if ((info["discards_left"] or 0) > 0 or info["hands_left"] < 2
+            or info["blind"] not in PLAY_FORECAST_BOSSES or len(hand) > 10
+            or (info["blind"] == "The Serpent" and len(hand) > 8)
+            or not cards_of(gs, "cards") or not jokers.play_forecast_supported(gs)):
+        return plays
+    infos = [card_info(c) for c in hand]
+    if any((not i["rank"] and i["enh"] != "STONE") or _d(c.get("state")).get("hidden")
+           for c, i in zip(hand, infos)):
+        return plays
+    candidates = [dict(p) for p in plays]
+    seen = {frozenset(p["cards"]) for p in plays}
+    cap = min(5, area(gs, "hand").get("highlighted_limit") or 5)
+    for plan in discard_candidates(hand, max_discard=cap):
+        combo = sorted(plan["cards"])  # preserve the live hand's scoring order
+        if frozenset(combo) in seen:
+            continue
+        name, sc = classify([infos[i] for i in combo])
+        if not allowed(combo, name):
+            continue
+        scoring = {combo[i] for i in sc}
+        candidates.append({"hand": name, "cards": combo,
+                           "estimate": scorer(infos, combo, name, sc),
+                           "scoring": [describe(hand[i]) for i in combo if i in scoring],
+                           "kicked": [describe(hand[i]) for i in combo if i not in scoring],
+                           "setup": "Use a hand to cycle cards: " + plan["label"]})
+        seen.add(frozenset(combo))
+    if len(candidates) == len(plays):
+        return plays
+    deck = [card_info(c) for c in cards_of(gs, "cards")]
+    rnd = _d(gs.get("round"))
+    next_round = {**rnd, "hands_left": info["hands_left"] - 1,
+                  "hands_played": (rnd.get("hands_played") or 0) + 1}
+    hand_size = area(gs, "hand").get("limit") or len(hand)
+    for p in candidates:
+        h = levels.get(p["hand"], {})
+        next_levels = {**levels, p["hand"]: {**h, "played": (h.get("played") or 0) + 1,
+                       "played_this_round": (h.get("played_this_round") or 0) + 1}}
+        next_allowed = lambda combo, name: _boss_allows(combo, name, next_levels, info["blind"])
+
+        def next_scorer(played, drawn):
+            js = jokers.after_play(gs, drawn)
+            return lambda cs, combo, name, sc: jokers.score(cs, combo, name, sc, next_levels, js, next_round)
+
+        forecast = {"cards": p["cards"]}
+        odds.forecast([forecast], infos, deck, next_scorer, next_allowed,
+                      need=max(0, info["chips_still_needed"] * margin - p["estimate"]),
+                      draw_count=lambda n: 3 if info["blind"] == "The Serpent" else max(0, hand_size - len(hand) + n))
+        p["outlook"] = {
+            "average_next_play": forecast["expected_score"],
+            "average_two_play_total": p["estimate"] + forecast["expected_score"],
+            "poor_draw_two_play_total": p["estimate"] + forecast["low_score"],
+            "poor_draw_definition": "20th percentile, not a guaranteed minimum",
+            "chance_two_plays_clear": f"{round(100 * forecast['chance_to_clear'])}%",
+            "keeps": [describe(hand[i]) for i in range(len(hand)) if i not in p["cards"]],
+            "cards_drawn": forecast["drawn"],
+            "basis": f"{forecast['samples']} {'all possible' if forecast['exact_draws'] else 'sampled'} unordered draws; "
+                     "best modeled next play, not a full-round win probability",
+        }
+    # Keep the immediate-score ordering and all original plays; show numerical rankings to JEV.
+    ranked = sorted(candidates, key=lambda p: (p["outlook"]["average_two_play_total"],
+                    p["outlook"]["poor_draw_two_play_total"]), reverse=True)
+    for rank, p in enumerate(ranked, 1):
+        p["outlook"]["rank_by_two_play_average"] = rank
+    return candidates
+
+
 def selecting_hand(bot, gs):
     hand = cards_of(gs, "hand")
     info = _round_info(gs)
@@ -240,6 +325,7 @@ def selecting_hand(bot, gs):
         _play(bot, gs, hand, clearing[0]["cards"])
         return
 
+    plays = _setup_plays(gs, hand, plays, levels, scorer, allowed, info, margin)
     cap = area(gs, "hand").get("highlighted_limit") or 5
     discards = discard_candidates(hand, max_discard=cap) if (info["discards_left"] or 0) > 0 else []
     b = build.decide(gs)
@@ -282,7 +368,8 @@ def selecting_hand(bot, gs):
         state["jokers_not_in_estimates"] = jokers.unmodelled(js)
     questions = {}
     if len(play_opts) > 1:
-        questions["best_play"] = Choice(instructions=INSTRUCTIONS["best_play"],
+        questions["best_play"] = Choice(instructions=INSTRUCTIONS["best_play"]
+                                        + (INSTRUCTIONS["setup_play"] if "outlook" in plays[0] else ""),
                                         criteria={k: _play_obj(p, info, margin) for k, p in play_opts.items()})
     if disc_opts:
         questions["play_now"] = Noul(instructions=INSTRUCTIONS["play_now"], criteria=PLAY_NOW_CRITERIA)
@@ -319,7 +406,10 @@ def selecting_hand(bot, gs):
         bar = 0.5
     best = max(pp, key=pp.get) if p_play >= bar else max(dp, key=dp.get)
     options = {k: f"{p['hand']}: {', '.join(p['scoring'])}" + (f" (+{', '.join(p['kicked'])})" if p["kicked"] else "")
-               + f" ~{p['estimate']}" for k, p in play_opts.items()}
+               + f" ~{p['estimate']}"
+               + (f" (two-play average ~{p['outlook']['average_two_play_total']}; "
+                  f"poor draw ~{p['outlook']['poor_draw_two_play_total']})" if "outlook" in p else "")
+               for k, p in play_opts.items()}
     options |= {k: f"{d['label']}: toss {', '.join(d['tossed'])}"
                 + f" (modeled next play ~{d['expected_score']}, {d['gain_percent']:+}% vs playing now)"
                 for k, d in disc_opts.items()}
@@ -350,10 +440,20 @@ def _discard_obj(d):
 
 def _score_items(bot, gs, qname, state, items):
     """items: {key: (desc, item_obj, action)}. One Score per item in one call; returns (scores, meta)."""
-    questions = {k: Score(instructions={"question": INSTRUCTIONS["item_value"],
+    questions = {k: Score(instructions={"question": CASH_ITEM_QUESTION if "cash_outcome" in obj else INSTRUCTIONS["item_value"],
                                         "item": {f: v for f, v in obj.items() if not f.startswith("_")}},
                           criteria=ITEM_VALUE_LEVELS) for k, (_, obj, _) in items.items()}
+    cash = {k: obj for k, (_, obj, _) in items.items()
+            if qname == "shop" and obj.get("cash_outcome", {}).get("net_cash_gain", 0) > 0}
+    if cash:
+        options = {k: {f: v for f, v in obj.items() if not f.startswith("_")} for k, obj in cash.items()}
+        options["continue_shopping"] = {"action": "Pass these cash transactions and consider the other shop actions"}
+        questions["cash_step"] = Choice(instructions=CASH_STEP_QUESTION, criteria=options)
     answers, meta = bot.query(gs, state, questions)
+    if cash:
+        probabilities = dict(answers["cash_step"].probabilities)
+        meta["cash_step_choice"] = max(probabilities, key=probabilities.get)
+        meta["cash_step_probabilities"] = probabilities
     return {k: answers[k].score for k in items}, meta
 
 
@@ -400,7 +500,10 @@ def shop(bot, gs):
                     c.get("set") in ("TAROT", "PLANET", "SPECTRAL") and cons_full):
                 continue
             o = obj(c, cost, c.get("set", "card").lower())
-            n = tarots.note(c, b, money, cards_of(gs, "jokers"))
+            n = tarots.note(c, b, money - cost, cards_of(gs, "jokers"))
+            cash = tarots.cash_outcome(c, money, cost, cards_of(gs, "jokers"))
+            if cash is not None:
+                o["cash_outcome"] = {**cash, "interest_after_use": strategy.interest(cash["cash_after_use"])}
             if n:
                 o["use"] = n
             items[f"buy_card_{i}"] = (item_desc(c, mains), o, ("buy", {"card": i}), cost)
@@ -449,8 +552,20 @@ def shop(bot, gs):
         return
 
     scores, meta = _score_items(bot, gs, "shop", state, {k: v[:3] for k, v in items.items()})
-    best = max(scores, key=scores.get)
-    s, cost = scores[best], items[best][3]
+    cash_pick = meta.get("cash_step_choice")
+    if cash_pick in items and items[cash_pick][1].get("cash_outcome", {}).get("net_cash_gain", 0) > 0:
+        index = items[cash_pick][2][1]["card"]
+        action = ("buy_cash", {"card": index, "key": cards_of(gs, "shop")[index]["key"]})
+        probabilities = meta["cash_step_probabilities"]
+        options = {k: f"buy and use {items[k][0]}" for k in probabilities if k in items}
+        options["continue_shopping"] = "Continue shopping without this cash transaction"
+        bot.record_decision("shop", gs, cash_pick, action, options, probabilities, probabilities[cash_pick], meta)
+        _shop_act(bot, gs, action)
+        return
+    # A JEV decision to continue shopping passes the explicit cash transactions.
+    selectable = {k: v for k, v in scores.items() if k not in meta.get("cash_step_probabilities", {})}
+    best = max(selectable, key=selectable.get) if selectable else ""
+    s, cost = (scores[best], items[best][3]) if best else (-1, 0)
     early = (gs.get("ante_num") or 1) <= EARLY_ANTE and jok.get("count", 0) < EARLY_JOKERS
     early_joker = early and best.startswith(("buy_card", "replace")) and "joker" in items[best][1]["kind"]
     # A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.
@@ -487,7 +602,15 @@ def _shop_act(bot, gs, action):
     if action[0] == "buy" and "pack" in (action[1] or {}):
         bot._last_pack_cost = _d(cards_of(gs, "packs")[action[1]["pack"]].get("cost")).get("buy", 0)
     try:
-        if action[0] == "replace":
+        if action[0] == "buy_cash":
+            after = bot.act("buy", {"card": action[1]["card"]})
+            # Locate the acquired card in the returned state; do not assume its slot.
+            matches = [i for i, c in enumerate(cards_of(after or {}, "consumables"))
+                       if c.get("key") == action[1]["key"]]
+            if not matches:
+                raise RPCError(-1, "Purchased cash tarot is absent from the returned state", "cash_tarot_missing")
+            bot.act("use", {"consumable": matches[-1]})
+        elif action[0] == "replace":
             bot.act("sell", {"joker": action[1]["joker"]})
             bot.act("buy", {"card": action[1]["card"]})
         else:
@@ -501,6 +624,11 @@ def booster(bot, gs):
     jok = area(gs, "jokers")
     jokers_full = jok.get("count", 0) >= jok.get("limit", 5)
     mains, state = _run_context(gs)
+    state["pack_selection"] = (
+        "The pack is already open: taking a card costs $0. Rate the benefit of keeping it versus skipping, "
+        "not whether we should have bought the pack. A temporary sellable joker can help while slots are "
+        "empty; account for harmful effects, rental costs and permanent slot commitments."
+    )
     if cards_of(gs, "hand"):  # only arcana/spectral packs deal a hand to target
         state["cards_in_hand"] = [describe(c) for c in cards_of(gs, "hand")]
     items = {}
@@ -512,6 +640,9 @@ def booster(bot, gs):
             continue
         o = {"kind": (c.get("set") or "card").lower(), "what": item_desc(c, mains), "cost": 0,
              **_gain(gs, _recent(bot, gs), c)}
+        cash = tarots.cash_outcome(c, gs.get("money") or 0, 0, cards_of(gs, "jokers"))
+        if cash is not None:
+            o["cash_outcome"] = {**cash, "interest_after_use": strategy.interest(cash["cash_after_use"])}
         params = {"card": i}
         if (c.get("key") or "") in tarots.TARGETED:
             p = tarots.plan(c.get("key"), hand, b)
@@ -564,6 +695,25 @@ def booster(bot, gs):
 def _gain(gs, recent, c, remove=None):
     """Measured effect of a joker or planet on this run's recent hands: {measured_gain: text, _gain: ratio}."""
     if c.get("set") == "JOKER":
+        if c.get("key") == "j_misprint":
+            # BalatroBot drops the animated number from Misprint's text (often just '  +').
+            # Give JEV the real range without treating a random average as a guaranteed clear.
+            return {"known_effect": "Adds a random 0 to 23 Mult each hand; not guaranteed scoring",
+                    "measured_gain": "Random Mult is not included in this item's recent-hand estimate"}
+        parsed = jokers.entry(c)
+        if parsed["rule"] is None and not parsed["scoring"]:
+            facts = {"measured_gain": "Not a direct scoring effect: this measurement does not value extra hands, "
+                     "joker generation, money or other utility. Judge the described effect, not a zero score gain."}
+            if c.get("key") == "j_riff_raff":
+                owned = len(cards_of(gs, "jokers")) - (1 if remove is not None else 0)
+                limit = area(gs, "jokers").get("limit", 5)
+                limit += _d(c.get("modifier")).get("edition") == "NEGATIVE"
+                free = max(0, limit - owned - 1)
+                facts["next_blind_generation"] = {
+                    "free_slots_after_taking": free, "common_jokers_created": min(2, free),
+                    "resulting_joker_count": owned + 1 + min(2, free),
+                    "scoring": "random Common jokers; exact effects unknown"}
+            return facts
         g = jokers.gain(gs, recent, add=c, remove=remove)
         if g is None:
             return {"measured_gain": "can't be measured from its text; judge it yourself"}

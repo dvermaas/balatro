@@ -64,12 +64,12 @@ def engine(jokers_effects):
     kinds = [joker_kind(e) for e in jokers_effects]
     has = {k: kinds.count(k) for k in ("chips", "mult", "xmult", "scaling", "economy", "utility") if k in kinds}
     missing = []
-    if not has.get("xmult"):
-        missing.append("an xMult joker (the biggest gap)")
     if not has.get("mult") and not has.get("scaling"):
-        missing.append("a +Mult source")
+        missing.append("a +Mult source for a reliable scoring base")
     if not has.get("chips"):
         missing.append("a chips source")
+    if not has.get("xmult"):
+        missing.append("xMult that activates with our current jokers and hands")
     return {"has": has or "nothing yet", "missing": missing or "nothing major: upgrade weak or off-plan jokers"}
 
 

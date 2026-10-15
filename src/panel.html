@@ -192,6 +192,13 @@ pre.state { background: var(--panel-2); border-radius: 8px; padding: 10px; overf
 .chart .avg-line { pointer-events: none; }
 .chart .hit { fill: transparent; cursor: pointer; }
 .chart .hit:hover + .seed, .chart .hit:hover + .avg-pt { stroke: var(--ink); stroke-width: 2; }
+.chart .seed-trace { pointer-events: none; }
+.chart .seed-trace path { fill: none; stroke: var(--info); stroke-width: 2.5; stroke-linejoin: round; }
+.chart .seed-trace .gap { stroke-dasharray: 5 4; }
+.chart .seed-trace circle { fill: var(--panel); stroke: var(--info); stroke-width: 2; }
+.chart .seed-trace circle.won { fill: var(--good); }
+.chart .tracing .seed { opacity: .2; }
+.chart .tracing .avg-line, .chart .tracing .avg-pt, .chart .tracing .avg-lbl { opacity: .3; }
 .tip { position: absolute; pointer-events: none; background: var(--ink); color: var(--bg); padding: 6px 9px; border-radius: 8px;
        font-size: 12px; white-space: nowrap; transform: translate(-50%, calc(-100% - 10px)); opacity: 0; transition: opacity .1s; z-index: 2; }
 .tip.show { opacity: 1; }
@@ -282,10 +289,17 @@ table.grid td.empty-cell { text-align: center; color: var(--faint); }
         <span class="faint" style="font-size:12px"><span class="key-dot"></span> one benchmark seed &nbsp; <span class="key-line"></span> version average &nbsp; <span class="key-dot win"></span> won</span>
       </div>
       <div id="bench-chart" class="chart"></div>
+      <div class="faint" style="font-size:12px;margin-top:8px">Hover a seed to trace it across versions. Dashed lines bridge versions without a result.</div>
     </div>
-    <div class="panel" style="margin-bottom:16px"><h2>Summary</h2><div class="scroll-x"><table id="bench-summary"></table></div></div>
-    <div class="panel"><h2>Ante reached per seed</h2><div class="scroll-x"><table id="bench-grid" class="grid"></table></div>
+    <div class="panel" style="margin-bottom:16px"><h2>Ante reached per seed</h2><div class="scroll-x"><table id="bench-grid" class="grid"></table></div>
       <div class="faint" style="font-size:12px;margin-top:8px">Click a cell to open that run. Green = won. ± is the standard error: differences smaller than about twice it are likely noise.</div></div>
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px">
+        <h2 style="margin:0">Summary</h2>
+        <button class="btn" id="bench-summary-toggle" aria-expanded="false" aria-controls="bench-summary" hidden>Show all versions</button>
+      </div>
+      <div class="scroll-x"><table id="bench-summary"></table></div>
+    </div>
   </section>
 
   <!-- PROMPTS -->
@@ -319,7 +333,7 @@ function saveSettings() { cmd('settings', {delay: +$('delay').value, auto_new_ru
 function abandon() { if (confirm('Abandon the current run? It will be recorded as abandoned.')) { cmd('abandon'); $('pop').classList.remove('open'); } }
 document.addEventListener('click', e => { if (!e.target.closest('.menu')) $('pop').classList.remove('open'); });
 document.addEventListener('keydown', e => {
-  if (e.target.matches('input, textarea')) return;
+  if (e.target.closest('input, textarea, select, button, a, [role="link"]')) return;
   if (e.code === 'Space') { e.preventDefault(); toggleRun(); }
   else if (e.key === 's') cmd('step');
   else if (e.key === '1') location.hash = '#/live'; else if (e.key === '2') location.hash = '#/runs'; else if (e.key === '3') location.hash = '#/prompts'; else if (e.key === '4') location.hash = '#/bench';
@@ -564,7 +578,19 @@ async function startBench() {
   }
   await cmd('benchmark', benchSet ? {set: benchSet} : {}); toast(`Benchmark started: ${benchSet || 'active set'}`);
 }
-let benchSet = null, benchBase = null;
+let benchSet = null, benchBase = null, benchSummaryExpanded = false;
+function updateBenchSummary() {
+  const rows = [...$('bench-summary').querySelectorAll('tr[data-version]')];
+  rows.forEach((row, i) => { row.hidden = i > 0 && !benchSummaryExpanded; });
+  const toggle = $('bench-summary-toggle');
+  toggle.hidden = rows.length < 2;
+  toggle.setAttribute('aria-expanded', String(benchSummaryExpanded));
+  toggle.textContent = benchSummaryExpanded ? 'Show latest only' : `Show all ${rows.length} versions`;
+}
+$('bench-summary-toggle').addEventListener('click', () => {
+  benchSummaryExpanded = !benchSummaryExpanded;
+  updateBenchSummary();
+});
 // Seed-by-seed difference vs a baseline: both versions play the same seeds, so pairing removes seed luck.
 function paired(v, b) {
   const d = Object.keys(v.cells).filter(s => b.cells[s] && v.cells[s].progress != null && b.cells[s].progress != null)
@@ -593,10 +619,11 @@ async function loadBench() {
     return `<span class="delta ${sig}" title="${sig ? 'Significant (beyond 2 SE)' : 'Within noise (2 SE)'}">${p.m >= 0 ? '+' : '−'}${Math.abs(p.m).toFixed(2)}</span> <span class="faint">± ${p.se.toFixed(2)} · ${p.n} seeds</span>`;
   };
   $('bench-summary').innerHTML = `<tr><th>Version</th><th>Runs</th><th>Progress</th><th title="Mean per-seed progress difference vs the baseline, ± paired standard error. Green/red = beyond 2 SE.">Seed by seed vs <select id="bench-base">${vs.map(v => `<option ${v === base ? 'selected' : ''}>${esc(v.label)}</option>`).join('')}</select></th><th>Avg ante</th><th>Median ante</th><th>Avg round</th><th>Wins</th><th>Avg conf</th><th>Tokens/run</th><th>Time/run</th><th>Change</th></tr>` +
-    vs.map(v => `<tr><td><span class="vtag">${esc(v.label)}</span>${v.current ? ' <span class="badge in_progress">current</span>' : ''}</td>
+    [...vs].reverse().map(v => `<tr data-version="${esc(v.label)}"><td><span class="vtag">${esc(v.label)}</span>${v.current ? ' <span class="badge in_progress">current</span>' : ''}</td>
       <td>${v.done}/${v.of}</td><td style="font-weight:${v.avg_progress === best && v.done ? 700 : 400}">${pm(v.avg_progress, v.progress_se)}</td><td>${delta(v)}</td><td>${pm(v.avg_ante, v.ante_se)}</td><td>${v.median_ante ?? '–'}</td>
       <td>${v.avg_round ?? '–'}</td><td>${v.wins}</td><td>${pct(v.avg_confidence)}</td><td>${fmt(v.avg_tokens)}</td><td>${dur(v.avg_seconds)}</td>
       <td class="muted" style="white-space:normal;min-width:260px;font-size:12px">${esc(v.note)}</td></tr>`).join('');
+  updateBenchSummary();
   $('bench-base').onchange = e => { benchBase = e.target.value; loadBench(); };
   benchChart(vs, d.seeds);
   const shade = a => `background: color-mix(in srgb, var(--accent) ${Math.min(90, (a || 0) * 11)}%, transparent)`;
@@ -608,7 +635,7 @@ async function loadBench() {
 function benchChart(vs, seeds) {
   const box = $('bench-chart');
   const shown = vs.filter(v => v.done);
-  const key = JSON.stringify([shown, box.clientWidth]);
+  const key = JSON.stringify([shown, seeds, box.clientWidth]);
   if (box.dataset.key === key) return;
   box.dataset.key = key;
   if (!shown.length) { box.innerHTML = '<div class="empty">No finished benchmark runs yet.</div>'; return; }
@@ -622,25 +649,57 @@ function benchChart(vs, seeds) {
   for (let a = 0; a <= maxP; a += 3) g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(a)}" y2="${y(a)}"/><text x="${m.l - 8}" y="${y(a) + 4}" text-anchor="end">A${a / 3 + 1}</text>`;
   g += `<text x="${m.l - 8}" y="${m.t - 10}" text-anchor="end">ante</text></g>`;
   let dots = '', pts = [], labels = '';
+  const seedPoints = new Map(seeds.map(s => [s, []]));
   shown.forEach((v, i) => {
     labels += `<text class="xlab" x="${cx(i)}" y="${H - 8}" text-anchor="middle">${esc(v.label)}${v.current ? ' ●' : ''}</text>`;
     seeds.forEach((s, k) => { const c = v.cells[s]; if (!c) return;
       const x = cx(i) + (k - (seeds.length - 1) / 2) * spread, yy = y(val(c));
       const tip = `${esc(v.label)} · seed ${esc(s)} · ${c.result === 'won' ? 'won' : `lost at ante ${c.ante}, round ${c.round}`} · progress ${val(c)}`;
-      dots += `<circle class="hit" cx="${x}" cy="${yy}" r="9" data-tip="${tip}" data-run="${esc(c.run_id)}"/><circle class="seed ${c.result === 'won' ? 'won' : ''}" cx="${x}" cy="${yy}" r="4"/>`; });
+      seedPoints.get(s).push({x, y: yy, i, won: c.result === 'won'});
+      dots += `<circle class="hit" cx="${x}" cy="${yy}" r="9" data-seed="${esc(s)}" data-tip="${tip}" data-run="${esc(c.run_id)}" tabindex="0" role="link" aria-label="${tip}"/><circle class="seed ${c.result === 'won' ? 'won' : ''}" cx="${x}" cy="${yy}" r="4"/>`; });
     pts.push([cx(i), y(v.avg_progress ?? 0), v]);
   });
   const line = pts.length > 1 ? `<path class="avg-line" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0] + ' ' + p[1]).join(' ')}"/>` : '';
   const avg = pts.map(([x, yy, v]) => `<circle class="hit" cx="${x}" cy="${yy}" r="12" data-tip="${esc(v.label)} · progress ${v.avg_progress} ± ${v.progress_se} · avg ante ${v.avg_ante} · ${v.wins} wins · ${v.done}/${v.of} runs"/>` +
     `<circle class="avg-pt" cx="${x}" cy="${yy}" r="6"/><text class="avg-lbl" x="${x + 12}" y="${yy - 8}">${v.avg_progress}</text>`).join('');
-  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Ante reached per benchmark seed and version average">${g}${dots}${line}${avg}${labels}</svg><div class="tip" id="bench-tip"></div>`;
-  const tip = $('bench-tip'), svg = box.querySelector('svg');
-  svg.addEventListener('mousemove', e => { const t = e.target.closest('[data-tip]');
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="group" aria-label="Progress per benchmark seed and version average">${g}${dots}${line}${avg}${labels}<g class="seed-trace" aria-hidden="true"></g></svg><div class="tip" id="bench-tip"></div>`;
+  const tip = $('bench-tip'), svg = box.querySelector('svg'), trace = svg.querySelector('.seed-trace');
+  const hits = [...svg.querySelectorAll('.hit')];
+  let tracedSeed = null;
+  function showPoint(t) {
+    const seed = t?.dataset.seed || null;
+    if (seed !== tracedSeed) {
+      tracedSeed = seed;
+      svg.classList.toggle('tracing', !!seed);
+      const points = seedPoints.get(seed) || [];
+      trace.innerHTML = points.slice(1).map((p, i) => {
+        const prev = points[i];
+        return `<path class="${p.i > prev.i + 1 ? 'gap' : ''}" d="M${prev.x} ${prev.y} L${p.x} ${p.y}"/>`;
+      }).join('') + points.map(p => `<circle class="${p.won ? 'won' : ''}" cx="${p.x}" cy="${p.y}" r="5"/>`).join('');
+    }
     if (!t) { tip.classList.remove('show'); return; }
     const r = box.getBoundingClientRect(), b = t.getBoundingClientRect();
-    tip.textContent = t.dataset.tip; tip.style.left = (b.left + b.width / 2 - r.left) + 'px'; tip.style.top = (b.top - r.top + 4) + 'px'; tip.classList.add('show'); });
-  svg.addEventListener('mouseleave', () => tip.classList.remove('show'));
-  svg.addEventListener('click', e => { const t = e.target.closest('[data-run]'); if (t) location.hash = '#/run/' + t.dataset.run; });
+    tip.textContent = t.dataset.tip; tip.style.left = (b.left + b.width / 2 - r.left) + 'px'; tip.style.top = (b.top - r.top + 4) + 'px'; tip.classList.add('show');
+  }
+  // Hit areas overlap in crowded bands; choose the nearest visible bubble.
+  function nearestPoint(e) {
+    const cursor = svg.createSVGPoint(); cursor.x = e.clientX; cursor.y = e.clientY;
+    const p = cursor.matrixTransform(svg.getScreenCTM().inverse());
+    let nearest = null, distance = Infinity;
+    hits.forEach(t => {
+      const d = Math.hypot(p.x - t.cx.baseVal.value, p.y - t.cy.baseVal.value);
+      if (d <= t.r.baseVal.value && d < distance) { nearest = t; distance = d; }
+    });
+    return nearest;
+  }
+  svg.addEventListener('mousemove', e => showPoint(nearestPoint(e)));
+  svg.addEventListener('mouseleave', () => showPoint(null));
+  svg.addEventListener('focusin', e => showPoint(e.target.closest('[data-tip]')));
+  svg.addEventListener('focusout', () => showPoint(null));
+  svg.addEventListener('click', e => { const t = nearestPoint(e); if (t?.dataset.run) location.hash = '#/run/' + t.dataset.run; });
+  svg.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.dataset.run) location.hash = '#/run/' + e.target.dataset.run;
+  });
 }
 $('bench-sets').addEventListener('click', e => { const s = e.target.dataset.set; if (s) { benchSet = s; $('bench-chart').dataset.key = ''; loadBench(); } });
 $('bench-grid').addEventListener('click', e => { const td = e.target.closest('[data-run]'); if (td) location.hash = '#/run/' + td.dataset.run; });

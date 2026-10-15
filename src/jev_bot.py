@@ -129,6 +129,7 @@ class JevBot:
         self.bench_name = benchmark.NAME
         self._auto_failed = set()
         self._round_blind = None
+        self._finished_seed = None  # retry menu cleanup without recording/playing a finished run again
         self.stats = {"decisions": 0, "input_tokens": 0, "output_tokens": 0, "jev_ms": 0,
                       "runs": 0, "wins": 0, "best_ante": 0, "errors": 0}
         self.last_state = None
@@ -248,6 +249,14 @@ class JevBot:
         gs = self.game.state()
         self.last_state = gs
         st = gs.get("state")
+        if self._finished_seed:
+            if st == "MENU":
+                self._finished_seed = None
+            elif gs.get("seed") == self._finished_seed:
+                self.act("menu")
+                return True
+            else:
+                raise RuntimeError("Unexpected game while returning a finished run to the menu")
         self.recorder.ensure(gs, self.deck, self.stake, self.model, self.bench_current)
         if st == "SELECTING_HAND":
             self._round_blind = current_blind(gs)
@@ -334,13 +343,25 @@ class JevBot:
             return f"{me['label']} trails {base['label']} by {abs(mean):.2f} ± {se:.2f} blinds over {len(d)} seeds"
         return None
 
-    def on_game_over(self, gs):
-        self.stats["runs"] += 1
-        self.stats["wins"] += bool(gs.get("won"))
-        self.stats["best_ante"] = max(self.stats["best_ante"], gs.get("ante_num") or 0)
-        self.emit("run_end", won=bool(gs.get("won")), ante=gs.get("ante_num"), round=gs.get("round_num"))
-        self.recorder.finish("won" if gs.get("won") else "lost", gs)
+    def _finish_run(self, gs, won):
+        if self._finished_seed != gs.get("seed"):
+            self._finished_seed = gs.get("seed")
+            self.stats["runs"] += 1
+            self.stats["wins"] += won
+            self.stats["best_ante"] = max(self.stats["best_ante"], gs.get("ante_num") or 0)
+            self.emit("run_end", won=won, reported_won=bool(gs.get("won")),
+                      ante=gs.get("ante_num"), round=gs.get("round_num"))
+            self.recorder.finish("won" if won else "lost", gs)
+        # menu clears the victory overlay and queued events. Do not cash out,
+        # buy from a shop, or play endless rounds after a benchmark victory.
         self.act("menu")
+
+    def on_game_over(self, gs):
+        # The installed game sets won=True even on an ante-8 boss LOSS. Only
+        # a prior advance past ante 8 proves an old endless-mode run was won.
+        # New runs finish at the successful ROUND_EVAL below.
+        won = bool(gs.get("won")) and (gs.get("ante_num") or 0) > 8
+        self._finish_run(gs, won)
 
     def on_round_eval(self, gs):
         rnd, blind = _d(gs.get("round")), self._round_blind or {}  # already marked defeated here
@@ -348,4 +369,12 @@ class JevBot:
                   target=blind.get("score"), scored=rnd.get("chips"), hands_left=rnd.get("hands_left"),
                   discards_left=rnd.get("discards_left"), money=gs.get("money"),
                   jokers=[c.get("label") for c in cards_of(gs, "jokers")])
+        if gs.get("won") and (gs.get("ante_num") or 0) > 8:
+            target = blind.get("score") or 0
+            if blind.get("type") != "BOSS" or target <= 0 or (rnd.get("chips") or 0) < target:
+                raise RuntimeError("Victory reported without a verified final-boss clear; pausing for review")
+            # Preserve the actual winning state even though there is no next Jev question.
+            self.recorder.write_raw(self._event_id + 1, gs)
+            self._finish_run(gs, True)
+            return
         self.act("cash_out")

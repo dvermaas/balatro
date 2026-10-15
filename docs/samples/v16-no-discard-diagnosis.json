@@ -1,0 +1,1129 @@
+{
+  "purpose": "Offline hypothesis only; 128 unordered samples, static scoring state, not a win prediction",
+  "reports": [
+    {
+      "run": "20261014-061534-75WVKF42",
+      "event": 166,
+      "candidates": [
+        {
+          "hand": "Pair",
+          "cards": [
+            7,
+            4,
+            5,
+            3,
+            0
+          ],
+          "estimate": 56,
+          "setup": "Chase a Hearts flush (holding 3 of 5)",
+          "expected_score": 528,
+          "low_score": 60,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 584,
+          "two_hand_low": 116,
+          "played": [
+            "3 of Clubs",
+            "9 of Spades",
+            "9 of Diamonds",
+            "10 of Diamonds",
+            "King of Spades"
+          ]
+        },
+        {
+          "hand": "Two Pair",
+          "cards": [
+            0,
+            1,
+            4,
+            5,
+            7
+          ],
+          "estimate": 234,
+          "scoring": [
+            "King of Spades",
+            "King of Hearts",
+            "9 of Spades",
+            "9 of Diamonds"
+          ],
+          "kicked": [
+            "3 of Clubs"
+          ],
+          "expected_score": 301,
+          "low_score": 52,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 535,
+          "two_hand_low": 286,
+          "played": [
+            "King of Spades",
+            "King of Hearts",
+            "9 of Spades",
+            "9 of Diamonds",
+            "3 of Clubs"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "estimate": 56,
+          "scoring": [
+            "9 of Spades",
+            "9 of Diamonds"
+          ],
+          "kicked": [
+            "10 of Diamonds",
+            "4 of Hearts",
+            "3 of Clubs"
+          ],
+          "expected_score": 429,
+          "low_score": 180,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 485,
+          "two_hand_low": 236,
+          "played": [
+            "10 of Diamonds",
+            "9 of Spades",
+            "9 of Diamonds",
+            "4 of Hearts",
+            "3 of Clubs"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            7,
+            6,
+            3,
+            2
+          ],
+          "estimate": 15,
+          "setup": "Keep pairs/sets, dig for more of a kind",
+          "expected_score": 398,
+          "low_score": 234,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 4,
+          "two_hand_mean": 413,
+          "two_hand_low": 249,
+          "played": [
+            "3 of Clubs",
+            "4 of Hearts",
+            "10 of Diamonds",
+            "Queen of Hearts"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            0,
+            1,
+            4,
+            6,
+            7
+          ],
+          "estimate": 60,
+          "scoring": [
+            "King of Spades",
+            "King of Hearts"
+          ],
+          "kicked": [
+            "9 of Spades",
+            "4 of Hearts",
+            "3 of Clubs"
+          ],
+          "expected_score": 276,
+          "low_score": 56,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 336,
+          "two_hand_low": 116,
+          "played": [
+            "King of Spades",
+            "King of Hearts",
+            "9 of Spades",
+            "4 of Hearts",
+            "3 of Clubs"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            0,
+            3,
+            4,
+            6,
+            7
+          ],
+          "estimate": 15,
+          "scoring": [
+            "King of Spades"
+          ],
+          "kicked": [
+            "10 of Diamonds",
+            "9 of Spades",
+            "4 of Hearts",
+            "3 of Clubs"
+          ],
+          "expected_score": 290,
+          "low_score": 56,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 305,
+          "two_hand_low": 71,
+          "played": [
+            "King of Spades",
+            "10 of Diamonds",
+            "9 of Spades",
+            "4 of Hearts",
+            "3 of Clubs"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            1,
+            3,
+            4,
+            6,
+            7
+          ],
+          "estimate": 15,
+          "scoring": [
+            "King of Hearts"
+          ],
+          "kicked": [
+            "10 of Diamonds",
+            "9 of Spades",
+            "4 of Hearts",
+            "3 of Clubs"
+          ],
+          "expected_score": 209,
+          "low_score": 56,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 224,
+          "two_hand_low": 71,
+          "played": [
+            "King of Hearts",
+            "10 of Diamonds",
+            "9 of Spades",
+            "4 of Hearts",
+            "3 of Clubs"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            7,
+            6,
+            5,
+            1
+          ],
+          "estimate": 15,
+          "setup": "Chase a straight (holding 4 of 5 ranks)",
+          "expected_score": 204,
+          "low_score": 60,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 4,
+          "two_hand_mean": 219,
+          "two_hand_low": 75,
+          "played": [
+            "3 of Clubs",
+            "4 of Hearts",
+            "9 of Diamonds",
+            "King of Hearts"
+          ]
+        }
+      ]
+    },
+    {
+      "run": "20261014-061534-75WVKF42",
+      "event": 169,
+      "candidates": [
+        {
+          "hand": "High Card",
+          "cards": [
+            5,
+            4,
+            3,
+            2
+          ],
+          "estimate": 15,
+          "setup": "Chase a Hearts flush (holding 4 of 5)",
+          "expected_score": 841,
+          "low_score": 594,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 4,
+          "two_hand_mean": 856,
+          "two_hand_low": 609,
+          "played": [
+            "6 of Clubs",
+            "9 of Clubs",
+            "10 of Diamonds",
+            "Jack of Spades"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "estimate": 15,
+          "setup": "Keep pairs/sets, dig for more of a kind",
+          "expected_score": 576,
+          "low_score": 192,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 591,
+          "two_hand_low": 207,
+          "played": [
+            "6 of Clubs",
+            "9 of Clubs",
+            "10 of Diamonds",
+            "Jack of Spades",
+            "Queen of Hearts"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "estimate": 36,
+          "scoring": [
+            "4 of Hearts",
+            "4 of Hearts"
+          ],
+          "kicked": [
+            "10 of Diamonds",
+            "9 of Clubs",
+            "6 of Clubs"
+          ],
+          "expected_score": 302,
+          "low_score": 60,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 338,
+          "two_hand_low": 96,
+          "played": [
+            "10 of Diamonds",
+            "9 of Clubs",
+            "6 of Clubs",
+            "4 of Hearts",
+            "4 of Hearts"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            0,
+            3,
+            4,
+            5,
+            6
+          ],
+          "estimate": 16,
+          "scoring": [
+            "Ace of Hearts"
+          ],
+          "kicked": [
+            "10 of Diamonds",
+            "9 of Clubs",
+            "6 of Clubs",
+            "4 of Hearts"
+          ],
+          "expected_score": 276,
+          "low_score": 60,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 292,
+          "two_hand_low": 76,
+          "played": [
+            "Ace of Hearts",
+            "10 of Diamonds",
+            "9 of Clubs",
+            "6 of Clubs",
+            "4 of Hearts"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            6,
+            7,
+            5,
+            0
+          ],
+          "estimate": 36,
+          "setup": "Chase a straight (holding 4 of 5 ranks)",
+          "expected_score": 245,
+          "low_score": 180,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 4,
+          "two_hand_mean": 281,
+          "two_hand_low": 216,
+          "played": [
+            "4 of Hearts",
+            "4 of Hearts",
+            "6 of Clubs",
+            "Ace of Hearts"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            1,
+            3,
+            4,
+            5,
+            6
+          ],
+          "estimate": 15,
+          "scoring": [
+            "Queen of Hearts"
+          ],
+          "kicked": [
+            "10 of Diamonds",
+            "9 of Clubs",
+            "6 of Clubs",
+            "4 of Hearts"
+          ],
+          "expected_score": 265,
+          "low_score": 60,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 280,
+          "two_hand_low": 75,
+          "played": [
+            "Queen of Hearts",
+            "10 of Diamonds",
+            "9 of Clubs",
+            "6 of Clubs",
+            "4 of Hearts"
+          ]
+        }
+      ]
+    },
+    {
+      "run": "20261014-061534-75WVKF42",
+      "event": 172,
+      "candidates": [
+        {
+          "hand": "High Card",
+          "cards": [
+            7,
+            4,
+            3,
+            1
+          ],
+          "estimate": 16,
+          "setup": "Chase a Hearts flush (holding 4 of 5)",
+          "expected_score": 760,
+          "low_score": 220,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 4,
+          "two_hand_mean": 776,
+          "two_hand_low": 236,
+          "played": [
+            "2 of Spades",
+            "8 of Spades",
+            "Jack of Spades",
+            "Ace of Diamonds"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            6,
+            5,
+            2,
+            0,
+            1
+          ],
+          "estimate": 64,
+          "setup": "Chase a Spades flush (holding 3 of 5)",
+          "expected_score": 459,
+          "low_score": 60,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 523,
+          "two_hand_low": 124,
+          "played": [
+            "3 of Hearts",
+            "6 of Hearts",
+            "Queen of Hearts",
+            "Ace of Hearts",
+            "Ace of Diamonds"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            7,
+            6,
+            5,
+            4,
+            3
+          ],
+          "estimate": 15,
+          "setup": "Keep pairs/sets, dig for more of a kind",
+          "expected_score": 377,
+          "low_score": 189,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 392,
+          "two_hand_low": 204,
+          "played": [
+            "2 of Spades",
+            "3 of Hearts",
+            "6 of Hearts",
+            "8 of Spades",
+            "Jack of Spades"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            0,
+            1,
+            5,
+            6,
+            7
+          ],
+          "estimate": 64,
+          "scoring": [
+            "Ace of Hearts",
+            "Ace of Diamonds"
+          ],
+          "kicked": [
+            "6 of Hearts",
+            "3 of Hearts",
+            "2 of Spades"
+          ],
+          "expected_score": 279,
+          "low_score": 52,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 343,
+          "two_hand_low": 116,
+          "played": [
+            "Ace of Hearts",
+            "Ace of Diamonds",
+            "6 of Hearts",
+            "3 of Hearts",
+            "2 of Spades"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            1,
+            4,
+            5,
+            6,
+            7
+          ],
+          "estimate": 16,
+          "scoring": [
+            "Ace of Diamonds"
+          ],
+          "kicked": [
+            "8 of Spades",
+            "6 of Hearts",
+            "3 of Hearts",
+            "2 of Spades"
+          ],
+          "expected_score": 253,
+          "low_score": 60,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 269,
+          "two_hand_low": 76,
+          "played": [
+            "Ace of Diamonds",
+            "8 of Spades",
+            "6 of Hearts",
+            "3 of Hearts",
+            "2 of Spades"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            0,
+            4,
+            5,
+            6,
+            7
+          ],
+          "estimate": 16,
+          "scoring": [
+            "Ace of Hearts"
+          ],
+          "kicked": [
+            "8 of Spades",
+            "6 of Hearts",
+            "3 of Hearts",
+            "2 of Spades"
+          ],
+          "expected_score": 222,
+          "low_score": 60,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 238,
+          "two_hand_low": 76,
+          "played": [
+            "Ace of Hearts",
+            "8 of Spades",
+            "6 of Hearts",
+            "3 of Hearts",
+            "2 of Spades"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            5,
+            4,
+            3,
+            2,
+            1
+          ],
+          "estimate": 16,
+          "setup": "Chase a straight (holding 3 of 5 ranks)",
+          "expected_score": 196,
+          "low_score": 32,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 212,
+          "two_hand_low": 48,
+          "played": [
+            "6 of Hearts",
+            "8 of Spades",
+            "Jack of Spades",
+            "Queen of Hearts",
+            "Ace of Diamonds"
+          ]
+        }
+      ]
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 231,
+      "candidates": [
+        {
+          "hand": "Two Pair",
+          "cards": [
+            1,
+            2,
+            5,
+            6,
+            7
+          ],
+          "estimate": 66,
+          "scoring": [
+            "10 of Spades (debuffed)",
+            "10 of Clubs",
+            "3 of Spades (debuffed)",
+            "3 of Diamonds"
+          ],
+          "kicked": [
+            "7 of Clubs"
+          ],
+          "expected_score": 116,
+          "low_score": 56,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 182,
+          "two_hand_low": 122,
+          "played": [
+            "10 of Spades (debuffed)",
+            "10 of Clubs",
+            "7 of Clubs",
+            "3 of Spades (debuffed)",
+            "3 of Diamonds"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            6,
+            4,
+            1,
+            7,
+            5
+          ],
+          "estimate": 26,
+          "setup": "Keep high cards, throw the lowest",
+          "expected_score": 145,
+          "low_score": 56,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 171,
+          "two_hand_low": 82,
+          "played": [
+            "3 of Spades (debuffed)",
+            "8 of Spades (debuffed)",
+            "10 of Spades (debuffed)",
+            "3 of Diamonds",
+            "7 of Clubs"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            6,
+            4,
+            1,
+            7,
+            0
+          ],
+          "estimate": 26,
+          "setup": "Chase a straight (holding 3 of 5 ranks)",
+          "expected_score": 142,
+          "low_score": 40,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 168,
+          "two_hand_low": 66,
+          "played": [
+            "3 of Spades (debuffed)",
+            "8 of Spades (debuffed)",
+            "10 of Spades (debuffed)",
+            "3 of Diamonds",
+            "King of Hearts"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "estimate": 26,
+          "scoring": [
+            "3 of Spades (debuffed)",
+            "3 of Diamonds"
+          ],
+          "kicked": [
+            "9 of Hearts",
+            "8 of Spades (debuffed)",
+            "7 of Clubs"
+          ],
+          "expected_score": 139,
+          "low_score": 74,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 165,
+          "two_hand_low": 100,
+          "played": [
+            "9 of Hearts",
+            "8 of Spades (debuffed)",
+            "7 of Clubs",
+            "3 of Spades (debuffed)",
+            "3 of Diamonds"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            1,
+            2,
+            4,
+            5,
+            6
+          ],
+          "estimate": 40,
+          "scoring": [
+            "10 of Spades (debuffed)",
+            "10 of Clubs"
+          ],
+          "kicked": [
+            "8 of Spades (debuffed)",
+            "7 of Clubs",
+            "3 of Spades (debuffed)"
+          ],
+          "expected_score": 101,
+          "low_score": 40,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 141,
+          "two_hand_low": 80,
+          "played": [
+            "10 of Spades (debuffed)",
+            "10 of Clubs",
+            "8 of Spades (debuffed)",
+            "7 of Clubs",
+            "3 of Spades (debuffed)"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            0,
+            3,
+            4,
+            5,
+            6
+          ],
+          "estimate": 15,
+          "scoring": [
+            "King of Hearts"
+          ],
+          "kicked": [
+            "9 of Hearts",
+            "8 of Spades (debuffed)",
+            "7 of Clubs",
+            "3 of Spades (debuffed)"
+          ],
+          "expected_score": 116,
+          "low_score": 40,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 131,
+          "two_hand_low": 55,
+          "played": [
+            "King of Hearts",
+            "9 of Hearts",
+            "8 of Spades (debuffed)",
+            "7 of Clubs",
+            "3 of Spades (debuffed)"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            2,
+            3,
+            4,
+            5,
+            6
+          ],
+          "estimate": 15,
+          "scoring": [
+            "10 of Clubs"
+          ],
+          "kicked": [
+            "9 of Hearts",
+            "8 of Spades (debuffed)",
+            "7 of Clubs",
+            "3 of Spades (debuffed)"
+          ],
+          "expected_score": 87,
+          "low_score": 36,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 102,
+          "two_hand_low": 51,
+          "played": [
+            "10 of Clubs",
+            "9 of Hearts",
+            "8 of Spades (debuffed)",
+            "7 of Clubs",
+            "3 of Spades (debuffed)"
+          ]
+        }
+      ]
+    },
+    {
+      "run": "20261014-061621-DHPB8Q1L",
+      "event": 234,
+      "candidates": [
+        {
+          "hand": "Pair",
+          "cards": [
+            6,
+            5,
+            2,
+            4,
+            3
+          ],
+          "estimate": 36,
+          "setup": "Chase a Hearts flush (holding 3 of 5)",
+          "expected_score": 166,
+          "low_score": 56,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 202,
+          "two_hand_low": 92,
+          "played": [
+            "4 of Spades (debuffed)",
+            "5 of Spades (debuffed)",
+            "8 of Spades (debuffed)",
+            "7 of Diamonds",
+            "8 of Diamonds"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            6,
+            5,
+            2,
+            7,
+            0
+          ],
+          "estimate": 15,
+          "setup": "Chase a straight (holding 3 of 5 ranks)",
+          "expected_score": 157,
+          "low_score": 48,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 172,
+          "two_hand_low": 63,
+          "played": [
+            "4 of Spades (debuffed)",
+            "5 of Spades (debuffed)",
+            "8 of Spades (debuffed)",
+            "3 of Hearts",
+            "King of Hearts"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            0,
+            4,
+            5,
+            6,
+            7
+          ],
+          "estimate": 15,
+          "scoring": [
+            "King of Hearts"
+          ],
+          "kicked": [
+            "7 of Diamonds",
+            "5 of Spades (debuffed)",
+            "4 of Spades (debuffed)",
+            "3 of Hearts"
+          ],
+          "expected_score": 152,
+          "low_score": 68,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 167,
+          "two_hand_low": 83,
+          "played": [
+            "King of Hearts",
+            "7 of Diamonds",
+            "5 of Spades (debuffed)",
+            "4 of Spades (debuffed)",
+            "3 of Hearts"
+          ]
+        },
+        {
+          "hand": "Pair",
+          "cards": [
+            2,
+            3,
+            5,
+            6,
+            7
+          ],
+          "estimate": 36,
+          "scoring": [
+            "8 of Spades (debuffed)",
+            "8 of Diamonds"
+          ],
+          "kicked": [
+            "5 of Spades (debuffed)",
+            "4 of Spades (debuffed)",
+            "3 of Hearts"
+          ],
+          "expected_score": 128,
+          "low_score": 42,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 164,
+          "two_hand_low": 78,
+          "played": [
+            "8 of Spades (debuffed)",
+            "8 of Diamonds",
+            "5 of Spades (debuffed)",
+            "4 of Spades (debuffed)",
+            "3 of Hearts"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            1,
+            4,
+            5,
+            6,
+            7
+          ],
+          "estimate": 14,
+          "scoring": [
+            "9 of Hearts"
+          ],
+          "kicked": [
+            "7 of Diamonds",
+            "5 of Spades (debuffed)",
+            "4 of Spades (debuffed)",
+            "3 of Hearts"
+          ],
+          "expected_score": 147,
+          "low_score": 68,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 161,
+          "two_hand_low": 82,
+          "played": [
+            "9 of Hearts",
+            "7 of Diamonds",
+            "5 of Spades (debuffed)",
+            "4 of Spades (debuffed)",
+            "3 of Hearts"
+          ]
+        },
+        {
+          "hand": "High Card",
+          "cards": [
+            6,
+            5,
+            2,
+            7,
+            4
+          ],
+          "estimate": 5,
+          "setup": "Keep high cards, throw the lowest",
+          "expected_score": 126,
+          "low_score": 42,
+          "chance_to_clear": 1.0,
+          "chance_to_meet_pace": 1.0,
+          "samples": 128,
+          "exact_draws": false,
+          "drawn": 5,
+          "two_hand_mean": 131,
+          "two_hand_low": 47,
+          "played": [
+            "4 of Spades (debuffed)",
+            "5 of Spades (debuffed)",
+            "8 of Spades (debuffed)",
+            "3 of Hearts",
+            "7 of Diamonds"
+          ]
+        }
+      ]
+    }
+  ]
+}

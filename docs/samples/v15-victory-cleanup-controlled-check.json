@@ -1,0 +1,41 @@
+{
+  "version": "6725b5bb",
+  "benchmark_run": false,
+  "jev_calls": 0,
+  "checkpoint": "runs\\_checkpoints\\20261013-072352-X62IZYJ4-autosave.jkr",
+  "replayed_actions": 0,
+  "status": "passed",
+  "synthetic_test_state": true,
+  "test_only_overrides": {
+    "ante": 8,
+    "round": 24,
+    "chips": 1600
+  },
+  "terminal_actions": [
+    "menu"
+  ],
+  "recorded_result": [
+    "won"
+  ],
+  "winning_state": [
+    {
+      "id": 2,
+      "seed": "X62IZYJ4",
+      "state": "ROUND_EVAL",
+      "won": true,
+      "ante_num": 9,
+      "round_num": 24,
+      "round": {
+        "hands_left": 3,
+        "reroll_cost": 5,
+        "chips": 1835,
+        "discards_left": 3,
+        "hands_played": 1,
+        "discards_used": 1
+      }
+    }
+  ],
+  "before_image": "v15-victory-cleanup-controlled-check-before.png",
+  "after_image": "v15-victory-cleanup-controlled-check-after.png",
+  "final_state": "MENU"
+}

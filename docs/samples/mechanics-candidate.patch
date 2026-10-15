@@ -1,0 +1,66 @@
+--- a/src/jokers.py
++++ b/src/jokers.py
+@@ -38,7 +38,7 @@
+     if suit:
+         return lambda i: i["suit"] == suit or i["enh"] == "WILD"
+     if "face" in s:
+-        return lambda i: i["rank"] in FACES
++        return lambda i: i.get("is_face", i["rank"] in FACES)
+     if "odd rank" in s:
+         return lambda i: i["rank"] in set("A9753")
+     if "even rank" in s:
+@@ -92,7 +92,7 @@
+         rule["held"].append((lambda i, r=r: i["rank"] == r, mu, x))
+         return rule
+     if e.startswith("Adds double the rank of lowest ranked card held in hand"):
+-        rule["hand"] = lambda ctx: (0, 2 * min([_nominal(i) for i in ctx["held"]] or [0]), 1)
++        rule["raised_fist"] = True  # Individual held-card effect, including retriggers.
+         return rule
+ 
+     cur = re.search(r"\(Currently ([+X]?)\$?" + NUM + r"(?: (Mult|Chips))?\)", e)
+@@ -189,6 +189,7 @@
+ def entry(c):
+     eff = _d(c.get("value")).get("effect") or ""
+     return {"label": c.get("label"), "rule": parse(eff), "edition": _d(c.get("modifier")).get("edition"),
++            "all_face": c.get("label") == "Pareidolia" and not _d(c.get("state")).get("debuff"),
+             "scoring": bool(re.search(r"Mult|Chips|Retrigger", eff))}
+ 
+ 
+@@ -276,13 +277,15 @@
+     """Expected score of playing hand positions `combo` (scoring = indices into combo)."""
+     h = hand_levels.get(name, {})
+     chips, mult = float(h.get("chips", 0)), float(h.get("mult", 1))
++    all_face = any(j.get("all_face") for j in jokers)
++    infos = [{**i, "is_face": all_face or i["rank"] in FACES} for i in infos]
+     played = [infos[i] for i in combo]
+     held = [infos[i] for i in range(len(infos)) if i not in combo]
+     sc = sorted(scoring)
+     hands_left = rnd.get("hands_left") or 1
+     rules = [j["rule"] for j in jokers if j["rule"]]
+ 
+-    first_face = next((p for p in sc if played[p]["rank"] in FACES and not played[p]["debuff"]), None)
++    first_face = next((p for p in sc if played[p]["is_face"] and not played[p]["debuff"]), None)
+     for k, p in enumerate(sc):
+         c = played[p]
+         if c["debuff"]:
+@@ -304,13 +307,19 @@
+                         chips, mult = chips + cc, (mult + mm) * xx
+ 
+     held_reps = 1 + sum(r.get("held_retrigger", 0) for r in rules)
+-    for c in held:
++    # The last lowest-ranked non-Stone card triggers Raised Fist. A debuffed
++    # lowest card blocks it; a higher live card cannot replace that card.
++    ranked = [n for n, c in enumerate(held) if c["rank"] and c["enh"] != "STONE"]
++    lowest = min(ranked, key=lambda n: (RANK_ORDER.index(held[n]["rank"]), -n)) if ranked else None
++    for held_index, c in enumerate(held):
+         if c["debuff"]:
+             continue
+         for _ in range(held_reps + (c["seal"] == "RED")):
+             if c["enh"] == "STEEL":
+                 mult *= 1.5
+             for r in rules:
++                if r.get("raised_fist") and held_index == lowest:
++                    mult += 2 * _nominal(c)
+                 for pred, mm, xx in r["held"]:
+                     if pred(c):
+                         mult = (mult + mm) * xx

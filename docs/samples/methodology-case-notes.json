@@ -1,0 +1,33 @@
+{
+  "verified_examples": [
+    {
+      "run": "20261014-194148-JV8CL6BQ",
+      "event": 4157,
+      "type": "Unreported unsupported interaction",
+      "estimate": 352,
+      "actual": 1540,
+      "evidence": "Public state has Pareidolia, Smiley Face and Photograph, but no jokers_not_in_estimates warning. The scorer tests printed ranks for face-card effects and does not apply Pareidolia. Played 9S/9H/3S/3H score 44 chips x 35 mult = 1540 when the face effects are applied, matching the actual outcome."
+    },
+    {
+      "run": "20261014-141234-WMAZ7HWJ",
+      "event": 8112,
+      "type": "Boss/held-card scoring mismatch",
+      "estimate": 2730,
+      "actual": 630,
+      "evidence": "The Pillar, Raised Fist, only debuffed cards held after the selected play. The current Raised Fist rule adds rank-derived Mult without checking held-card debuff. The recording reports no unsupported scorer warning. Exact fix should be verified against game mechanics before changing the scorer."
+    },
+    {
+      "run": "20261014-142427-A7YBUVWD",
+      "event": 10467,
+      "type": "Forced clear estimate failed to clear immediately",
+      "estimate": 11583,
+      "actual": 9993,
+      "after_state": "SELECTING_HAND",
+      "evidence": "One forced-clear outcome remained SELECTING_HAND; this is not itself evidence of a lost run. Keep stochastic and unsupported mechanics separate when validating guaranteed clears."
+    }
+  ],
+  "duplicate_terminal_cells": {
+    "v15": 0,
+    "v17": 0
+  }
+}

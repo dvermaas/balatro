@@ -6,13 +6,11 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "v15: v13 + a build that matches what the deck produces. v13 committed to Flush in 25 of 29 losses (any "
-    "joker mentioning a suit, or one Jupiter, was enough) while final plays were Pair/Two Pair/High Card, and "
-    "the flush suit flip-flopped between shops. Now build.decide samples 24 deals of hand size + 3 cards "
-    "(jokers and levels included) and commits to the hand family with the largest share of best-play score "
-    "(Flush also at 25%+ with a flush joker): matches the best play in real ante 3+ hands 56% vs 42%. A "
-    "levelled hand counts as a main hand only once played twice. A paid Celestial pack takes the planet with "
-    "the biggest measured gain instead of skipping. v14's wall/flat-discount shop is dropped (trailed v13)."
+    "v18 draft: explicit cash-tarot transactions and capacity-aware Riff-raff value. "
+    "JEV compares profitable buy-and-use cash options with continuing the same shop, using "
+    "post-price payouts, net profit and final cash. Free cash picks get a focused economy question. "
+    "Riff-raff carries the number of Common jokers its remaining slots allow. "
+    "Keeps v17 hand play, shop spending rules and the 1.5 pack cutoff."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
@@ -36,6 +34,14 @@ INSTRUCTIONS = {
         "`jokers_not_in_estimates`), but are approximate. Prefer the higher score unless a "
         "lower one keeps stronger cards or avoids resetting a scaling joker."
     ),
+    "setup_play": (
+        " When `next_hand_outlook` "
+        "is present, no discards remain but another hand does: compare the supplied two-play totals "
+        "and rankings, not just immediate score. A setup play spends a hand to preserve a promising draw. "
+        "Weigh poor-draw totals and chance_two_plays_clear as well as the average; a high average alone "
+        "does not guarantee survival. The forecast assumes our best modeled next play and includes "
+        "misses; it does not plan the whole round. Choose for survival rather than build preference."
+    ),
     "best_discard": (
         "If we discard, which plan best helps us survive this round? Options are ordered by measured "
         "survival value. Each models our best next play after the draw, including misses and cards held "
@@ -50,9 +56,16 @@ INSTRUCTIONS = {
         "hands). `use` says what a tarot or spectral would do for us; `worth` says what a voucher gives for "
         "the rest of the run. Favour items that fit `our_build`. Consider `engine.missing`, `upcoming_boss` "
         "and what it costs. `readiness` compares our typical hand with what the next blinds need per hand "
-        "and `plan` says whether to spend on power or save; `readiness_after` is the measured lift."
+        "and `plan` says whether to spend on power or save; `readiness_after` is the measured lift. "
+        "With little scoring support, prefer reliable Mult and useful temporary jokers over an xMult "
+        "effect whose activation conditions are not met. `known_effect` restores missing card text. "
+        "For a free pack pick, follow `pack_selection`; do not charge its pack price again."
     ),
 }
+
+CASH_ITEM_QUESTION = 'How valuable is taking this cash tarot in this situation? Use `cash_outcome`, which already subtracts the price before calculating the payout. In a shop, buying and using it can fund another purchase in the SAME shop; compare net profit, not just the temporary purchase cost. A substantial immediate net cash profit is a strong economy improvement even though it adds no chips directly and fits any hand type. A loss or zero profit is not an immediate cash upgrade. In a paid pack, the money competes with the other free picks: prefer immediate scoring if needed to survive, otherwise consider how the cash funds future upgrades.'
+
+CASH_STEP_QUESTION = 'Which action should we take before continuing this shop? Each cash-tarot option buys and immediately uses that card, then returns to this SAME shop with the stated net cash profit. Other items remain available; no blind is played in between. Prefer useful immediate profit that funds our next purchases. Choose continue_shopping if there is a concrete reason to pass these cash transactions. The numeric cash outcomes already include the purchase price.'
 
 ITEM_VALUE_LEVELS = [
     "Hurts the run or is wasted (off-plan, useless now, or not worth the money)",

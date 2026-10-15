@@ -1,0 +1,9 @@
+{
+  "version": "6725b5bb",
+  "benchmark_run": false,
+  "jev_calls": 0,
+  "checkpoint": "runs\\_checkpoints\\20261013-072352-X62IZYJ4-autosave.jkr",
+  "replayed_actions": 11,
+  "status": "failed",
+  "error": "Replay diverged after event 7938: {'money': {'expected': 39, 'actual': 41}}"
+}

@@ -80,6 +80,21 @@ def plan(key, hand_cards, b):
     return None
 
 
+def cash_outcome(c, money, cost=0, jokers=None):
+    """Cash from taking and immediately using a money tarot, after paying its price."""
+    key = c.get("key")
+    left = money - cost
+    if key == "c_hermit":
+        payout = max(0, min(left, 20))
+    elif key == "c_temperance":
+        payout = max(0, min(sum(_d(j.get("cost")).get("sell", 0) for j in jokers or []), 50))
+    else:
+        return None
+    return {"cash_before": money, "purchase_cost": cost, "cash_after_purchase": left,
+            "payout_if_used_now": payout, "net_cash_gain": payout - cost,
+            "cash_after_use": left + payout}
+
+
 def note(c, b, money=0, jokers=None):
     """Short fact about what a tarot/spectral would do for us, for Jev's item scoring."""
     key = c.get("key") or ""
@@ -96,7 +111,7 @@ def note(c, b, money=0, jokers=None):
                 "copy": "copies a strong card over a weak one", "best": f"adds {arg} to our best card",
                 "held": f"adds {arg} to a card we hold"}[kind]
     if key == "c_hermit":
-        return f"gives +${min(money, 20)} now (doubles money, max $20)"
+        return f"gives +${max(0, min(money, 20))} now (doubles money, max $20)"
     if key == "c_temperance":
         total = sum(_d(j.get("cost")).get("sell", 0) for j in jokers or [])
         return f"gives +${min(total, 50)} now (our jokers' sell value)"

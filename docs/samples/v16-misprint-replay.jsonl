@@ -1,0 +1,1 @@
+{"id": 2346, "ante": 2, "was": "leave", "now": null, "action": ["next_round", null], "probs": {"buy_card_0": 0.21, "buy_card_1": 0.0175, "buy_voucher_0": 0.0175, "buy_pack_0": 0.395, "buy_pack_1": 0.3025}}

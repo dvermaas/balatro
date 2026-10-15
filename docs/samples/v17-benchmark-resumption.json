@@ -1,0 +1,23 @@
+{
+  "version": "11845ce8",
+  "mode": "running",
+  "benchmark": {
+    "name": "bench30-a",
+    "current": {
+      "name": "bench30-a",
+      "index": 21,
+      "of": 30
+    },
+    "remaining": 8
+  },
+  "retained_terminal_runs": 21,
+  "performance_early_stop": false,
+  "events": [
+    {
+      "id": 1,
+      "t": 1791998729.0439894,
+      "kind": "info",
+      "msg": "Resumed bench30-a: 21 completed results retained; 9 later seeds queued. Performance early stopping disabled for this explicitly requested completion."
+    }
+  ]
+}

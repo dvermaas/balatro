@@ -1,0 +1,28 @@
+{
+  "at": 1792089372.5116675,
+  "version": "d22adb59",
+  "run": "20261015-202137-U8AC5647",
+  "recorded_error_event": 6483,
+  "recorded_error": "JEV HTTP 499",
+  "last_recorded_outcome": {
+    "state": "SMODS_BOOSTER_OPENED",
+    "ante": 1,
+    "round": 1,
+    "money": 5
+  },
+  "loaded_autosave_public": {
+    "state": "SELECTING_HAND",
+    "seed": "U8AC5647",
+    "ante": 1,
+    "round": 2,
+    "money": 5,
+    "jokers": []
+  },
+  "opaque_backup": "runs\\_experiments\\v18-service-recovery\\autosave-before-recovery.jkr",
+  "opaque_backup_sha256": "6b76751c5cfeed75827d5be4065515e75a8dd5e9d89bfe8d557e1042a4ab12ea",
+  "decision": "User explicitly requested leaving benchmark paused; no resume and no replacement attempt",
+  "panel_mode": "paused",
+  "completed": 12,
+  "queued": 17,
+  "source_changed": false
+}
