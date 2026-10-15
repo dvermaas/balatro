@@ -1,4 +1,7 @@
-"""Control plane: run with `.venv/Scripts/python panel.py`, open http://127.0.0.1:8765."""
+"""Control plane: run with `.venv/Scripts/python panel.py`, open http://127.0.0.1:8765.
+
+JEV_BACKEND=sim plays on the headless Jackdaw sim instead of the real game (runs go to runs/sim/,
+and the panel's runs/benchmark/prompt views then show sim runs only)."""
 
 import json
 import threading
@@ -25,6 +28,9 @@ class Controller:
             self.bot = importlib.import_module(f"legacy.{legacy}_bot").make_bot()
         else:
             self.bot = JevBot()
+        self.backend = getattr(self.bot, "backend", "balatrobot")
+        if self.backend != "balatrobot":
+            analytics.RUNS = self.bot.recorder.root  # show this backend's runs only
         self.mode = "paused"  # paused | running
         self.pending_steps = 0
         self.delay = 0.3
@@ -96,10 +102,12 @@ class Controller:
         recent = [e for e in events if e["kind"] == "decision" and now - e["t"] <= 60]
         version = self.bot.recorder.version
         label = next((v["label"] for v in prompt_versions() if v["version"] == version), "?")
-        on_version = [r for r in analytics.all_runs() if r.get("prompt_version") == version]
+        on_version = [r for r in analytics.all_runs() if r.get("prompt_version") == version
+                      and analytics.run_backend(r) == self.backend]
         durations = [r["ended"] - r["started"] for r in on_version if r.get("ended")]
         return {
             "mode": self.mode,
+            "backend": self.backend,
             "delay": self.delay,
             "auto_new_run": self.bot.auto_new_run,
             "stats": self.bot.stats,
@@ -153,9 +161,9 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, {"summary": summary, "metrics": analytics.run_metrics(run_dir),
                              "events": analytics.load_decisions(run_dir)})
         elif p == "/api/benchmark":
-            self._send(200, analytics.benchmark_matrix(q.get("set", [None])[0]))
+            self._send(200, analytics.benchmark_matrix(q.get("set", [None])[0], backend=ctl.backend))
         elif p == "/api/prompts":
-            self._send(200, analytics.version_stats())
+            self._send(200, analytics.version_stats(backend=ctl.backend))
         else:
             self._send(404, {"error": "not found"})
 

@@ -111,16 +111,34 @@ def summarize(gs):
     }
 
 
+def make_game(backend=None):
+    """The game client: BalatroBot over HTTP (default) or the headless Jackdaw sim
+    (JEV_BACKEND=sim, see src/sim_backend.py). Both speak the same call()/state() interface."""
+    backend = (backend or os.environ.get("JEV_BACKEND") or "balatrobot").lower()
+    if backend in ("sim", "jackdaw"):
+        from sim_backend import SimBalatro
+        return SimBalatro()
+    if backend in ("balatrobot", "real", "game"):
+        return Balatro()
+    raise ValueError(f"unknown JEV_BACKEND {backend!r} (use balatrobot or sim)")
+
+
 class JevBot:
-    def __init__(self, deck="RED", stake="WHITE", model="jev-latest", log_dir=ROOT / "runs"):
+    def __init__(self, deck="RED", stake="WHITE", model="jev-latest", log_dir=None, game=None, jev=None):
         load_env()
-        key = os.environ.get("JEV_API_KEY") or os.environ.get("TYPESAFE_API_KEY")
-        if not key:
-            raise RuntimeError("JEV_API_KEY missing from .env")
-        self.jev = TypeSafeClient(api_key=key, model=model)
-        self.game = Balatro()
+        if jev is None:
+            key = os.environ.get("JEV_API_KEY") or os.environ.get("TYPESAFE_API_KEY")
+            if not key:
+                raise RuntimeError("JEV_API_KEY missing from .env")
+            jev = TypeSafeClient(api_key=key, model=model)
+        self.jev = jev
+        self.game = game if game is not None else make_game()
+        self.backend = getattr(self.game, "backend", "balatrobot")
+        self.error_backoff = 0.5 if self.backend == "balatrobot" else 0.0
+        if log_dir is None:  # sim runs live apart so real-game analyses and benchmarks never see them
+            log_dir = ROOT / "runs" / ("sim" if self.backend != "balatrobot" else "")
         self.deck, self.stake, self.model = deck, stake, model
-        self.recorder = RunRecorder(log_dir)
+        self.recorder = RunRecorder(log_dir, backend=self.backend)
         self.auto_new_run = True
         self.events = deque(maxlen=400)
         self._event_id = 0
@@ -286,7 +304,7 @@ class JevBot:
             if self._error_streak >= 5:
                 self._error_streak = 0
                 raise RuntimeError(f"5 game errors in a row in {st}; pausing") from e
-            time.sleep(0.5)
+            time.sleep(getattr(self, "error_backoff", 0.5))
         return True
 
     def start_benchmark(self, name=None):
@@ -327,7 +345,8 @@ class JevBot:
         current version trails by more than 2 standard errors (v6 was obvious after 6 seeds)."""
         import statistics
         import analytics
-        m = analytics.benchmark_matrix(self.bench_name)
+        m = analytics.benchmark_matrix(self.bench_name, backend=getattr(self, "backend", "balatrobot"),
+                                       root=getattr(self.recorder, "root", None))
         me = next((v for v in m["versions"] if v["version"] == self.recorder.version), None)
         done = [v for v in m["versions"] if v is not me and v["done"] == v["of"]]
         if not me or me["done"] < self.EARLY_STOP_AFTER or not done:

@@ -52,9 +52,10 @@ def prompt_versions():
 
 
 class RunRecorder:
-    def __init__(self, root=ROOT / "runs"):
-        self.root = root
-        self.root.mkdir(exist_ok=True)
+    def __init__(self, root=ROOT / "runs", backend="balatrobot"):
+        self.root = Path(root)
+        self.root.mkdir(parents=True, exist_ok=True)
+        self.backend = backend  # "balatrobot" (real game) or "jackdaw" (sim); stamped on every run
         snapshot_prompts()
         self.version = PROMPT_VERSION  # legacy bots override this
         self.run = None
@@ -68,11 +69,15 @@ class RunRecorder:
             self.finish("abandoned", gs)
         started = time.strftime("%Y%m%d-%H%M%S")
         self.dir = self.root / f"{started}-{seed}"
-        self.dir.mkdir(exist_ok=True)
+        n = 1
+        while self.dir.exists():  # parallel sim workers can start the same seed in the same second
+            n += 1
+            self.dir = self.root / f"{started}-{seed}-{n}"
+        self.dir.mkdir()
         self.run = {
             "run_id": self.dir.name, "seed": seed, "deck": gs.get("deck") or deck,
             "stake": gs.get("stake") or stake, "model": model, "prompt_version": self.version,
-            "benchmark": bench, "started": time.time(), "ended": None, "result": "in_progress",
+            "benchmark": bench, "backend": self.backend, "started": time.time(), "ended": None, "result": "in_progress",
             "ante": gs.get("ante_num"), "round": gs.get("round_num"), "money": gs.get("money"),
             "decisions": 0, "forced": 0, "errors": 0, "input_tokens": 0, "output_tokens": 0, "jev_ms": 0,
             "avg_confidence": None, "low_confidence_decisions": 0, "by_question": {},

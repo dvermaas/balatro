@@ -61,9 +61,15 @@ def run_metrics(run_dir):
     return m
 
 
-def all_runs():
+def run_backend(r):
+    """Which game produced a run: "balatrobot" (real game; runs from before the field existed) or
+    "jackdaw" (headless sim). Benchmark cells and version stats never mix the two."""
+    return r.get("backend") or "balatrobot"
+
+
+def all_runs(root=None):
     out = []
-    for p in sorted(RUNS.glob("*/summary.json"), reverse=True):
+    for p in sorted(Path(root or RUNS).glob("*/summary.json"), reverse=True):
         try:
             s = json.loads(p.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
@@ -77,8 +83,8 @@ def _avg(xs):
     return round(sum(xs) / len(xs), 2) if xs else None
 
 
-def version_stats():
-    runs = all_runs()
+def version_stats(backend="balatrobot", root=None):
+    runs = [r for r in all_runs(root) if run_backend(r) == backend]
     out = []
     for v in prompt_versions():
         rs = [r for r in runs if r.get("prompt_version") == v["version"]]
@@ -116,14 +122,15 @@ def _se(xs):
     return round((sum((x - mean) ** 2 for x in xs) / (len(xs) - 1)) ** 0.5 / len(xs) ** 0.5, 2)
 
 
-def benchmark_matrix(name=None):
-    """Seed x version grid for a fixed benchmark set, plus a summary row per version."""
+def benchmark_matrix(name=None, backend="balatrobot", root=None):
+    """Seed x version grid for a fixed benchmark set, plus a summary row per version.
+    Only runs played on `backend` count (real-game and sim results are never mixed)."""
     import benchmark
 
     name = name if name in benchmark.SETS else benchmark.NAME
     seeds = benchmark.SETS[name]
-    runs = [r for r in all_runs() if (r.get("benchmark") or {}).get("name") == name
-            and r["result"] in ("won", "lost")]
+    runs = [r for r in all_runs(root) if (r.get("benchmark") or {}).get("name") == name
+            and r["result"] in ("won", "lost") and run_backend(r) == backend]
     versions = []
     for v in prompt_versions():
         rs = {}
@@ -154,5 +161,5 @@ def benchmark_matrix(name=None):
             "cells": {s: {"result": r["result"], "ante": r["ante"], "round": r["round"], "run_id": r["run_id"],
                           "progress": r["metrics"].get("progress")} for s, r in rs.items()},
         })
-    return {"name": name, "sets": list(benchmark.SETS), "default": benchmark.NAME, "seeds": seeds,
+    return {"name": name, "backend": backend, "sets": list(benchmark.SETS), "default": benchmark.NAME, "seeds": seeds,
             "versions": versions}
