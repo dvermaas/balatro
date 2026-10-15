@@ -1,0 +1,1355 @@
+{
+ "6725b5bb": {
+  "cells": 30,
+  "wins": 2,
+  "losses": 28,
+  "death_ante": {
+   "1": 1,
+   "2": 3,
+   "3": 1,
+   "4": 2,
+   "5": 6,
+   "6": 8,
+   "7": 6,
+   "8": 1
+  },
+  "death_blind_kind": {
+   "boss": 20,
+   "Small Blind": 2,
+   "Big Blind": 6
+  },
+  "final_over_target": {
+   "50-75%": 14,
+   "25-50%": 4,
+   "75-100%": 9,
+   "<25%": 1
+  },
+  "median_ratio": 0.712,
+  "median_best_hand_share": 0.389,
+  "fatal_bosses": {
+   "The Water": 6,
+   "The Needle": 3,
+   "The Hook": 3,
+   "The Pillar": 2,
+   "The Tooth": 1,
+   "The Head": 1,
+   "The Goad": 1,
+   "Violet Vessel": 1,
+   "The Arm": 1,
+   "The Flint": 1
+  },
+  "cleared_margin_median_by_ante": {
+   "1": 1.33,
+   "2": 1.52,
+   "3": 1.55,
+   "4": 1.35,
+   "5": 1.24,
+   "6": 1.21,
+   "7": 1.13,
+   "8": 1.22,
+   "9": 1.3
+  },
+  "median_jokers_at_death": 5.0,
+  "losses_detail": [
+   {
+    "seed": "7X7WSDCX",
+    "ante": 5,
+    "fatal_blind": "The Tooth",
+    "boss_effect": "Lose $1 per card played",
+    "target": 22000,
+    "final": 13022,
+    "ratio": 0.592,
+    "best_hand_share": 0.324,
+    "hands_played": 4,
+    "jokers": [
+     "Odd Todd",
+     "Jolly Joker",
+     "Blue Joker",
+     "Supernova",
+     "Baseball Card"
+    ]
+   },
+   {
+    "seed": "6CAXN9I6",
+    "ante": 5,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 22000,
+    "final": 14376,
+    "ratio": 0.653,
+    "best_hand_share": 0.383,
+    "hands_played": 4,
+    "jokers": [
+     "Walkie Talkie",
+     "Blue Joker",
+     "Even Steven",
+     "Ramen",
+     "Ancient Joker"
+    ]
+   },
+   {
+    "seed": "TBIR2XMU",
+    "ante": 5,
+    "fatal_blind": "The Head",
+    "boss_effect": "All Heart cards are debuffed",
+    "target": 22000,
+    "final": 7660,
+    "ratio": 0.348,
+    "best_hand_share": 0.152,
+    "hands_played": 4,
+    "jokers": [
+     "Droll Joker",
+     "Walkie Talkie",
+     "Blue Joker",
+     "Lusty Joker",
+     "Card Sharp"
+    ]
+   },
+   {
+    "seed": "PX8GK4E6",
+    "ante": 2,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 1600,
+    "final": 1209,
+    "ratio": 0.756,
+    "best_hand_share": 0.315,
+    "hands_played": 4,
+    "jokers": [
+     "Supernova",
+     "Scholar",
+     "Obelisk"
+    ]
+   },
+   {
+    "seed": "WWYTV5PP",
+    "ante": 6,
+    "fatal_blind": "The Needle",
+    "boss_effect": "Play only 1 hand",
+    "target": 20000,
+    "final": 13266,
+    "ratio": 0.663,
+    "best_hand_share": 0.663,
+    "hands_played": 1,
+    "jokers": [
+     "Crafty Joker",
+     "Lusty Joker",
+     "Abstract Joker",
+     "Card Sharp",
+     "Baseball Card"
+    ]
+   },
+   {
+    "seed": "DHPB8Q1L",
+    "ante": 2,
+    "fatal_blind": "The Hook",
+    "boss_effect": "Discards 2 random cards per hand played",
+    "target": 1600,
+    "final": 1007,
+    "ratio": 0.629,
+    "best_hand_share": 0.417,
+    "hands_played": 4,
+    "jokers": [
+     "Odd Todd"
+    ]
+   },
+   {
+    "seed": "XUTRVN1Y",
+    "ante": 4,
+    "fatal_blind": "The Goad",
+    "boss_effect": "All Spade cards are debuffed",
+    "target": 10000,
+    "final": 7731,
+    "ratio": 0.773,
+    "best_hand_share": 0.427,
+    "hands_played": 4,
+    "jokers": [
+     "Wrathful Joker",
+     "Scary Face",
+     "Madness",
+     "Blackboard"
+    ]
+   },
+   {
+    "seed": "2RGEX6EN",
+    "ante": 1,
+    "fatal_blind": "The Hook",
+    "boss_effect": "Discards 2 random cards per hand played",
+    "target": 600,
+    "final": 377,
+    "ratio": 0.628,
+    "best_hand_share": 0.255,
+    "hands_played": 4,
+    "jokers": []
+   },
+   {
+    "seed": "V98SL5G2",
+    "ante": 6,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 40000,
+    "final": 29179,
+    "ratio": 0.729,
+    "best_hand_share": 0.413,
+    "hands_played": 4,
+    "jokers": [
+     "Abstract Joker",
+     "Odd Todd",
+     "Raised Fist",
+     "Mad Joker",
+     "Blue Joker"
+    ]
+   },
+   {
+    "seed": "WMAZ7HWJ",
+    "ante": 7,
+    "fatal_blind": "The Pillar",
+    "boss_effect": "Cards played previously this Ante are debuffed",
+    "target": 70000,
+    "final": 66562,
+    "ratio": 0.951,
+    "best_hand_share": 0.394,
+    "hands_played": 4,
+    "jokers": [
+     "Supernova",
+     "Mad Joker",
+     "Sock and Buskin",
+     "Clever Joker",
+     "Card Sharp"
+    ]
+   },
+   {
+    "seed": "W4YA1M4U",
+    "ante": 8,
+    "fatal_blind": "Violet Vessel",
+    "boss_effect": "Very large blind",
+    "target": 300000,
+    "final": 32942,
+    "ratio": 0.11,
+    "best_hand_share": 0.066,
+    "hands_played": 4,
+    "jokers": [
+     "Blue Joker",
+     "Abstract Joker",
+     "Crazy Joker",
+     "Card Sharp",
+     "Ramen"
+    ]
+   },
+   {
+    "seed": "U8AC5647",
+    "ante": 6,
+    "fatal_blind": "Small Blind",
+    "boss_effect": "none",
+    "target": 20000,
+    "final": 16676,
+    "ratio": 0.834,
+    "best_hand_share": 0.276,
+    "hands_played": 4,
+    "jokers": [
+     "Raised Fist",
+     "Blue Joker",
+     "Vampire"
+    ]
+   },
+   {
+    "seed": "8XNG984V",
+    "ante": 5,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 16500,
+    "final": 7880,
+    "ratio": 0.478,
+    "best_hand_share": 0.36,
+    "hands_played": 4,
+    "jokers": [
+     "Crafty Joker",
+     "Popcorn",
+     "Baseball Card"
+    ]
+   },
+   {
+    "seed": "SDNUURBN",
+    "ante": 4,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 10000,
+    "final": 7193,
+    "ratio": 0.719,
+    "best_hand_share": 0.602,
+    "hands_played": 4,
+    "jokers": [
+     "Jolly Joker",
+     "Scholar",
+     "Card Sharp",
+     "Ancient Joker",
+     "Photograph"
+    ]
+   },
+   {
+    "seed": "A7YBUVWD",
+    "ante": 7,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 70000,
+    "final": 44982,
+    "ratio": 0.643,
+    "best_hand_share": 0.457,
+    "hands_played": 4,
+    "jokers": [
+     "Scholar",
+     "Sock and Buskin",
+     "Smiley Face",
+     "Blue Joker",
+     "Card Sharp",
+     "Baron"
+    ]
+   },
+   {
+    "seed": "JRE681Y8",
+    "ante": 7,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 52500,
+    "final": 39100,
+    "ratio": 0.745,
+    "best_hand_share": 0.451,
+    "hands_played": 4,
+    "jokers": [
+     "Scary Face",
+     "Sock and Buskin",
+     "Raised Fist",
+     "Loyalty Card",
+     "Photograph"
+    ]
+   },
+   {
+    "seed": "75WVKF42",
+    "ante": 2,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 1600,
+    "final": 1324,
+    "ratio": 0.828,
+    "best_hand_share": 0.619,
+    "hands_played": 4,
+    "jokers": [
+     "Crafty Joker",
+     "Baseball Card"
+    ]
+   },
+   {
+    "seed": "I9Q96AKF",
+    "ante": 6,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 30000,
+    "final": 24337,
+    "ratio": 0.811,
+    "best_hand_share": 0.367,
+    "hands_played": 4,
+    "jokers": [
+     "Abstract Joker",
+     "Bull",
+     "Popcorn",
+     "Ice Cream",
+     "Card Sharp"
+    ]
+   },
+   {
+    "seed": "LRFULSLB",
+    "ante": 7,
+    "fatal_blind": "The Hook",
+    "boss_effect": "Discards 2 random cards per hand played",
+    "target": 70000,
+    "final": 66787,
+    "ratio": 0.954,
+    "best_hand_share": 0.43,
+    "hands_played": 4,
+    "jokers": [
+     "Madness"
+    ]
+   },
+   {
+    "seed": "8GWNFCSN",
+    "ante": 5,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 16500,
+    "final": 13926,
+    "ratio": 0.844,
+    "best_hand_share": 0.574,
+    "hands_played": 4,
+    "jokers": [
+     "Smiley Face",
+     "Dusk",
+     "Scary Face",
+     "Supernova",
+     "Photograph"
+    ]
+   },
+   {
+    "seed": "MW6PBTW4",
+    "ante": 6,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 30000,
+    "final": 19429,
+    "ratio": 0.648,
+    "best_hand_share": 0.315,
+    "hands_played": 4,
+    "jokers": [
+     "Abstract Joker",
+     "Hiker",
+     "Blue Joker",
+     "Smiley Face",
+     "Campfire"
+    ]
+   },
+   {
+    "seed": "5V1F9XQ2",
+    "ante": 7,
+    "fatal_blind": "Small Blind",
+    "boss_effect": "none",
+    "target": 35000,
+    "final": 25305,
+    "ratio": 0.723,
+    "best_hand_share": 0.331,
+    "hands_played": 4,
+    "jokers": [
+     "Banner",
+     "Blue Joker",
+     "Fibonacci",
+     "Ancient Joker",
+     "Ramen"
+    ]
+   },
+   {
+    "seed": "2S38V5NR",
+    "ante": 6,
+    "fatal_blind": "The Arm",
+    "boss_effect": "Decrease level of played poker hand",
+    "target": 40000,
+    "final": 28153,
+    "ratio": 0.704,
+    "best_hand_share": 0.25,
+    "hands_played": 4,
+    "jokers": [
+     "Mad Joker",
+     "Walkie Talkie",
+     "Abstract Joker",
+     "Banner",
+     "Raised Fist"
+    ]
+   },
+   {
+    "seed": "2CM51JLD",
+    "ante": 7,
+    "fatal_blind": "The Flint",
+    "boss_effect": "Base Chips and Mult are halved",
+    "target": 70000,
+    "final": 17829,
+    "ratio": 0.255,
+    "best_hand_share": 0.148,
+    "hands_played": 4,
+    "jokers": [
+     "Scary Face",
+     "Banner",
+     "Abstract Joker",
+     "Mad Joker",
+     "Ramen"
+    ]
+   },
+   {
+    "seed": "UR3ZTT24",
+    "ante": 5,
+    "fatal_blind": "The Pillar",
+    "boss_effect": "Cards played previously this Ante are debuffed",
+    "target": 22000,
+    "final": 19155,
+    "ratio": 0.871,
+    "best_hand_share": 0.447,
+    "hands_played": 4,
+    "jokers": [
+     "Odd Todd",
+     "Droll Joker",
+     "Hack",
+     "Greedy Joker",
+     "Mystic Summit"
+    ]
+   },
+   {
+    "seed": "C3XPB74B",
+    "ante": 6,
+    "fatal_blind": "The Needle",
+    "boss_effect": "Play only 1 hand",
+    "target": 20000,
+    "final": 7168,
+    "ratio": 0.358,
+    "best_hand_share": 0.358,
+    "hands_played": 1,
+    "jokers": [
+     "Scholar",
+     "Fortune Teller",
+     "Wily Joker",
+     "Even Steven",
+     "Sly Joker"
+    ]
+   },
+   {
+    "seed": "JV8CL6BQ",
+    "ante": 3,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 3000,
+    "final": 2246,
+    "ratio": 0.749,
+    "best_hand_share": 0.565,
+    "hands_played": 4,
+    "jokers": [
+     "Hiker",
+     "Crazy Joker",
+     "Photograph"
+    ]
+   },
+   {
+    "seed": "57AXFNDP",
+    "ante": 6,
+    "fatal_blind": "The Needle",
+    "boss_effect": "Play only 1 hand",
+    "target": 20000,
+    "final": 12213,
+    "ratio": 0.611,
+    "best_hand_share": 0.611,
+    "hands_played": 1,
+    "jokers": [
+     "Red Card",
+     "Jolly Joker",
+     "Crazy Joker",
+     "Loyalty Card",
+     "Blackboard"
+    ]
+   }
+  ]
+ },
+ "11845ce8": {
+  "cells": 30,
+  "wins": 0,
+  "losses": 30,
+  "death_ante": {
+   "1": 1,
+   "2": 2,
+   "3": 1,
+   "4": 2,
+   "5": 9,
+   "6": 10,
+   "7": 5
+  },
+  "death_blind_kind": {
+   "boss": 25,
+   "Big Blind": 2,
+   "Small Blind": 3
+  },
+  "final_over_target": {
+   "75-100%": 9,
+   "50-75%": 15,
+   "<25%": 2,
+   "25-50%": 4
+  },
+  "median_ratio": 0.685,
+  "median_best_hand_share": 0.31,
+  "fatal_bosses": {
+   "The Water": 6,
+   "The Hook": 2,
+   "The Needle": 2,
+   "The Pillar": 2,
+   "The Flint": 2,
+   "The Manacle": 2,
+   "The Tooth": 1,
+   "The Mouth": 1,
+   "The Head": 1,
+   "The Wall": 1,
+   "The Window": 1,
+   "The Club": 1,
+   "The Eye": 1,
+   "The Plant": 1,
+   "The House": 1
+  },
+  "cleared_margin_median_by_ante": {
+   "1": 1.34,
+   "2": 1.5,
+   "3": 1.63,
+   "4": 1.36,
+   "5": 1.22,
+   "6": 1.18,
+   "7": 1.09
+  },
+  "median_jokers_at_death": 5.0,
+  "losses_detail": [
+   {
+    "seed": "7X7WSDCX",
+    "ante": 5,
+    "fatal_blind": "The Tooth",
+    "boss_effect": "Lose $1 per card played",
+    "target": 22000,
+    "final": 21155,
+    "ratio": 0.962,
+    "best_hand_share": 0.365,
+    "hands_played": 4,
+    "jokers": [
+     "Jolly Joker",
+     "Blue Joker",
+     "Supernova",
+     "Sly Joker",
+     "Acrobat"
+    ]
+   },
+   {
+    "seed": "6CAXN9I6",
+    "ante": 6,
+    "fatal_blind": "The Mouth",
+    "boss_effect": "Play only 1 hand type this round",
+    "target": 40000,
+    "final": 28122,
+    "ratio": 0.703,
+    "best_hand_share": 0.308,
+    "hands_played": 4,
+    "jokers": [
+     "Walkie Talkie",
+     "Blue Joker",
+     "Even Steven",
+     "Popcorn",
+     "Ramen"
+    ]
+   },
+   {
+    "seed": "BAPQJMY5",
+    "ante": 5,
+    "fatal_blind": "The Hook",
+    "boss_effect": "Discards 2 random cards per hand played",
+    "target": 22000,
+    "final": 18563,
+    "ratio": 0.844,
+    "best_hand_share": 0.231,
+    "hands_played": 5,
+    "jokers": [
+     "Odd Todd",
+     "Sly Joker",
+     "Lusty Joker",
+     "Abstract Joker",
+     "Baseball Card"
+    ]
+   },
+   {
+    "seed": "TBIR2XMU",
+    "ante": 5,
+    "fatal_blind": "The Head",
+    "boss_effect": "All Heart cards are debuffed",
+    "target": 22000,
+    "final": 4902,
+    "ratio": 0.223,
+    "best_hand_share": 0.119,
+    "hands_played": 4,
+    "jokers": [
+     "Droll Joker",
+     "Scholar",
+     "Walkie Talkie",
+     "Banner",
+     "Card Sharp"
+    ]
+   },
+   {
+    "seed": "PX8GK4E6",
+    "ante": 2,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 1600,
+    "final": 368,
+    "ratio": 0.23,
+    "best_hand_share": 0.105,
+    "hands_played": 4,
+    "jokers": [
+     "Supernova",
+     "Devious Joker"
+    ]
+   },
+   {
+    "seed": "WWYTV5PP",
+    "ante": 6,
+    "fatal_blind": "The Needle",
+    "boss_effect": "Play only 1 hand",
+    "target": 20000,
+    "final": 11568,
+    "ratio": 0.578,
+    "best_hand_share": 0.578,
+    "hands_played": 1,
+    "jokers": [
+     "Crafty Joker",
+     "Lusty Joker",
+     "Abstract Joker",
+     "Card Sharp",
+     "Baseball Card"
+    ]
+   },
+   {
+    "seed": "DHPB8Q1L",
+    "ante": 3,
+    "fatal_blind": "The Wall",
+    "boss_effect": "Extra large blind",
+    "target": 8000,
+    "final": 5008,
+    "ratio": 0.626,
+    "best_hand_share": 0.212,
+    "hands_played": 7,
+    "jokers": [
+     "Burglar",
+     "Odd Todd",
+     "Greedy Joker"
+    ]
+   },
+   {
+    "seed": "XUTRVN1Y",
+    "ante": 6,
+    "fatal_blind": "The Window",
+    "boss_effect": "All Diamond cards are debuffed",
+    "target": 40000,
+    "final": 37370,
+    "ratio": 0.934,
+    "best_hand_share": 0.273,
+    "hands_played": 4,
+    "jokers": [
+     "Banner",
+     "Even Steven",
+     "Fibonacci",
+     "Gros Michel",
+     "Throwback"
+    ]
+   },
+   {
+    "seed": "2RGEX6EN",
+    "ante": 1,
+    "fatal_blind": "The Hook",
+    "boss_effect": "Discards 2 random cards per hand played",
+    "target": 600,
+    "final": 377,
+    "ratio": 0.628,
+    "best_hand_share": 0.255,
+    "hands_played": 4,
+    "jokers": []
+   },
+   {
+    "seed": "V98SL5G2",
+    "ante": 6,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 40000,
+    "final": 25454,
+    "ratio": 0.636,
+    "best_hand_share": 0.363,
+    "hands_played": 4,
+    "jokers": [
+     "Scholar",
+     "Odd Todd",
+     "Abstract Joker",
+     "Droll Joker",
+     "Fortune Teller"
+    ]
+   },
+   {
+    "seed": "WMAZ7HWJ",
+    "ante": 7,
+    "fatal_blind": "The Pillar",
+    "boss_effect": "Cards played previously this Ante are debuffed",
+    "target": 70000,
+    "final": 51978,
+    "ratio": 0.743,
+    "best_hand_share": 0.31,
+    "hands_played": 4,
+    "jokers": [
+     "Raised Fist",
+     "Supernova",
+     "Mad Joker",
+     "Clever Joker",
+     "Sock and Buskin"
+    ]
+   },
+   {
+    "seed": "W4YA1M4U",
+    "ante": 5,
+    "fatal_blind": "The Flint",
+    "boss_effect": "Base Chips and Mult are halved",
+    "target": 22000,
+    "final": 15194,
+    "ratio": 0.691,
+    "best_hand_share": 0.265,
+    "hands_played": 4,
+    "jokers": [
+     "Blue Joker",
+     "Greedy Joker",
+     "Supernova",
+     "Smiley Face",
+     "Abstract Joker"
+    ]
+   },
+   {
+    "seed": "U8AC5647",
+    "ante": 6,
+    "fatal_blind": "The Club",
+    "boss_effect": "All Club cards are debuffed",
+    "target": 40000,
+    "final": 37804,
+    "ratio": 0.945,
+    "best_hand_share": 0.478,
+    "hands_played": 4,
+    "jokers": [
+     "Raised Fist",
+     "Walkie Talkie",
+     "Wily Joker",
+     "Ice Cream",
+     "Gros Michel"
+    ]
+   },
+   {
+    "seed": "8XNG984V",
+    "ante": 6,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 30000,
+    "final": 20934,
+    "ratio": 0.698,
+    "best_hand_share": 0.459,
+    "hands_played": 4,
+    "jokers": [
+     "Scary Face",
+     "Sly Joker",
+     "Greedy Joker",
+     "Popcorn",
+     "Cavendish"
+    ]
+   },
+   {
+    "seed": "SDNUURBN",
+    "ante": 4,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 10000,
+    "final": 4155,
+    "ratio": 0.415,
+    "best_hand_share": 0.301,
+    "hands_played": 4,
+    "jokers": [
+     "Jolly Joker",
+     "Scholar",
+     "Hiker",
+     "Card Sharp",
+     "Ancient Joker"
+    ]
+   },
+   {
+    "seed": "A7YBUVWD",
+    "ante": 6,
+    "fatal_blind": "The Eye",
+    "boss_effect": "No repeat hand types this round",
+    "target": 40000,
+    "final": 37039,
+    "ratio": 0.926,
+    "best_hand_share": 0.554,
+    "hands_played": 5,
+    "jokers": [
+     "Scholar",
+     "Smiley Face",
+     "Blue Joker",
+     "Sock and Buskin",
+     "Ramen",
+     "Card Sharp"
+    ]
+   },
+   {
+    "seed": "X62IZYJ4",
+    "ante": 5,
+    "fatal_blind": "The Manacle",
+    "boss_effect": "-1 Hand Size",
+    "target": 22000,
+    "final": 15550,
+    "ratio": 0.707,
+    "best_hand_share": 0.385,
+    "hands_played": 4,
+    "jokers": [
+     "Walkie Talkie",
+     "Odd Todd",
+     "Fibonacci",
+     "Abstract Joker",
+     "Ramen"
+    ]
+   },
+   {
+    "seed": "JRE681Y8",
+    "ante": 7,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 52500,
+    "final": 39636,
+    "ratio": 0.755,
+    "best_hand_share": 0.332,
+    "hands_played": 4,
+    "jokers": [
+     "Scary Face",
+     "Banner",
+     "Raised Fist",
+     "Abstract Joker",
+     "Jolly Joker"
+    ]
+   },
+   {
+    "seed": "75WVKF42",
+    "ante": 2,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 1600,
+    "final": 1271,
+    "ratio": 0.794,
+    "best_hand_share": 0.619,
+    "hands_played": 4,
+    "jokers": [
+     "Crafty Joker"
+    ]
+   },
+   {
+    "seed": "I9Q96AKF",
+    "ante": 6,
+    "fatal_blind": "The Manacle",
+    "boss_effect": "-1 Hand Size",
+    "target": 40000,
+    "final": 28432,
+    "ratio": 0.711,
+    "best_hand_share": 0.247,
+    "hands_played": 4,
+    "jokers": [
+     "Abstract Joker",
+     "Joker",
+     "Bull",
+     "Ice Cream",
+     "Card Sharp"
+    ]
+   },
+   {
+    "seed": "LRFULSLB",
+    "ante": 5,
+    "fatal_blind": "The Plant",
+    "boss_effect": "All face cards are debuffed",
+    "target": 22000,
+    "final": 14908,
+    "ratio": 0.678,
+    "best_hand_share": 0.568,
+    "hands_played": 4,
+    "jokers": [
+     "Scholar",
+     "Jolly Joker",
+     "Odd Todd",
+     "Ancient Joker"
+    ]
+   },
+   {
+    "seed": "8GWNFCSN",
+    "ante": 4,
+    "fatal_blind": "The House",
+    "boss_effect": "First hand is drawn face down",
+    "target": 10000,
+    "final": 6397,
+    "ratio": 0.64,
+    "best_hand_share": 0.312,
+    "hands_played": 4,
+    "jokers": [
+     "Smiley Face",
+     "Devious Joker",
+     "Supernova",
+     "Photograph"
+    ]
+   },
+   {
+    "seed": "MW6PBTW4",
+    "ante": 5,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 22000,
+    "final": 11316,
+    "ratio": 0.514,
+    "best_hand_share": 0.281,
+    "hands_played": 4,
+    "jokers": [
+     "Droll Joker",
+     "Abstract Joker",
+     "Crafty Joker",
+     "Supernova",
+     "Ancient Joker"
+    ]
+   },
+   {
+    "seed": "5V1F9XQ2",
+    "ante": 7,
+    "fatal_blind": "Small Blind",
+    "boss_effect": "none",
+    "target": 35000,
+    "final": 21881,
+    "ratio": 0.625,
+    "best_hand_share": 0.31,
+    "hands_played": 4,
+    "jokers": [
+     "Blue Joker",
+     "Fibonacci",
+     "Banner",
+     "Ancient Joker",
+     "Ramen"
+    ]
+   },
+   {
+    "seed": "2S38V5NR",
+    "ante": 7,
+    "fatal_blind": "Small Blind",
+    "boss_effect": "none",
+    "target": 35000,
+    "final": 16594,
+    "ratio": 0.474,
+    "best_hand_share": 0.182,
+    "hands_played": 4,
+    "jokers": [
+     "Fibonacci",
+     "Sly Joker",
+     "Abstract Joker",
+     "Jolly Joker",
+     "Banner"
+    ]
+   },
+   {
+    "seed": "2CM51JLD",
+    "ante": 7,
+    "fatal_blind": "The Flint",
+    "boss_effect": "Base Chips and Mult are halved",
+    "target": 70000,
+    "final": 25601,
+    "ratio": 0.366,
+    "best_hand_share": 0.106,
+    "hands_played": 5,
+    "jokers": [
+     "Scary Face",
+     "Smiley Face",
+     "Bull",
+     "Abstract Joker"
+    ]
+   },
+   {
+    "seed": "UR3ZTT24",
+    "ante": 5,
+    "fatal_blind": "The Pillar",
+    "boss_effect": "Cards played previously this Ante are debuffed",
+    "target": 22000,
+    "final": 19468,
+    "ratio": 0.885,
+    "best_hand_share": 0.36,
+    "hands_played": 4,
+    "jokers": [
+     "Odd Todd",
+     "Mystic Summit",
+     "Gros Michel",
+     "Blue Joker",
+     "Lusty Joker"
+    ]
+   },
+   {
+    "seed": "C3XPB74B",
+    "ante": 6,
+    "fatal_blind": "Small Blind",
+    "boss_effect": "none",
+    "target": 20000,
+    "final": 18163,
+    "ratio": 0.908,
+    "best_hand_share": 0.504,
+    "hands_played": 4,
+    "jokers": [
+     "Scholar",
+     "Fortune Teller",
+     "Wily Joker",
+     "Even Steven",
+     "Blue Joker"
+    ]
+   },
+   {
+    "seed": "JV8CL6BQ",
+    "ante": 5,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 22000,
+    "final": 7228,
+    "ratio": 0.329,
+    "best_hand_share": 0.14,
+    "hands_played": 4,
+    "jokers": [
+     "Lusty Joker",
+     "Smiley Face",
+     "Banner",
+     "Pareidolia",
+     "Photograph"
+    ]
+   },
+   {
+    "seed": "57AXFNDP",
+    "ante": 6,
+    "fatal_blind": "The Needle",
+    "boss_effect": "Play only 1 hand",
+    "target": 20000,
+    "final": 13603,
+    "ratio": 0.68,
+    "best_hand_share": 0.68,
+    "hands_played": 1,
+    "jokers": [
+     "Red Card",
+     "Jolly Joker",
+     "Even Steven",
+     "Ramen",
+     "Card Sharp"
+    ]
+   }
+  ]
+ },
+ "d22adb59": {
+  "cells": 12,
+  "wins": 1,
+  "losses": 11,
+  "death_ante": {
+   "2": 1,
+   "5": 5,
+   "6": 4,
+   "7": 1
+  },
+  "death_blind_kind": {
+   "boss": 9,
+   "Big Blind": 1,
+   "Small Blind": 1
+  },
+  "final_over_target": {
+   "50-75%": 3,
+   "75-100%": 5,
+   "<25%": 2,
+   "25-50%": 1
+  },
+  "median_ratio": 0.73,
+  "median_best_hand_share": 0.324,
+  "fatal_bosses": {
+   "The Water": 4,
+   "The Tooth": 1,
+   "The Head": 1,
+   "The Needle": 1,
+   "The Plant": 1,
+   "The Psychic": 1
+  },
+  "cleared_margin_median_by_ante": {
+   "1": 1.36,
+   "2": 1.84,
+   "3": 1.69,
+   "4": 1.31,
+   "5": 1.29,
+   "6": 1.19,
+   "7": 1.15,
+   "8": 1.04,
+   "9": 1.03
+  },
+  "median_jokers_at_death": 5,
+  "losses_detail": [
+   {
+    "seed": "7X7WSDCX",
+    "ante": 5,
+    "fatal_blind": "The Tooth",
+    "boss_effect": "Lose $1 per card played",
+    "target": 22000,
+    "final": 16069,
+    "ratio": 0.73,
+    "best_hand_share": 0.266,
+    "hands_played": 4,
+    "jokers": [
+     "Jolly Joker",
+     "Blue Joker",
+     "Supernova",
+     "Smiley Face",
+     "Acrobat"
+    ]
+   },
+   {
+    "seed": "6CAXN9I6",
+    "ante": 5,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 22000,
+    "final": 14804,
+    "ratio": 0.673,
+    "best_hand_share": 0.383,
+    "hands_played": 4,
+    "jokers": [
+     "Walkie Talkie",
+     "Blue Joker",
+     "Even Steven",
+     "Ramen",
+     "Ancient Joker"
+    ]
+   },
+   {
+    "seed": "BAPQJMY5",
+    "ante": 5,
+    "fatal_blind": "Big Blind",
+    "boss_effect": "none",
+    "target": 16500,
+    "final": 14651,
+    "ratio": 0.888,
+    "best_hand_share": 0.452,
+    "hands_played": 5,
+    "jokers": [
+     "Wrathful Joker",
+     "Abstract Joker",
+     "Ancient Joker",
+     "Baseball Card"
+    ]
+   },
+   {
+    "seed": "TBIR2XMU",
+    "ante": 5,
+    "fatal_blind": "The Head",
+    "boss_effect": "All Heart cards are debuffed",
+    "target": 22000,
+    "final": 13120,
+    "ratio": 0.596,
+    "best_hand_share": 0.199,
+    "hands_played": 4,
+    "jokers": [
+     "Droll Joker",
+     "Scholar",
+     "Lusty Joker",
+     "Blue Joker",
+     "Card Sharp"
+    ]
+   },
+   {
+    "seed": "PX8GK4E6",
+    "ante": 2,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 1600,
+    "final": 368,
+    "ratio": 0.23,
+    "best_hand_share": 0.105,
+    "hands_played": 4,
+    "jokers": [
+     "Supernova",
+     "Devious Joker"
+    ]
+   },
+   {
+    "seed": "WWYTV5PP",
+    "ante": 6,
+    "fatal_blind": "The Needle",
+    "boss_effect": "Play only 1 hand",
+    "target": 20000,
+    "final": 16321,
+    "ratio": 0.816,
+    "best_hand_share": 0.816,
+    "hands_played": 1,
+    "jokers": [
+     "Crafty Joker",
+     "Lusty Joker",
+     "Abstract Joker",
+     "Bull",
+     "Card Sharp"
+    ]
+   },
+   {
+    "seed": "XUTRVN1Y",
+    "ante": 7,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 70000,
+    "final": 8628,
+    "ratio": 0.123,
+    "best_hand_share": 0.056,
+    "hands_played": 4,
+    "jokers": [
+     "Banner",
+     "Even Steven",
+     "Fibonacci",
+     "Gros Michel",
+     "Throwback"
+    ]
+   },
+   {
+    "seed": "2RGEX6EN",
+    "ante": 6,
+    "fatal_blind": "The Plant",
+    "boss_effect": "All face cards are debuffed",
+    "target": 40000,
+    "final": 35964,
+    "ratio": 0.899,
+    "best_hand_share": 0.324,
+    "hands_played": 4,
+    "jokers": [
+     "Golden Joker",
+     "Scholar",
+     "Raised Fist",
+     "Abstract Joker",
+     "Blue Joker",
+     "Ramen"
+    ]
+   },
+   {
+    "seed": "V98SL5G2",
+    "ante": 6,
+    "fatal_blind": "The Water",
+    "boss_effect": "Start with 0 discards",
+    "target": 40000,
+    "final": 14839,
+    "ratio": 0.371,
+    "best_hand_share": 0.133,
+    "hands_played": 4,
+    "jokers": [
+     "Smiley Face",
+     "Raised Fist",
+     "Banner",
+     "Mad Joker",
+     "Blue Joker"
+    ]
+   },
+   {
+    "seed": "WMAZ7HWJ",
+    "ante": 6,
+    "fatal_blind": "The Psychic",
+    "boss_effect": "Must play 5 cards",
+    "target": 40000,
+    "final": 33264,
+    "ratio": 0.832,
+    "best_hand_share": 0.338,
+    "hands_played": 4,
+    "jokers": [
+     "Raised Fist",
+     "Mad Joker",
+     "Clever Joker",
+     "Zany Joker",
+     "Sock and Buskin"
+    ]
+   },
+   {
+    "seed": "W4YA1M4U",
+    "ante": 5,
+    "fatal_blind": "Small Blind",
+    "boss_effect": "none",
+    "target": 11000,
+    "final": 10950,
+    "ratio": 0.995,
+    "best_hand_share": 0.499,
+    "hands_played": 4,
+    "jokers": [
+     "Blue Joker",
+     "Greedy Joker",
+     "Supernova",
+     "Smiley Face",
+     "Abstract Joker"
+    ]
+   }
+  ]
+ }
+}
