@@ -247,6 +247,13 @@ Plan as written:
   and use tarots with the bot's own `tarots.plan` logic, which belongs to Stage C.
 - Runs record `summary.rollouts` (`rumbot` or `jackdaw`).
 - On the PC: `pip install ./native/sim`, then the lab check on arms E and F.
+- **PC check (2026-10-16, merged to main):** built with Rust 1.99.1 via
+  `uv pip install --python .venv/Scripts/python.exe ./native ./native/sim`. The first run gave 55/56
+  identical: CCHRPPUM (arm F) split at a Smeared Joker buy. rumbot-sim was right. Jackdaw applied
+  Smeared only in hand evaluation, but the game's `Card:is_suit` checks it on every suit test
+  (Castle discards etc.). Fixed in `sim_patches.smeared_applies_to_every_suit_check`. After the fix,
+  `JEV_NATIVE=0` vs native is **56/56 identical**. 670 s → 240 s for 56 games at 12 workers (2.8x);
+  s/forecast 0.92 → 0.08. Real-replay parity unchanged (329/336).
 
 Earlier status (forecast rollouts built, before wiring):
 

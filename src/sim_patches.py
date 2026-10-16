@@ -443,6 +443,35 @@ def marble_stone_joins_before_shuffle():
     _game._apply_setting_blind_mutations = wrapped
 
 
+@patch
+def smeared_applies_to_every_suit_check():
+    """Smeared Joker affects every suit check: Card:is_suit (card.lua:4425) calls SMODS.smeared_check,
+    which looks for any non-debuffed Smeared Joker held (smods utils.lua:2779). Jackdaw only passed
+    `smeared` to hand evaluation, boss debuffs and played-card scoring, so Castle's discards, suit
+    jokers on held cards, etc. ignored it. Found by the v24 identity check (CCHRPPUM: rumbot-sim
+    rated Smeared Joker +0.31 blinds, Jackdaw exactly 0). The acting game is tracked around
+    _dispatch, which step() looks up at call time."""
+    from jackdaw.engine.card import Card
+    current = [None]
+    orig_dispatch, orig_is_suit = _game._dispatch, Card.is_suit
+
+    def dispatch(gs, action):
+        prev, current[0] = current[0], gs
+        try:
+            return orig_dispatch(gs, action)
+        finally:
+            current[0] = prev
+
+    def is_suit(self, suit, *, bypass_debuff=False, flush_calc=False, smeared=False):
+        gs = current[0]
+        if not smeared and gs is not None:
+            smeared = any(getattr(j, "center_key", None) == "j_smeared" and not getattr(j, "debuff", False)
+                          for j in gs.get("jokers") or ())
+        return orig_is_suit(self, suit, bypass_debuff=bypass_debuff, flush_calc=flush_calc, smeared=smeared)
+    _game._dispatch = dispatch
+    Card.is_suit = is_suit
+
+
 def apply():
     for fn in PATCHES:
         fn()

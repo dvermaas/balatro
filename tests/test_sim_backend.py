@@ -150,6 +150,18 @@ class IssueTwoMechanics(unittest.TestCase):
         self.assertEqual(economy.calculate_round_earnings(**kw).blind_reward, blind.dollars)
         self.assertGreater(blind.dollars, 0)
 
+    def test_smeared_applies_to_castle_discards(self):
+        # Card:is_suit honours any held Smeared Joker, so Castle (Hearts) counts a discarded Diamond.
+        self.game.call("select")
+        gs = self.game.gs
+        gs["current_round"]["castle_card"] = {"suit": "Hearts"}
+        idx = next(i for i, c in enumerate(gs["hand"])
+                   if c.base.suit.value == "Diamonds" and c.ability.get("effect") != "Stone Card")
+        castle = self.joker("j_castle")
+        gs["jokers"] = [castle, self.joker("j_smeared")]
+        self.game.call("discard", {"cards": [idx]})
+        self.assertEqual(castle.ability["extra"]["chips"], 3)
+
     def test_satellite_pays_per_distinct_planet(self):
         from jackdaw.engine import game as engine
         self.game.call("select")
