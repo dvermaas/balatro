@@ -347,7 +347,11 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-rr4-b15": {"items": True, "max_rerolls": 4, "buffer": 15},
             "bot-rr6-b10": {"items": True, "max_rerolls": 6, "buffer": 10},
             # pack planet picks valued with the best play re-chosen after the level-up, on deals of hand size + 3
-            "bot-pl-reopt-cel4": {"items": True, "planet_hand": "mix", "celestial": 4, "planet_pick": "reopt"}}
+            "bot-pl-reopt-cel4": {"items": True, "planet_hand": "mix", "celestial": 4, "planet_pick": "reopt"},
+            # xMult probe: add `xm_bonus` blinds to the forecast gain of xMult joker buys/swaps (does the frozen-
+            # build forecast undervalue them?)
+            "bot-xm-03": {"items": True, "xm_bonus": 0.3},
+            "bot-xm-06": {"items": True, "xm_bonus": 0.6}}
 _DEFAULTS = {}
 
 
@@ -519,6 +523,8 @@ def _play_bot(seed, arm_name, t0):
     decisions.VOUCHERS = {k: (v[0], False) for k, v in decisions.VOUCHERS.items()}  # no v18 strong-voucher rule
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
+    _DEFAULTS.setdefault("ff", decisions._forecast_fields)
+    decisions._forecast_fields = _DEFAULTS["ff"]
     import rollout_shop
     shop_patch = rollout_shop.Patched() if opts.get("shop") else None
     if shop_patch:
@@ -532,6 +538,19 @@ def _play_bot(seed, arm_name, t0):
             decisions.selecting_hand = round_planner.wrap(orig_selecting_hand, pstats)
         bot = JevBot(deck="RED", stake="WHITE", game=SimBalatro(), jev=jev, log_dir=Path(tmp))
         ref[0] = bot
+        if opts.get("xm_bonus"):
+            import strategy
+            orig_ff, bonus = _DEFAULTS["ff"], opts["xm_bonus"]
+
+            def ff(fc, key):
+                out = orig_ff(fc, key)
+                gs = bot.last_state or {}
+                if key.startswith(("buy_card_", "replace_")):
+                    c = _cards(gs, "shop")[int(key.split("_")[-1])]
+                    if c.get("set") == "JOKER" and strategy.joker_kind(_d(c.get("value")).get("effect")) == "xmult":
+                        out["_fc_delta"] += bonus
+                return out
+            decisions._forecast_fields = ff
         bot.model = jev.model
         bot.act("start", {"seed": seed, "deck": "RED", "stake": "WHITE"})
         engine_won = False
@@ -583,6 +602,7 @@ def _play_bot(seed, arm_name, t0):
                     "planner_plays": pstats["plays"], "planner_discards": pstats["discards"],
                     "planner_errors": pstats["errors"]} if opts.get("planner") else {})}
     finally:
+        decisions._forecast_fields = _DEFAULTS["ff"]
         decisions.selecting_hand = orig_selecting_hand  # workers play many games: never leak the wrapper
         if shop_patch:
             shop_patch.__exit__(None, None, None)
@@ -591,6 +611,8 @@ def _play_bot(seed, arm_name, t0):
             for f in Path(tmp).rglob("decisions.jsonl"):
                 Path(keep).mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(f, Path(keep) / f"{seed}-{arm_name}.jsonl")
+            for f in Path(tmp).rglob("states.jsonl.gz"):  # full gamestates per decision, keyed by event id
+                shutil.copyfile(f, Path(keep) / f"{seed}-{arm_name}.states.jsonl.gz")
         shutil.rmtree(tmp, ignore_errors=True)
 
 
