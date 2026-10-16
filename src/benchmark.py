@@ -27,6 +27,14 @@ SETS = {
                   "MZ5KZ3JH", "AEQ18EUN", "HXGTTFCH", "3XFPWBMH", "61QF3Z7R",
                   "SXYS1LUB", "QNCJLKQ3", "X4JSXYEF", "KGA553W7", "XT9RAZDH",
                   "4R5NYC8E", "68RZS4XR", "F1PE5WEY", "SKP9DVE3", "WKPGXL14"],
+    # sim30-a + 30 more fresh seeds drawn 2026-10-16 (first 30 identical, so sim30-a results pair).
+    "sim60-a": ["GY2PWF7D", "Z88P7IDQ", "BIA2QXW3", "8Y1ZLY8X", "57R27KQ2",
+                  "GMJWI7Q1", "D172P6BH", "DUSJQ1TN", "MHVZ1JEC", "K792ZEJU",
+                  "A7MZDVCC", "Z3GELG7B", "DRMQY3JS", "IDXTTNVK", "PCL2K7FC",
+                  "XYK41G5M", "JU76QQT6", "USJXYQLN", "2HKM8YZ8", "BAF8SB49",
+                  "6MV2BE26", "54ATPSF9", "NSMRHDU9", "7NULGXWV", "3F5ILH3G",
+                  "D54JXDEK", "GTYIS5F4", "RS718JG4", "RHPJ6FZH", "QQ7KIM4A"],
 }
+SETS["sim60-a"] = SETS["sim30-a"] + SETS["sim60-a"]
 NAME = "bench30-a"  # the set the "Benchmark" button runs
 SEEDS = SETS[NAME]
