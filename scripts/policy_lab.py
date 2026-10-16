@@ -362,7 +362,9 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             # swaps: forecast selling any of our `swap_sells` weakest jokers (production: 2, by measured loss on
             # recent hands, which ranks unparsed or situational jokers as free to sell)
             "bot-swap3": {"items": True, "swap_sells": 3},
-            "bot-swap5": {"items": True, "swap_sells": 5}}
+            "bot-swap5": {"items": True, "swap_sells": 5},
+            # arm F (v28) with shopping rollouts in both forecasts (Python only, slow)
+            "bot-items-shop": {"items": True, "shop": True}}
 _DEFAULTS = {}
 
 
