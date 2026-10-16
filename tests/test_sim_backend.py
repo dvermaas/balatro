@@ -78,6 +78,18 @@ class Backend(unittest.TestCase):
         self.assertEqual(a["blinds"], b["blinds"])
         self.assertEqual([c["key"] for c in a["cards"]["cards"]], [c["key"] for c in b["cards"]["cards"]])
 
+    def test_cerulean_bell_forced_card_joins_selection(self):
+        # BalatroBot keeps the forced card highlighted and clicks ours up to 5; it never rejects.
+        self.game.call("start", {"seed": "7X7WSDCX", "deck": "RED", "stake": "WHITE"})
+        self.game.call("select")
+        hand = self.game.gs["hand"]
+        hand[7].ability["forced_selection"] = True
+        forced = hand[7]
+        self.assertEqual(self.game._with_forced({"cards": [0, 1, 2, 3, 4]})["cards"], [0, 1, 2, 3, 7])
+        self.assertEqual(self.game._with_forced({"cards": [7, 2]})["cards"], [7, 2])
+        self.game.call("play", {"cards": [0, 1]})
+        self.assertNotIn(forced, self.game.gs.get("hand") or [])
+
     def test_errors_mirror_balatrobot(self):
         from balatro import RPCError
         with self.assertRaises(RPCError) as cm:

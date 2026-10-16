@@ -276,6 +276,8 @@ class SimBalatro:
                 raise RPCError(-32002, f"Method '{method}' requires an active run", "INVALID_STATE")
             if method == "rearrange":
                 return self._rearrange(params)
+            if method in ("play", "discard"):
+                params = self._with_forced(params)
             self.sim.handle(method, params)
             return self._state()
         except _JRPCError as e:
@@ -290,6 +292,19 @@ class SimBalatro:
         if self.gs is None:
             return {"state": "MENU", "round_num": 0, "ante_num": 0, "money": 0}
         return serialize(self.gs)
+
+    def _with_forced(self, params):
+        """Cerulean Bell, as in the real game via BalatroBot's play/discard: unhighlight_all keeps the
+        forced card highlighted, then the requested cards are clicked in order up to the 5-card limit
+        (clicking the forced card again does nothing). Jackdaw instead rejects selections without it."""
+        hand = self.gs.get("hand") or []
+        cards = params.get("cards")
+        forced = [i for i, c in enumerate(hand) if (getattr(c, "ability", None) or {}).get("forced_selection")]
+        if not forced or not isinstance(cards, list) or forced[0] in cards:
+            return params
+        if any(not isinstance(i, int) or not 0 <= i < len(hand) for i in cards):
+            return params  # let the engine report the bad index
+        return {**params, "cards": sorted(([forced[0]] + cards)[:5])}
 
     def _rearrange(self, params):
         """BalatroBot endpoints/rearrange.lua: a full permutation (new[i] = old[p[i]]) of one area."""
