@@ -334,10 +334,53 @@ def _death(blind, final, hands, jokers):
 BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot-planner": {"planner": True},
             "bot-mid": {"n": 48, "bosses": 4, "synth": 36}, "bot-heavy": {"n": 128, "bosses": 5, "synth": 96},
             # shopping rollouts (src/rollout_shop.py): both shop forecasts buy jokers/planets in later shops
-            "bot-forecast-shop": {"shop": True}}
+            "bot-forecast-shop": {"shop": True},
+            # planet experiments (lab only): planets for the hand our deck scores most with (play_mix), and/or
+            # Celestial packs bought outright while `celestial` dollars stay after the buy
+            "bot-pl-mix": {"items": True, "planet_hand": "mix"},
+            "bot-pl-cel10": {"items": True, "celestial": 10},
+            "bot-pl-mix-cel10": {"items": True, "planet_hand": "mix", "celestial": 10},
+            "bot-pl-mix-cel4": {"items": True, "planet_hand": "mix", "celestial": 4},
+            # reroll experiments (lab only): decisions.MAX_REROLLS / INTEREST_BUFFER (in the lab the buffer only
+            # gates rerolls: CodeJev's buys score >= BUY_SCORE, and v18 strong vouchers are off)
+            "bot-rr4": {"items": True, "max_rerolls": 4},
+            "bot-rr4-b15": {"items": True, "max_rerolls": 4, "buffer": 15},
+            "bot-rr6-b10": {"items": True, "max_rerolls": 6, "buffer": 10},
+            # pack planet picks valued with the best play re-chosen after the level-up, on deals of hand size + 3
+            "bot-pl-reopt-cel4": {"items": True, "planet_hand": "mix", "celestial": 4, "planet_pick": "reopt"}}
+_DEFAULTS = {}
 
 
-def _code_jev(bot_ref, items=False):
+def _reopt_gain(pub, lv, k=24, extra=3):
+    """Mean best-play score ratio - 1 after levelling lv=(hand, chips, mult), the best play re-chosen per
+    deal, over k deals of hand size + `extra` cards (roughly what a discard adds) from the deck multiset."""
+    import random
+    import jokers as text_jokers
+    from hands import best_score, card_info
+    d = lambda x: x if isinstance(x, dict) else {}  # noqa: E731
+    deck = list(_cards(pub, "cards")) + list(_cards(pub, "hand"))
+    deck.sort(key=lambda c: (str(d(c.get("value")).get("suit")), str(d(c.get("value")).get("rank")),
+                             str(d(c.get("modifier")))))
+    infos = [dict(card_info(c), debuff=False) for c in deck]
+    size = min((d(pub.get("hand")).get("limit") or 8) + extra, len(infos))
+    if size < 1:
+        return 0.0
+    js, levels = text_jokers.build(pub), d(pub.get("hands"))
+    h, c, m = lv
+    new = {**levels, h: {**d(levels.get(h)), "chips": d(levels.get(h)).get("chips", 0) + c,
+                         "mult": d(levels.get(h)).get("mult", 1) + m}}
+    rnd = {"hands_left": 2, "discards_left": 1}
+    s0, s1 = text_jokers.Scorer(levels, js, rnd), text_jokers.Scorer(new, js, rnd)
+    rng = random.Random("REOPT")
+    before = after = 0.0
+    for _ in range(k):
+        hand = rng.sample(infos, size)
+        before += best_score(hand, s0)
+        after += best_score(hand, s1)
+    return after / before - 1 if before else 0.0
+
+
+def _code_jev(bot_ref, items=False, opts=None):
     """JEV replaced by 'take the top-ranked option': Choice -> the first option (the bot lists its best
     measured option first; cash tarot steps -> continue shopping), play_now -> play when the strongest
     play clears or beats the best measured discard, item scores -> 0 except the shared planet rule
@@ -362,6 +405,17 @@ def _code_jev(bot_ref, items=False):
             import rollout_items
             gs = bot_ref[0].last_state or {}
             st = gs.get("state")
+            floor = (opts or {}).get("celestial")
+            if floor is not None and st == "SHOP":
+                money = gs.get("money") or 0
+                cel = [(int(q.split("_")[-1]), q) for q in questions if q.startswith("buy_pack_")]
+                cel = [(_cards(gs, "packs")[i], q) for i, q in cel]
+                cel = [(c, q) for c, q in cel if "Celestial" in (c.get("label") or "")
+                       and money - _d(c.get("cost")).get("buy", 0) >= floor]
+                if cel:  # the biggest pack first (Mega > Jumbo > normal, by price)
+                    c, q = max(cel, key=lambda cq: _d(cq[0].get("cost")).get("buy", 0))
+                    self.stats["item_buys"].append([gs.get("ante_num"), c.get("label"), "celestial rule"])
+                    return {q: 3.0}
             if st == "SMODS_BOOSTER_OPENED" and any(q.startswith("take_") for q in questions):
                 p = rollout_items.Picker(gs).pick_pub(gs)
                 if p:
@@ -421,6 +475,12 @@ def _code_jev(bot_ref, items=False):
             hands = _d(gs.get("hands"))
             top = max(hands.items(), key=lambda kv: (_d(kv[1]).get("played") or 0, _d(kv[1]).get("level") or 0),
                       default=(None, {}))
+            if (opts or {}).get("planet_hand") == "mix" and item.get("kind") == "planet":
+                import readiness
+                mix = readiness.play_mix(gs)
+                if mix:
+                    h = max(mix, key=mix.get)
+                    top = (h, {**_d(hands.get(h)), "played": 1})
             if item.get("kind") == "planet" and top[0] and (_d(top[1]).get("played") or 0) > 0                     and f"Level up {top[0]} " in (item.get("what") or "") and (item.get("money_after") or 0) >= 4:
                 return 4.0
             return 0.0
@@ -440,6 +500,21 @@ def _play_bot(seed, arm_name, t0):
     # worker process plays games of several arms
     decisions.FORECAST_N, decisions.FORECAST_BUDGET = opts.get("n", FORECAST_N), None
     decisions.FORECAST_BOSSES = opts.get("bosses", 3)
+    _DEFAULTS.setdefault("rr", (decisions.MAX_REROLLS, decisions.INTEREST_BUFFER))
+    decisions.MAX_REROLLS = opts.get("max_rerolls", _DEFAULTS["rr"][0])
+    decisions.INTEREST_BUFFER = opts.get("buffer", _DEFAULTS["rr"][1])
+    _DEFAULTS.setdefault("pv", rollout_items.Picker.planet_value)
+    if opts.get("planet_pick") == "reopt":
+        def planet_value(self, c):
+            k = ("p", c.get("key"))
+            if k not in self.memo:
+                import jokers as text_jokers
+                lv = text_jokers.planet_level(_d(c.get("value")).get("effect"))
+                self.memo[k] = max(_reopt_gain(self.pub, lv) if lv else 0.0, 0.0) + 0.001
+            return self.memo[k]
+        rollout_items.Picker.planet_value = planet_value
+    else:
+        rollout_items.Picker.planet_value = _DEFAULTS["pv"]
     rollout_items.synth_plays.__defaults__ = (opts.get("synth", rollout_items.SYNTH_HANDS), "SYNTH")
     decisions.VOUCHERS = {k: (v[0], False) for k, v in decisions.VOUCHERS.items()}  # no v18 strong-voucher rule
     tmp = tempfile.mkdtemp(prefix="plab_")
@@ -450,7 +525,7 @@ def _play_bot(seed, arm_name, t0):
         shop_patch.__enter__()
     try:
         ref = [None]
-        jev = _code_jev(ref, items=opts.get("items", False))
+        jev = _code_jev(ref, items=opts.get("items", False), opts=opts)
         pstats = {"evals": 0, "plans": 0, "seconds": 0.0, "plays": 0, "discards": 0, "errors": 0}
         if opts.get("planner"):
             import round_planner
