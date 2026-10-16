@@ -121,68 +121,12 @@
  },
  {
   "seed": "EPN12S4E",
-  "steps": 10,
-  "final_ante": 1,
-  "final_phase": "PLAY",
+  "steps": 86,
+  "final_ante": 4,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 10,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "3C",
-       "8C",
-       "8S",
-       "AC",
-       "AH",
-       "JD",
-       "KD",
-       "KH"
-      ],
-      [
-       "3C",
-       "9C",
-       "9S",
-       "AC",
-       "AH",
-       "KD",
-       "QD",
-       "QH"
-      ]
-     ]
-    }
-   },
-   "gambit": {
-    "step": 10,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "3C",
-       "8C",
-       "8S",
-       "AC",
-       "AH",
-       "JD",
-       "KD",
-       "KH"
-      ],
-      [
-       "3C",
-       "9C",
-       "9S",
-       "AC",
-       "AH",
-       "KD",
-       "QD",
-       "QH"
-      ]
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -227,32 +171,12 @@
  },
  {
   "seed": "CCHRPPUM",
-  "steps": 47,
+  "steps": 66,
   "final_ante": 3,
-  "final_phase": "SHOP",
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 47,
-    "after": "cash",
-    "ante": 3,
-    "fields": {
-     "money": [
-      7,
-      2
-     ]
-    }
-   },
-   "gambit": {
-    "step": 47,
-    "after": "cash",
-    "ante": 3,
-    "fields": {
-     "money": [
-      7,
-      2
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -397,32 +321,12 @@
  },
  {
   "seed": "QBZJWNKQ",
-  "steps": 82,
+  "steps": 91,
   "final_ante": 4,
-  "final_phase": "SHOP",
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 82,
-    "after": "cash",
-    "ante": 4,
-    "fields": {
-     "money": [
-      6,
-      1
-     ]
-    }
-   },
-   "gambit": {
-    "step": 82,
-    "after": "cash",
-    "ante": 4,
-    "fields": {
-     "money": [
-      6,
-      1
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -707,68 +611,12 @@
  },
  {
   "seed": "KMTUIA73",
-  "steps": 18,
-  "final_ante": 1,
-  "final_phase": "PLAY",
+  "steps": 67,
+  "final_ante": 3,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 18,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "4D",
-       "6S",
-       "8S",
-       "9C",
-       "JC",
-       "JS",
-       "KC",
-       "KS"
-      ],
-      [
-       "4D",
-       "7S",
-       "8S",
-       "9C",
-       "JC",
-       "KC",
-       "KS",
-       "QS"
-      ]
-     ]
-    }
-   },
-   "gambit": {
-    "step": 18,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "4D",
-       "6S",
-       "8S",
-       "9C",
-       "JC",
-       "JS",
-       "KC",
-       "KS"
-      ],
-      [
-       "4D",
-       "7S",
-       "8S",
-       "9C",
-       "JC",
-       "KC",
-       "KS",
-       "QS"
-      ]
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -1063,32 +911,12 @@
  },
  {
   "seed": "87YB9SF2",
-  "steps": 20,
+  "steps": 29,
   "final_ante": 2,
-  "final_phase": "SHOP",
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 20,
-    "after": "cash",
-    "ante": 2,
-    "fields": {
-     "money": [
-      8,
-      3
-     ]
-    }
-   },
-   "gambit": {
-    "step": 20,
-    "after": "cash",
-    "ante": 2,
-    "fields": {
-     "money": [
-      8,
-      3
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -1123,43 +951,19 @@
  },
  {
   "seed": "GVUPXANG",
-  "steps": 22,
-  "final_ante": 2,
-  "final_phase": "PLAY",
+  "steps": 88,
+  "final_ante": 4,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 22,
-    "after": "select",
-    "ante": 2,
-    "fields": {
-     "jokers": [
-      [
-       "j_madness",
-       "j_acrobat"
-      ],
-      [
-       "j_madness",
-       "j_acrobat",
-       "j_clever"
-      ]
-     ]
-    }
-   },
+   "rumbot": null,
    "gambit": {
-    "step": 22,
-    "after": "select",
+    "step": 34,
+    "after": "play",
     "ante": 2,
     "fields": {
-     "jokers": [
-      [
-       "j_madness",
-       "j_acrobat"
-      ],
-      [
-       "j_madness",
-       "j_acrobat",
-       "j_clever"
-      ]
+     "money": [
+      6,
+      2
      ]
     }
    }
@@ -1707,32 +1511,12 @@
  },
  {
   "seed": "J9DK7ZED",
-  "steps": 31,
-  "final_ante": 2,
-  "final_phase": "SHOP",
+  "steps": 62,
+  "final_ante": 3,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 31,
-    "after": "cash",
-    "ante": 2,
-    "fields": {
-     "money": [
-      9,
-      11
-     ]
-    }
-   },
-   "gambit": {
-    "step": 31,
-    "after": "cash",
-    "ante": 2,
-    "fields": {
-     "money": [
-      9,
-      11
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -1757,32 +1541,12 @@
  },
  {
   "seed": "CWD422GG",
-  "steps": 23,
+  "steps": 40,
   "final_ante": 2,
-  "final_phase": "SHOP",
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 23,
-    "after": "cash",
-    "ante": 2,
-    "fields": {
-     "money": [
-      7,
-      8
-     ]
-    }
-   },
-   "gambit": {
-    "step": 23,
-    "after": "cash",
-    "ante": 2,
-    "fields": {
-     "money": [
-      7,
-      8
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -1877,68 +1641,12 @@
  },
  {
   "seed": "9L8BAGTU",
-  "steps": 36,
+  "steps": 40,
   "final_ante": 2,
-  "final_phase": "PLAY",
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 36,
-    "after": "select",
-    "ante": 2,
-    "fields": {
-     "hand": [
-      [
-       "2S",
-       "3H",
-       "4S",
-       "9C",
-       "JC",
-       "JS",
-       "KD",
-       "QC"
-      ],
-      [
-       "3H",
-       "3S",
-       "5S",
-       "9C",
-       "JC",
-       "KS",
-       "QC",
-       "QD"
-      ]
-     ]
-    }
-   },
-   "gambit": {
-    "step": 36,
-    "after": "select",
-    "ante": 2,
-    "fields": {
-     "hand": [
-      [
-       "2S",
-       "3H",
-       "4S",
-       "9C",
-       "JC",
-       "JS",
-       "KD",
-       "QC"
-      ],
-      [
-       "3H",
-       "3S",
-       "5S",
-       "9C",
-       "JC",
-       "KS",
-       "QC",
-       "QD"
-      ]
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -2223,68 +1931,12 @@
  },
  {
   "seed": "77BG4TC5",
-  "steps": 9,
-  "final_ante": 1,
-  "final_phase": "PLAY",
+  "steps": 71,
+  "final_ante": 3,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 9,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "2S",
-       "3C",
-       "5S",
-       "6S",
-       "7C",
-       "9H",
-       "TC",
-       "TS"
-      ],
-      [
-       "3S",
-       "4C",
-       "4H",
-       "6S",
-       "7C",
-       "7S",
-       "AH",
-       "TC"
-      ]
-     ]
-    }
-   },
-   "gambit": {
-    "step": 9,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "2S",
-       "3C",
-       "5S",
-       "6S",
-       "7C",
-       "9H",
-       "TC",
-       "TS"
-      ],
-      [
-       "3S",
-       "4C",
-       "4H",
-       "6S",
-       "7C",
-       "7S",
-       "AH",
-       "TC"
-      ]
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -2779,68 +2431,12 @@
  },
  {
   "seed": "GRAZPTCH",
-  "steps": 31,
-  "final_ante": 2,
-  "final_phase": "PLAY",
+  "steps": 68,
+  "final_ante": 4,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 31,
-    "after": "select",
-    "ante": 2,
-    "fields": {
-     "hand": [
-      [
-       "2H",
-       "3D",
-       "5C",
-       "6D",
-       "9H",
-       "KD",
-       "KS",
-       "QC"
-      ],
-      [
-       "2H",
-       "3D",
-       "5C",
-       "7D",
-       "AH",
-       "QC",
-       "QD",
-       "QS"
-      ]
-     ]
-    }
-   },
-   "gambit": {
-    "step": 31,
-    "after": "select",
-    "ante": 2,
-    "fields": {
-     "hand": [
-      [
-       "2H",
-       "3D",
-       "5C",
-       "6D",
-       "9H",
-       "KD",
-       "KS",
-       "QC"
-      ],
-      [
-       "2H",
-       "3D",
-       "5C",
-       "7D",
-       "AH",
-       "QC",
-       "QD",
-       "QS"
-      ]
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -3115,68 +2711,12 @@
  },
  {
   "seed": "W3BJVE4K",
-  "steps": 8,
-  "final_ante": 1,
-  "final_phase": "PLAY",
+  "steps": 39,
+  "final_ante": 2,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 8,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "3D",
-       "6D",
-       "7H",
-       "7S",
-       "8S",
-       "9S",
-       "JC",
-       "TH"
-      ],
-      [
-       "3D",
-       "6D",
-       "7H",
-       "8S",
-       "9S",
-       "AS",
-       "JC",
-       "TH"
-      ]
-     ]
-    }
-   },
-   "gambit": {
-    "step": 8,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "3D",
-       "6D",
-       "7H",
-       "7S",
-       "8S",
-       "9S",
-       "JC",
-       "TH"
-      ],
-      [
-       "3D",
-       "6D",
-       "7H",
-       "8S",
-       "9S",
-       "AS",
-       "JC",
-       "TH"
-      ]
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -3241,68 +2781,12 @@
  },
  {
   "seed": "ZCYVRSR7",
-  "steps": 7,
-  "final_ante": 1,
-  "final_phase": "PLAY",
+  "steps": 77,
+  "final_ante": 4,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 7,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "2S",
-       "3D",
-       "7H",
-       "9H",
-       "AH",
-       "JS",
-       "KC",
-       "KH"
-      ],
-      [
-       "3D",
-       "3S",
-       "7H",
-       "9H",
-       "JH",
-       "KS",
-       "QC",
-       "QH"
-      ]
-     ]
-    }
-   },
-   "gambit": {
-    "step": 7,
-    "after": "select",
-    "ante": 1,
-    "fields": {
-     "hand": [
-      [
-       "2S",
-       "3D",
-       "7H",
-       "9H",
-       "AH",
-       "JS",
-       "KC",
-       "KH"
-      ],
-      [
-       "3D",
-       "3S",
-       "7H",
-       "9H",
-       "JH",
-       "KS",
-       "QC",
-       "QH"
-      ]
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -3447,32 +2931,12 @@
  },
  {
   "seed": "EUKCLQFD",
-  "steps": 81,
+  "steps": 94,
   "final_ante": 4,
-  "final_phase": "SHOP",
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 81,
-    "after": "cash",
-    "ante": 4,
-    "fields": {
-     "money": [
-      14,
-      10
-     ]
-    }
-   },
-   "gambit": {
-    "step": 81,
-    "after": "cash",
-    "ante": 4,
-    "fields": {
-     "money": [
-      14,
-      10
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {
@@ -3617,32 +3081,12 @@
  },
  {
   "seed": "WI19VCZV",
-  "steps": 103,
+  "steps": 120,
   "final_ante": 6,
-  "final_phase": "SHOP",
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 103,
-    "after": "cash",
-    "ante": 6,
-    "fields": {
-     "money": [
-      15,
-      10
-     ]
-    }
-   },
-   "gambit": {
-    "step": 103,
-    "after": "cash",
-    "ante": 6,
-    "fields": {
-     "money": [
-      15,
-      10
-     ]
-    }
-   }
+   "rumbot": null,
+   "gambit": null
   }
  },
  {

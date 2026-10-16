@@ -8,4 +8,5 @@ PORTING.md are copied; upstream's tests and fixtures (36 MB) are not.
 Stage B of the Rust port (docs/rust-port-scope.md, issue #1) uses it as the rollout and sim engine.
 Local changes to this copy are listed here, newest last:
 
-- (none yet)
+- `GameState.no_shop` (game.rs, game_clone.rs): `_open_shop` leaves the shop empty when set, for
+  frozen-build forecast rollouts (like Jackdaw's `rollout_skips_shop_population` patch).

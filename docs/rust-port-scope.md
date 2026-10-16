@@ -109,6 +109,15 @@ The 336-game real-replay check in stage B covers those.
 | rumbot-sim | **281 / 300** | 19 (18 shared with Gambit at the same step) |
 | Gambit | 255 / 300 | 45 |
 
+**Update after `main`'s Jackdaw fixes (`eacdcbe`, `8e2aa48`, issue #2).** The local agent checked
+all four open mechanics against the game's Lua, and live in the game for Marble Joker. All four
+were Jackdaw bugs. Re-run against the fixed Jackdaw:
+- rumbot-sim is identical on **296/300** seeds. The rest is 3 SMODS rounding cases and 1 To Do List
+  case (`P23R7MAH`).
+- Gambit is identical on 269/300.
+
+The raw results file now holds this re-run. The tables below are the original run.
+
 Causes of rumbot-sim's 19 divergences (`classify.py`, each checked with `trace.py`):
 
 | cause | seeds | who is right |
