@@ -278,6 +278,7 @@ class JevBot:
         self.recorder.ensure(gs, self.deck, self.stake, self.model, self.bench_current)
         if st == "SELECTING_HAND":
             self._round_blind = current_blind(gs)
+            self._round_had_bones = any(c.get("label") == "Mr. Bones" for c in cards_of(gs, "jokers"))
         self.recorder.progress(gs)
         handler = getattr(self, f"on_{(st or '').lower()}", None)
         if handler is None:
@@ -390,7 +391,11 @@ class JevBot:
                   jokers=[c.get("label") for c in cards_of(gs, "jokers")])
         if gs.get("won") and (gs.get("ante_num") or 0) > 8:
             target = blind.get("score") or 0
-            if blind.get("type") != "BOSS" or target <= 0 or (rnd.get("chips") or 0) < target:
+            # Mr. Bones saving the ante-8 boss is a win in the real game: end_round sets game_won
+            # whenever that round ends without a game over (state_events.lua). The save consumes him.
+            bones_save = getattr(self, "_round_had_bones", False) and not any(
+                c.get("label") == "Mr. Bones" for c in cards_of(gs, "jokers"))
+            if blind.get("type") != "BOSS" or target <= 0 or ((rnd.get("chips") or 0) < target and not bones_save):
                 raise RuntimeError("Victory reported without a verified final-boss clear; pausing for review")
             # Preserve the actual winning state even though there is no next Jev question.
             self.recorder.write_raw(self._event_id + 1, gs)

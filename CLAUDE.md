@@ -6,10 +6,10 @@ local control panel for watching runs and comparing prompt versions. See README.
 ## Commands
 
 - Venv: `.venv/Scripts/python` (Python 3.14, `typesafe-sdk`). No other deps; panel is stdlib.
-- Native scorer (optional, v23+): with Rust installed (rustup, MSVC toolchain), `.venv/Scripts/python -m pip
+- Native scorer (optional, v24+): with Rust installed (rustup, MSVC toolchain), `.venv/Scripts/python -m pip
   install ./native` builds `jev_native`; reinstall after editing `native/src`. `native.backend()` says which
   scorer runs (also `summary.scorer`); `JEV_NATIVE=0` forces Python. Results are identical either way
-  (`tests/test_native.py`). v24+: `.venv/Scripts/python -m pip install ./native/sim` builds `jev_sim`, which
+  (`tests/test_native.py`). Also v24: `.venv/Scripts/python -m pip install ./native/sim` builds `jev_sim`, which
   runs the shop forecast's rollouts on rumbot-sim (vendored in `native/rumbot`, local patches in its
   `VENDORED.md`); `summary.rollouts` says which engine ran. Parity checks: `scripts/diagnostics/rumbot_*.py`.
 - Layout: code in `src/` (flat modules, run as scripts; no package, so the hashed files never need
@@ -36,7 +36,7 @@ local control panel for watching runs and comparing prompt versions. See README.
   pauses. Runs carry `summary.benchmark`; compare versions in the Benchmark tab
   (`GET /api/benchmark`). Keep the seed list fixed; change `NAME` if you ever change it.
 - `recorder.py`: one dir per run (keyed by seed) under `runs/`; `PROMPT_VERSION` = sha1 of
-  `prompts.py` + `hands.py` + `strategy.py` (+ `decisions.py` from v6, `jokers.py` from v8, `odds.py` from v9, `build.py` + `tarots.py` from v10, `readiness.py` from v13, `rollout.py` from v19, `rollout_items.py` from v21, `native.py` + `native/src/lib.rs` + `native/Cargo.toml` + `native/kernel/` from v23, `sim_bridge.py` + `sim_bridge_jokers.py` + `native/sim/` + `native/rumbot/` from v24). Snapshots in `runs/_prompts/` (v1 was reconstructed
+  `prompts.py` + `hands.py` + `strategy.py` (+ `decisions.py` from v6, `jokers.py` from v8, `odds.py` from v9, `build.py` + `tarots.py` from v10, `readiness.py` from v13, `rollout.py` from v19, `rollout_items.py` from v21, `native.py`, `native/` (incl. `kernel/`, `sim/`, `rumbot/`), `sim_bridge.py` + `sim_bridge_jokers.py` from v24). Snapshots in `runs/_prompts/` (v1 was reconstructed
   by hand).
 - `analytics.py`: metrics derived from `decisions.jsonl`, cached by mtime.
 
@@ -48,7 +48,7 @@ local control panel for watching runs and comparing prompt versions. See README.
 - Plain cards have label `"Base Card"`; build names from `value.rank`/`value.suit` (`describe()`).
 - BalatroBot handles one request at a time. If something blocks the game (an overlay pauses it),
   every call hangs; the 60 s client timeout makes the panel pause with a hint.
-- Editing `prompts.py`, `hands.py`, `strategy.py`, `decisions.py`, `jokers.py`, `odds.py`, `build.py`, `tarots.py`, `readiness.py`, `rollout.py`, `rollout_items.py`, `native.py` or the Rust code (`native/src/lib.rs`, `native/Cargo.toml`, `native/kernel/`, `native/sim/`, `native/rumbot/`; v24 also `sim_bridge.py`, `sim_bridge_jokers.py`) creates a new prompt version: update `VERSION_NOTE`, and avoid
+- Editing `prompts.py`, `hands.py`, `strategy.py`, `decisions.py`, `jokers.py`, `odds.py`, `build.py`, `tarots.py`, `readiness.py`, `rollout.py`, `rollout_items.py`, `native.py` or the Rust code (`native/src/lib.rs`, `native/Cargo.toml`, `native/kernel/`, `native/sim/`, `native/rumbot/`, `sim_bridge.py`, `sim_bridge_jokers.py`) creates a new prompt version: update `VERSION_NOTE`, and avoid
   stray edits mid-experiment.
 - Mods live outside the repo in `%APPDATA%\Balatro\Mods`. `mods/jev_tweaks` is the source of truth
   for our mod; copy it there after editing and restart the game. BalatroBot has a local patch in

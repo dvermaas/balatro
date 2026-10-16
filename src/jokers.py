@@ -35,7 +35,7 @@ def _parts(text):
 def _card_pred(subject):
     """Which scoring cards a per-card effect applies to, from e.g. 'face cards', 'Aces', '10 or 4'.
 
-    v23: a data tuple instead of a lambda, so the native kernel evaluates the same rule (_pred)."""
+    v24: a data tuple instead of a lambda, so the native kernel evaluates the same rule (_pred)."""
     s = subject
     suit = next((v for k, v in WORD_SUIT.items() if k in s), None)
     if suit:
@@ -374,7 +374,7 @@ def _hand(spec, ctx):
 class Scorer:
     """score() bound to one decision's hand levels, jokers and round: scorer(infos, combo, name, scoring).
 
-    v23: hands.evaluated_plays/best_score/best_play hand a Scorer to the Rust kernel (native.py, native/)
+    v24: hands.evaluated_plays/best_score/best_play hand a Scorer to the Rust kernel (native.py, native/)
     when it is built, with identical results; any other callable keeps the Python loop."""
 
     def __init__(self, hand_levels, jokers, rnd):

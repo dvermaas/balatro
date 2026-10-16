@@ -128,7 +128,7 @@ def estimate(cards, name, scoring, hand_levels):
 def evaluated_plays(infos, hand_levels, scorer=None, allowed=None):
     """Score every subset before pruning; held cards and play length can change its value.
 
-    v23: a jokers.Scorer (with decisions.BossAllow or no filter) runs in the native kernel when built."""
+    v24: a jokers.Scorer (with decisions.BossAllow or no filter) runs in the native kernel when built."""
     rows = native.evaluate(scorer, infos, allowed)
     if rows is not None:
         yield from rows

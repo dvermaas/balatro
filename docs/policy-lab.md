@@ -343,3 +343,59 @@ Upper 95% bound about +0.22 ante. Forecast compute is not the bottleneck for dec
 Rust/native port is not justified by play strength. It would still speed experiments (development
 throughput), which is a separate cost/benefit question. Next gains have to come from what the
 forecasts model (frozen build, the play policy inside rollouts) and from decision logic.
+
+## Shopping rollouts (2026-10-16, lab only): `bot-forecast-shop`
+
+**Problem.** Both shop forecasts play the horizon with a frozen build. Shops inside a rollout are not
+even populated (`sim_patches.rollout_skips_shop_population`). Money left over is therefore worth
+nothing to the forecast, interest has no value, and jokers that pay off through later buys are
+undervalued.
+
+**`src/rollout_shop.py`** (not hashed). `forecast` and `forecast_items` are drop-in versions of
+`rollout.forecast` and `rollout_items.forecast`. Their rollouts shop at every shop they reach after
+a cash-out:
+- **Shop contents.** The engine populates shops with the rollout's fresh RNG (`RO{k}`), never the
+  real seed's future. Only these states clear the no-shop flag.
+- **`Shopper`** works without nested forecasts. Each joker gets a static value, cached per key and
+  edition for the whole forecast call: `Picker.joker_value` (jokers.gain on 12 synthetic hands from
+  the deck multiset; rental, eternal and joker-destroying jokers are worth 0) plus 0.10 for scaling
+  jokers. Owned jokers of the real build are valued by the loss from removing them.
+- **Buy rules.**
+  - With a free slot, it buys the best joker worth at least 0.03, up to 2 buys per shop.
+  - With full slots, it sells the weakest joker when the new one is worth more than 1.5x it plus
+    0.05.
+  - It keeps $25 for interest from ante 3.
+  - It buys the planet for the most played hand when the money stays above that buffer (and $4).
+  - It never rerolls and never buys packs or vouchers.
+- **Lab arm.** `bot-forecast-shop` is arm E (v23 production path) with both forecasts swapped in via
+  `rollout_shop.Patched()`.
+- **Tests:** `tests/test_rollout_shop.py`.
+
+**Result.** sim30-a, code only, both arms deterministic, `--name shop30`:
+
+| arm | mean ante (SE) | wins | blinds cleared | joker / item forecast s per call (n=16) | s/game |
+|---|---:|---:|---:|---:|---:|
+| bot-forecast-long (v23) | 5.17 (0.32) | 1 | 15.4 | 0.85 / 0.76 | 112 |
+| bot-forecast-shop | 5.80 (0.36) | 2 | 17.2 | 1.27 / 1.02 | 149 |
+| **shop − long, paired (30)** | **+0.63 ± 0.45** | +3.3 ± 3.3 pts | +1.83 ± 1.45 | | |
+
+- **Per seed (ante):** 12 better, 12 the same, 6 worse. By blinds cleared: 13 better, 6 the same,
+  11 worse.
+- **Where the mean comes from:** four early-death rescues (TU9KANLF +7, HXGTTFCH +6, F1PE5WEY +5,
+  6L3CIXAF +4) against two early collapses (WKPGXL14 −5, 11BLBC1T −3). These swings come from games
+  diverging at ante 1-3, which is chaotic. They are not evidence about late scaling.
+- **Deaths (shop against long):** 2 at ante 1-2 against 4. Plain-blind deaths: 8 against 9 (no small-blind deaths
+  against 3). Close calls (75-100% of target): 14 against 20. Deaths at ante 7-8: 11 against 4.
+- **Inside the rollouts:** 0.37 joker buys per shop visited and 0.24 swaps. The swap rate is high:
+  the static values churn jokers.
+
+**Latency.** At n=16 with no budget, 12 workers at idle priority: the joker forecast costs +49% per
+call and the item forecast +34%. The extra cost comes from shop population and from longer rollouts
+(they survive more blinds). At production's n=24 that is about 1.9 s plus 1.5 s, so late shops
+would hit the 4 s budget more often and drop toward the 8-rollout floor. The paired SE between
+options also grows: in first-shop smoke tests the SE of a buy against skip rose from about 0.35 to
+0.55 blinds. Fewer options would clear the 2-SE auto-buy bar.
+
+**Reading.** The direction is positive (1.4 SE), but 30 seeds can't confirm it. Blinds cleared is
+nearly a coin flip seed by seed (13 better, 11 worse). A 300-seed lab run is needed before this
+ships.

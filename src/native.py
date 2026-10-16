@@ -1,6 +1,6 @@
 """Bridge to the Rust scoring kernel (native/, built with maturin as the `jev_native` module).
 
-v23: hands.evaluated_plays / best_score / best_play run jokers.score over every play subset in Rust
+v24: hands.evaluated_plays / best_score / best_play run jokers.score over every play subset in Rust
 when the module is installed, with results identical to the Python loop (tests/test_native.py checks
 every subset). Everything here only encodes inputs; whenever an input is unusual (an unknown rank or
 suit, a missing key) the encoder returns None and the caller keeps the Python path, which then

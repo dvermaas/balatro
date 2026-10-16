@@ -455,7 +455,7 @@ class Policy:
             combo = sorted(set(combo))
             name, sc = classify([infos[p] for p in combo])
             plays.append((combo, name, sc))
-        # v23: one native call scores every candidate (same numbers as text_jokers.score)
+        # v24: one native call scores every candidate (same numbers as text_jokers.score)
         scorer = text_jokers.Scorer(levels, self.js, rnd)
         scores = native.score_many(scorer, infos, plays)
         if scores is None:

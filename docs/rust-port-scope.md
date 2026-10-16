@@ -189,7 +189,7 @@ on the same engine.
 
 ### Stage A: scorer kernel in Rust (2–4 sessions, about 2.4x)
 
-**Status (2026-10-16): built as the v23 draft (prompt version `f3bab272`). The lab check on the PC
+**Status (2026-10-16): built as part 1 of the v24 draft (prompt version `776c2291`, on top of main's v23 early-slot change). The lab check on the PC
 is still to do.**
 
 What changed:
@@ -236,7 +236,7 @@ Plan as written:
 
 ### Stage B: rumbot-sim fork as the engine (8–12 sessions)
 
-**Status (2026-10-16): wired in as the v24 draft (prompt version `83f36b72`).**
+**Status (2026-10-16): wired in as part 2 of the v24 draft (prompt version `776c2291`).**
 - `rollout.forecast`, the joker/planet/voucher/swap forecast, runs its rollouts on rumbot-sim
   whenever `jev_sim` is installed (`rollout.run_options`).
 - Each option's state is converted once. An option that draws random numbers when applied (selling

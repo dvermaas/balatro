@@ -217,7 +217,7 @@ def _boss_allows(combo, name, levels, boss):
 
 
 class BossAllow:
-    """_boss_allows bound to one state: allowed(combo, name). v23: also readable by the native kernel."""
+    """_boss_allows bound to one state: allowed(combo, name). v24: also readable by the native kernel."""
 
     def __init__(self, levels, boss):
         self.levels, self.boss = levels, boss
@@ -743,6 +743,14 @@ def shop(bot, gs):
                 and v[1]["_fc_delta"] > SURE_SE * max(v[1]["_fc_se"], 1e-9)]
         # v21: jokers/vouchers/planets first (arm F's order), then packs, tarots and spectrals
         auto = [k for k in auto if not items[k][1].get("_fc_item")] or auto
+        why = "forecast"
+        if not auto and (gs.get("ante_num") or 1) <= EARLY_ANTE and jok.get("count", 0) < EARLY_JOKERS:
+            # v23: early slots are filled by code. Ante-1/2 blinds are easy enough that no single joker
+            # clears the 2 SE bar, so every early joker was a close call, and the code-only bot (top
+            # option = buy nothing) died with empty slots on seeds where JEV filled them and went deep.
+            auto = [k for k, v in items.items() if k.startswith("buy_card") and "joker" in v[1]["kind"]
+                    and v[1].get("_fc_delta", 0) > 0]
+            why = "early slot fill"
         if auto:
             k = max(auto, key=lambda x: items[x][1]["_fc_delta"])
             o = items[k][1]
@@ -750,8 +758,10 @@ def shop(bot, gs):
                        if f in o}
             src_fc = fci if o.get("_fc_item") else fc
             bot.emit("auto", question="shop", choice=k, action=list(items[k][2]), desc=f"${items[k][3]} {items[k][0]}",
-                     reason=f"{'item ' if o.get('_fc_item') else ''}forecast: beats buying nothing by "
-                            f"{o['_fc_delta']:+.2f} blinds (> {SURE_SE} SE = {SURE_SE * o['_fc_se']:.2f})",
+                     reason=f"{'item ' if o.get('_fc_item') else ''}{why}: beats buying nothing by "
+                            f"{o['_fc_delta']:+.2f} blinds"
+                            + (f" (> {SURE_SE} SE = {SURE_SE * o['_fc_se']:.2f})" if why == "forecast" else
+                               f" (ante <= {EARLY_ANTE}, {jok.get('count', 0)} of {EARLY_JOKERS} early jokers)"),
                      msg=f"Forecast buy {items[k][0][:40]}: {o['blinds_cleared_horizon']} blinds",
                      forecast=numbers, forecast_seconds=src_fc["seconds"], forecast_rollouts=src_fc["rollouts"],
                      forecast_note=state.get("forecast"))
