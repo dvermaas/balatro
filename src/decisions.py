@@ -88,6 +88,7 @@ REROLL_SE = 1            # nothing beats skip by 1 SE: reroll from money above t
 # v21: packs, shop tarots and spectrals get rollout_items.forecast (policy lab arm F, +0.44 +- 0.12 ante over
 # v20's code path on 303 paired seeds) inside the same budget as the joker forecast.
 ITEM_MIN_BUDGET = 1.0    # seconds the item forecast always gets (at least 8 rollouts either way)
+PLANET_FLOOR = 4         # v28: shop planets for the deck's top hand and Celestial packs are bought while $4 stays
 PICK_CLEAR = 1.25        # a pack card whose Picker value is >= 1.25x the runner-up's is taken by code
 FORECAST_ERROR_LOG = "runs/_forecast_errors.log"
 
@@ -767,6 +768,12 @@ def shop(bot, gs):
                      forecast_note=state.get("forecast"))
             _shop_act(bot, gs, items[k][2])
             return
+    k = _planet_rule(gs, items, money)
+    if k:
+        bot.emit("auto", question="shop", choice=k, action=list(items[k][2]), desc=f"${items[k][3]} {items[k][0]}",
+                 reason=f"planet rule: level our top hand / open Celestial packs while ${PLANET_FLOOR} stays")
+        _shop_act(bot, gs, items[k][2])
+        return
     scores, meta = _score_items(bot, gs, "shop", state, {k: v[:3] for k, v in items.items()})
     if fc:
         meta["forecast_seconds"], meta["forecast_rollouts"] = fc["seconds"], fc["rollouts"]
@@ -821,6 +828,25 @@ def shop(bot, gs):
     bot.record_decision("shop", gs, choice, action, options, {k: v / 4 for k, v in scores.items()},
                         s / 4, meta, display="score")
     _shop_act(bot, gs, action)
+
+
+def _planet_rule(gs, items, money):
+    """v28: the shop planet for the hand our deck scores most with (readiness.play_mix, levels and jokers
+    included), else the biggest Celestial pack, while PLANET_FLOOR dollars stay; None otherwise.
+    Policy lab, code only, 120 paired seeds: about +0.19 +- 0.12 ante over v27 (levels by ante 6:
+    total 2.8 -> 8.8). Small permanent gains rarely clear the forecast's 2 SE bar on their own."""
+    mix = readiness.play_mix(gs)
+    top = max(mix, key=mix.get) if mix else None
+    shop, packs = cards_of(gs, "shop"), cards_of(gs, "packs")
+    if top:
+        for k, v in items.items():
+            if k.startswith("buy_card_") and money - v[3] >= PLANET_FLOOR:
+                c = shop[int(k.split("_")[-1])]
+                if c.get("set") == "PLANET" and f"Level up {top} " in (_d(c.get("value")).get("effect") or ""):
+                    return k
+    cel = [k for k, v in items.items() if k.startswith("buy_pack_") and money - v[3] >= PLANET_FLOOR
+           and "Celestial" in (packs[int(k.split("_")[-1])].get("label") or "")]
+    return max(cel, key=lambda k: items[k][3]) if cel else None
 
 
 def _shop_act(bot, gs, action):

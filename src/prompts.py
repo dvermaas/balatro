@@ -6,6 +6,14 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v28: planets and joker text. (1) The shop buys the planet for the hand our deck scores most with "
+    "(readiness.play_mix) and the biggest Celestial pack while $4 stays (decisions._planet_rule); a "
+    "pack's planet is picked by rollout_items.planet_gain, which re-chooses the best play after the "
+    "level-up on deals of hand size + 3 (Rust kernel), instead of jokers.gain with fixed plays, which "
+    "spread levels over Pair, High Card and ties. v27 levelled only ~3 hands by ante 6. (2) Joker text "
+    "fixes, in Python and the Rust kernel: The Idol needs its rank and suit (was every card of the "
+    "suit), Bloodstone at its expected X, Driver's License's count is not +Mult, Seeing Double and "
+    "Baseball Card (rarity from Jackdaw's centers) are modelled. Based on: "
     "v27: item-forecast rollouts keep their policy when jokers are only removed (Madness, Ceremonial "
     "Dagger, Popcorn or Gros Michel running out): the removed jokers' entries are dropped instead of "
     "rebuilding the policy from the jokers' current text. Rust does the same, so Rust gives up on 1% "
