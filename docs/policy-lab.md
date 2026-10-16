@@ -325,3 +325,21 @@ judge each first move by how the weaker fast policy would continue. Where the pl
 with the bot's own play code, it is not more often right. Most close calls are also not decided
 by one move: the best fatal hand is 0.30x of the target. A planner would need the bot's own play
 code inside the rollouts (about 100x slower) or a stronger rollout policy.
+
+## Compute scaling (2026-10-16): more forecast compute does not help
+
+Arm `bot-heavy` (forecasts n=128, 5-boss horizon, no time budget, Picker synth 96) against the v22
+production path (`bot-forecast-long`), paired on the main seeds. Interrupted once by a PC restart and
+resumed from `runs/_policy_lab/scale/results.jsonl`; stopped by hand at 128 pairs because the
+question (does it gain >= +0.5 ante?) was settled.
+
+| | mean ante | wins |
+| --- | ---: | ---: |
+| v22 production forecast | 5.95 | 12 |
+| heavy forecast (~4x compute, 609 s/game) | 5.79 | 10 |
+| heavy - production | -0.16 +- 0.19 | |
+
+Upper 95% bound about +0.22 ante. Forecast compute is not the bottleneck for decision quality, so a
+Rust/native port is not justified by play strength. It would still speed experiments (development
+throughput), which is a separate cost/benefit question. Next gains have to come from what the
+forecasts model (frozen build, the play policy inside rollouts) and from decision logic.
