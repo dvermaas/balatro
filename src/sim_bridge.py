@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import unicodedata
 
 import sim_backend  # noqa: F401  (puts Jackdaw on sys.path, applies sim_patches)
@@ -23,7 +22,7 @@ try:
 except ImportError:
     _rs = None
 
-try:  # per-joker running state (counters), from scripts/diagnostics/joker_map work
+try:  # per-joker running state (counters); checked by scripts/diagnostics/rumbot_joker_parity.py
     from sim_bridge_jokers import RUMBOT_NAME, joker_fields
 except ImportError:
     RUMBOT_NAME, joker_fields = {}, None
@@ -92,7 +91,7 @@ def _joker(c):
          "perishable": bool(c.perishable), "perish_tally": int(c.perish_tally or 0), "rental": bool(c.rental),
          "debuffed": bool(c.debuff)}
     if joker_fields is not None:
-        d.update({k: v for k, v in joker_fields(c).items() if v is not None or k == "named_hand"})
+        d.update({k: v for k, v in joker_fields(c).items() if v is not None})
     return d
 
 
@@ -157,5 +156,3 @@ def rollouts(gs, policy, n, bosses, tag="RO"):
     return [[{"ante": a, "type": t, "boss": b, "target": tg, "chips": ch, "cleared": cl} for a, t, b, tg, ch, cl in r]
             for r in raw]
 
-
-_ = re  # (kept for joker-text helpers)

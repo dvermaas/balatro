@@ -608,7 +608,14 @@ fn use_planets(g: &mut GameState) {
 
 fn card_str(c: &CardRef) -> String {
     let c = c.borrow();
-    format!("{}{}", c.rank.short(), c.suit.as_str())
+    let mut s = format!("{}{}", c.rank.short(), c.suit.as_str());
+    if c.seal != Seal::None {
+        s.push_str(&format!("[{}]", c.seal.as_str()));
+    }
+    if c.enhancement != Enhancement::None {
+        s.push_str(&format!("[{}]", c.enhancement.as_str()));
+    }
+    s
 }
 
 fn play_horizon(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize) -> Result<Vec<Row>, String> {
@@ -646,8 +653,9 @@ fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_st
                 let (is_discard, idx) = policy.decide(g);
                 if let Some(t) = trace.as_mut() {
                     let hand: Vec<String> = g.hand.iter().map(card_str).collect();
-                    t.push(format!("{} {:?} hand={} chips={} hl={} dl={}", if is_discard { "discard" } else { "play" }, idx,
-                                   hand.join(","), g.chips_scored, g.hands_left, g.discards_left));
+                    let counters: Vec<String> = g.jokers.iter().map(|j| format!("{:?}", j.borrow().counter)).collect();
+                    t.push(format!("{} {:?} hand={} chips={} hl={} dl={} counters=[{}]", if is_discard { "discard" } else { "play" }, idx,
+                                   hand.join(","), g.chips_scored, g.hands_left, g.discards_left, counters.join(",")));
                 }
                 let t = if is_discard { ActionType::Discard } else { ActionType::Play };
                 let mut idx = idx;

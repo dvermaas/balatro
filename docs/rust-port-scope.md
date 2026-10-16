@@ -236,6 +236,30 @@ Plan as written:
 
 ### Stage B: rumbot-sim fork as the engine (8–12 sessions)
 
+**Status (2026-10-16): forecast rollouts on rumbot-sim are built and match exactly. Not wired into
+the bot yet (that is v24).**
+
+Built:
+- `native/sim`, the PyO3 module `jev_sim`. It builds a rumbot-sim game from the Jackdaw shop state
+  that `rollout.build_state` and `apply_option` produce (`src/sim_bridge.py`). Joker running state
+  comes from `src/sim_bridge_jokers.py`.
+- Then `rollout.Policy` and `play_horizon` run, ported to Rust on the shared scoring kernel.
+
+Identity checks, both against Python/Jackdaw rollouts with the same seeds:
+
+| check | result |
+|---|---|
+| `scripts/diagnostics/rumbot_joker_parity.py`: each of the 150 jokers held alone, through several shops | **10,764/10,764** rollouts identical ([samples/rumbot-joker-parity.json](samples/rumbot-joker-parity.json)) |
+| `scripts/diagnostics/rumbot_rollout_parity.py`: 100 mixed-joker shop states | **1,000/1,000** identical |
+| speed per rollout | 9.8 ms (Python) → 0.39 ms (Rust), **25x**, state build included |
+
+Fixes found on the way:
+- Local rumbot-sim patches, listed in `native/rumbot/VENDORED.md`: Ramen decays once per
+  discarded card; Certificate's card is debuffed by the blind.
+- Bridge fixes: exact float parsing; sorted action indices; per-card played-this-ante flags.
+
+Plan as written:
+
 1. **Vendor and fix.**
    - Pin rumbot-sim as `third_party/rumbot-sim` (our fork).
    - Add SMODS xMult arithmetic and the other `sim_patches` behaviours it lacks.

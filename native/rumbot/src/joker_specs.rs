@@ -747,7 +747,15 @@ fn chips_counter(j: &JokerRef, ctx: &mut ScoreContext, _game: &mut GameState) {
 }
 
 fn ramen_discard(j: &JokerRef, cards: &[CardRef], game: &mut GameState) {
-    decay(j, -0.01 * cards.len() as f64, game, 1.0);
+    // jev (local patch): card.lua's context.discard fires once per discarded card, so the game
+    // subtracts 0.01 card by card; one `-0.01 * n` step differs in the last bits of the xMult.
+    for _ in cards {
+        if j.borrow().counter - 0.01 <= 1.0 {
+            game.destroy_joker(j, "eaten");
+            return;
+        }
+        j.borrow_mut().counter -= 0.01;
+    }
 }
 
 /// `_loyalty_remaining`: the game's own formula, not a modulo-6 counter.
@@ -1608,6 +1616,9 @@ fn certificate(_j: &JokerRef, game: &mut GameState) {
     // different deck. Putting it only in the hand loses it at the end of the
     // round.
     game.add_card_to_hand(&card);
+    // jev (local patch): the same event runs G.GAME.blind:debuff_card(_card) before sorting, so a
+    // Certificate card dealt into The Head (say) is debuffed like the rest of its suit.
+    game.debuff_card(&card);
     // The event ends with G.hand:sort() (card.lua:2476), so the card takes its
     // place by the hand's sort rather than joining the end.
     game.sort_hand("rank");

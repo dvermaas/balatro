@@ -12,3 +12,7 @@ Local changes to this copy are listed here, newest last:
   frozen-build forecast rollouts (like Jackdaw's `rollout_skips_shop_population` patch).
 - SMODS xMult arithmetic (effects.rs `ScoreContext::times_mult`): `mult + mult * (x - 1)` instead of
   `mult * x`, as Steamodded does (Jackdaw: `sim_patches.smods_xmult_arithmetic`).
+- Ramen (joker_specs.rs `ramen_discard`): loses X0.01 once per discarded card, as card.lua's
+  per-card `context.discard` does, instead of one `-0.01 * n` step (last-bit xMult difference).
+- Certificate (joker_specs.rs `certificate`): the created card goes through the blind's `debuff_card`, as
+  card.lua's event does (`G.GAME.blind:debuff_card(_card)`), so it is debuffed under The Head etc.

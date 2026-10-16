@@ -1,0 +1,902 @@
+[
+ {
+  "joker": "j_8_ball",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_abstract",
+  "same": 102,
+  "total": 102,
+  "error": null
+ },
+ {
+  "joker": "j_acrobat",
+  "same": 96,
+  "total": 96,
+  "error": null
+ },
+ {
+  "joker": "j_ancient",
+  "same": 90,
+  "total": 90,
+  "error": null
+ },
+ {
+  "joker": "j_arrowhead",
+  "same": 84,
+  "total": 84,
+  "error": null
+ },
+ {
+  "joker": "j_astronomer",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_banner",
+  "same": 108,
+  "total": 108,
+  "error": null
+ },
+ {
+  "joker": "j_baron",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_baseball",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_blackboard",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_bloodstone",
+  "same": 84,
+  "total": 84,
+  "error": null
+ },
+ {
+  "joker": "j_blue_joker",
+  "same": 114,
+  "total": 114,
+  "error": null
+ },
+ {
+  "joker": "j_blueprint",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_bootstraps",
+  "same": 126,
+  "total": 126,
+  "error": null
+ },
+ {
+  "joker": "j_brainstorm",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_bull",
+  "same": 96,
+  "total": 96,
+  "error": null
+ },
+ {
+  "joker": "j_burglar",
+  "same": 24,
+  "total": 24,
+  "error": null
+ },
+ {
+  "joker": "j_burnt",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_business",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_caino",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_campfire",
+  "same": 72,
+  "total": 72,
+  "error": null
+ },
+ {
+  "joker": "j_card_sharp",
+  "same": 96,
+  "total": 96,
+  "error": null
+ },
+ {
+  "joker": "j_cartomancer",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_castle",
+  "same": 72,
+  "total": 72,
+  "error": null
+ },
+ {
+  "joker": "j_cavendish",
+  "same": 126,
+  "total": 126,
+  "error": null
+ },
+ {
+  "joker": "j_ceremonial",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_certificate",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_chaos",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_chicot",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_clever",
+  "same": 90,
+  "total": 90,
+  "error": null
+ },
+ {
+  "joker": "j_cloud_9",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_constellation",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_crafty",
+  "same": 84,
+  "total": 84,
+  "error": null
+ },
+ {
+  "joker": "j_crazy",
+  "same": 36,
+  "total": 36,
+  "error": null
+ },
+ {
+  "joker": "j_credit_card",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_delayed_grat",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_devious",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_diet_cola",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_dna",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_drivers_license",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_droll",
+  "same": 102,
+  "total": 102,
+  "error": null
+ },
+ {
+  "joker": "j_drunkard",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_duo",
+  "same": 96,
+  "total": 96,
+  "error": null
+ },
+ {
+  "joker": "j_dusk",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_egg",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_erosion",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_even_steven",
+  "same": 102,
+  "total": 102,
+  "error": null
+ },
+ {
+  "joker": "j_faceless",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_family",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_fibonacci",
+  "same": 144,
+  "total": 144,
+  "error": null
+ },
+ {
+  "joker": "j_flash",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_flower_pot",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_fortune_teller",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_four_fingers",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_gift",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_glass",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_gluttenous_joker",
+  "same": 72,
+  "total": 72,
+  "error": null
+ },
+ {
+  "joker": "j_golden",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_greedy_joker",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_green_joker",
+  "same": 108,
+  "total": 108,
+  "error": null
+ },
+ {
+  "joker": "j_gros_michel",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_hack",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_half",
+  "same": 30,
+  "total": 30,
+  "error": null
+ },
+ {
+  "joker": "j_hallucination",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_hanging_chad",
+  "same": 84,
+  "total": 84,
+  "error": null
+ },
+ {
+  "joker": "j_hiker",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_hit_the_road",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_hologram",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_ice_cream",
+  "same": 114,
+  "total": 114,
+  "error": null
+ },
+ {
+  "joker": "j_idol",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_invisible",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_joker",
+  "same": 120,
+  "total": 120,
+  "error": null
+ },
+ {
+  "joker": "j_jolly",
+  "same": 126,
+  "total": 126,
+  "error": null
+ },
+ {
+  "joker": "j_juggler",
+  "same": 72,
+  "total": 72,
+  "error": null
+ },
+ {
+  "joker": "j_loyalty_card",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_luchador",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_lucky_cat",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_lusty_joker",
+  "same": 72,
+  "total": 72,
+  "error": null
+ },
+ {
+  "joker": "j_mad",
+  "same": 120,
+  "total": 120,
+  "error": null
+ },
+ {
+  "joker": "j_madness",
+  "same": 120,
+  "total": 120,
+  "error": null
+ },
+ {
+  "joker": "j_mail",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_marble",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_matador",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_merry_andy",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_midas_mask",
+  "same": 36,
+  "total": 36,
+  "error": null
+ },
+ {
+  "joker": "j_mime",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_misprint",
+  "same": 144,
+  "total": 144,
+  "error": null
+ },
+ {
+  "joker": "j_mr_bones",
+  "same": 96,
+  "total": 96,
+  "error": null
+ },
+ {
+  "joker": "j_mystic_summit",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_obelisk",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_odd_todd",
+  "same": 102,
+  "total": 102,
+  "error": null
+ },
+ {
+  "joker": "j_onyx_agate",
+  "same": 132,
+  "total": 132,
+  "error": null
+ },
+ {
+  "joker": "j_oops",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_order",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_pareidolia",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_perkeo",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_photograph",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_popcorn",
+  "same": 132,
+  "total": 132,
+  "error": null
+ },
+ {
+  "joker": "j_raised_fist",
+  "same": 138,
+  "total": 138,
+  "error": null
+ },
+ {
+  "joker": "j_ramen",
+  "same": 102,
+  "total": 102,
+  "error": null
+ },
+ {
+  "joker": "j_red_card",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_reserved_parking",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_ride_the_bus",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_riff_raff",
+  "same": 144,
+  "total": 144,
+  "error": null
+ },
+ {
+  "joker": "j_ring_master",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_rocket",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_rough_gem",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_runner",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_satellite",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_scary_face",
+  "same": 84,
+  "total": 84,
+  "error": null
+ },
+ {
+  "joker": "j_scholar",
+  "same": 90,
+  "total": 90,
+  "error": null
+ },
+ {
+  "joker": "j_seance",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_seeing_double",
+  "same": 72,
+  "total": 72,
+  "error": null
+ },
+ {
+  "joker": "j_selzer",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_shoot_the_moon",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_shortcut",
+  "same": 102,
+  "total": 102,
+  "error": null
+ },
+ {
+  "joker": "j_sixth_sense",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_sly",
+  "same": 84,
+  "total": 84,
+  "error": null
+ },
+ {
+  "joker": "j_smeared",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_smiley",
+  "same": 108,
+  "total": 108,
+  "error": null
+ },
+ {
+  "joker": "j_sock_and_buskin",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_space",
+  "same": 72,
+  "total": 72,
+  "error": null
+ },
+ {
+  "joker": "j_splash",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_square",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_steel_joker",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_stencil",
+  "same": 144,
+  "total": 144,
+  "error": null
+ },
+ {
+  "joker": "j_stone",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_stuntman",
+  "same": 138,
+  "total": 138,
+  "error": null
+ },
+ {
+  "joker": "j_supernova",
+  "same": 84,
+  "total": 84,
+  "error": null
+ },
+ {
+  "joker": "j_superposition",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_swashbuckler",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_throwback",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_ticket",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_to_the_moon",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_todo_list",
+  "same": 48,
+  "total": 48,
+  "error": null
+ },
+ {
+  "joker": "j_trading",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_tribe",
+  "same": 54,
+  "total": 54,
+  "error": null
+ },
+ {
+  "joker": "j_triboulet",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_trio",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_troubadour",
+  "same": 36,
+  "total": 36,
+  "error": null
+ },
+ {
+  "joker": "j_trousers",
+  "same": 108,
+  "total": 108,
+  "error": null
+ },
+ {
+  "joker": "j_turtle_bean",
+  "same": 84,
+  "total": 84,
+  "error": null
+ },
+ {
+  "joker": "j_vagabond",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_vampire",
+  "same": 60,
+  "total": 60,
+  "error": null
+ },
+ {
+  "joker": "j_walkie_talkie",
+  "same": 78,
+  "total": 78,
+  "error": null
+ },
+ {
+  "joker": "j_wee",
+  "same": 42,
+  "total": 42,
+  "error": null
+ },
+ {
+  "joker": "j_wily",
+  "same": 66,
+  "total": 66,
+  "error": null
+ },
+ {
+  "joker": "j_wrathful_joker",
+  "same": 72,
+  "total": 72,
+  "error": null
+ },
+ {
+  "joker": "j_yorick",
+  "same": 96,
+  "total": 96,
+  "error": null
+ },
+ {
+  "joker": "j_zany",
+  "same": 90,
+  "total": 90,
+  "error": null
+ }
+]
