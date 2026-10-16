@@ -34,6 +34,12 @@ def backend():
     return "rust" if ENABLED else "python"
 
 
+def rollout_backend():
+    """v24: which engine runs the shop forecast's rollouts (sim_bridge.available, without importing it)."""
+    import importlib.util
+    return "rumbot" if importlib.util.find_spec("jev_sim") and os.environ.get("JEV_NATIVE") != "0" else "jackdaw"
+
+
 def _code(table, v, other):
     return table.get(v, other)  # TypeError for an unhashable value: callers fall back to Python
 

@@ -3,7 +3,8 @@
 `describe(gs)` turns a Jackdaw game state in the SHOP phase (rollout.build_state + apply_option) into
 the JSON that `jev_sim.rollouts` builds a rumbot-sim game from; `rollouts(gs, policy, n, bosses)`
 returns the same per-blind rows as `rollout.play_horizon` for seeds rollout._seed(0..n-1).
-Not wired into the bot yet (lab/diagnostics only), so not part of the prompt version hash.
+v24: rollout.run_options uses it for the shop forecast (rollout.forecast) when jev_sim is built.
+Part of the prompt version hash (see recorder.PROMPT_VERSION), like sim_bridge_jokers.py and the Rust.
 """
 from __future__ import annotations
 
@@ -34,7 +35,12 @@ EDITIONS = ("foil", "holo", "polychrome", "negative")
 
 
 def available():
-    return _rs is not None
+    """jev_sim is built and not turned off (JEV_NATIVE=0 turns off every native path)."""
+    return _rs is not None and os.environ.get("JEV_NATIVE") != "0"
+
+
+def backend():
+    return "rumbot" if available() else "jackdaw"
 
 
 def _nm(x):
@@ -46,11 +52,8 @@ def _names():
     global _CENTERS
     if _CENTERS is None:
         jk, cons, vouchers, bosses = _rs.names()
-        path = os.path.join(os.path.dirname(sim_backend.__file__), "..", "third_party", "jackdaw", "jackdaw", "engine",
-                            "data", "centers.json")
-        jackdaw_path = os.environ.get("JACKDAW_PATH")
-        if jackdaw_path:
-            path = os.path.join(jackdaw_path, "jackdaw", "engine", "data", "centers.json")
+        import jackdaw.engine.data as data
+        path = os.path.join(os.path.dirname(data.__file__), "centers.json")
         centers = json.load(open(path, encoding="utf-8"))
         by_norm = {_nm(n): n for n in jk + cons}
         _CENTERS = {k: by_norm.get(_nm(v.get("name", ""))) for k, v in centers.items()}
@@ -149,10 +152,14 @@ def policy_jokers(policy):
     return [(native._code(native._EDITION, j["edition"], 4), native._rule(j["rule"])) for j in policy.js]
 
 
-def rollouts(gs, policy, n, bosses, tag="RO"):
-    """[rows] like [rollout.play_horizon(copy reseeded with rollout._seed(k, tag), policy, bosses)]."""
-    seeds = [f"{tag}{k:06d}" for k in range(n)]
-    raw = _rs.rollouts(describe(gs), policy_jokers(policy), seeds, bosses)
+def run(desc, policy, seeds, bosses):
+    """[rows] for each seed, from a describe() JSON: rollout.play_horizon's per-blind dicts."""
+    raw = _rs.rollouts(desc, policy_jokers(policy), seeds, bosses)
     return [[{"ante": a, "type": t, "boss": b, "target": tg, "chips": ch, "cleared": cl} for a, t, b, tg, ch, cl in r]
             for r in raw]
+
+
+def rollouts(gs, policy, n, bosses, tag="RO"):
+    """[rows] like [rollout.play_horizon(copy reseeded with rollout._seed(k, tag), policy, bosses)]."""
+    return run(describe(gs), policy, [f"{tag}{k:06d}" for k in range(n)], bosses)
 

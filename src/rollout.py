@@ -49,6 +49,7 @@ from jackdaw.engine.vouchers import apply_voucher  # noqa: E402
 
 import jokers as text_jokers  # noqa: E402  (read-only use of the bot's text scorer)
 import native  # noqa: E402
+import sim_bridge  # noqa: E402  (v24: rollouts on rumbot-sim when jev_sim is built)
 from hands import RANK_ORDER, classify  # noqa: E402
 
 SUIT_NAME = {"H": "Hearts", "D": "Diamonds", "S": "Spades", "C": "Clubs"}
@@ -661,6 +662,72 @@ class Snapshot:
         return pickle.loads(self.blob) if self.blob is not None else copy.deepcopy(self.gs)
 
 
+def run_options(snap, opts, pols, n, bosses, t0, budget_s):
+    """n rollouts per option (common random numbers: rollout k of every option uses _seed(k)); stops
+    adding rollouts once budget_s has passed (k >= 8). Returns ({key: [rows]}, k). Options whose
+    actions are illegal get o["error"] and no rollouts.
+
+    v24: with the jev_sim module (native/sim, rumbot-sim) each option's state is converted once and
+    its rollouts run in Rust, with the same rows as play_horizon here
+    (scripts/diagnostics/rumbot_rollout_parity.py); without it (or JEV_NATIVE=0) the loop below runs."""
+    if sim_bridge.available():
+        return _run_options_native(snap, opts, pols, n, bosses, t0, budget_s)
+    runs = {o["key"]: [] for o in opts}
+    k = 0
+    while k < n:
+        for o in opts:
+            if o.get("error"):
+                continue
+            gs = snap.copy()
+            gs["rng"] = PseudoRandom(_seed(k))
+            try:
+                apply_option(gs, o)
+                runs[o["key"]].append(play_horizon(gs, pols[o["key"]], bosses))
+            except IllegalActionError as e:
+                o["error"] = str(e)
+        k += 1
+        if budget_s and time.time() - t0 > budget_s and k >= 8:
+            break
+    return runs, k
+
+
+def _run_options_native(snap, opts, pols, n, bosses, t0, budget_s):
+    runs = {o["key"]: [] for o in opts}
+    # Apply each option once (rollout 0's seed). If that drew no random numbers (buying, redeeming and
+    # most sells don't), every rollout starts from the same state: convert it once. Otherwise
+    # (e.g. selling Invisible Joker) apply it per rollout seed, exactly like the Python loop.
+    desc = {}
+    for o in opts:
+        gs = snap.copy()
+        gs["rng"] = PseudoRandom(_seed(0))
+        before = pickle.dumps(gs["rng"])
+        try:
+            apply_option(gs, o)
+        except IllegalActionError as e:
+            o["error"] = str(e)
+            continue
+        desc[o["key"]] = sim_bridge.describe(gs) if pickle.dumps(gs["rng"]) == before else None
+    k = 0
+    while k < n:
+        step_n = min(8, n - k) if budget_s else n - k
+        for o in opts:
+            if o.get("error"):
+                continue
+            key, seeds = o["key"], [_seed(i) for i in range(k, k + step_n)]
+            if desc[key] is not None:
+                runs[key] += sim_bridge.run(desc[key], pols[key], seeds, bosses)
+                continue
+            for sd in seeds:
+                gs = snap.copy()
+                gs["rng"] = PseudoRandom(sd)
+                apply_option(gs, o)
+                runs[key] += sim_bridge.run(sim_bridge.describe(gs), pols[key], [sd], bosses)
+        k += step_n
+        if budget_s and time.time() - t0 > budget_s and k >= 8:
+            break
+    return runs, k
+
+
 def forecast(pub, n=40, bosses=2, keys=None, budget_s=None):
     """Per-option rollout forecast from a public shop gamestate.
 
@@ -680,23 +747,8 @@ def _forecast(pub, n, bosses, keys, budget_s):
     snap = Snapshot(base)
     opts = [o for o in options(pub) if o["supported"] and (keys is None or o["key"] in keys or o["key"] == "skip")]
     res = {}
-    runs = {o["key"]: [] for o in opts}
     pols = {o["key"]: Policy(option_jokers(pub, o)) for o in opts}
-    k = 0
-    while k < n:
-        for o in opts:
-            if o.get("error"):
-                continue
-            gs = snap.copy()
-            gs["rng"] = PseudoRandom(_seed(k))
-            try:
-                apply_option(gs, o)
-                runs[o["key"]].append(play_horizon(gs, pols[o["key"]], bosses))
-            except IllegalActionError as e:
-                o["error"] = str(e)
-        k += 1
-        if budget_s and time.time() - t0 > budget_s and k >= 8:
-            break
+    runs, k = run_options(snap, opts, pols, n, bosses, t0, budget_s)
     for o in opts:
         if runs[o["key"]] and not o.get("error"):
             res[o["key"]] = {"desc": o["desc"], "cost": o["cost"], **summarize(runs[o["key"]], bosses)}

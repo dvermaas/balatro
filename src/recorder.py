@@ -26,7 +26,11 @@ def version_hash(files, root=SRC):
 # scoring kernel (src/native.py and the Rust sources), which computes the same scores as jokers.score.
 PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py", "decisions.py", "jokers.py", "odds.py", "build.py", "tarots.py", "readiness.py", "rollout.py", "rollout_items.py",
                                "native.py", "../native/src/lib.rs", "../native/Cargo.toml",
-                               "../native/kernel/src/lib.rs", "../native/kernel/Cargo.toml"))
+                               "../native/kernel/src/lib.rs", "../native/kernel/Cargo.toml",
+                               # v24: forecast rollouts on rumbot-sim (vendored engine included)
+                               "sim_bridge.py", "sim_bridge_jokers.py", "../native/sim/src/lib.rs", "../native/sim/Cargo.toml",
+                               "../native/rumbot/Cargo.toml",
+                               *sorted(f"../native/rumbot/src/{p.name}" for p in (SRC.parent / "native" / "rumbot" / "src").glob("*.rs"))))
 
 
 def snapshot_prompts():
@@ -82,7 +86,7 @@ class RunRecorder:
         self.run = {
             "run_id": self.dir.name, "seed": seed, "deck": gs.get("deck") or deck,
             "stake": gs.get("stake") or stake, "model": model, "prompt_version": self.version,
-            "benchmark": bench, "backend": self.backend, "scorer": native.backend(),
+            "benchmark": bench, "backend": self.backend, "scorer": native.backend(), "rollouts": native.rollout_backend(),
             "started": time.time(), "ended": None, "result": "in_progress",
             "ante": gs.get("ante_num"), "round": gs.get("round_num"), "money": gs.get("money"),
             "decisions": 0, "forced": 0, "errors": 0, "input_tokens": 0, "output_tokens": 0, "jev_ms": 0,

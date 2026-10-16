@@ -6,6 +6,11 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v24 draft: speed only, same decisions as v23: the shop forecast's rollouts (rollout.forecast) run on "
+    "rumbot-sim in Rust (native/sim, src/sim_bridge.py) when jev_sim is built: each option's Jackdaw state is "
+    "converted once and rollout.Policy/play_horizon run in Rust, with rows identical to the Python loop "
+    "(150/150 jokers, 10,764 rollouts; 123/123 forecast options); ~17-25x faster rollouts. Pack/tarot "
+    "forecasts (rollout_items) stay in Python. Based on: "
     "v23 draft: speed only, same decisions as v22 (every play-subset score identical with and without the "
     "kernel; see tests/test_native.py): jokers.score over every play subset (hands.evaluated_plays, best_score, "
     "best_play: odds forecasts, readiness, setup plays) and rollout.Policy's candidates run in a Rust kernel "

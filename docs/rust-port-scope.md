@@ -236,8 +236,19 @@ Plan as written:
 
 ### Stage B: rumbot-sim fork as the engine (8–12 sessions)
 
-**Status (2026-10-16): forecast rollouts on rumbot-sim are built and match exactly. Not wired into
-the bot yet (that is v24).**
+**Status (2026-10-16): wired in as the v24 draft (prompt version `83f36b72`).**
+- `rollout.forecast`, the joker/planet/voucher/swap forecast, runs its rollouts on rumbot-sim
+  whenever `jev_sim` is installed (`rollout.run_options`).
+- Each option's state is converted once. An option that draws random numbers when applied (selling
+  Invisible Joker) is redone per rollout seed instead, exactly like the Python loop.
+- `scripts/diagnostics/rumbot_forecast_parity.py`: 123/123 options identical, and `run_options` is
+  17x faster (11.0 → 0.6 s on 30 shop states).
+- Still Python: the pack, tarot and spectral forecasts (`rollout_items`). Their rollouts open packs
+  and use tarots with the bot's own `tarots.plan` logic, which belongs to Stage C.
+- Runs record `summary.rollouts` (`rumbot` or `jackdaw`).
+- On the PC: `pip install ./native/sim`, then the lab check on arms E and F.
+
+Earlier status (forecast rollouts built, before wiring):
 
 Built:
 - `native/sim`, the PyO3 module `jev_sim`. It builds a rumbot-sim game from the Jackdaw shop state
