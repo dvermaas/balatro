@@ -158,6 +158,27 @@ class Use(unittest.TestCase):
         self.assertEqual(sum(c.center_key == "m_lucky" for c in gs["hand"]), 2)
 
 
+@NEEDS_SIM
+class FortuneTeller(unittest.TestCase):
+    def test_planet_use_with_fortune_teller_count(self):
+        """v21 fix: build_state's tarot counter for Fortune Teller must keep the engine's other counters."""
+        import rollout
+        import rollout_items
+        import sim_backend
+        from jackdaw.engine.card import Card
+        pub = sim_backend.serialize(_first_shop("ITEMFT01"))
+        pub["jokers"]["cards"] = [_card("j_fortune_teller", "JOKER", effect="+1 Mult per Tarot card used this run "
+                                                                         "(Currently +3 Mult)")]
+        gs = rollout_items.build_state(pub)
+        self.assertEqual(gs["consumable_usage_total"]["tarot"], 3)
+        pluto = Card()
+        pluto.set_ability("c_pluto")
+        gs["consumables"] = [pluto]
+        rollout.use_planets(gs)
+        self.assertEqual(gs["consumables"], [])
+        self.assertEqual(gs["consumable_usage_total"]["planet"], 1)
+
+
 class DeathTables(unittest.TestCase):
     def test_death_stats_and_tables(self):
         import policy_lab

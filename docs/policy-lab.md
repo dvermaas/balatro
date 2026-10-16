@@ -270,3 +270,58 @@ joker auto-buy, before JEV). In `decisions.booster`, use `Picker`'s card (or giv
 field). Keep the 4 s budget: run both forecasts in one budget, or cut item n to 12 when the joker
 forecast took over 2 s. The home-advantage caveat applies (the rollouts use the lab play policy).
 The sim60-a result above suggests checking that JEV does not override these buys.
+
+## v21 in production: confirmation against arm F
+
+`--name v21`: arm F's 303 results were copied in from `ef`, and arm E was run on the current
+production code (v21 e98e336d, JEV replaced by its top option) on the same seeds
+(`--only-done bot-forecast-items`). The sequential rule stopped at the 100-pair check, because the
+95% CI upper bound +0.07 was below +0.15. Production minus arm F = **-0.04 ± 0.06 ante**
+(-0.11 ± 0.21 blinds), so production behaves like arm F. Arm F has no further role: from v21
+its lab item forecast duplicates production's.
+
+## Arm G: remaining-round planner (`src/round_planner.py`, lab only)
+
+Half of the code bot's losses are close calls (149 of 281 in arm F end at 75-100% of the target).
+Arm G (`bot-planner`) is v21 production plus a planner in front of `decisions.selecting_hand`.
+
+- **When it runs.** Only when the round is at risk: no candidate play clears outright, and best
+  estimate x hands left < 1.5x the chips still needed.
+- **Candidates.** The bot's top 4 plays (`hands.play_candidates`), its discard plans
+  (`hands.discard_candidates`, up to 6) and the fast policy's discard.
+- **Evaluation.** Each candidate gets 32 rollouts of the rest of the round. A rollout applies the
+  candidate, then plays on with `rollout.Policy` and records whether the blind is cleared.
+- **Public information only.** Every copy re-sorts the draw pile canonically, shuffles it with a
+  fresh RNG and reseeds the engine. A test checks that the real draw order does not change the plan.
+  Known gap: face-down cards are visible to it, as in `rollout.Policy`.
+- **Common random numbers.** Copy k of every candidate has the same deck order and RNG.
+- **Override rule.** The planner overrides the bot only when its best candidate beats the bot's
+  strongest play by at least 0.10 in P(clear) and by more than 2 paired SE. A first version
+  without this gate overrode on 1-2 rollout differences, which were noise.
+- **Cost.** 0.75 s per evaluation, 23 evaluations and 2.8 overrides per game (81% of overrides
+  are discards), +10 s per game.
+
+Result (`--arms bot-planner,bot-forecast-long --name v21`): the rule stopped at 200 pairs, with
+95% CI upper bound +0.06 < +0.15.
+
+| arm | mean ante (SE) | ante-8 clear | blinds cleared |
+|---|---:|---:|---:|
+| v21 production (E) | 5.84 (0.13) | 10.5% | 17.2 |
+| G planner | 5.79 (0.13) | 9.5% | 17.1 |
+| **G − v21, paired (200)** | **-0.06 ± 0.06** | -1.0 ± 1.0 pts | -0.17 ± 0.19 |
+
+| deaths (200 seeds) | v21 | G |
+|---|---:|---:|
+| losses | 179 | 181 |
+| died at a boss | 130 | 132 |
+| within 75-100% of target (close calls) | 90 | 94 |
+| final < 25% / 25-50% / 50-75% | 6 / 30 / 53 | 6 / 25 / 56 |
+| median final score / target | 0.753 | 0.764 |
+| median best hand in fatal round / target | 0.302 | 0.308 |
+| deaths to The Water | 7 | 9 |
+
+**Reading: no gain, not shipped.** Close-call deaths do not fall (90 against 94). The rollouts
+judge each first move by how the weaker fast policy would continue. Where the planner disagrees
+with the bot's own play code, it is not more often right. Most close calls are also not decided
+by one move: the best fatal hand is 0.30x of the target. A planner would need the bot's own play
+code inside the rollouts (about 100x slower) or a stronger rollout policy.

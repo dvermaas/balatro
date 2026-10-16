@@ -84,6 +84,11 @@ SWAP_SELLS = 2           # sell-swaps only consider our 2 weakest jokers (smalle
 SURE_SE = 2              # v20: beats skip by > 2 SE in blinds cleared: code buys it, no JEV question
 HIDE_SE = 2              # worse than skip by > 2 SE: not offered (unless it is an economy item)
 REROLL_SE = 1            # nothing beats skip by 1 SE: reroll from money above the interest floor
+# v21: packs, shop tarots and spectrals get rollout_items.forecast (policy lab arm F, +0.44 +- 0.12 ante over
+# v20's code path on 303 paired seeds) inside the same budget as the joker forecast.
+ITEM_MIN_BUDGET = 1.0    # seconds the item forecast always gets (at least 8 rollouts either way)
+PICK_CLEAR = 1.25        # a pack card whose Picker value is >= 1.25x the runner-up's is taken by code
+FORECAST_ERROR_LOG = "runs/_forecast_errors.log"
 
 
 def _round_info(gs):
@@ -493,7 +498,9 @@ def _shop_forecast(bot, gs, recent, jokers_full):
         cache = getattr(bot, "_forecast_cache", None)
         if cache and cache[0] == sig:
             return cache[1]
-        f = rollout.forecast(gs, n=FORECAST_N, bosses=FORECAST_BOSSES, keys=keys, budget_s=FORECAST_BUDGET)
+        # v21: one shop budget for both forecasts; the item forecast keeps at least ITEM_MIN_BUDGET of it
+        budget = None if FORECAST_BUDGET is None else FORECAST_BUDGET - ITEM_MIN_BUDGET
+        f = rollout.forecast(gs, n=FORECAST_N, bosses=FORECAST_BOSSES, keys=keys, budget_s=budget)
         f.pop("_runs", None)
         if f["seconds"] > FORECAST_TIMEOUT or "skip" not in f["options"]:
             raise TimeoutError(f"{f['seconds']}s")
@@ -501,8 +508,57 @@ def _shop_forecast(bot, gs, recent, jokers_full):
         bot.emit("info", msg=f"Forecast {f['seconds']}s: {f['rollouts']} rollouts x {len(f['options'])} options")
     except Exception as e:  # noqa: BLE001  any failure: the v18 path
         bot.emit("info", msg=f"Forecast unavailable ({type(e).__name__}: {str(e)[:120]}); using measured gains")
+        _log_forecast_error(bot, gs, "joker forecast")
         f, sig = None, None
     bot._forecast_cache = (sig, f)
+    return f
+
+
+def _log_forecast_error(bot, gs, what):
+    """Append a forecast exception with its traceback and the public shop contents to FORECAST_ERROR_LOG
+    (bots with a recorder only, so test doubles don't write to it)."""
+    import time
+    import traceback
+    from pathlib import Path
+    if not hasattr(bot, "recorder"):
+        return
+    try:
+        path = Path(__file__).resolve().parent.parent / FORECAST_ERROR_LOG
+        path.parent.mkdir(parents=True, exist_ok=True)
+        shop = {a: [c.get("key") for c in cards_of(gs, a)] for a in ("shop", "packs", "vouchers", "consumables", "jokers")}
+        with open(path, "a", encoding="utf-8") as f:
+            f.write(f"--- {time.strftime('%Y-%m-%d %H:%M:%S')} {what} run={getattr(getattr(bot.recorder, 'dir', None), 'name', '')} seed={gs.get('seed')} ante={gs.get('ante_num')} "
+                    f"round={gs.get('round_num')} money={gs.get('money')} {json.dumps(shop)}\n{traceback.format_exc()}")
+    except Exception:  # noqa: BLE001  logging must never break the shop
+        pass
+
+
+def _item_forecast(bot, gs, fc):
+    """v21: rollout_items.forecast for packs and shop tarots/spectrals, in what is left of the shop budget
+    after the joker forecast `fc` (at least ITEM_MIN_BUDGET s); cached per shop state; None on failure."""
+    try:
+        import rollout_items
+        keys = {o["key"] for o in rollout_items.options(gs)} - {"skip"}
+        if not keys:
+            return None
+        sig = json.dumps([gs.get("seed"), gs.get("ante_num"), gs.get("round_num"), gs.get("money"),
+                          [(c.get("key"), _d(c.get("cost")).get("buy")) for a in ("shop", "packs") for c in cards_of(gs, a)],
+                          [c.get("key") for a in ("jokers", "consumables") for c in cards_of(gs, a)], sorted(keys)])
+        cache = getattr(bot, "_item_forecast_cache", None)
+        if cache and cache[0] == sig:
+            return cache[1]
+        budget = None if FORECAST_BUDGET is None else max(ITEM_MIN_BUDGET, FORECAST_BUDGET - (fc or {}).get("seconds", 0))
+        f = rollout_items.forecast(gs, n=FORECAST_N, bosses=FORECAST_BOSSES, keys=keys, budget_s=budget)
+        if f["errors"]:
+            bot.emit("info", msg=f"Item forecast option errors: {f['errors']}")
+        if "skip" not in f["options"]:
+            raise RuntimeError("item forecast has no skip baseline")
+        bot.emit("info", msg=f"Item forecast {f['seconds']}s: {f['rollouts']} rollouts x {len(f['options'])} options")
+    except Exception as e:  # noqa: BLE001  packs/tarots go to JEV without forecast numbers
+        bot.emit("info", msg=f"Item forecast unavailable ({type(e).__name__}: {str(e)[:120]})")
+        _log_forecast_error(bot, gs, "item forecast")
+        f, sig = None, None
+    bot._item_forecast_cache = (sig, f)
     return f
 
 
@@ -534,7 +590,8 @@ def _forecast_note(gs, fc):
             f"{s['horizon_blinds']} blinds through {fc['bosses']} boss blinds with the build frozen (no other "
             f"purchases, planets used, scaling jokers grow, our usual play). The ante {ante} boss is known "
             f"({boss.get('name')}); later bosses are sampled. Buying nothing: next boss {_pct(s['p_next_boss'])}, "
-            f"survive both {_pct(s['p_survive'])}. Not simulated: packs, tarots, spectrals, rerolls, later shops.")
+            f"survive all {_pct(s['p_survive'])}. Packs are opened with sampled contents and our usual pick; "
+            f"tarots are used on our usual targets. Not simulated: rerolls, later shops.")
 
 
 def _economic(obj, c):
@@ -560,6 +617,7 @@ def shop(bot, gs):
 
     recent = _recent(bot, gs)
     fc = _shop_forecast(bot, gs, recent, jokers_full) if bot._shop_actions < SHOP_ACTION_CAP else None
+    fci = _item_forecast(bot, gs, fc) if bot._shop_actions < SHOP_ACTION_CAP else None
     if fc:
         state["forecast"] = _forecast_note(gs, fc)
     ready = readiness.assess(gs)
@@ -583,6 +641,10 @@ def shop(bot, gs):
             if c.get("key") == "j_misprint":
                 o["known_effect"] = "Adds a random 0 to 23 Mult each hand; not guaranteed scoring"
             return o
+        if fci and key in fci["options"]:  # v21: packs, tarots, spectrals
+            o.update(_forecast_fields(fci, key), _fc_item=True)
+            if kind.startswith("booster"):
+                return o
         o.update(_gain(gs, recent, c, remove))
         if worst is not None and o.get("_gain") and kind in ("joker", "joker swap", "planet"):
             o["readiness_after"] = f"{worst} -> {round(worst * (1 + o['_gain']), 2)}"
@@ -614,7 +676,7 @@ def shop(bot, gs):
         for i, c in enumerate(cards_of(gs, "packs")):
             cost = _d(c.get("cost")).get("buy", 0)
             if cost <= money:
-                items[f"buy_pack_{i}"] = (item_desc(c), obj(c, cost, "booster pack (pick from its cards)"),
+                items[f"buy_pack_{i}"] = (item_desc(c), obj(c, cost, "booster pack (pick from its cards)", key=f"buy_pack_{i}"),
                                           ("buy", {"pack": i}), cost)
         if jokers_full:
             for j, owned in enumerate(cards_of(gs, "jokers")):
@@ -656,32 +718,38 @@ def shop(bot, gs):
         and bot._rerolls < MAX_REROLLS
     if fc:  # v19: reroll when nothing here beats buying nothing by 1 SE, from money above the interest floor
         can_reroll = money - reroll >= INTEREST_BUFFER and bot._rerolls < MAX_REROLLS and not any(
-            v[1].get("_fc_delta", 0) > REROLL_SE * max(v[1].get("_fc_se", 0), 1e-9) for v in items.values())
+            v[1].get("_fc_delta", 0) > REROLL_SE * max(v[1].get("_fc_se", 0), 1e-9) for v in items.values()
+            if not v[1].get("_fc_item"))  # v21: as in the lab's arm F, packs/tarots don't block a reroll
     fallback = ("reroll", ("reroll", None)) if can_reroll else ("leave", ("next_round", None))
     if not items:
         bot.emit("forced", question="shop", choice=fallback[0], desc="nothing affordable to rate")
         _shop_act(bot, gs, fallback[1])
         return
 
-    if fc:  # v20: a clear forecast winner is bought by code (policy lab arm C); JEV gets the close calls
+    if fc or fci:  # v20: a clear forecast winner is bought by code (policy lab arm C); JEV gets the close calls
         auto = [k for k, v in items.items() if "_fc_delta" in v[1]
                 and v[1]["_fc_delta"] > SURE_SE * max(v[1]["_fc_se"], 1e-9)]
+        # v21: jokers/vouchers/planets first (arm F's order), then packs, tarots and spectrals
+        auto = [k for k in auto if not items[k][1].get("_fc_item")] or auto
         if auto:
             k = max(auto, key=lambda x: items[x][1]["_fc_delta"])
             o = items[k][1]
             numbers = {f: o[f] for f in ("next_boss_clear", "survive_horizon", "boss_margin", "blinds_cleared_horizon")
                        if f in o}
+            src_fc = fci if o.get("_fc_item") else fc
             bot.emit("auto", question="shop", choice=k, action=list(items[k][2]), desc=f"${items[k][3]} {items[k][0]}",
-                     reason=f"forecast: beats buying nothing by {o['_fc_delta']:+.2f} blinds "
-                            f"(> {SURE_SE} SE = {SURE_SE * o['_fc_se']:.2f})",
+                     reason=f"{'item ' if o.get('_fc_item') else ''}forecast: beats buying nothing by "
+                            f"{o['_fc_delta']:+.2f} blinds (> {SURE_SE} SE = {SURE_SE * o['_fc_se']:.2f})",
                      msg=f"Forecast buy {items[k][0][:40]}: {o['blinds_cleared_horizon']} blinds",
-                     forecast=numbers, forecast_seconds=fc["seconds"], forecast_rollouts=fc["rollouts"],
+                     forecast=numbers, forecast_seconds=src_fc["seconds"], forecast_rollouts=src_fc["rollouts"],
                      forecast_note=state.get("forecast"))
             _shop_act(bot, gs, items[k][2])
             return
     scores, meta = _score_items(bot, gs, "shop", state, {k: v[:3] for k, v in items.items()})
     if fc:
         meta["forecast_seconds"], meta["forecast_rollouts"] = fc["seconds"], fc["rollouts"]
+    if fci:
+        meta["item_forecast_seconds"], meta["item_forecast_rollouts"] = fci["seconds"], fci["rollouts"]
     cash_pick = meta.get("cash_step_choice")
     if cash_pick in items and items[cash_pick][1].get("cash_outcome", {}).get("net_cash_gain", 0) > 0:
         index = items[cash_pick][2][1]["card"]
@@ -797,6 +865,33 @@ def booster(bot, gs):
         bot.emit("forced", question="pack", choice="skip", desc="nothing we can take")
         bot.act(*skip)
         return
+    # v21: rollout_items.Picker (the pick rule the shop's pack forecast assumes) values every card; a clear
+    # winner is taken by code, otherwise JEV rates the cards with the Picker values as a field.
+    try:
+        import rollout_items
+        vals = rollout_items.Picker(gs).values(cards_of(gs, "pack"), hand, gs.get("money") or 0,
+                                               cards_of(gs, "jokers"), jok.get("limit", 5))
+    except Exception:  # noqa: BLE001
+        _log_forecast_error(bot, gs, "pack picker")
+        vals = []
+    ranked = sorted(((v, i, t) for v, i, t in vals if f"take_{i}" in items), key=lambda x: -x[0])
+    for v, i, t in ranked:
+        items[f"take_{i}"][1]["pick_value"] = (f"{v:.3f} (per-hand score gain equivalent, $1 = 0.01; best here "
+                                               f"{ranked[0][0]:.3f})")
+    if ranked and ranked[0][0] > 0 and (len(ranked) == 1 or ranked[0][0] >= PICK_CLEAR * max(ranked[1][0], 1e-9)):
+        v, i, t = ranked[0]
+        method, params = items[f"take_{i}"][2]
+        if t and "targets" not in params:
+            params = {**params, "targets": list(t)}
+        runner = f"{ranked[1][0]:.3f}" if len(ranked) > 1 else "none"
+        bot.emit("auto", question="pack", choice=f"take_{i}", action=[method, params], desc=items[f"take_{i}"][0],
+                 reason=f"pack pick: value {v:.3f} >= {PICK_CLEAR}x the runner-up ({runner})",
+                 msg=f"Pack pick {items[f'take_{i}'][0][:40]}")
+        try:
+            bot.act(method, params)
+            return
+        except RPCError as e:
+            bot.emit("info", msg=f"Pack pick failed ({e}); asking JEV")
     scores, meta = _score_items(bot, gs, "pack", state, items)
     best = max(scores, key=scores.get)
     choice, (method, params) = (best, items[best][2]) if scores[best] >= PACK_SCORE else ("skip", skip)

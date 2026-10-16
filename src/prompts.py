@@ -6,6 +6,14 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v21 draft: the policy lab's arm F in production (+0.44 +- 0.12 ante over v20's code path, 303 paired "
+    "seeds). Packs, shop tarots and shop spectrals get their own rollout forecast (rollout_items.py: packs "
+    "opened with sampled contents and the Picker rule, tarots used on tarots.plan targets) in what is left "
+    "of the 4 s shop budget; one that beats buying nothing by > 2 SE is bought by code after any joker "
+    "auto-buy, and JEV sees the same forecast fields on every pack/tarot/spectral. In an open pack the "
+    "Picker's card is taken by code when its value is >= 1.25x the runner-up's, otherwise JEV rates the "
+    "cards with a pick_value field. Forecast exceptions are logged with tracebacks to "
+    "runs/_forecast_errors.log; fixed a KeyError in the forecast state when Fortune Teller is owned. Based on: "
     "v20 draft: the policy lab's arm C in production. Forecast horizon 3 bosses (n=24); a forecast "
     "option that beats buying nothing by > 2 SE in blinds cleared is bought by code (recorded as an "
     "'auto' shop event with its numbers), without a JEV question; JEV still rates close calls, packs, "

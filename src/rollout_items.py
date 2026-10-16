@@ -1,4 +1,4 @@
-"""Item forecast for the policy lab: booster packs, shop tarots and shop spectrals (not hashed, lab only).
+"""Item forecast: booster packs, shop tarots and shop spectrals (v21; part of the prompt version hash).
 
 rollout.forecast values jokers, planets, vouchers and playing cards; it lists packs, tarots and
 spectrals as unsupported. This module forecasts those from the same PUBLIC shop gamestate, with the
@@ -10,7 +10,8 @@ same frozen-build rollouts (rollout.build_state, rollout.Policy, common random n
   jokers by measured gain on synthetic hands dealt from the deck multiset, planets by the gain of
   their level-up, tarots and spectrals only when the bot will use them (tarots.TARGETED with a
   plan for the dealt hand, or tarots.SAFE_UNTARGETED), with a fixed value table; Standard-pack
-  cards when they carry an enhancement, edition or seal that fits the build.
+  cards when they carry an enhancement, edition or seal that fits the build. decisions.booster uses the
+  same values for real pack openings.
 - Held consumables are used as the bot uses them (tarots.auto_use): untargeted safe cards at once,
   targeted cards on a dealt hand with tarots.plan's targets (enhancements on the cards the build
   values most, Steel/Gold on low cards, Death/Strength/Hanged Man deck shaping, suit changes
@@ -22,6 +23,7 @@ from __future__ import annotations
 
 import copy
 import random
+import re
 import time
 
 import rollout
@@ -112,7 +114,11 @@ class Picker:
             return None
 
     def joker_value(self, c):
-        k = ("j", c.get("key"), str(_d(c.get("modifier")).get("edition")))
+        m = _d(c.get("modifier"))
+        if m.get("rental") or m.get("eternal") or re.search(r"destroys? (a random )?Joker", _d(c.get("value")).get(
+                "effect") or "", re.I):
+            return 0.0  # rental upkeep, a slot we can never free, or a joker that eats jokers: not a free pick
+        k = ("j", c.get("key"), str(m.get("edition")))
         if k not in self.memo:
             g = self._gain(add=c)
             # any joker in a free slot is worth a little (sellable, often scores in ways text can't see)
@@ -167,11 +173,10 @@ class Picker:
             v *= 0.3
         return v
 
-    def pick(self, pack, hand, money, jokers, joker_limit):
-        """(index, targets) of the card to take, or None to skip. Mirrors decisions.booster's options:
-        jokers only with a free slot; targeted tarots only with a plan for this hand."""
+    def values(self, pack, hand, money, jokers, joker_limit):
+        """[(value, index, targets)] for every card we could take (jokers only with a free slot)."""
         room = joker_limit - len(jokers)
-        best = None
+        out = []
         for i, c in enumerate(pack):
             st, targets = c.get("set"), None
             if st == "JOKER":
@@ -186,6 +191,14 @@ class Picker:
                     v = FLAT["c_black_hole"]
             else:
                 v = self.card_value(c)
+            out.append((v, i, targets))
+        return out
+
+    def pick(self, pack, hand, money, jokers, joker_limit):
+        """(index, targets) of the card to take, or None to skip. Mirrors decisions.booster's options:
+        jokers only with a free slot; targeted tarots only with a plan for this hand."""
+        best = None
+        for v, i, targets in self.values(pack, hand, money, jokers, joker_limit):
             if v > 0 and (best is None or v > best[0]):
                 best = (v, i, targets)
         return (best[1], best[2]) if best else None

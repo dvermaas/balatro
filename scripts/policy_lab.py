@@ -328,7 +328,9 @@ def _death(blind, final, hands, jokers):
 # Arm E: the bot's real code path (JevBot + decisions.py) with a code stand-in for JEV
 # ---------------------------------------------------------------------------
 
-BOT_ARMS = {"bot-forecast-long": False, "bot-forecast-items": True}  # arm -> item forecast (arm F) on
+# arm -> options: items = arm F's lab item forecast (redundant from v21, where production has it);
+# planner = round_planner picks plays/discards when the round is at risk (arm G)
+BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot-planner": {"planner": True}}
 
 
 def _code_jev(bot_ref, items=False):
@@ -431,9 +433,15 @@ def _play_bot(seed, arm_name, t0):
     decisions.FORECAST_N, decisions.FORECAST_BUDGET, decisions.FORECAST_BOSSES = FORECAST_N, None, 3  # = arm C
     decisions.VOUCHERS = {k: (v[0], False) for k, v in decisions.VOUCHERS.items()}  # no v18 strong-voucher rule
     tmp = tempfile.mkdtemp(prefix="plab_")
+    orig_selecting_hand = decisions.selecting_hand
     try:
         ref = [None]
-        jev = _code_jev(ref, items=BOT_ARMS[arm_name])
+        opts = BOT_ARMS[arm_name]
+        jev = _code_jev(ref, items=opts.get("items", False))
+        pstats = {"evals": 0, "plans": 0, "seconds": 0.0, "plays": 0, "discards": 0, "errors": 0}
+        if opts.get("planner"):
+            import round_planner
+            decisions.selecting_hand = round_planner.wrap(orig_selecting_hand, pstats)
         bot = JevBot(deck="RED", stake="WHITE", game=SimBalatro(), jev=jev, log_dir=Path(tmp))
         ref[0] = bot
         bot.model = jev.model
@@ -476,10 +484,15 @@ def _play_bot(seed, arm_name, t0):
                 "buys": [[b[0], "swap" if "replace" in str(b[2]) else "joker", b[2]] for b in buys],
                 "forecasts": len(fs), "forecast_errors": 0, "forecast_s": round(sum(fs), 1),
                 "game_errors": bot.stats["errors"], "seconds": round(time.time() - t0, 1), "death": death,
+                "prompt_version": summ.get("prompt_version"),
                 **({"item_forecasts": jev.stats["item_forecasts"], "item_s": round(jev.stats["item_seconds"], 1),
                     "item_errors": jev.stats["item_errors"], "item_buys": jev.stats["item_buys"],
-                    "pack_picks": jev.stats["pack_picks"]} if BOT_ARMS[arm_name] else {})}
+                    "pack_picks": jev.stats["pack_picks"]} if opts.get("items") else {}),
+                **({"planner_evals": pstats["evals"], "planner_plans": pstats["plans"], "planner_s": round(pstats["seconds"], 1),
+                    "planner_plays": pstats["plays"], "planner_discards": pstats["discards"],
+                    "planner_errors": pstats["errors"]} if opts.get("planner") else {})}
     finally:
+        decisions.selecting_hand = orig_selecting_hand  # workers play many games: never leak the wrapper
         shutil.rmtree(tmp, ignore_errors=True)
 
 
@@ -639,6 +652,16 @@ def report(name, pairs=None, only=None):
             "forecast_seconds_per_call": round(sum(r["forecast_s"] for r in rs) / max(1, sum(r["forecasts"] for r in rs)), 2),
             "deaths": death_stats(rs),
         }
+        if any("planner_plans" in r for r in rs):
+            plans = sum(r.get("planner_plans", 0) for r in rs)
+            evals = sum(r.get("planner_evals", 0) for r in rs)
+            out["arms"][a].update({
+                "mean_planner_evals": round(evals / len(rs), 1),
+                "mean_planner_overrides": round(plans / len(rs), 1),
+                "planner_seconds_per_eval": round(sum(r.get("planner_s", 0) for r in rs) / max(1, evals), 2),
+                "planner_discard_share": round(sum(r.get("planner_discards", 0) for r in rs) / max(1, plans), 2),
+                "planner_errors": sum(r.get("planner_errors", 0) for r in rs),
+            })
         if any("item_forecasts" in r for r in rs):
             calls = sum(r.get("item_forecasts", 0) for r in rs)
             out["arms"][a].update({
@@ -654,7 +677,8 @@ def report(name, pairs=None, only=None):
                                           ("forecast-long", "forecast"), ("gain", "none")) if x in arms and y in arms]
     pairs += [(x, "forecast-long") for x in arms if x.startswith("forecast-long-") and "forecast-long" in arms]
     pairs += [(x, "gain") for x in arms if x.startswith("forecast-long-") and "gain" in arms]
-    pairs += [(x, y) for x, y in (("bot-forecast-items", "bot-forecast-long"), ("bot-forecast-long", "forecast-long"))
+    pairs += [(x, y) for x, y in (("bot-forecast-items", "bot-forecast-long"), ("bot-forecast-long", "forecast-long"),
+                                  ("bot-planner", "bot-forecast-long"))
               if x in arms and y in arms and (x, y) not in pairs]
     out["paired"] = {f"{x} - {y}": {"ante": paired(rows, x, y), "blinds": paired(rows, x, y, "blinds"),
                                     "won": paired(rows, x, y, "won")} for x, y in pairs}
@@ -667,6 +691,9 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--seeds", type=int, default=50)
     ap.add_argument("--seed-offset", type=int, default=0, help="skip the first k generated seeds")
+    ap.add_argument("--only-done", metavar="ARM",
+                    help="restrict the seeds to those this run already finished for ARM (e.g. pair a new arm with "
+                         "results copied in from another run)")
     ap.add_argument("--set", help="play a fixed seed set from src/benchmark.py (e.g. sim60-a) instead of generated "
                                   "seeds (--seeds and --seed-offset then ignored)")
     ap.add_argument("--arms", default="gain,forecast,forecast-long,none")
@@ -694,6 +721,9 @@ def main():
         ss = list(dict.fromkeys(x.split("#")[0] for x in benchmark.SETS[a.set]))
     else:
         ss = seeds(a.seed_offset + a.seeds)[a.seed_offset:]
+    if a.only_done:
+        have = {s for s, arm in done if arm == a.only_done}
+        ss = [s for s in ss if s in have]
     # slow arms first so the pool drains evenly; the bot arms (slowest) interleaved by seed so pairs fill evenly
     order = sorted(arms, key=lambda x: (x not in BOT_ARMS, not x.startswith("forecast"), x))
     pos = {s: i for i, s in enumerate(ss)}

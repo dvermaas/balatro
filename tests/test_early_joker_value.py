@@ -30,11 +30,18 @@ class Bot:
 
 
 class EarlyJokerValueTests(unittest.TestCase):
-    def pick(self, cards, scores, occupied=0):
+    def pick(self, cards, scores, occupied=0, picker=False):
+        """booster() with JEV's scores. picker=False: every card gets the same Picker value (v21: no clear
+        code pick), which isolates the JEV threshold path; True: the real Picker."""
+        import rollout_items
         bot = Bot()
         gs = dict(seed="TEST", ante_num=1, round_num=1, money=5, hands={},
                   jokers={"count": occupied, "limit": 5, "cards": []}, pack={"cards": cards})
+        flat = lambda self, pack, *a: [(0.05, i, None) for i in range(len(pack))]  # noqa: E731
+        values = rollout_items.Picker.values if picker else flat
         with patch.object(decisions.build, "decide", return_value={"hand": "Pair"}), \
+             patch.object(rollout_items.build, "decide", return_value={"hand": "Pair"}), \
+             patch.object(rollout_items.Picker, "values", values), \
              patch.object(decisions, "_score_items", return_value=(scores, {})) as query:
             decisions.booster(bot, gs)
         return bot, query
@@ -60,15 +67,23 @@ class EarlyJokerValueTests(unittest.TestCase):
         self.assertEqual(bot.actions, [("pack", {"card": 0})])
 
     def test_low_jev_rating_still_skips(self):
-        bot, _ = self.pick([joker("j_flash", "Flash Card", "+0 Mult")], {"take_0": .7})
+        # (two cards of equal Picker value: no clear code pick, so JEV's rating decides)
+        cards = [joker("j_flash", "Flash Card", "+0 Mult"), joker("j_flash", "Flash Card", "+0 Mult")]
+        bot, _ = self.pick(cards, {"take_0": .7, "take_1": .6})
         self.assertEqual(bot.actions, [("pack", {"skip": True})])
+
+    def test_v21_clear_picker_winner_is_taken_by_code(self):
+        # one joker and a free slot: the Picker's only card is a clear winner, JEV is not asked
+        bot, query = self.pick([joker("j_flash", "Flash Card", "+0 Mult")], {"take_0": .7}, picker=True)
+        self.assertEqual(bot.actions, [("pack", {"card": 0})])
+        query.assert_not_called()
 
     def test_no_relaxed_threshold_for_rentals_eternals_or_destruction(self):
         for card in [joker("j_flash", "Flash Card", "+0 Mult", rental=True),
                      joker("j_flash", "Flash Card", "+0 Mult", eternal=True),
                      joker("j_ceremonial", "Ceremonial Dagger", "When Blind is selected, destroys Joker to the right")]:
             with self.subTest(card=card):
-                bot, _ = self.pick([card], {"take_0": 1.2})
+                bot, _ = self.pick([card], {"take_0": 1.2}, picker=True)  # v21: Picker values these at 0
                 self.assertEqual(bot.actions, [("pack", {"skip": True})])
 
     def test_full_slots_do_not_take_another_joker(self):

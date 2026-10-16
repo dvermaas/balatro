@@ -279,3 +279,31 @@ Following [policy-lab.md](policy-lab.md):
 path fired 44 times, and every one was recorded with its reason and numbers. All 158 JEV-path shop
 decisions carried the forecast fields. Greedy games now reach ante 6-8; under v19 the same stub died
 at ante 2 because it never buys.
+
+## v21: packs, tarots and spectrals (draft, prompt version e98e336d)
+
+From the policy lab's arm F ([policy-lab.md](policy-lab.md)). `rollout_items.py` is now hashed.
+- **One shop budget.** The joker forecast gets `FORECAST_BUDGET - ITEM_MIN_BUDGET` (3 s). The item
+  forecast (`rollout_items.forecast`, same n and horizon) gets whatever is left, but never less than
+  1 s; both stop adding rollouts after at least 8.
+- **Code buys.** A pack, tarot or spectral that beats buying nothing by more than 2 SE in blinds
+  cleared is bought by code, after any joker, voucher or planet auto-buy (arm F's order). It is
+  recorded as an `auto` shop event with reason "item forecast: ...". JEV sees the same forecast
+  fields on every pack, tarot and spectral. Their numbers don't block a reroll, as in arm F.
+- **Pack openings.** `rollout_items.Picker` values every card. When the best value is at least 1.25x
+  the runner-up's (or it is the only card), code takes it (`auto` pack event, reason "pack pick: ...").
+  Otherwise JEV rates the cards, each with a `pick_value` field. Rental and eternal jokers, and
+  jokers that destroy jokers, get value 0, so JEV decides those.
+- **Errors.** Forecast and picker exceptions go to `runs/_forecast_errors.log`, with a traceback and
+  the shop contents. The 25 item-forecast exceptions in the lab were all one bug in
+  `rollout.build_state`: with Fortune Teller owned, it set `consumable_usage_total` to `{"tarot": n}`,
+  so the engine raised `KeyError: 'planet'` / `'tarot_planet'` on the next planet or tarot use. The
+  bug was fixed in rollout.py. It also hit v20's joker forecast whenever Fortune Teller was owned
+  and a planet was an option; v20 then fell back to the v18 path.
+- **Smoke run** (no JEV, `--policy greedy`, 4 seeds, `runs/_rollout_validation/smoke21`):
+  - auto-buys: 42 jokers, vouchers or planets; 12 packs or tarots (4 Celestial, 4 Buffoon,
+    2 Standard, Hermit, Wheel of Fortune);
+  - pack picks: 7 by code, 4 close calls asked of JEV;
+  - joker forecast: median 1.58 s, max 3.14 s;
+  - item forecast: median 1.17 s, max 2.58 s;
+  - no forecast errors.

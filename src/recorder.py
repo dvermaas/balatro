@@ -21,7 +21,7 @@ def version_hash(files, root=SRC):
 
 
 # decisions.py joined in v6; earlier versions lack it, so their ids are unchanged.
-PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py", "decisions.py", "jokers.py", "odds.py", "build.py", "tarots.py", "readiness.py", "rollout.py"))
+PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py", "decisions.py", "jokers.py", "odds.py", "build.py", "tarots.py", "readiness.py", "rollout.py", "rollout_items.py"))
 
 
 def snapshot_prompts():

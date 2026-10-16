@@ -235,7 +235,9 @@ def build_state(pub, seed="ROLLOUT"):
     gs["hands_played"] = ctx["hands_played"]
     gs["skips"] = ctx.get("skips", 0)
     if ctx.get("tarots_used"):
-        gs["consumable_usage_total"] = {**gs.get("consumable_usage_total", {}), "tarot": ctx["tarots_used"]}
+        # v21: keep the engine's other counters (a bare {"tarot": n} made any planet/tarot use raise KeyError)
+        gs["consumable_usage_total"] = {"tarot": 0, "planet": 0, "spectral": 0, "tarot_planet": 0, "all": 0,
+                                        **gs.get("consumable_usage_total", {}), "tarot": ctx["tarots_used"]}
     if ctx.get("planets_used"):  # Satellite counts unique planets used
         planets = [k for k in ("c_pluto", "c_mercury", "c_uranus", "c_venus", "c_saturn", "c_jupiter",
                                "c_earth", "c_mars", "c_neptune", "c_planet_x", "c_ceres", "c_eris")]
