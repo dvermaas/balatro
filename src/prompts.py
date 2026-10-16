@@ -6,11 +6,12 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "v18 draft: explicit cash-tarot transactions and capacity-aware Riff-raff value. "
-    "JEV compares profitable buy-and-use cash options with continuing the same shop, using "
-    "post-price payouts, net profit and final cash. Free cash picks get a focused economy question. "
-    "Riff-raff carries the number of Common jokers its remaining slots allow. "
-    "Keeps v17 hand play, shop spending rules and the 1.5 pack cutoff."
+    "v19 draft: rollout forecast in the shop (rollout.py). Each joker, planet, voucher and swap is "
+    "simulated through the next 2 bosses with the build frozen (32 rollouts, common random numbers); "
+    "JEV sees next_boss_clear vs skip (paired difference and SE), survive_2_bosses, boss_margin and "
+    "blinds_cleared_next_6 instead of measured_gain/readiness_after. Code: sure buy at > 2 SE over "
+    "skip, hide items > 2 SE worse (unless economic), reroll when nothing beats skip by 1 SE, swaps "
+    "only sell the 2 weakest jokers; v18 path when the forecast fails. Packs/tarots unchanged."
 )
 
 # Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
@@ -51,12 +52,15 @@ INSTRUCTIONS = {
     ),
     "item_value": (
         "How much would taking the item in `item` (described in this question) strengthen this run? "
-        "`measured_gain` is its measured effect on the scores of our recent hands, jokers included: trust it "
+        "`next_boss_clear`, `survive_2_bosses`, `boss_margin` and `blinds_cleared_next_6` simulate the "
+        "next blinds with this item and the build otherwise frozen (see `forecast`): trust them for scoring "
+        "power and add what they cannot see (money, later purchases). `measured_gain`, when shown instead, "
+        "is its measured effect on the scores of our recent hands, jokers included: trust it "
         "for the immediate effect and add what it cannot see (scaling over the run, money, risk, future "
         "hands). `use` says what a tarot or spectral would do for us; `worth` says what a voucher gives for "
         "the rest of the run. Favour items that fit `our_build`. Consider `engine.missing`, `upcoming_boss` "
         "and what it costs. `readiness` compares our typical hand with what the next blinds need per hand "
-        "and `plan` says whether to spend on power or save; `readiness_after` is the measured lift. "
+        "and `plan` says whether to spend on power or save. "
         "With little scoring support, prefer reliable Mult and useful temporary jokers over an xMult "
         "effect whose activation conditions are not met. `known_effect` restores missing card text. "
         "For a free pack pick, follow `pack_selection`; do not charge its pack price again."

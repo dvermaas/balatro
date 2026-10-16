@@ -110,5 +110,67 @@ class Reconstruction(unittest.TestCase):
         self.assertTrue(f["blinds"])
 
 
+class _Bot:
+    def __init__(self):
+        self.events = []
+
+    def emit(self, kind, **kw):
+        self.events.append((kind, kw))
+
+
+@NEEDS_SIM
+class ShopWiring(unittest.TestCase):
+    """v19: decisions.shop's forecast helpers (cache, fields JEV sees, fallback to the v18 path)."""
+
+    def setUp(self):
+        import sim_backend
+        self.pub = sim_backend.serialize(_first_shop("RTEST333"))
+
+    def test_fields_cache_and_note(self):
+        import decisions
+        import rollout
+        bot = _Bot()
+        old = (decisions.FORECAST_N, decisions.FORECAST_BUDGET)
+        decisions.FORECAST_N, decisions.FORECAST_BUDGET = 4, None
+        try:
+            fc = decisions._shop_forecast(bot, self.pub, [], False)
+            self.assertIsNotNone(fc)
+            self.assertIs(decisions._shop_forecast(bot, self.pub, [], False), fc)  # cached per shop state
+        finally:
+            decisions.FORECAST_N, decisions.FORECAST_BUDGET = old
+        self.assertIn("skip", fc["options"])
+        for key in fc["options"]:
+            f = decisions._forecast_fields(fc, key)
+            for field in ("next_boss_clear", "survive_2_bosses", "blinds_cleared_next_6", "_fc_delta", "_fc_se"):
+                self.assertIn(field, f)
+            self.assertIn("skip", f["next_boss_clear"])
+        self.assertEqual(fc["options"]["skip"]["vs_skip"]["blinds"], [0.0, 0.0])
+        self.assertIn("build frozen", decisions._forecast_note(self.pub, fc))
+        self.assertFalse(any(k.startswith(("buy_pack", "_")) for k in fc["options"]))
+        self.assertTrue(set(rollout.options(self.pub)[0]) >= {"key", "supported"})
+
+    def test_failure_falls_back(self):
+        import decisions
+        import rollout
+        bot = _Bot()
+        orig = rollout.forecast
+        rollout.forecast = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom"))
+        try:
+            self.assertIsNone(decisions._shop_forecast(bot, self.pub, [], False))
+        finally:
+            rollout.forecast = orig
+        self.assertTrue(any("Forecast unavailable" in kw.get("msg", "") for _, kw in bot.events))
+
+    def test_no_discards_policy_plays_spare_cards(self):
+        import rollout
+        info = lambda r, s: {"rank": r, "suit": s, "enh": None, "edition": None, "seal": None, "debuff": False}
+        infos = [info("K", "H"), info("K", "S"), info("2", "C"), info("3", "D"), info("7", "S"), info("9", "H")]
+        pol = rollout.Policy([])
+        levels = {"Pair": {"chips": 10, "mult": 2, "played": 0}, "High Card": {"chips": 5, "mult": 1, "played": 0}}
+        out = pol.cycle(infos, [0, 1], "Pair", 0, levels, {"hands_left": 3, "discards_left": 0})
+        self.assertEqual(len(out), 5)
+        self.assertTrue({0, 1} <= set(out))
+
+
 if __name__ == "__main__":
     unittest.main()

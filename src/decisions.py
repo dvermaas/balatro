@@ -74,6 +74,16 @@ INVEST_BELOW = 0.6     # behind the next blinds: spend the interest buffer on po
 BANK_ABOVE = 1.2       # comfortably ahead: keep interest, buy only clear upgrades
 INVEST_FLOOR = 5       # money kept in invest mode
 INVEST_REROLL_FLOOR = 10
+# v19: rollout forecast (rollout.py): each shop option is simulated through the next 2 bosses with the
+# build frozen, common random numbers across options; numbers are paired differences against skip.
+FORECAST_N = 32
+FORECAST_BOSSES = 2
+FORECAST_BUDGET = 4.0    # seconds: stop adding rollouts (every option keeps the same count)
+FORECAST_TIMEOUT = 10.0  # slower than this, or failing: back to the v18 measured-gain path
+SWAP_SELLS = 2           # sell-swaps only consider our 2 weakest jokers (smallest loss on recent hands)
+SURE_SE = 2              # beats skip by > 2 SE in blinds cleared: bought without waiting for a top score
+HIDE_SE = 2              # worse than skip by > 2 SE: not offered (unless it is an economy item)
+REROLL_SE = 1            # nothing beats skip by 1 SE: reroll from money above the interest floor
 
 
 def _round_info(gs):
@@ -457,6 +467,83 @@ def _score_items(bot, gs, qname, state, items):
     return {k: answers[k].score for k in items}, meta
 
 
+def _weakest_jokers(gs, recent, n=SWAP_SELLS):
+    """Owned jokers whose removal costs the least on our recent hands (ties: lower sell value)."""
+    loss = []
+    for j, c in enumerate(cards_of(gs, "jokers")):
+        m = _d(c.get("modifier"))
+        if m.get("eternal") or m.get("edition") == "NEGATIVE":
+            continue
+        g = jokers.gain(gs, recent, remove=j)
+        loss.append((-(g or 0.0), _d(c.get("cost")).get("sell", 0), j))
+    return {j for _, _, j in sorted(loss)[:n]}
+
+
+def _shop_forecast(bot, gs, recent, jokers_full):
+    """rollout.forecast for this shop's supported options, cached per shop state; None on failure."""
+    try:
+        import rollout
+        weak = _weakest_jokers(gs, recent) if jokers_full else set()
+        keys = {o["key"] for o in rollout.options(gs) if o["supported"]
+                and (not o["key"].startswith("replace_") or int(o["key"].split("_")[1]) in weak)}
+        sig = json.dumps([gs.get("seed"), gs.get("ante_num"), gs.get("round_num"), gs.get("money"),
+                          [(c.get("key"), _d(c.get("cost")).get("buy")) for a in ("shop", "vouchers")
+                           for c in cards_of(gs, a)],
+                          [c.get("key") for c in cards_of(gs, "jokers")], sorted(keys)])
+        cache = getattr(bot, "_forecast_cache", None)
+        if cache and cache[0] == sig:
+            return cache[1]
+        f = rollout.forecast(gs, n=FORECAST_N, bosses=FORECAST_BOSSES, keys=keys, budget_s=FORECAST_BUDGET)
+        f.pop("_runs", None)
+        if f["seconds"] > FORECAST_TIMEOUT or "skip" not in f["options"]:
+            raise TimeoutError(f"{f['seconds']}s")
+        f["weak"] = sorted(weak)
+        bot.emit("info", msg=f"Forecast {f['seconds']}s: {f['rollouts']} rollouts x {len(f['options'])} options")
+    except Exception as e:  # noqa: BLE001  any failure: the v18 path
+        bot.emit("info", msg=f"Forecast unavailable ({type(e).__name__}: {str(e)[:120]}); using measured gains")
+        f, sig = None, None
+    bot._forecast_cache = (sig, f)
+    return f
+
+
+def _pct(p):
+    return f"{round(100 * p)}%"
+
+
+def _forecast_fields(fc, key):
+    """Per-item numbers JEV sees (v19), plus the paired blinds-cleared difference for the guard rails."""
+    o, s = fc["options"][key], fc["options"]["skip"]
+    nb, bl = o["vs_skip"]["next_boss"], o["vs_skip"]["blinds"]
+    out = {"next_boss_clear": f"{_pct(o['p_next_boss'])} (skip {_pct(s['p_next_boss'])}, "
+                              f"{100 * nb[0]:+.0f} ± {100 * nb[1]:.0f} pts)",
+           "survive_2_bosses": f"{_pct(o['p_survive'])} (skip {_pct(s['p_survive'])})",
+           "blinds_cleared_next_6": f"{o['exp_blinds_cleared']} of {o['horizon_blinds']} "
+                                    f"(skip {s['exp_blinds_cleared']}, {bl[0]:+.2f} ± {bl[1]:.2f})",
+           "_fc_delta": bl[0], "_fc_se": bl[1]}
+    if o.get("next_boss_margin") is not None:
+        out["boss_margin"] = (f"median {o['next_boss_margin']}x of the {o.get('next_boss', 'next boss')} target"
+                              + (f" (skip {s['next_boss_margin']}x)" if s.get("next_boss_margin") is not None else ""))
+    return out
+
+
+def _forecast_note(gs, fc):
+    s = fc["options"]["skip"]
+    boss = next((b for b in _d(gs.get("blinds")).values() if b.get("type") == "BOSS"), {})
+    ante = gs.get("ante_num") or 1
+    return (f"Item numbers simulate {fc['rollouts']} futures each: take the item, then play the next "
+            f"{s['horizon_blinds']} blinds through {fc['bosses']} boss blinds with the build frozen (no other "
+            f"purchases, planets used, scaling jokers grow, our usual play). The ante {ante} boss is known "
+            f"({boss.get('name')}); later bosses are sampled. Buying nothing: next boss {_pct(s['p_next_boss'])}, "
+            f"survive both {_pct(s['p_survive'])}. Not simulated: packs, tarots, spectrals, rerolls, later shops.")
+
+
+def _economic(obj, c):
+    """Items whose value is mostly money or utility, which the frozen-build forecast can't see."""
+    if "cash_outcome" in obj or c.get("set") == "VOUCHER":
+        return True
+    return c.get("set") == "JOKER" and not jokers.entry(c)["scoring"]
+
+
 def shop(bot, gs):
     key = (gs.get("ante_num"), gs.get("round_num"))
     if key != bot._shop_key:
@@ -472,6 +559,9 @@ def shop(bot, gs):
     state["our_build"] = build.describe(b)
 
     recent = _recent(bot, gs)
+    fc = _shop_forecast(bot, gs, recent, jokers_full) if bot._shop_actions < SHOP_ACTION_CAP else None
+    if fc:
+        state["forecast"] = _forecast_note(gs, fc)
     ready = readiness.assess(gs)
     worst = ready["worst_ratio"] if ready else None
     mode = "normal" if worst is None else "invest" if worst < INVEST_BELOW else "bank" if worst >= BANK_ABOVE else "normal"
@@ -484,10 +574,16 @@ def shop(bot, gs):
                          "normal": f"priority: balanced (readiness {worst}); keep ~$25 for interest"}[mode]
         bot.emit("info", msg=f"Readiness {worst} ({mode}): " + "; ".join(state["readiness"]["next_blinds"]))
 
-    def obj(c, cost, kind, remove=None, **extra):
+    def obj(c, cost, kind, remove=None, key=None, **extra):
         left = money - cost
         o = {"kind": kind, "what": item_desc(c, mains), "cost": cost, "money_after": left,
-             "interest_per_round_after": strategy.interest(left), **extra, **_gain(gs, recent, c, remove)}
+             "interest_per_round_after": strategy.interest(left), **extra}
+        if fc and key in fc["options"]:
+            o.update(_forecast_fields(fc, key))
+            if c.get("key") == "j_misprint":
+                o["known_effect"] = "Adds a random 0 to 23 Mult each hand; not guaranteed scoring"
+            return o
+        o.update(_gain(gs, recent, c, remove))
         if worst is not None and o.get("_gain") and kind in ("joker", "joker swap", "planet"):
             o["readiness_after"] = f"{worst} -> {round(worst * (1 + o['_gain']), 2)}"
         return o
@@ -499,7 +595,7 @@ def shop(bot, gs):
             if cost > money or (c.get("set") == "JOKER" and jokers_full) or (
                     c.get("set") in ("TAROT", "PLANET", "SPECTRAL") and cons_full):
                 continue
-            o = obj(c, cost, c.get("set", "card").lower())
+            o = obj(c, cost, c.get("set", "card").lower(), key=f"buy_card_{i}")
             n = tarots.note(c, b, money - cost, cards_of(gs, "jokers"))
             cash = tarots.cash_outcome(c, money, cost, cards_of(gs, "jokers"))
             if cash is not None:
@@ -511,7 +607,7 @@ def shop(bot, gs):
             cost = _d(c.get("cost")).get("buy", 0)
             if cost <= money:
                 v = VOUCHERS.get(c.get("label"), (None, False))
-                o = obj(c, cost, "voucher (permanent upgrade for the rest of the run)")
+                o = obj(c, cost, "voucher (permanent upgrade for the rest of the run)", key=f"buy_voucher_{i}")
                 if v[0]:
                     o["worth"], o["_strong"] = v[0], v[1]
                 items[f"buy_voucher_{i}"] = (item_desc(c), o, ("buy", {"voucher": i}), cost)
@@ -525,15 +621,28 @@ def shop(bot, gs):
                 mod = _d(owned.get("modifier"))
                 if mod.get("eternal") or mod.get("edition") == "NEGATIVE":  # selling a Negative frees no slot
                     continue
+                if fc and j not in fc["weak"]:  # v19: swaps only sell our weakest jokers
+                    continue
                 sell = _d(owned.get("cost")).get("sell", 0)
                 for i, c in enumerate(cards_of(gs, "shop")):
                     cost = _d(c.get("cost")).get("buy", 0)
                     if c.get("set") == "JOKER" and cost <= money + sell:
                         items[f"replace_{j}_{i}"] = (
                             f"sell {owned.get('label')} for {c.get('label')}",
-                            obj(c, cost - sell, "joker swap", remove=j, sells=item_desc(owned, mains), sell_value=sell),
+                            obj(c, cost - sell, "joker swap", remove=j, key=f"replace_{j}_{i}",
+                                sells=item_desc(owned, mains), sell_value=sell),
                             ("replace", {"joker": j, "card": i}), cost - sell)
     items = {k: v for k, v in items.items() if json.dumps(v[2]) not in bot._failed}
+    if fc:  # v19: hide items the forecast finds clearly worse than buying nothing, unless economic
+        def src(k):
+            if k.startswith("buy_voucher_"):
+                return cards_of(gs, "vouchers")[int(k.split("_")[-1])]
+            return cards_of(gs, "shop")[int(k.split("_")[-1])] if k.startswith(("buy_card_", "replace_")) else {}
+        hidden = [k for k, v in items.items() if "_fc_delta" in v[1]
+                  and v[1]["_fc_delta"] < -HIDE_SE * max(v[1]["_fc_se"], 1e-9) and not _economic(v[1], src(k))]
+        if hidden:
+            bot.emit("info", msg="Forecast hides " + "; ".join(items[k][0][:30] for k in hidden))
+        items = {k: v for k, v in items.items() if k not in hidden}
 
     shown = [f"${_d(c.get('cost')).get('buy', 0)} {item_desc(c)}"
              for name in ("shop", "vouchers", "packs") for c in cards_of(gs, name)]
@@ -545,6 +654,9 @@ def shop(bot, gs):
     # v13: when readiness says we're behind, rerolls hunt for power down to a low floor.
     can_reroll = money - reroll >= (INVEST_REROLL_FLOOR if mode == "invest" else INTEREST_BUFFER) \
         and bot._rerolls < MAX_REROLLS
+    if fc:  # v19: reroll when nothing here beats buying nothing by 1 SE, from money above the interest floor
+        can_reroll = money - reroll >= INTEREST_BUFFER and bot._rerolls < MAX_REROLLS and not any(
+            v[1].get("_fc_delta", 0) > REROLL_SE * max(v[1].get("_fc_se", 0), 1e-9) for v in items.values())
     fallback = ("reroll", ("reroll", None)) if can_reroll else ("leave", ("next_round", None))
     if not items:
         bot.emit("forced", question="shop", choice=fallback[0], desc="nothing affordable to rate")
@@ -552,6 +664,8 @@ def shop(bot, gs):
         return
 
     scores, meta = _score_items(bot, gs, "shop", state, {k: v[:3] for k, v in items.items()})
+    if fc:
+        meta["forecast_seconds"], meta["forecast_rollouts"] = fc["seconds"], fc["rollouts"]
     cash_pick = meta.get("cash_step_choice")
     if cash_pick in items and items[cash_pick][1].get("cash_outcome", {}).get("net_cash_gain", 0) > 0:
         index = items[cash_pick][2][1]["card"]
@@ -574,6 +688,9 @@ def shop(bot, gs):
     sure = [k for k, v in items.items() if k.startswith(("buy_card", "replace")) and "joker" in v[1]["kind"]
             and (v[1].get("_gain") or 0) >= SURE_GAIN and scores[k] >= 1
             and (k.startswith("buy_card") or mode == "invest")]  # v13: behind, a big measured swap is sure too
+    if fc:  # v19: sure = beats buying nothing by more than 2 SE in blinds cleared over the horizon
+        sure = [k for k, v in items.items() if "_fc_delta" in v[1]
+                and v[1]["_fc_delta"] > SURE_SE * max(v[1]["_fc_se"], 1e-9) and scores[k] >= 1]
     loose_ok = money - cost >= buffer or early_joker
     if mode == "bank" and not early_joker:
         loose_ok = False  # ahead: only clear upgrades (BUY_SCORE) or sure jokers
@@ -584,9 +701,14 @@ def shop(bot, gs):
         action = items[choice][2]
         bot.emit("info", msg=f"Buying voucher {items[choice][0][:40]}: {items[choice][1]['worth']}")
     elif sure:
-        choice = max(sure, key=lambda k: items[k][1]["_gain"])
+        if fc:
+            choice = max(sure, key=lambda k: items[k][1]["_fc_delta"])
+            bot.emit("info", msg=f"Buying {items[choice][0][:40]}: {items[choice][1]['blinds_cleared_next_6']} blinds")
+        else:
+            choice = max(sure, key=lambda k: items[k][1]["_gain"])
+            bot.emit("info", msg=f"Buying {items[choice][0][:40]}: +{round(100 * items[choice][1]['_gain'])}% "
+                                 "on recent hands")
         action = items[choice][2]
-        bot.emit("info", msg=f"Buying {items[choice][0][:40]}: +{round(100 * items[choice][1]['_gain'])}% on recent hands")
     else:
         choice, action = fallback
     options = {k: f"${v[3]} {v[0]}" for k, v in items.items()}

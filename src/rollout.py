@@ -454,13 +454,29 @@ class Policy:
                 s = -1
             if best is None or s > best[0]:
                 best = (s, combo, name)
-        score, combo, _ = best
+        score, combo, name = best
         hands_left, discards_left = rnd["hands_left"], rnd["discards_left"]
         if discards_left > 0 and hands_left > 1 and score * hands_left < need:
             toss = self.discard(infos, forced)
             if toss:
                 return "discard", toss
+        if discards_left == 0 and hands_left > 1 and score * hands_left < need and len(combo) < 5:
+            combo = self.cycle(infos, combo, name, score, levels, rnd)
         return "play", combo
+
+    def cycle(self, infos, combo, name, score, levels, rnd):
+        """No discards left (The Water, or all used) and short of pace: play the lowest spare cards
+        alongside the hand, as long as the hand type and its score don't drop, to dig deeper."""
+        spare = sorted((p for p in range(len(infos)) if p not in combo), key=lambda p: (not infos[p]["debuff"], _rv(infos[p])))
+        out = list(combo)
+        for p in spare:
+            if len(out) >= 5:
+                break
+            trial = sorted(out + [p])
+            n2, sc2 = classify([infos[q] for q in trial])
+            if n2 == name and text_jokers.score(infos, trial, n2, sc2, levels, self.js, rnd) >= score:
+                out = trial
+        return out
 
     @staticmethod
     def discard(infos, forced):
@@ -571,7 +587,35 @@ def summarize(runs, bosses):
     out["blind_survival"] = [r["p_clear"] for r in out["blinds"]]
     # A continuous score for ranking ties: expected number of blinds cleared + boss margin
     out["exp_blinds_cleared"] = round(sum(sum(b["cleared"] for b in r) for r in runs) / n, 2)
+    out["horizon_blinds"] = len(longest)
+    boss = next((b for b in out["blinds"] if b["blind"].endswith("boss")), None)
+    out["p_next_boss"] = round(sum(m_next_boss(r) for r in runs) / n, 3)
+    if boss:
+        out["next_boss"] = boss["blind"]
+        out["next_boss_margin"] = boss.get("median_margin")
+        out["next_boss_names"] = boss.get("bosses_seen")
     return out
+
+
+def m_survive(r, bosses):
+    return 1.0 if len(r) and r[-1]["cleared"] and sum(b["type"] == "Boss" for b in r) >= bosses else 0.0
+
+
+def m_next_boss(r):
+    """1 when the first boss blind of the horizon was cleared (a rollout that died before it: 0)."""
+    return 1.0 if any(b["type"] == "Boss" and b["cleared"] for b in r) else 0.0
+
+
+def m_blinds(r):
+    return float(sum(b["cleared"] for b in r))
+
+
+def paired(runs_a, runs_b, fn):
+    """Common-random-numbers mean difference fn(a) - fn(b) and its paired standard error."""
+    d = [fn(a) - fn(b) for a, b in zip(runs_a, runs_b)]
+    if len(d) < 2:
+        return 0.0, 0.0
+    return statistics.mean(d), statistics.stdev(d) / math.sqrt(len(d))
 
 
 def rollouts(base_gs, opt, joker_dicts, n, bosses, tag="RO", reseed=True):
@@ -592,9 +636,18 @@ def forecast(pub, n=40, bosses=2, keys=None, budget_s=None):
 
     keys: restrict to these option keys. budget_s: stop adding rollouts when the time budget is hit
     (all options always get the same number, for common random numbers)."""
+    import jackdaw.engine.card as card_mod
+    counter = card_mod._sort_id_counter  # restored after: rollouts must not shift a live sim game's card ids
+    try:
+        return _forecast(pub, n, bosses, keys, budget_s)
+    finally:
+        card_mod._sort_id_counter = counter
+
+
+def _forecast(pub, n, bosses, keys, budget_s):
     t0 = time.time()
     base = build_state(pub)
-    opts = [o for o in options(pub) if o["supported"] and (keys is None or o["key"] in keys)]
+    opts = [o for o in options(pub) if o["supported"] and (keys is None or o["key"] in keys or o["key"] == "skip")]
     res = {}
     runs = {o["key"]: [] for o in opts}
     pols = {o["key"]: Policy(option_jokers(pub, o)) for o in opts}
@@ -616,6 +669,12 @@ def forecast(pub, n=40, bosses=2, keys=None, budget_s=None):
     for o in opts:
         if runs[o["key"]] and not o.get("error"):
             res[o["key"]] = {"desc": o["desc"], "cost": o["cost"], **summarize(runs[o["key"]], bosses)}
+    if "skip" in res:
+        base = runs["skip"]
+        for key, row in res.items():
+            r = runs[key]
+            row["vs_skip"] = {name: [round(x, 3) for x in paired(r, base, fn)] for name, fn in (
+                ("next_boss", m_next_boss), ("survive", lambda x: m_survive(x, bosses)), ("blinds", m_blinds))}
     skipped = [o["key"] for o in options(pub) if not o["supported"]]
     return {"options": res, "unsupported": skipped, "rollouts": k, "bosses": bosses,
             "seconds": round(time.time() - t0, 2), "_runs": runs}

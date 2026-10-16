@@ -219,3 +219,39 @@ bosses it also replays an easier ante. Read voucher forecasts against the blind 
    - Reroll when no option beats skip by 1 SE and money stays at or above the interest floor.
 4. **Experiment.** Evaluate on sim30-a first (sim benchmark, cheap), then bench30-a. Watch ante
    5-7 boss deaths and The Water deaths, which the forecast sees through the known current boss.
+
+## v19: wired into the shop (draft, prompt version 22d2445a)
+
+`rollout.py` is now hashed (`recorder.PROMPT_VERSION`, CLAUDE.md updated). In `decisions.shop`:
+- **Forecast call.** `_shop_forecast` runs `forecast(gs, n=32, bosses=2, budget_s=4)` and caches it
+  by seed, ante, round, money, shop and voucher contents, and owned jokers. Swaps only sell the 2
+  weakest owned jokers, meaning those with the smallest `jokers.gain(remove=j)` loss on recent
+  hands. Packs, tarots and spectrals keep the v18 path. The v18 path also takes over entirely if
+  the forecast raises, takes more than 10 s, or has no skip baseline.
+- **Item fields.** Forecast items carry `next_boss_clear` (with skip and the paired difference
+  ± SE in points), `survive_2_bosses`, `boss_margin` and `blinds_cleared_next_6` (with skip and
+  the paired difference ± SE). These replace `measured_gain` and `readiness_after`. The state
+  carries a `forecast` line saying what was simulated: the frozen build, the known current boss,
+  and that later bosses are sampled.
+- **Guard rails.** All use the paired blinds-cleared difference against skip:
+  - an item more than 2 SE better is "sure" (it still needs a JEV score of at least 1);
+  - an item more than 2 SE worse is hidden, unless it is economic (a voucher, a cash tarot, or a
+    non-scoring joker);
+  - the bot rerolls when nothing beats skip by 1 SE and money minus the reroll cost stays at or
+    above $25.
+- **No-discard play.** The forecast policy now plays spare low cards alongside a hand when no
+  discards are left (The Water, or discards spent) and it is short of pace. The cards must not
+  change the hand type or lower its text score. Bosses are still played by the engine.
+- `scripts/diagnostics/mechanics_candidate.py` now pins only `jokers.py` to its v18 bytes (the
+  candidate patches that file alone), so the diagnostic keeps working under v19.
+
+Smoke checks (no JEV, `--policy greedy`, 2 seeds): every shop decision carried the forecast state
+line and item fields, and forecasts took under 1 s. One JEV game on the sim (TU9KANLF,
+`runs/_rollout_validation/jev`):
+- **Result:** lost at ante 6. v18's sim30-a run of the same seed lost at ante 3. This is one game
+  and is not evidence.
+- **Cost:** 392k input and 14k output tokens over 151 decisions, 205 s wall, 33 s of JEV time.
+- **Forecast latency:** 48 forecasts, median 2.0 s, max 4.1 s.
+- **Shop decisions:** 45 of 48 carried forecast item fields. The other 3 offered only packs or
+  tarots and carried the state line only.
+- **Watch the reroll rule:** it fired 17 times in that game.

@@ -12,13 +12,16 @@ from types import ModuleType
 
 ROOT = Path(__file__).resolve().parents[2]
 FILES = ("prompts.py", "hands.py", "strategy.py", "decisions.py", "jokers.py", "odds.py", "build.py", "tarots.py", "readiness.py")
+V18_JOKERS = "26e3df41ddd4"  # sha1 prefix of src/jokers.py at v18 d22adb59
 sys.path.insert(0, str(ROOT / "src"))
 
 
 def candidate_text():
-    version = hashlib.sha1(b"".join((ROOT / "src" / f).read_bytes() for f in FILES)).hexdigest()[:8]
-    if version != "d22adb59":
-        raise RuntimeError(f"Expected frozen v18 baseline, found {version}")
+    # The candidate patches jokers.py only: pin that file to its v18 (d22adb59) bytes, so later prompt
+    # versions that leave jokers.py alone (v19 rollout shop) keep the diagnostic usable.
+    version = hashlib.sha1((ROOT / "src" / "jokers.py").read_bytes()).hexdigest()[:12]
+    if version != V18_JOKERS:
+        raise RuntimeError(f"Expected the frozen v18 jokers.py baseline, found {version}")
     original = (ROOT / "src/jokers.py").read_text(encoding="utf-8")
     replacements = [
         ('return lambda i: i["rank"] in FACES',
