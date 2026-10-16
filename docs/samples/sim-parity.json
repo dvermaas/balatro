@@ -3,7 +3,7 @@
  "set": "bench30-a",
  "summary": {
   "runs": 336,
-  "seconds": 93.4,
+  "seconds": 82.4,
   "runs_replayed_to_end_cleanly": 329,
   "runs_without_critical_divergence": 329,
   "states_compared": 25454,
@@ -108,8 +108,8 @@
    "gs.cards.cards[].modifier: empty vs dict": 8,
    "gs.hand.cards[].state: dict vs empty": 3,
    "gs.shop: extra in sim": 1,
-   "gs.packs: extra in sim": 1,
    "gs.vouchers: extra in sim": 1,
+   "gs.packs: extra in sim": 1,
    "gs.hand.cards[].state: empty vs dict": 1
   }
  },

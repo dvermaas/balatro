@@ -119,6 +119,51 @@ class Backend(unittest.TestCase):
 
 
 @NEEDS_SIM
+@NEEDS_SIM
+class IssueTwoMechanics(unittest.TestCase):
+    """GitHub issue #2: mechanics where Jackdaw differed from the game's Lua (verified in the dump)."""
+
+    def setUp(self):
+        from sim_backend import SimBalatro
+        from jackdaw.engine.card_factory import create_joker
+        self.game, self.joker = SimBalatro(), create_joker
+        self.game.call("start", {"seed": "7X7WSDCX", "deck": "RED", "stake": "WHITE"})
+
+    def test_sliced_joker_does_not_act(self):
+        # Dagger acts first and slices Madness, which then does nothing: only Madness is lost.
+        gs = self.game.gs
+        dagger, madness, plain = (self.joker(k) for k in ("j_ceremonial", "j_madness", "j_joker"))
+        gs["jokers"] = [dagger, madness, plain]
+        self.game.call("select")
+        self.assertEqual([j.center_key for j in gs["jokers"]], ["j_ceremonial", "j_joker"])
+        self.assertEqual(madness.ability.get("x_mult", 1), 1)
+
+    def test_saved_round_pays_no_blind_reward(self):
+        from jackdaw.engine import economy
+        self.game.call("select")
+        gs = self.game.gs
+        blind = gs["blind"]
+        kw = dict(blind=blind, hands_left=0, discards_left=0, money=0, jokers=[], game_state=gs)
+        gs["chips"] = blind.chips - 1
+        self.assertEqual(economy.calculate_round_earnings(**kw).blind_reward, 0)
+        gs["chips"] = blind.chips
+        self.assertEqual(economy.calculate_round_earnings(**kw).blind_reward, blind.dollars)
+        self.assertGreater(blind.dollars, 0)
+
+    def test_satellite_pays_per_distinct_planet(self):
+        from jackdaw.engine import game as engine
+        self.game.call("select")
+        gs = self.game.gs
+        sat = self.joker("j_satellite")
+        gs["jokers"] = [sat]
+        gs["consumable_usage"] = {"c_pluto": {"count": 3, "set": "Planet"},
+                                  "c_mars": {"count": 1, "set": "Planet"},
+                                  "c_fool": {"count": 2, "set": "Tarot"}}
+        gs["chips"] = gs["blind"].chips
+        engine._round_won(gs)
+        self.assertEqual(sat.ability.get("planet_types_used"), 2)
+
+
 class Patches(unittest.TestCase):
     def test_xmult_uses_smods_arithmetic(self):
         import sim_backend  # noqa: F401  (applies the patches)
