@@ -1,0 +1,11 @@
+{
+ "date": "2026-10-16",
+ "question": "Marble Joker: Stone card before or after the new-round 'nr' shuffle (GitHub issue #2)",
+ "method": "scripts/diagnostics/marble_live_test.py against the real game (BalatroBot) and the unpatched Jackdaw sim, full 53-card order after the big-blind select",
+ "results": [
+  {"seed": "EPN12S4E", "stone_position_real": 14, "deck_size": 53, "matches_jackdaw_after_shuffle": false, "matches_stone_shuffled_in": true},
+  {"seed": "KMTUIA73", "stone_position_real": 28, "deck_size": 53, "matches_jackdaw_after_shuffle": false, "matches_stone_shuffled_in": true},
+  {"seed": "725LK1MF", "stone_position_real": 7, "deck_size": 53, "matches_jackdaw_after_shuffle": false, "matches_stone_shuffled_in": true}
+ ],
+ "verdict": "shuffled in; fixed by src/sim_patches.marble_stone_joins_before_shuffle"
+}

@@ -429,6 +429,20 @@ def satellite_counts_used_planet_types():
     _game._round_won = round_won
 
 
+@patch
+def marble_stone_joins_before_shuffle():
+    """Marble Joker's Stone card is in the deck before new_round's 'nr' shuffle: its emplace and
+    draw_card events are queued during setting_blind, ahead of the shuffle event. Jackdaw put it at
+    the pile bottom after the shuffle. Live-tested on 3 seeds (scripts/diagnostics/marble_live_test.py,
+    docs/samples/marble-live-test.json): every 53-card order matched the shuffled-in rule (issue #2)."""
+    orig = _game._apply_setting_blind_mutations
+
+    def wrapped(gs, mutations, jokers):
+        orig(gs, mutations, jokers)
+        gs.setdefault("deck", []).extend(gs.pop("pending_deck_bottom", None) or [])
+    _game._apply_setting_blind_mutations = wrapped
+
+
 def apply():
     for fn in PATCHES:
         fn()
