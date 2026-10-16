@@ -381,21 +381,11 @@
  },
  {
   "seed": "T3S9NXUK",
-  "steps": 40,
-  "final_ante": 3,
-  "final_phase": "EVAL",
+  "steps": 71,
+  "final_ante": 4,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 40,
-    "after": "play",
-    "ante": 3,
-    "fields": {
-     "score": [
-      3438,
-      3437
-     ]
-    }
-   },
+   "rumbot": null,
    "gambit": {
     "step": 13,
     "after": "cash",
@@ -1251,21 +1241,11 @@
  },
  {
   "seed": "BK2SJJHP",
-  "steps": 78,
-  "final_ante": 4,
-  "final_phase": "PLAY",
+  "steps": 95,
+  "final_ante": 5,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 78,
-    "after": "play",
-    "ante": 4,
-    "fields": {
-     "score": [
-      5085,
-      5084
-     ]
-    }
-   },
+   "rumbot": null,
    "gambit": {
     "step": 78,
     "after": "play",
@@ -2941,21 +2921,11 @@
  },
  {
   "seed": "QS2VV9XQ",
-  "steps": 48,
-  "final_ante": 3,
-  "final_phase": "EVAL",
+  "steps": 104,
+  "final_ante": 5,
+  "final_phase": "OVER",
   "first_diff": {
-   "rumbot": {
-    "step": 48,
-    "after": "play",
-    "ante": 3,
-    "fields": {
-     "score": [
-      4211,
-      4212
-     ]
-    }
-   },
+   "rumbot": null,
    "gambit": {
     "step": 48,
     "after": "play",

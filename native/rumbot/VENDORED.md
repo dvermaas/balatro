@@ -10,3 +10,5 @@ Local changes to this copy are listed here, newest last:
 
 - `GameState.no_shop` (game.rs, game_clone.rs): `_open_shop` leaves the shop empty when set, for
   frozen-build forecast rollouts (like Jackdaw's `rollout_skips_shop_population` patch).
+- SMODS xMult arithmetic (effects.rs `ScoreContext::times_mult`): `mult + mult * (x - 1)` instead of
+  `mult * x`, as Steamodded does (Jackdaw: `sim_patches.smods_xmult_arithmetic`).

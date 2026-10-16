@@ -3,6 +3,6 @@ name = "rumbot_drv"
 version = "0.1.0"
 edition = "2021"
 [dependencies]
-rumbot_sim = { path = "../ext/rumbot-sim" }
+rumbot_sim = { path = "../../../native/rumbot" }  # our vendored copy (patches in VENDORED.md)
 [profile.release]
 opt-level = 3

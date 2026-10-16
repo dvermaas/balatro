@@ -124,7 +124,10 @@ impl ScoreContext {
 
     pub fn times_mult(&mut self, factor: f64, source: &str) {
         if factor != 1.0 {
-            self.mult *= factor;
+            // jev (local patch): Steamodded applies an xMult as `mult + mult * (x - 1)`
+            // (Scoring_Parameter mult:modify), which BalatroBot's game runs; the last bit can
+            // flip floor(chips * mult) (sim_patches.smods_xmult_arithmetic).
+            self.mult = self.mult + self.mult * (factor - 1.0);
             self.log.push(format!(
                 "{}: x{} mult -> {} x {}",
                 source, factor, self.chips, self.mult

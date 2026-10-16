@@ -116,6 +116,10 @@ were Jackdaw bugs. Re-run against the fixed Jackdaw:
   case (`P23R7MAH`).
 - Gambit is identical on 269/300.
 
+With our vendored rumbot-sim (`native/rumbot`) and the SMODS xMult patch, it is identical on
+**299/300**. The last case, `P23R7MAH`, looks like one more Jackdaw bug: when To Do List pays
+during a hand, Bootstraps doesn't see that money (`dollar_buffer`). Asked on issue #2.
+
 The raw results file now holds this re-run. The tables below are the original run.
 
 Causes of rumbot-sim's 19 divergences (`classify.py`, each checked with `trace.py`):
