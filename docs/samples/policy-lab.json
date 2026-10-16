@@ -1,0 +1,619 @@
+{
+ "date": "2026-10-16",
+ "seeds": "600 fresh seeds: policy_lab.seeds(600), salt 20261016",
+ "deck": "RED",
+ "stake": "WHITE",
+ "play_policy": "rollout.Policy (fast code policy, no-discard cycling)",
+ "forecast_n": 16,
+ "arms_config": {
+  "none": {},
+  "gain": {
+   "useful_gain": 0.15
+  },
+  "forecast": {
+   "n": 16,
+   "bosses": 2,
+   "buy_se": 2,
+   "reroll_se": 1,
+   "reroll_floor": 25,
+   "max_rerolls": 2
+  },
+  "forecast-long": {
+   "n": 16,
+   "bosses": 3,
+   "buy_se": 2,
+   "reroll_se": 1,
+   "reroll_floor": 25,
+   "max_rerolls": 2
+  },
+  "forecast-long-noreroll": {
+   "n": 16,
+   "bosses": 3,
+   "buy_se": 2,
+   "reroll_se": 1,
+   "reroll_floor": 25,
+   "max_rerolls": 0
+  }
+ },
+ "main": {
+  "name": "main",
+  "seeds_complete": 600,
+  "errors": 0,
+  "arms": {
+   "forecast": {
+    "games": 600,
+    "mean_ante": 4.697,
+    "se_ante": 0.088,
+    "win_rate": 0.04,
+    "mean_blinds": 13.29,
+    "death_ante": {
+     "0": 1,
+     "1": 61,
+     "2": 78,
+     "3": 41,
+     "4": 50,
+     "5": 119,
+     "6": 123,
+     "7": 71,
+     "8": 32,
+     "won": 24
+    },
+    "mean_rerolls": 11.53,
+    "mean_reroll_spent": 61.6,
+    "mean_spent": 94.7,
+    "mean_buys": 6.58,
+    "mean_swaps": 1.96,
+    "mean_vouchers": 0.6,
+    "first_buy_ante_mean": 1.1,
+    "mean_game_seconds": 26.3,
+    "mean_forecasts": 29.9,
+    "forecast_seconds_per_call": 0.87
+   },
+   "forecast-long": {
+    "games": 600,
+    "mean_ante": 4.903,
+    "se_ante": 0.09,
+    "win_rate": 0.06,
+    "mean_blinds": 14.05,
+    "death_ante": {
+     "0": 1,
+     "1": 59,
+     "2": 68,
+     "3": 41,
+     "4": 41,
+     "5": 112,
+     "6": 120,
+     "7": 84,
+     "8": 38,
+     "won": 36
+    },
+    "mean_rerolls": 12.25,
+    "mean_reroll_spent": 65.8,
+    "mean_spent": 101.6,
+    "mean_buys": 7.16,
+    "mean_swaps": 2.33,
+    "mean_vouchers": 0.71,
+    "first_buy_ante_mean": 1.1,
+    "mean_game_seconds": 35.0,
+    "mean_forecasts": 31.6,
+    "forecast_seconds_per_call": 1.1
+   },
+   "gain": {
+    "games": 600,
+    "mean_ante": 3.997,
+    "se_ante": 0.081,
+    "win_rate": 0.012,
+    "mean_blinds": 10.42,
+    "death_ante": {
+     "1": 81,
+     "2": 106,
+     "3": 51,
+     "4": 79,
+     "5": 139,
+     "6": 87,
+     "7": 37,
+     "8": 13,
+     "won": 7
+    },
+    "mean_rerolls": 8.15,
+    "mean_reroll_spent": 43.7,
+    "mean_spent": 72.7,
+    "mean_buys": 5.44,
+    "mean_swaps": 0.75,
+    "mean_vouchers": 0.72,
+    "first_buy_ante_mean": 1.18,
+    "mean_game_seconds": 0.1,
+    "mean_forecasts": 0,
+    "forecast_seconds_per_call": 0.0
+   },
+   "none": {
+    "games": 600,
+    "mean_ante": 1.74,
+    "se_ante": 0.018,
+    "win_rate": 0.0,
+    "mean_blinds": 3.19,
+    "death_ante": {
+     "1": 156,
+     "2": 444
+    },
+    "mean_rerolls": 0,
+    "mean_reroll_spent": 0,
+    "mean_spent": 0,
+    "mean_buys": 0,
+    "mean_swaps": 0,
+    "mean_vouchers": 0,
+    "first_buy_ante_mean": 0,
+    "mean_game_seconds": 0.0,
+    "mean_forecasts": 0,
+    "forecast_seconds_per_call": 0.0
+   }
+  },
+  "paired": {
+   "forecast - gain": {
+    "ante": {
+     "n": 600,
+     "diff": 0.7,
+     "se": 0.084,
+     "sd": 2.058
+    },
+    "blinds": {
+     "n": 600,
+     "diff": 2.862,
+     "se": 0.265,
+     "sd": 6.498
+    },
+    "won": {
+     "n": 600,
+     "diff": 0.028,
+     "se": 0.008,
+     "sd": 0.202
+    }
+   },
+   "forecast-long - gain": {
+    "ante": {
+     "n": 600,
+     "diff": 0.907,
+     "se": 0.083,
+     "sd": 2.029
+    },
+    "blinds": {
+     "n": 600,
+     "diff": 3.628,
+     "se": 0.264,
+     "sd": 6.479
+    },
+    "won": {
+     "n": 600,
+     "diff": 0.048,
+     "se": 0.01,
+     "sd": 0.244
+    }
+   },
+   "forecast - none": {
+    "ante": {
+     "n": 600,
+     "diff": 2.957,
+     "se": 0.085,
+     "sd": 2.085
+    },
+    "blinds": {
+     "n": 600,
+     "diff": 10.09,
+     "se": 0.273,
+     "sd": 6.684
+    },
+    "won": {
+     "n": 600,
+     "diff": 0.04,
+     "se": 0.008,
+     "sd": 0.196
+    }
+   },
+   "forecast-long - forecast": {
+    "ante": {
+     "n": 600,
+     "diff": 0.207,
+     "se": 0.051,
+     "sd": 1.249
+    },
+    "blinds": {
+     "n": 600,
+     "diff": 0.767,
+     "se": 0.165,
+     "sd": 4.051
+    },
+    "won": {
+     "n": 600,
+     "diff": 0.02,
+     "se": 0.009,
+     "sd": 0.223
+    }
+   },
+   "gain - none": {
+    "ante": {
+     "n": 600,
+     "diff": 2.257,
+     "se": 0.078,
+     "sd": 1.907
+    },
+    "blinds": {
+     "n": 600,
+     "diff": 7.228,
+     "se": 0.239,
+     "sd": 5.852
+    },
+    "won": {
+     "n": 600,
+     "diff": 0.012,
+     "se": 0.004,
+     "sd": 0.107
+    }
+   }
+  }
+ },
+ "reroll_diagnostic_300_seeds": {
+  "name": "main",
+  "seeds_complete": 300,
+  "errors": 0,
+  "arms": {
+   "forecast-long": {
+    "games": 300,
+    "mean_ante": 4.863,
+    "se_ante": 0.123,
+    "win_rate": 0.04,
+    "mean_blinds": 13.95,
+    "death_ante": {
+     "1": 28,
+     "2": 35,
+     "3": 21,
+     "4": 19,
+     "5": 61,
+     "6": 64,
+     "7": 43,
+     "8": 17,
+     "won": 12
+    },
+    "mean_rerolls": 12.1,
+    "mean_reroll_spent": 65.0,
+    "mean_spent": 100.6,
+    "mean_buys": 7.16,
+    "mean_swaps": 2.37,
+    "mean_vouchers": 0.69,
+    "first_buy_ante_mean": 1.1,
+    "mean_game_seconds": 34.3,
+    "mean_forecasts": 31.3,
+    "forecast_seconds_per_call": 1.09
+   },
+   "forecast-long-noreroll": {
+    "games": 300,
+    "mean_ante": 4.243,
+    "se_ante": 0.111,
+    "win_rate": 0.027,
+    "mean_blinds": 11.92,
+    "death_ante": {
+     "1": 28,
+     "2": 38,
+     "3": 40,
+     "4": 54,
+     "5": 62,
+     "6": 39,
+     "7": 23,
+     "8": 8,
+     "won": 8
+    },
+    "mean_rerolls": 0,
+    "mean_reroll_spent": 0,
+    "mean_spent": 28.1,
+    "mean_buys": 5.41,
+    "mean_swaps": 1.08,
+    "mean_vouchers": 0.58,
+    "first_buy_ante_mean": 1.09,
+    "mean_game_seconds": 15.0,
+    "mean_forecasts": 15.6,
+    "forecast_seconds_per_call": 0.95
+   },
+   "gain": {
+    "games": 300,
+    "mean_ante": 3.903,
+    "se_ante": 0.114,
+    "win_rate": 0.013,
+    "mean_blinds": 10.16,
+    "death_ante": {
+     "1": 40,
+     "2": 62,
+     "3": 25,
+     "4": 39,
+     "5": 64,
+     "6": 41,
+     "7": 22,
+     "8": 3,
+     "won": 4
+    },
+    "mean_rerolls": 7.66,
+    "mean_reroll_spent": 41.0,
+    "mean_spent": 69.6,
+    "mean_buys": 5.37,
+    "mean_swaps": 0.75,
+    "mean_vouchers": 0.71,
+    "first_buy_ante_mean": 1.2,
+    "mean_game_seconds": 0.1,
+    "mean_forecasts": 0,
+    "forecast_seconds_per_call": 0.0
+   }
+  },
+  "paired": {
+   "forecast-long - gain": {
+    "ante": {
+     "n": 300,
+     "diff": 0.96,
+     "se": 0.112,
+     "sd": 1.933
+    },
+    "blinds": {
+     "n": 300,
+     "diff": 3.793,
+     "se": 0.358,
+     "sd": 6.196
+    },
+    "won": {
+     "n": 300,
+     "diff": 0.027,
+     "se": 0.011,
+     "sd": 0.199
+    }
+   },
+   "forecast-long-noreroll - forecast-long": {
+    "ante": {
+     "n": 300,
+     "diff": -0.62,
+     "se": 0.074,
+     "sd": 1.281
+    },
+    "blinds": {
+     "n": 300,
+     "diff": -2.033,
+     "se": 0.237,
+     "sd": 4.101
+    },
+    "won": {
+     "n": 300,
+     "diff": -0.013,
+     "se": 0.012,
+     "sd": 0.2
+    }
+   },
+   "forecast-long-noreroll - gain": {
+    "ante": {
+     "n": 300,
+     "diff": 0.34,
+     "se": 0.108,
+     "sd": 1.879
+    },
+    "blinds": {
+     "n": 300,
+     "diff": 1.76,
+     "se": 0.344,
+     "sd": 5.956
+    },
+    "won": {
+     "n": 300,
+     "diff": 0.013,
+     "se": 0.011,
+     "sd": 0.182
+    }
+   }
+  }
+ },
+ "purchases": {
+  "gain": {
+   "top_jokers": [
+    [
+     "Blue Joker",
+     83
+    ],
+    [
+     "Banner",
+     75
+    ],
+    [
+     "Jolly Joker",
+     72
+    ],
+    [
+     "Ice Cream",
+     71
+    ],
+    [
+     "Mad Joker",
+     69
+    ],
+    [
+     "Popcorn",
+     68
+    ],
+    [
+     "Sly Joker",
+     68
+    ],
+    [
+     "Even Steven",
+     67
+    ],
+    [
+     "Clever Joker",
+     67
+    ],
+    [
+     "Smiley Face",
+     67
+    ]
+   ],
+   "top_vouchers": [
+    [
+     "Wasteful",
+     88
+    ],
+    [
+     "Clearance Sale",
+     81
+    ],
+    [
+     "Paint Brush",
+     80
+    ],
+    [
+     "Grabber",
+     73
+    ],
+    [
+     "Overstock",
+     68
+    ],
+    [
+     "Palette",
+     10
+    ]
+   ]
+  },
+  "forecast": {
+   "top_jokers": [
+    [
+     "Banner",
+     71
+    ],
+    [
+     "Half Joker",
+     64
+    ],
+    [
+     "Mystic Summit",
+     62
+    ],
+    [
+     "Jolly Joker",
+     62
+    ],
+    [
+     "Smiley Face",
+     62
+    ],
+    [
+     "Shoot the Moon",
+     61
+    ],
+    [
+     "Abstract Joker",
+     61
+    ],
+    [
+     "Misprint",
+     60
+    ],
+    [
+     "Blue Joker",
+     59
+    ],
+    [
+     "Raised Fist",
+     57
+    ]
+   ],
+   "top_vouchers": [
+    [
+     "Hieroglyph",
+     121
+    ],
+    [
+     "Grabber",
+     109
+    ],
+    [
+     "Paint Brush",
+     78
+    ],
+    [
+     "Wasteful",
+     27
+    ],
+    [
+     "Petroglyph",
+     10
+    ],
+    [
+     "Nacho Tong",
+     9
+    ]
+   ]
+  },
+  "forecast-long": {
+   "top_jokers": [
+    [
+     "Banner",
+     69
+    ],
+    [
+     "Abstract Joker",
+     65
+    ],
+    [
+     "Mystic Summit",
+     64
+    ],
+    [
+     "Blue Joker",
+     63
+    ],
+    [
+     "Half Joker",
+     63
+    ],
+    [
+     "Jolly Joker",
+     62
+    ],
+    [
+     "Smiley Face",
+     61
+    ],
+    [
+     "Misprint",
+     58
+    ],
+    [
+     "Supernova",
+     55
+    ],
+    [
+     "Shoot the Moon",
+     55
+    ]
+   ],
+   "top_vouchers": [
+    [
+     "Hieroglyph",
+     137
+    ],
+    [
+     "Grabber",
+     124
+    ],
+    [
+     "Paint Brush",
+     96
+    ],
+    [
+     "Wasteful",
+     28
+    ],
+    [
+     "Petroglyph",
+     17
+    ],
+    [
+     "Nacho Tong",
+     15
+    ]
+   ]
+  }
+ }
+}
