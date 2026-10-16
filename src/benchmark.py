@@ -19,6 +19,14 @@ SETS = {
     # Development pilot fixed before v16: persistent weak seeds, a regression, two strong controls.
     # Selected from bench30-a history; never present this as a held-out win-rate evaluation.
     "weak7-a": ["75WVKF42", "DHPB8Q1L", "PX8GK4E6", "JV8CL6BQ", "2RGEX6EN", "2CM51JLD", "BAPQJMY5"],
+    # Fresh seeds drawn 2026-10-16 for the all-unlocked profile and the Jackdaw sim (sim30-a);
+    # never used for development before its first baseline. Not comparable with bench30-a (locked pool).
+    "sim30-a": ["TU9KANLF", "MGBZKPLC", "YZAI217Z", "2YLF77B5", "1YJ4DQ2R",
+                  "XFIKZ36U", "665WDGX8", "UDBU5JA1", "11BLBC1T", "6CLKMFPY",
+                  "1SHJTVG7", "EV2CS4TX", "Z9DXS1JX", "6L3CIXAF", "R8ZXJN6L",
+                  "MZ5KZ3JH", "AEQ18EUN", "HXGTTFCH", "3XFPWBMH", "61QF3Z7R",
+                  "SXYS1LUB", "QNCJLKQ3", "X4JSXYEF", "KGA553W7", "XT9RAZDH",
+                  "4R5NYC8E", "68RZS4XR", "F1PE5WEY", "SKP9DVE3", "WKPGXL14"],
 }
 NAME = "bench30-a"  # the set the "Benchmark" button runs
 SEEDS = SETS[NAME]
