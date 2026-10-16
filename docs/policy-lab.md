@@ -450,3 +450,28 @@ Pooled over 120 seeds v28 is about +0.31 +- 0.12 ante, wins 20 against 10. Level
 build changing around an item (later buys, planets and tarots aimed at a joker's condition), which is
 how strong runs find a working xMult. The shopping rollouts above were the one experiment that
 models later buys (+0.63 +- 0.45 on 30 seeds, Python only and slow).
+
+**After v28 (same day): wins vs losses, and four more arms, none shipped.**
+
+Win/loss comparison on 200 new v28 games with full logs (`--seeds 200 --seed-offset 60`, 27 wins),
+at the first shop of each ante, winners against games that died later:
+- Winners are already stronger at ante 3: a typical hand x 4 is 3.2x that ante's boss target, against 2.2x.
+- xMult jokers separate the mid-game. Winners hold 0.56 -> 0.89 -> 1.07 at antes 4 / 6 / 7; later losers
+  stay at about 0.55 and keep more flat +Mult jokers. Both see 2-3 xMult offers per game at antes 4-6;
+  winners end up holding 0.67 new ones by ante 5-7, losers 0.25.
+- A scaling-joker signal on the first 120 games (14 wins) did not hold on these 200.
+- Swap blind spot: with full slots, only the 2 jokers with the smallest measured loss on recent hands
+  may be sold. In one loss the forecast (n=16) had three Ramen swaps over the 2 SE bar (sell Abstract
+  Joker +1.25 +- 0.28) but only Fibonacci and Seltzer were eligible.
+
+| arm (vs v28, paired) | sim60-a | fresh 60 |
+|---|---:|---:|
+| late spending: from ante 5 keep $5, 6 rerolls (`bot-late5`) | -0.08 +- 0.09 | |
+| late spending from ante 6 (`bot-late6`) | -0.10 +- 0.05 | |
+| swaps may sell any of 3 jokers (`bot-swap3`) | -0.03 +- 0.09 | +0.02 +- 0.07 |
+| swaps may sell any joker (`bot-swap5`; 3.6 -> 3.8 swaps a game) | -0.05 +- 0.09 | +0.03 +- 0.09 |
+| shopping rollouts on v28 (`bot-items-shop`, 7x slower) | -0.27 +- 0.23 | -0.68 +- 0.28 |
+
+The shopping rollouts lose about half an ante over 120 seeds (-0.48 +- 0.18; 24 seeds better, 50
+worse), so porting `rollout_shop` to Rust is not worth it. Note: the lab's per-arm `mean_swaps` counts
+"replace" in a buy description, which reads "sell X for Y"; count "sell " instead.
