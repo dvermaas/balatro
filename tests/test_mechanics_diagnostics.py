@@ -13,7 +13,7 @@ from diagnostics.mechanics_candidate import candidate_module
 from diagnostics.positions import public_observation
 
 BANK = ROOT / "docs/samples/diagnostic-positions-v1.json"
-BANK_SHA = "e6ecffa0c1d2e88b5c3bc96ed1bc73e7cf7fa1e4b6d81f5f035deef7b9446c80"
+BANK_SHA = "beefe3ef4a3234eb7062d8f56032c1329f8042cb830b2b3e6349cae84174f072"  # LF bytes
 POSITIONS = json.loads(BANK.read_text(encoding="utf-8"))["positions"]
 
 
@@ -93,7 +93,7 @@ class CandidateMechanicsTests(unittest.TestCase):
 
 class ObservationBoundaryTests(unittest.TestCase):
     def test_frozen_selection_is_not_silently_changed(self):
-        self.assertEqual(hashlib.sha256(BANK.read_bytes()).hexdigest(), BANK_SHA)
+        self.assertEqual(hashlib.sha256(BANK.read_bytes().replace(b"\r\n", b"\n")).hexdigest(), BANK_SHA)
         self.assertEqual(len(POSITIONS), 40)
 
     def test_draw_pile_is_never_accessed(self):
