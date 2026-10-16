@@ -356,6 +356,79 @@ def rollout_skips_shop_population():
     _game._populate_shop = populate
 
 
+@patch
+def setting_blind_slices_in_order():
+    """card.lua calculate_joker setting_blind (2870-2956): jokers act one at a time in board order,
+    and a joker already marked getting_sliced does nothing. Madness rolls its victim during its own
+    turn and marks it at once, as does Ceremonial Dagger. Jackdaw collected every joker's result
+    first and rolled Madness afterwards, so a Dagger chosen by Madness still sliced its neighbour
+    (two jokers lost). Found by the Rust spike (GitHub issue #2, seed GVUPXANG)."""
+    from jackdaw.engine.jokers import GameSnapshot, JokerContext, calculate_joker
+
+    def fire(gs, jokers, blind):
+        game_snap = GameSnapshot(joker_count=len(jokers), joker_slots=gs.get("joker_slots", 5),
+                                 money=gs.get("dollars", 0))
+        rng = gs.get("rng")
+        mutations = []
+        for joker in list(jokers):
+            if getattr(joker, "debuff", False) or getattr(joker, "getting_sliced", False):
+                continue
+            result = calculate_joker(joker, JokerContext(setting_blind=True, blind=blind, jokers=jokers,
+                                                         game=game_snap))
+            if not (result and result.extra):
+                continue
+            entry = dict(result.extra)
+            entry["_source_joker"] = joker
+            if entry.pop("destroy_random_joker", False) and len(jokers) > 1 and rng:
+                pool = [j for j in jokers if j is not joker and not getattr(j, "eternal", False)
+                        and not getattr(j, "getting_sliced", False)]
+                if pool:  # pseudoseed('madness') is only drawn when there is a victim
+                    target, _ = rng.element(pool, rng.seed("madness"))
+                    target.getting_sliced = True
+                    entry["destroy_joker"] = target
+            elif entry.get("destroy_joker") is not None:
+                entry["destroy_joker"].getting_sliced = True
+            mutations.append(entry)
+        return mutations
+    _game._fire_setting_blind = fire
+
+
+@patch
+def saved_round_pays_no_blind_reward():
+    """G.FUNCS.evaluate_round (state_events.lua:1015-1021): a round saved by Mr. Bones adds a $0
+    'blind1' row; only a beaten blind pays blind.dollars. Jackdaw always paid it (issue #2)."""
+    from jackdaw.engine import economy as _eco
+    orig = _eco.calculate_round_earnings
+
+    def wrapped(blind, hands_left, discards_left, money, jokers, game_state, rng=None, **kw):
+        saved = blind is not None and game_state.get("chips", 0) < getattr(blind, "chips", 0)
+        if not saved:
+            return orig(blind, hands_left, discards_left, money, jokers, game_state, rng, **kw)
+        dollars, blind.dollars = blind.dollars, 0
+        try:
+            return orig(blind, hands_left, discards_left, money, jokers, game_state, rng, **kw)
+        finally:
+            blind.dollars = dollars
+    _eco.calculate_round_earnings = wrapped
+
+
+@patch
+def satellite_counts_used_planet_types():
+    """Satellite (card.lua:2012): $1 per distinct Planet key in G.GAME.consumeable_usage, which
+    set_consumeable_usage fills on every use, pack picks included. Jackdaw's handler reads
+    ability.planet_types_used, which nothing sets, so it paid $0 (issue #2)."""
+    orig = _game._round_won
+
+    def round_won(gs):
+        sats = [j for j in gs.get("jokers", []) if getattr(j, "center_key", None) == "j_satellite"]
+        if sats:
+            n = sum(1 for v in (gs.get("consumable_usage") or {}).values() if v.get("set") == "Planet")
+            for j in sats:
+                j.ability["planet_types_used"] = n
+        orig(gs)
+    _game._round_won = round_won
+
+
 def apply():
     for fn in PATCHES:
         fn()

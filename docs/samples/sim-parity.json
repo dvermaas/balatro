@@ -3,7 +3,7 @@
  "set": "bench30-a",
  "summary": {
   "runs": 336,
-  "seconds": 93.4,
+  "seconds": 92.9,
   "runs_replayed_to_end_cleanly": 329,
   "runs_without_critical_divergence": 329,
   "states_compared": 25454,
