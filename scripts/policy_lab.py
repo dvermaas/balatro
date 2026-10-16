@@ -10,11 +10,17 @@ Only joker and voucher buying differs between arms.
                  nothing beats skip by 1 SE and money stays >= $25
   forecast-long  the same with a 3-boss horizon
   none           never buys jokers or vouchers (floor)
+  bot-forecast-long   arm E: the bot's real code (JevBot + decisions.py) with JEV replaced by its top option
+  bot-forecast-items  arm F: E plus rollout_items.forecast for packs, shop tarots and spectrals (bought at
+                      > 2 SE over skip) and rollout_items.Picker for the card taken from an open pack
 Shared by all arms: buy the shop planet for our most played hand when affordable (keeping $4) and
 use planets at once; skip packs, tarots, spectrals and playing cards; never skip blinds.
 
   python scripts/policy_lab.py --seeds 50 --arms gain,forecast,forecast-long,none --name pilot
   python scripts/policy_lab.py --report pilot                     # tables from runs/_policy_lab/pilot
+  python scripts/policy_lab.py --set sim60-a --arms bot-forecast-long --name sim60-e   # a benchmark seed set
+Every lost game records its fatal blind (name, boss effect, target, final score, best single hand, jokers);
+--report prints the loss-audit tables (death blind, shortfall, fatal bosses) per arm.
 Results stream to runs/_policy_lab/<name>/results.jsonl (resumable: finished games are skipped).
 """
 from __future__ import annotations
@@ -29,6 +35,7 @@ import statistics
 import sys
 import time
 import traceback
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -201,7 +208,7 @@ def play_game(task):
     seed, arm_name = task
     t0 = time.time()
     try:
-        if arm_name == "bot-forecast-long":
+        if arm_name in BOT_ARMS:
             return _play_bot(seed, arm_name, t0)
         return _play(seed, arm_name, t0)
     except Exception as e:  # noqa: BLE001
@@ -223,11 +230,14 @@ def _play(seed, arm_name, t0):
     game = {"recent": [], "rerolls": 0, "forecast_s": 0.0, "forecasts": 0, "forecast_errors": 0}
     log = {"buys": [], "rerolls": 0, "reroll_spent": 0, "spent": 0, "blinds": 0, "deaths": None}
     pol, pol_sig = None, None
+    rnd = {"blind": {}, "hands": []}  # the current blind and its per-hand scores (death stats)
     for _ in range(20000):
         ph = gs["phase"]
         if gs.get("won"):
             break
         if ph == GamePhase.BLIND_SELECT:
+            typ = gs.get("blind_on_deck", "Small")
+            rnd = {"blind": sim_backend._blinds(gs).get(typ.lower(), {}), "hands": []}
             step(gs, SelectBlind())
         elif ph == GamePhase.SELECTING_HAND:
             if not gs["hand"]:  # deck and hand exhausted: no legal play, the run is lost
@@ -242,11 +252,15 @@ def _play(seed, arm_name, t0):
                 game["recent"] = (game["recent"] + [{
                     "infos": [rollout._info(c) for c in gs["hand"]], "combo": list(idx),
                     "rnd": {"hands_left": cr.get("hands_left"), "discards_left": cr.get("discards_left")}}])[-RECENT:]
+            before = gs.get("chips") or 0
             try:
                 step(gs, (PlayHand if kind == "play" else Discard)(card_indices=tuple(idx)))
             except IllegalActionError:
                 forced = [p for p, c in enumerate(gs["hand"]) if c.ability.get("forced_selection")]
                 step(gs, PlayHand(card_indices=tuple(forced[:1] or [0])))
+                kind = "play"
+            if kind == "play":
+                rnd["hands"].append((gs.get("chips") or 0) - before)
         elif ph == GamePhase.ROUND_EVAL:
             log["blinds"] += 1
             step(gs, CashOut())
@@ -297,18 +311,36 @@ def _play(seed, arm_name, t0):
             "blinds": log["blinds"], "round": gs.get("round"), "rerolls": log["rerolls"],
             "reroll_spent": log["reroll_spent"], "spent": log["spent"], "buys": log["buys"],
             "forecasts": game["forecasts"], "forecast_errors": game["forecast_errors"], "forecast_s": round(game["forecast_s"], 1),
-            "jokers": [j.ability.get("name") for j in gs["jokers"]], "seconds": round(time.time() - t0, 1)}
+            "jokers": [j.ability.get("name") for j in gs["jokers"]], "seconds": round(time.time() - t0, 1),
+            "death": None if gs.get("won") else _death(rnd["blind"], gs.get("chips") or 0, rnd["hands"],
+                                                       [j.ability.get("name") for j in gs["jokers"]])}
+
+
+def _death(blind, final, hands, jokers):
+    """The fatal blind of a lost game, like docs/loss-audit.md: name, boss effect, target, final score,
+    best single hand in that round, hands played and the jokers at death."""
+    return {"blind": blind.get("name"), "type": blind.get("type"), "effect": blind.get("effect") or None,
+            "target": blind.get("score") or 0, "final": final, "best_hand": max(hands) if hands else 0,
+            "hands": len(hands), "jokers": jokers}
 
 
 # ---------------------------------------------------------------------------
 # Arm E: the bot's real code path (JevBot + decisions.py) with a code stand-in for JEV
 # ---------------------------------------------------------------------------
 
-def _code_jev(bot_ref):
+BOT_ARMS = {"bot-forecast-long": False, "bot-forecast-items": True}  # arm -> item forecast (arm F) on
+
+
+def _code_jev(bot_ref, items=False):
     """JEV replaced by 'take the top-ranked option': Choice -> the first option (the bot lists its best
     measured option first; cash tarot steps -> continue shopping), play_now -> play when the strongest
     play clears or beats the best measured discard, item scores -> 0 except the shared planet rule
-    (the most played hand's planet, keeping $4), so shop buying is the forecast's code path alone."""
+    (the most played hand's planet, keeping $4), so shop buying is the forecast's code path alone.
+
+    items=True (arm F): shop packs, tarots and spectrals get rollout_items.forecast; the option that
+    beats buying nothing by > 2 SE in blinds cleared scores 3 (bought unless the planet rule's 4 comes
+    first; a cash tarot is taken at the cash step instead). In an open pack the card rollout_items.Picker
+    picks scores 4, the rest 0 (decisions.booster then takes it, with tarots.plan targets)."""
     sys.path.insert(0, str(ROOT / "scripts"))
     from sim_run import FirstOptionJev
     from typesafe_sdk import SystemOneResponse
@@ -316,12 +348,53 @@ def _code_jev(bot_ref):
     class CodeJev(FirstOptionJev):
         model = "code-top-option"
 
+        def __init__(self):
+            self.stats = {"item_forecasts": 0, "item_seconds": 0.0, "item_buys": [], "pack_picks": [], "item_errors": 0}
+
+        def item_pick(self, questions):
+            """{qid: score} for arm F's picks on this question set."""
+            import rollout_items
+            gs = bot_ref[0].last_state or {}
+            st = gs.get("state")
+            if st == "SMODS_BOOSTER_OPENED" and any(q.startswith("take_") for q in questions):
+                p = rollout_items.Picker(gs).pick_pub(gs)
+                if p:
+                    c = _cards(gs, "pack")[p[0]]
+                    self.stats["pack_picks"].append([gs.get("ante_num"), c.get("set"), c.get("label")])
+                    return {f"take_{p[0]}": 4.0}
+                return {}
+            if st != "SHOP":
+                return {}
+            shop = _cards(gs, "shop")
+            keys = {q for q in questions if q.startswith("buy_pack_") or (
+                q.startswith("buy_card_") and shop[int(q.split("_")[-1])].get("set") in ("TAROT", "SPECTRAL"))}
+            if not keys:
+                return {}
+            t = time.time()
+            try:
+                fc = rollout_items.forecast(gs, n=FORECAST_N, bosses=3, keys=keys)
+            except Exception:  # noqa: BLE001  a failed item forecast buys nothing
+                self.stats["item_errors"] += 1
+                return {}
+            self.stats["item_forecasts"] += 1
+            self.stats["item_seconds"] += time.time() - t
+            k = rollout_items.best(fc)
+            if not k:
+                return {}
+            self.stats["item_buys"].append([gs.get("ante_num"), fc["options"][k]["desc"],
+                                            fc["options"][k]["vs_skip"]["blinds"]])
+            return {k: 3.0}
+
         def system_one(self, state, questions):
             answers = {}
+            picks = self.item_pick(questions) if items else {}
             for qid, q in questions.items():
                 if q.type == "choice":
                     keys = list(q.criteria)
                     c = "continue_shopping" if "continue_shopping" in keys else keys[0]
+                    cash = [k for k in picks if k in keys]
+                    if "continue_shopping" in keys and cash:
+                        c = cash[0]
                     answers[qid] = {"type": "choice", "choice": c, "confidence": 1.0,
                                     "probabilities": {k: float(k == c) for k in keys}}
                 elif q.type == "noul":
@@ -330,7 +403,8 @@ def _code_jev(bot_ref):
                     play = sp.get("clears_blind_alone") or "modeled_average_next_play" not in bd or                         (sp.get("estimated_score") or 0) >= (bd.get("modeled_average_next_play") or 0)
                     answers[qid] = {"type": "noul", "noul": 1.0 if play else 0.0}
                 else:
-                    answers[qid] = {"type": "score", "score": self.item_score(q), "confidence": 1.0, "legend": {},
+                    sc = max(self.item_score(q), picks.get(qid, 0.0))
+                    answers[qid] = {"type": "score", "score": sc, "confidence": 1.0, "legend": {},
                                     "probabilities": {}}
             return SystemOneResponse.model_validate({"model": self.model, "answers": answers,
                                                      "usage": {"input_tokens": 0, "output_tokens": 0}})
@@ -359,7 +433,7 @@ def _play_bot(seed, arm_name, t0):
     tmp = tempfile.mkdtemp(prefix="plab_")
     try:
         ref = [None]
-        jev = _code_jev(ref)
+        jev = _code_jev(ref, items=BOT_ARMS[arm_name])
         bot = JevBot(deck="RED", stake="WHITE", game=SimBalatro(), jev=jev, log_dir=Path(tmp))
         ref[0] = bot
         bot.model = jev.model
@@ -389,11 +463,22 @@ def _play_bot(seed, arm_name, t0):
                  and e.get("question") == "shop" and str(e.get("choice")).startswith(("buy", "replace"))]
         fs = [e.get("forecast_seconds") or 0 for e in ev if e.get("forecast_seconds")]
         won = summ.get("result") == "won" or engine_won
+        death = None
+        if not won:
+            ends = [e for e in ev if e["kind"] == "round_end"]
+            plays = [e for e in ev if e["kind"] == "outcome" and e.get("method") == "play"]
+            last_end = ends[-1]["id"] if ends else -1
+            fatal = [p for p in plays if p["id"] > last_end]
+            death = _death(bot._round_blind or {}, (fatal[-1].get("chips") or 0) if fatal else 0,
+                           [p.get("chips_delta") or 0 for p in fatal], (plays[-1].get("jokers") if plays else []) or [])
         return {"seed": seed, "arm": arm_name, "won": won, "ante": 8 if won else summ.get("ante"), "blinds": blinds,
                 "round": summ.get("round"), "rerolls": rerolls, "reroll_spent": 0, "spent": 0,
                 "buys": [[b[0], "swap" if "replace" in str(b[2]) else "joker", b[2]] for b in buys],
                 "forecasts": len(fs), "forecast_errors": 0, "forecast_s": round(sum(fs), 1),
-                "game_errors": bot.stats["errors"], "seconds": round(time.time() - t0, 1)}
+                "game_errors": bot.stats["errors"], "seconds": round(time.time() - t0, 1), "death": death,
+                **({"item_forecasts": jev.stats["item_forecasts"], "item_s": round(jev.stats["item_seconds"], 1),
+                    "item_errors": jev.stats["item_errors"], "item_buys": jev.stats["item_buys"],
+                    "pack_picks": jev.stats["pack_picks"]} if BOT_ARMS[arm_name] else {})}
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 
@@ -423,6 +508,98 @@ def paired(rows, a, b, key="ante"):
         return None
     return {"n": len(d), "diff": round(statistics.mean(d), 3), "se": round(statistics.stdev(d) / math.sqrt(len(d)), 3),
             "sd": round(statistics.stdev(d), 3)}
+
+
+def _item_name(desc):
+    """'$4 Buffoon Pack' -> 'Buffoon Pack' (Jumbo/Mega folded in)."""
+    d = str(desc).split(" ", 1)[-1]
+    return d.replace("Jumbo ", "").replace("Mega ", "")
+
+
+def _blind_kind(d):
+    return "boss" if d["type"] == "BOSS" else (d["blind"] or "?").split()[0].lower()
+
+
+def death_stats(rs):
+    """Loss-audit tables for one arm's lost games (docs/loss-audit.md): where and by how much they die."""
+    lost = [r for r in rs if not r["won"] and r.get("death")]
+    if not lost:
+        return None
+    ds = [r["death"] for r in lost]
+    ratio = [d["final"] / d["target"] for d in ds if d["target"]]
+    share = [d["best_hand"] / d["target"] for d in ds if d["target"]]
+    buckets = Counter("<25%" if x < .25 else "25-50%" if x < .5 else "50-75%" if x < .75 else "75-100%" for x in ratio)
+    kind = Counter(_blind_kind(d) for d in ds)
+    return {
+        "losses": len(ds), "at_boss": kind.get("boss", 0), "at_small": kind.get("small", 0),
+        "at_big": kind.get("big", 0), "ante_5_7": sum(5 <= r["ante"] <= 7 for r in lost),
+        "median_ratio": round(statistics.median(ratio), 3) if ratio else None,
+        "close_75_100": buckets.get("75-100%", 0),
+        "median_best_hand_share": round(statistics.median(share), 3) if share else None,
+        "water": sum(d["blind"] == "The Water" for d in ds),
+        "shortfall": {k: buckets.get(k, 0) for k in ("<25%", "25-50%", "50-75%", "75-100%")},
+        "fatal_bosses": dict(Counter(d["blind"] for d in ds if d["type"] == "BOSS").most_common()),
+        "boss_effects": {d["blind"]: d["effect"] for d in ds if d["type"] == "BOSS" and d.get("effect")},
+        "median_jokers_at_death": statistics.median(len(d["jokers"] or []) for d in ds),
+        "by_ante_blind": {f"{a} {k}": n for (a, k), n in sorted(Counter((r["ante"], _blind_kind(r["death"]))
+                                                                         for r in lost).items())},
+    }
+
+
+def tables(out):
+    """Markdown tables of a report: arms, paired differences, death ante, death blind and shortfall."""
+    arms = out["arms"]
+    lines = ["| arm | games | mean ante (SE) | ante-8 clear | blinds cleared | forecasts/game | s/forecast |",
+             "|---|---:|---:|---:|---:|---:|---:|"]
+    for a, r in arms.items():
+        lines.append(f"| {a} | {r['games']} | {r['mean_ante']:.2f} ({r['se_ante']:.2f}) | {100 * r['win_rate']:.1f}% "
+                     f"| {r['mean_blinds']:.1f} | {r['mean_forecasts']} | {r['forecast_seconds_per_call']} |")
+    lines += ["", "| paired | ante | blinds cleared | ante-8 clear |", "|---|---:|---:|---:|"]
+    for k, v in out["paired"].items():
+        if v["ante"]:
+            lines.append(f"| {k} | {v['ante']['diff']:+.2f} ± {v['ante']['se']:.2f} | {v['blinds']['diff']:+.2f} ± "
+                         f"{v['blinds']['se']:.2f} | {100 * v['won']['diff']:+.1f} ± {100 * v['won']['se']:.1f} pts |")
+    cols = sorted({k for r in arms.values() for k in r["death_ante"]},
+                  key=lambda k: (k == "won", int(k) if k != "won" else 0))
+    lines += ["", "| death ante | " + " | ".join(cols) + " |", "|---|" + "---:|" * len(cols)]
+    for a, r in arms.items():
+        lines.append(f"| {a} | " + " | ".join(str(r["death_ante"].get(c, "")) for c in cols) + " |")
+    dead = {a: r["deaths"] for a, r in arms.items() if r.get("deaths")}
+    if dead:
+        head = " | ".join(dead)
+        lines += ["", f"| deaths | {head} |", "|---|" + "---:|" * len(dead)]
+        for label, key in (("losses", "losses"), ("died at a boss", "at_boss"), ("died at a small blind", "at_small"),
+                           ("died at a big blind", "at_big"), ("died at ante 5-7", "ante_5_7"),
+                           ("median final score / target", "median_ratio"),
+                           ("within 75-100% of target (close calls)", "close_75_100"),
+                           ("median best hand in fatal round / target", "median_best_hand_share"),
+                           ("deaths to The Water", "water"), ("median jokers at death", "median_jokers_at_death")):
+            lines.append(f"| {label} | " + " | ".join(str(d.get(key)) for d in dead.values()) + " |")
+        lines += ["", f"| final score / target | {head} |", "|---|" + "---:|" * len(dead)]
+        for b in ("<25%", "25-50%", "50-75%", "75-100%"):
+            lines.append(f"| {b} | " + " | ".join(str(d["shortfall"][b]) for d in dead.values()) + " |")
+        bosses = Counter()
+        for d in dead.values():
+            bosses.update(d["fatal_bosses"])
+        lines += ["", f"| fatal boss | {head} |", "|---|" + "---:|" * len(dead)]
+        for b, _ in bosses.most_common(12):
+            lines.append(f"| {b} | " + " | ".join(str(d["fatal_bosses"].get(b, 0)) for d in dead.values()) + " |")
+    return chr(10).join(lines)
+
+
+def sequential_check(rows, a, b, stop_se=3.0, min_gain=0.15):
+    """Sequential stopping on the paired ante difference a - b over the seeds both arms finished.
+    Stop when |mean| > stop_se SE (a clear difference either way) or when the 95% CI upper bound is
+    below min_gain (no meaningful gain for a). Returns (stop, reason, paired dict or None)."""
+    d = paired(rows, a, b)
+    if not d:
+        return False, "fewer than 2 pairs", None
+    hi = d["diff"] + 1.96 * d["se"]
+    if d["se"] > 0 and abs(d["diff"]) > stop_se * d["se"]:
+        return True, f"|{d['diff']:+.3f}| > {stop_se} SE ({d['se']:.3f})", d
+    if hi < min_gain:
+        return True, f"95% CI upper bound {hi:+.3f} < +{min_gain} ante", d
+    return False, f"{d['diff']:+.3f} ± {d['se']:.3f} (CI upper {hi:+.3f})", d
 
 
 def report(name, pairs=None, only=None):
@@ -460,38 +637,75 @@ def report(name, pairs=None, only=None):
             "mean_game_seconds": round(statistics.mean(r["seconds"] for r in rs), 1),
             "mean_forecasts": round(statistics.mean(r["forecasts"] for r in rs), 1),
             "forecast_seconds_per_call": round(sum(r["forecast_s"] for r in rs) / max(1, sum(r["forecasts"] for r in rs)), 2),
+            "deaths": death_stats(rs),
         }
+        if any("item_forecasts" in r for r in rs):
+            calls = sum(r.get("item_forecasts", 0) for r in rs)
+            out["arms"][a].update({
+                "mean_item_forecasts": round(calls / len(rs), 1),
+                "item_seconds_per_call": round(sum(r.get("item_s", 0) for r in rs) / max(1, calls), 2),
+                "item_errors": sum(r.get("item_errors", 0) for r in rs),
+                "mean_item_buys": round(statistics.mean(len(r.get("item_buys", [])) for r in rs), 2),
+                "mean_pack_picks": round(statistics.mean(len(r.get("pack_picks", [])) for r in rs), 2),
+                "item_buys_top": dict(Counter(_item_name(b[1]) for r in rs for b in r.get("item_buys", [])).most_common(12)),
+                "pack_picks_by_set": dict(Counter(p[1] for r in rs for p in r.get("pack_picks", [])).most_common()),
+            })
     pairs = pairs or [(x, y) for x, y in (("forecast", "gain"), ("forecast-long", "gain"), ("forecast", "none"),
                                           ("forecast-long", "forecast"), ("gain", "none")) if x in arms and y in arms]
     pairs += [(x, "forecast-long") for x in arms if x.startswith("forecast-long-") and "forecast-long" in arms]
     pairs += [(x, "gain") for x in arms if x.startswith("forecast-long-") and "gain" in arms]
+    pairs += [(x, y) for x, y in (("bot-forecast-items", "bot-forecast-long"), ("bot-forecast-long", "forecast-long"))
+              if x in arms and y in arms and (x, y) not in pairs]
     out["paired"] = {f"{x} - {y}": {"ante": paired(rows, x, y), "blinds": paired(rows, x, y, "blinds"),
                                     "won": paired(rows, x, y, "won")} for x, y in pairs}
     return out
 
 
 def main():
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--seeds", type=int, default=50)
     ap.add_argument("--seed-offset", type=int, default=0, help="skip the first k generated seeds")
+    ap.add_argument("--set", help="play a fixed seed set from src/benchmark.py (e.g. sim60-a) instead of generated "
+                                  "seeds (--seeds and --seed-offset then ignored)")
     ap.add_argument("--arms", default="gain,forecast,forecast-long,none")
     ap.add_argument("--name", default="pilot")
     ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 2) - 1))
     ap.add_argument("--report", help="print the report of a run name and exit (restricted to --arms if given)")
+    ap.add_argument("--stop-at-se", type=float, default=3.0,
+                    help="sequential stopping on the paired ante difference of the first two --arms (first minus "
+                         "second): stop when |diff| > this many SE; 0 disables")
+    ap.add_argument("--check-every", type=int, default=100, help="check the stopping rule every N completed pairs")
+    ap.add_argument("--min-gain", type=float, default=0.15,
+                    help="also stop when the 95%% CI upper bound of the diff is below this (no meaningful gain)")
     a = ap.parse_args()
     if a.report:
-        print(json.dumps(report(a.report, only=set(a.arms.split(",")) if "--arms" in sys.argv else None), indent=1))
+        out = report(a.report, only=set(a.arms.split(",")) if "--arms" in sys.argv else None)
+        print(json.dumps(out, indent=1))
+        print(tables(out))
         return 0
     d = OUT / a.name
     d.mkdir(parents=True, exist_ok=True)
     done = {(r["seed"], r["arm"]) for r in load(a.name)[0]}
     arms = a.arms.split(",")
-    ss = seeds(a.seed_offset + a.seeds)[a.seed_offset:]
-    # slow arms first so the pool drains evenly
-    order = sorted(arms, key=lambda x: (not x.startswith("forecast"), x))
-    tasks = [(s, arm) for arm in order for s in ss if (s, arm) not in done]
+    if a.set:
+        import benchmark
+        ss = list(dict.fromkeys(x.split("#")[0] for x in benchmark.SETS[a.set]))
+    else:
+        ss = seeds(a.seed_offset + a.seeds)[a.seed_offset:]
+    # slow arms first so the pool drains evenly; the bot arms (slowest) interleaved by seed so pairs fill evenly
+    order = sorted(arms, key=lambda x: (x not in BOT_ARMS, not x.startswith("forecast"), x))
+    pos = {s: i for i, s in enumerate(ss)}
+    tasks = sorted(((s, arm) for arm in order if arm in BOT_ARMS for s in ss if (s, arm) not in done),
+                   key=lambda t: pos[t[0]])
+    tasks += [(s, arm) for arm in order if arm not in BOT_ARMS for s in ss if (s, arm) not in done]
     print(f"{len(tasks)} games ({len(done)} done), {a.jobs} workers", flush=True)
     t0 = time.time()
+    seq = a.stop_at_se > 0 and len(arms) >= 2
+    rows = load(a.name)[0] if seq else []
+    checked = len({r["seed"] for r in rows if r["arm"] == arms[0]} & {r["seed"] for r in rows if r["arm"] == arms[1]}) \
+        // a.check_every if seq else 0
     with open(d / "results.jsonl", "a", encoding="utf-8") as f, mp.get_context("spawn").Pool(a.jobs) as pool:
         for i, r in enumerate(pool.imap_unordered(play_game, tasks), 1):
             f.write(json.dumps(r) + "\n")
@@ -500,7 +714,20 @@ def main():
                 print(json.dumps({"done": i, "of": len(tasks), "elapsed": round(time.time() - t0),
                                   **({"error": r["error"], "seed": r["seed"], "arm": r["arm"]} if r.get("error") else {})}),
                       flush=True)
-    print(json.dumps(report(a.name), indent=1))
+            if seq and not r.get("error"):
+                rows.append(r)
+                n = len({x["seed"] for x in rows if x["arm"] == arms[0]} & {x["seed"] for x in rows if x["arm"] == arms[1]})
+                if n // a.check_every > checked:
+                    checked = n // a.check_every
+                    stop, why, _ = sequential_check(rows, arms[0], arms[1], a.stop_at_se, a.min_gain)
+                    print(json.dumps({"check": f"{arms[0]} - {arms[1]}", "pairs": n, "stop": stop, "why": why}),
+                          flush=True)
+                    if stop:
+                        pool.terminate()
+                        break
+    out = report(a.name)
+    print(json.dumps(out, indent=1))
+    print(tables(out))
     return 0
 
 
