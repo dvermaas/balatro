@@ -10,3 +10,5 @@ runs/*
 scripts/rust_spike/ext/
 scripts/rust_spike/*/target/
 scripts/rust_spike/*/Cargo.lock
+# Rust scoring kernel build output
+native/target/

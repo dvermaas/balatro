@@ -13,6 +13,7 @@ from typesafe_sdk import Choice, Noul, Score
 
 import build
 import jokers
+import native
 import odds
 import readiness
 import tarots
@@ -215,6 +216,19 @@ def _boss_allows(combo, name, levels, boss):
     return True
 
 
+class BossAllow:
+    """_boss_allows bound to one state: allowed(combo, name). v23: also readable by the native kernel."""
+
+    def __init__(self, levels, boss):
+        self.levels, self.boss = levels, boss
+
+    def __call__(self, combo, name):
+        return _boss_allows(combo, name, self.levels, self.boss)
+
+    def native_spec(self):
+        return native.boss_spec(self.levels, self.boss)
+
+
 def _preserve_discard(hand, play, scorer, max_discard=5):
     """Cycle noncontributing cards without throwing away the current scoring core.
 
@@ -290,11 +304,10 @@ def _setup_plays(gs, hand, plays, levels, scorer, allowed, info, margin):
         h = levels.get(p["hand"], {})
         next_levels = {**levels, p["hand"]: {**h, "played": (h.get("played") or 0) + 1,
                        "played_this_round": (h.get("played_this_round") or 0) + 1}}
-        next_allowed = lambda combo, name: _boss_allows(combo, name, next_levels, info["blind"])
+        next_allowed = BossAllow(next_levels, info["blind"])
 
         def next_scorer(played, drawn):
-            js = jokers.after_play(gs, drawn)
-            return lambda cs, combo, name, sc: jokers.score(cs, combo, name, sc, next_levels, js, next_round)
+            return jokers.Scorer(next_levels, jokers.after_play(gs, drawn), next_round)
 
         forecast = {"cards": p["cards"]}
         odds.forecast([forecast], infos, deck, next_scorer, next_allowed,
@@ -326,8 +339,8 @@ def selecting_hand(bot, gs):
     rnd, js = _d(gs.get("round")), jokers.build(gs)
     levels = _boss_levels(_d(gs.get("hands")), boss)
     infos = [card_info(c) for c in hand]
-    scorer = lambda infos, combo, name, sc: jokers.score(infos, combo, name, sc, levels, js, rnd)
-    allowed = lambda combo, name: _boss_allows(combo, name, _d(gs.get("hands")), boss)
+    scorer = jokers.Scorer(levels, js, rnd)
+    allowed = BossAllow(_d(gs.get("hands")), boss)
     plays = play_candidates(hand, levels, limit=8, scorer=scorer, allowed=allowed)
     if not plays:
         # Nothing scores under Eye/Mouth yet: a play may still cycle cards, but cannot be a sure clear.
@@ -351,8 +364,7 @@ def selecting_hand(bot, gs):
         next_round = {**rnd, "discards_left": max(0, (rnd.get("discards_left") or 0) - 1)}
 
         def score_after_discard(tossed, drawn):
-            next_js = jokers.after_discard(gs, tossed, drawn)
-            return lambda cs, combo, name, sc: jokers.score(cs, combo, name, sc, levels, next_js, next_round)
+            return jokers.Scorer(levels, jokers.after_discard(gs, tossed, drawn), next_round)
 
         hand_size = area(gs, "hand").get("limit") or len(hand)
         odds.forecast(discards, infos, [card_info(c) for c in cards_of(gs, "cards")],

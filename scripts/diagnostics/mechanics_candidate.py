@@ -6,6 +6,7 @@ baseline changes. Production imports never see this module or its candidate.
 import difflib
 import hashlib
 import json
+import subprocess
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -16,13 +17,25 @@ V18_JOKERS = "26e3df41ddd4"  # sha1 prefix of src/jokers.py at v18 d22adb59
 sys.path.insert(0, str(ROOT / "src"))
 
 
+def _v18_jokers():
+    """src/jokers.py at v18 (d22adb59): the working copy while it is unchanged, else from git history
+    (v23 rewrote the rules as data for the native kernel)."""
+    path = ROOT / "src" / "jokers.py"
+    if hashlib.sha1(path.read_bytes()).hexdigest()[:12] == V18_JOKERS:
+        return path.read_bytes()
+    revs = subprocess.run(["git", "log", "--format=%H", "-n", "50", "--", "src/jokers.py"], cwd=ROOT,
+                          capture_output=True, text=True).stdout.split()
+    for rev in revs:
+        blob = subprocess.run(["git", "show", f"{rev}:src/jokers.py"], cwd=ROOT, capture_output=True).stdout
+        if hashlib.sha1(blob).hexdigest()[:12] == V18_JOKERS:
+            return blob
+    raise RuntimeError("Expected the frozen v18 jokers.py baseline (not in the working copy or git history)")
+
+
 def candidate_text():
     # The candidate patches jokers.py only: pin that file to its v18 (d22adb59) bytes, so later prompt
-    # versions that leave jokers.py alone (v19 rollout shop) keep the diagnostic usable.
-    version = hashlib.sha1((ROOT / "src" / "jokers.py").read_bytes()).hexdigest()[:12]
-    if version != V18_JOKERS:
-        raise RuntimeError(f"Expected the frozen v18 jokers.py baseline, found {version}")
-    original = (ROOT / "src/jokers.py").read_text(encoding="utf-8")
+    # versions keep the diagnostic usable.
+    original = _v18_jokers().decode("utf-8")
     replacements = [
         ('return lambda i: i["rank"] in FACES',
          'return lambda i: i.get("is_face", i["rank"] in FACES)'),

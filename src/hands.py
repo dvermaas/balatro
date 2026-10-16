@@ -7,6 +7,8 @@ joker-aware scorer. Without one, estimates use hand levels and card modifiers.
 from collections import Counter
 from itertools import combinations
 
+import native
+
 RANK_ORDER = "23456789TJQKA"
 RANK_NAMES = {"T": "10", "J": "Jack", "Q": "Queen", "K": "King", "A": "Ace"}
 SUIT_NAMES = {"H": "Hearts", "D": "Diamonds", "C": "Clubs", "S": "Spades"}
@@ -124,7 +126,13 @@ def estimate(cards, name, scoring, hand_levels):
 
 
 def evaluated_plays(infos, hand_levels, scorer=None, allowed=None):
-    """Score every subset before pruning; held cards and play length can change its value."""
+    """Score every subset before pruning; held cards and play length can change its value.
+
+    v23: a jokers.Scorer (with decisions.BossAllow or no filter) runs in the native kernel when built."""
+    rows = native.evaluate(scorer, infos, allowed)
+    if rows is not None:
+        yield from rows
+        return
     for r in range(1, min(5, len(infos)) + 1):
         for combo in combinations(range(len(infos)), r):
             cs = [infos[i] for i in combo]
@@ -137,7 +145,18 @@ def evaluated_plays(infos, hand_levels, scorer=None, allowed=None):
 
 def best_score(infos, scorer, allowed=None):
     """Best modeled score in a complete future hand, including cards left held."""
+    best = native.best_score(scorer, infos, allowed)
+    if best is not None:
+        return best
     return max((row[0] for row in evaluated_plays(infos, {}, scorer, allowed)), default=0)
+
+
+def best_play(infos, hand_levels, scorer, allowed=None):
+    """max((score, hand name)) over the plays, (0, None) without any: ties go to the larger name."""
+    best = native.best_play(scorer, infos, allowed)
+    if best is not None:
+        return best
+    return max(((s, n) for s, n, _, _ in evaluated_plays(infos, hand_levels, scorer, allowed)), default=(0, None))
 
 
 def play_candidates(hand_cards, hand_levels, limit=8, scorer=None, allowed=None):

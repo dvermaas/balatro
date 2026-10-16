@@ -1,0 +1,17 @@
+[package]
+name = "jev_native"
+version = "0.1.0"
+edition = "2021"
+description = "Rust kernel for the bot's joker-aware hand scorer (src/native.py, src/jokers.py)"
+license = "MIT"
+
+[lib]
+name = "jev_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.30", features = ["extension-module", "abi3-py312"] }
+
+[profile.release]
+lto = true
+codegen-units = 1

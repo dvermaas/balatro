@@ -176,6 +176,36 @@ on the same engine.
 
 ### Stage A: scorer kernel in Rust (2–4 sessions, about 2.4x)
 
+**Status (2026-10-16): built as the v23 draft (prompt version `92064164`). The lab check on the PC
+is still to do.**
+
+What changed:
+- `jokers.parse` returns data tuples, and `jokers.Scorer` and `decisions.BossAllow` replace the
+  scorer and filter lambdas.
+- `native/` (PyO3 0.30, abi3) holds `classify`, the subset loop and `score`. `src/native.py`
+  encodes the inputs and falls back to Python on anything unusual.
+- `rollout.Policy` scores its candidates in one native call.
+- The kernel is in the `PROMPT_VERSION` hash, and runs record `summary.scorer` (`rust` or
+  `python`).
+
+Measured in the cloud container:
+
+| check | result |
+|---|---|
+| identity: v22 lambdas vs v23 Python vs the Rust kernel | identical on 4,000 random cases (281k subset rows) |
+| identity: `tests/test_native.py` | 3,000 random cases plus `score_many` and the fallbacks |
+| identity: rollouts with the kernel on and off | 240 rollouts on Jackdaw states, identical |
+| speed: one `best_score` (8–9 cards, 4–6 jokers) | 7–16 ms → 0.3 ms (20–43x) |
+| speed: `readiness.power` on 41 recorded states | 77 → 2.3 ms |
+| speed: `readiness.play_mix` | 14.7 → 0.3 ms |
+| speed: a rollout | 22 → 20 ms (the Jackdaw engine dominates: stage B) |
+
+**Still to do on the PC (needs `runs/_loc`):**
+1. Lab arms E and F on the 28 main seeds, identical per seed to v22, with games/hour.
+2. Then run `.venv/Scripts/python -m pip install ./native`, which needs the Rust MSVC toolchain.
+
+Plan as written:
+
 1. **Make the rules data.** `jokers.parse` returns lambdas today. Make it return declarative rule
    specs: about 20 hand-rule kinds, 3 card predicates (suit-or-wild, rank set, all), held rules and
    retriggers. Keep a Python evaluator of the specs as the reference.

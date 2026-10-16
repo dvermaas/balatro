@@ -48,6 +48,7 @@ from jackdaw.engine.run_init import initialize_run  # noqa: E402
 from jackdaw.engine.vouchers import apply_voucher  # noqa: E402
 
 import jokers as text_jokers  # noqa: E402  (read-only use of the bot's text scorer)
+import native  # noqa: E402
 from hands import RANK_ORDER, classify  # noqa: E402
 
 SUIT_NAME = {"H": "Hearts", "D": "Diamonds", "S": "Spades", "C": "Clubs"}
@@ -441,7 +442,7 @@ class Policy:
         need = max(0, (getattr(blind, "chips", 0) or 0) - (gs.get("chips") or 0))
         played_round = {k for k, v in levels.items() if v["played_this_round"]}
         forced = [p for p, c in enumerate(hand) if c.ability.get("forced_selection")]
-        best = None
+        plays = []
         for combo in candidates(infos):
             combo = list(combo)
             if bname == "The Psychic" and len(combo) < 5:
@@ -452,7 +453,14 @@ class Policy:
                     combo = (combo[:4] if len(combo) >= 5 else combo) + [f]
             combo = sorted(set(combo))
             name, sc = classify([infos[p] for p in combo])
-            s = text_jokers.score(infos, combo, name, sc, levels, self.js, rnd)
+            plays.append((combo, name, sc))
+        # v23: one native call scores every candidate (same numbers as text_jokers.score)
+        scorer = text_jokers.Scorer(levels, self.js, rnd)
+        scores = native.score_many(scorer, infos, plays)
+        if scores is None:
+            scores = [scorer(infos, combo, name, sc) for combo, name, sc in plays]
+        best = None
+        for (combo, name, sc), s in zip(plays, scores):
             if (bname == "The Eye" and name in played_round) or (
                     bname == "The Mouth" and played_round and name not in played_round):
                 s = -1

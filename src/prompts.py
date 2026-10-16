@@ -6,6 +6,11 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v23 draft: speed only, same decisions as v22 (every play-subset score identical with and without the "
+    "kernel; see tests/test_native.py): jokers.score over every play subset (hands.evaluated_plays, best_score, "
+    "best_play: odds forecasts, readiness, setup plays) and rollout.Policy's candidates run in a Rust kernel "
+    "(native/, src/native.py) when it is built; joker rules are data tuples instead of lambdas so both "
+    "evaluate the same rule; Python stays as the fallback (JEV_NATIVE=0, or module not built). Based on: "
     "v22 draft: speed only, same decisions as v21 (per-seed results of the lab's arms E and F identical on "
     "28 seeds): rollout copies by unpickling one snapshot instead of deepcopy; cash-outs inside forecast "
     "rollouts skip shop population; hands.classify memoised; tarots.auto_use builds the build plan only "

@@ -11,6 +11,8 @@ import json
 import time
 from pathlib import Path
 
+import native
+
 SRC = Path(__file__).resolve().parent  # the hashed decision files live here
 ROOT = SRC.parent  # repo root: runs/
 PROMPTS_DIR = ROOT / "runs" / "_prompts"
@@ -20,8 +22,10 @@ def version_hash(files, root=SRC):
     return hashlib.sha1(b"".join((root / f).read_bytes() for f in files if (root / f).exists())).hexdigest()[:8]
 
 
-# decisions.py joined in v6; earlier versions lack it, so their ids are unchanged.
-PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py", "decisions.py", "jokers.py", "odds.py", "build.py", "tarots.py", "readiness.py", "rollout.py", "rollout_items.py"))
+# decisions.py joined in v6; earlier versions lack it, so their ids are unchanged. v23 adds the native
+# scoring kernel (src/native.py and the Rust sources), which computes the same scores as jokers.score.
+PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py", "decisions.py", "jokers.py", "odds.py", "build.py", "tarots.py", "readiness.py", "rollout.py", "rollout_items.py",
+                               "native.py", "../native/src/lib.rs", "../native/Cargo.toml"))
 
 
 def snapshot_prompts():
@@ -77,7 +81,8 @@ class RunRecorder:
         self.run = {
             "run_id": self.dir.name, "seed": seed, "deck": gs.get("deck") or deck,
             "stake": gs.get("stake") or stake, "model": model, "prompt_version": self.version,
-            "benchmark": bench, "backend": self.backend, "started": time.time(), "ended": None, "result": "in_progress",
+            "benchmark": bench, "backend": self.backend, "scorer": native.backend(),
+            "started": time.time(), "ended": None, "result": "in_progress",
             "ante": gs.get("ante_num"), "round": gs.get("round_num"), "money": gs.get("money"),
             "decisions": 0, "forced": 0, "errors": 0, "input_tokens": 0, "output_tokens": 0, "jev_ms": 0,
             "avg_confidence": None, "low_confidence_decisions": 0, "by_question": {},
