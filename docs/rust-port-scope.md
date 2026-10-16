@@ -1,258 +1,249 @@
-# Rust port: scope and plan
+# Rust port: scope, spike and plan
 
-2026-10-16. Scoping only: no code is ported yet. The question was whether to port Jackdaw
-(`third_party/jackdaw`) to Rust to speed up the forecasts, whether a usable Rust Balatro engine
-already exists, and which parts give the biggest speedup for the least work.
+2026-10-16. The goal is the whole lab game in Rust (engine and policy), so benchmarks scale with
+cores instead of with Python. Today 600 seeds take about 80 minutes on a 7800X3D. This doc covers
+three things: where the time goes, a lockstep spike against two existing Rust engines, and the
+staged plan.
 
 ## Summary
 
-- **Most of the time is not in Jackdaw.** In the v22 profile, about half of a lab game is the bot's
-  own Python text scorer (`jokers.score` over every play subset), called from `odds.forecast` and
-  `readiness.play_mix`. Porting only the engine would give about 1.3x more games per hour.
-- **First target: the scorer kernel, not the engine.** That means `hands.classify`,
-  `hands.evaluated_plays`/`best_score` and `jokers.score` behind a small PyO3 module. It is about
-  2k lines of Rust and an estimated **~2.4x** more games per hour. It can give results identical
-  to v22.
-- **Second target: the rollout engine.** This is the Jackdaw subset that `rollout.play_horizon`
-  touches, plus `Policy`, which reuses the kernel. It is 12–16k lines of Rust, for an estimated
-  **~5–6x** total. Before writing it, spend 1–2 sessions testing an existing Rust engine, which
-  might replace most of this work.
-- **Not worth it: a full port of Jackdaw.** The live sim game costs about 1.5 s of engine time per
-  game, so the shop, packs, tags, challenges and env layers only add work.
-- **Ruled out: PyPy.** Jackdaw requires Python ≥ 3.12, and PyPy stops at 3.11. Also, a published
-  measurement on a comparable simulator found PyPy only 1.3x faster than CPython on rollouts.
-- **Existing Rust engines:** two candidates claim full content and RNG that matches the game bit
-  for bit (see below). Neither is a port of Jackdaw, both are a few weeks old, and both have one
-  author. They are worth a spike, but not worth adopting blind.
+- **Feasible.** About 20–28 sessions if we build on rumbot-sim, against 35–50 if we port Jackdaw
+  ourselves.
+- **Spike result.** We played 300 seeds with identical actions in Jackdaw (with our `sim_patches`),
+  rumbot-sim and Gambit.
+  - **rumbot-sim matched Jackdaw on 281 of 300 seeds, all the way to game over.**
+  - Each of its 19 divergences traces to a specific mechanic (one is still unexplained), and in 18
+    of them Gambit, an independent engine, does the same thing as rumbot-sim. That makes Jackdaw the likely outlier.
+  - rumbot-sim runs **25x** faster than Jackdaw on the same scripted games.
+- **Recommendation: fork rumbot-sim as the engine** instead of porting Jackdaw.
+  - Then add Steamodded (SMODS) xMult rounding and decide the four open mechanics against the real
+    game.
+  - Accept it only once it replays our 336 recorded real games at least as well as Jackdaw
+    (329/336).
+  - The policy, the public-state view and the effect text are ours to port either way.
+  - Gambit is not recommended: it diverged on 45 seeds, 10 of them with unexplained large score
+    differences.
+- **Order:**
+  - A: scorer kernel (quick win, results identical);
+  - B: rumbot-sim fork as engine, validated, with PyO3 bindings;
+  - C: the whole policy in Rust, used by both the lab and the real-game bot (one implementation).
 
-## Where the time goes
+## Where the time goes today
 
-### From the v22 profile
+v22 profile, one arm-E game ([rollout-forecast.md](rollout-forecast.md)). A lab game averages about
+120–131 s, which matches 600 games in 80 minutes on 15–16 workers.
 
-These numbers are from one profiled arm-E game ([rollout-forecast.md](rollout-forecast.md), v22).
-The lab average is 7,333 summed game seconds over 56 games, about 131 s per game.
-
-| part | s/game | what it is |
+| part | share | moves to Rust in |
 |---|---:|---|
-| `odds.forecast` → `best_score` | ~40 | `jokers.score` on every ≤5-card subset of each sampled future hand |
-| `readiness.play_mix` | ~28 | the same kernel: 24 deals × every subset, recomputed per round |
-| rollouts (`rollout.Policy` + engine) | ~45 | part of the 59 s of shop forecasts |
-| everything else | ~20 | `decisions.py`, `build_state`, auto-use planning, recorder, ... |
+| bot text scorer: `jokers.score` over every play subset, from `odds.forecast` and `readiness.play_mix` | ~52% | A |
+| rollouts: the Jackdaw engine plus `rollout.Policy` | ~34% | B (engine), A/C (policy) |
+| rest of the bot: `decisions.py`, `build_state`, auto-use planning, recorder | ~15% | C |
 
-### Measured here
+Measured here with `scripts/diagnostics/profile_rollout_engine.py` (CPython 3.13, 2.8 GHz Xeon):
+- an engine-only rollout takes 9.5 ms with 5 jokers and 15–17 ms with 8;
+- unpickling the snapshot takes 0.4–0.5 ms;
+- the profile is spread out (scoring loop, `calculate_joker`, hand evaluation, TW223 RNG), so there
+  is no single hot spot.
 
-`scripts/diagnostics/profile_rollout_engine.py` (new) runs the real rollout loop: pickled
-snapshot, reseeded, 2 bosses ahead, shop population off. It uses a trivial policy, so the time is
-Jackdaw plus the loop. It ran on CPython 3.13 on a 2.8 GHz Xeon in the cloud container.
-
-| build | per rollout | of which unpickle |
+| what is in Rust | ≈ s/game | 600 seeds on the 7800X3D |
 |---|---:|---:|
-| 5 jokers (Joker, Ride the Bus, Photograph, Baron, Blueprint) | 9.5 ms | 0.5 ms |
-| 8 jokers (+ Hanging Chad, Greedy, Cavendish) | 15–17 ms | 0.4 ms |
+| nothing (v22) | ~120 | 80 min |
+| A: scorer kernel | ~55 | ~35 min |
+| A + B: engine and rollouts too | ~25 | ~15 min |
+| A + B + C: whole lab game | ~5 | **~4 min** |
 
-The docs report about 12 ms per rollout with the real `Policy`, so most of a rollout is the engine.
-The cProfile is spread out:
-- `scoring.score_hand` holds 60% cumulative, with dict `.get` calls in its hot loop;
-- `calculate_joker`: ~90k calls per 100 rollouts;
-- hand evaluation (`get_x_same`, `get_flush`, `is_suit`);
-- the TW223 RNG.
+These use about 20x for ported code. That figure is the rumbot-sim measurement below; the scorer
+kernel alone may do better.
 
-There is no single hot spot to rewrite. This is the typical shape for a straight port: a big
-constant-factor gain on everything.
+## Spike: lockstep against existing Rust engines
 
-### Expected Rust speedup
+### Candidates
 
-rumbot-sim publishes CPython-vs-Rust measurements of a comparable pure-Python Balatro simulator,
-same work, i7-8700:
-- **24x** on whole-run rollouts;
-- **17x** on score previews;
-- 14.5x on `legal_actions`.
+| project | pinned at | size | notes |
+|---|---|---|---|
+| [mmank/rumbot-sim](https://github.com/mmank/rumbot-sim) | `888c516` (2026-10-05) | 38.6k lines of Rust | MIT, no dependencies. Module-by-module port of the Python jimbot-sim: 150 jokers, 52 consumables, shop, packs, tags. RNG matches LuaJIT bit for bit (2,270-draw fixture). 622 tests. No Python bindings |
+| [PrimalMentat15/Gambit](https://github.com/PrimalMentat15/Gambit) `sim/core` | `8dc1716` (2026-10-13) | 12k lines (core) + PyO3 crate | MIT, claims "seed-faithful" with bit-exact RNG, full content |
 
-The estimates below assume about 20x.
+Not tried: evanofslack/balatro-rs (no license, 74/150 jokers), hack-balatro (its RNG does not
+match the game), and smaller projects. Seed searchers such as Immolate and TheSoul reproduce the
+RNG only.
 
-| scenario | odds + readiness | rollouts | other | ≈ s/game | games/hour |
-|---|---:|---:|---:|---:|---:|
-| today (v22) | 68 | 45 | 20 | ~131 | 1x |
-| A: scorer kernel | ~4 | ~32 (engine still Python) | 20 | ~55 | **~2.4x** |
-| A + B: rollout engine too | ~4 | ~2 | 20 | ~25 | **~5–6x** |
-| full port of Jackdaw | ~4 | ~2 | ~19 | ~24 | no further gain |
+### Method
 
-What is left after A + B is ordinary bot Python (Amdahl). JEV games are bound by API latency and
-gain little. The speedup matters for the lab arms. It can also buy precision instead of throughput:
-the same forecast time budget could run several times more rollouts per option.
+`scripts/rust_spike/` holds the harness:
+- a small stdin/stdout driver per Rust engine;
+- `lockstep.py`, which steps all three engines with the same actions;
+- `trace.py` and `classify.py` to inspect divergences.
 
-The weakest assumption is the split inside the 45 s of rollouts: how much is `Policy` (text
-scorer) and how much is engine. Step 0 settles it.
+Setup:
+- Red Deck, White stake, all-unlocked profile (the default in all three engines);
+- 300 random seeds;
+- the policy is computed from Jackdaw's state and sent to the others by card identity and slot
+  index:
+  - skip the small blind on even antes;
+  - play a flush, else the biggest rank groups, else the 5 highest cards;
+  - discard toward a suit or pairs;
+  - buy the first affordable joker, then the voucher, then the first pack;
+  - in packs, take a planet, playing card or joker, otherwise skip;
+  - cash out.
 
-## Existing Rust (and other native) engines
+**Comparisons are phase-aware.** For example, the boss and tags are compared at blind select, and
+money after cash-out, because the engines update those between screens at slightly different
+moments. Each seed stops at its first difference. Raw results:
+[samples/rust-spike-lockstep.json](samples/rust-spike-lockstep.json).
 
-Checked from public READMEs, PORTING notes and a read of the cloned source. Nothing was built or
-run here.
+**Coverage:** 17,197 steps, antes 1–6. It covers bosses, shops, joker buys (whatever the shop
+offers, so it reaches many jokers), vouchers, Buffoon, Celestial and Standard pack picks, and skip
+tags. It does **not** cover:
+- using tarots or spectrals;
+- selling, rerolls;
+- antes 7–8;
+- other decks and stakes.
 
-| project | license | size | Python bindings | fidelity claim | fit |
-|---|---|---|---|---|---|
-| [mmank/rumbot-sim](https://github.com/mmank/rumbot-sim) | MIT | 38.6k lines of Rust, no dependencies, last commit 2026-10-05 | none | Module-for-module port of the Python **jimbot-sim**: 150/150 jokers, 52/52 consumables, shop, packs, tags. RNG matches bit for bit on a 2,270-draw fixture. 622 tests | best engine to start from; strong RNG reference |
-| [PrimalMentat15/Gambit](https://github.com/PrimalMentat15/Gambit) `sim/` | MIT | 24.3k lines of Rust, last commit 2026-10-12 | PyO3, vectorised env | "Seed-faithful": 150 jokers, consumables, vouchers, tags, bosses, 15 decks × 8 stakes. Bit-exact RNG with LuaJIT oracle vectors. A cross-validation harness against the real game. Shop and packs are not mentioned | worth a spike; claims unverified |
-| [evanofslack/balatro-rs](https://github.com/evanofslack/balatro-rs) | none stated | 397 commits | PyO3 (`pylatro`) | 74/150 jokers. No tags, decks or stakes | RNG reference only; no license |
-| azazo1/balatro | not stated | 228 commits | yes | `tests/luajit_parity.rs`, no counts given | maybe look later |
-| Immolate (C/OpenCL), TheSoul (JS), Motely (C#), Triboulet (Rust) | various | — | — | Seed searchers: they reproduce the RNG only, with no game loop | RNG reference |
+The 336-game real-replay check in stage B covers those.
 
-Others are too incomplete to consider: hack-balatro (its RNG does not match the game),
-bmp-rs (5/150 jokers, GPL), simulatro (C, makes no RNG claim), and several toy simulators.
+### Results
 
-Neither strong candidate is a drop-in replacement:
-1. **Different engine.** Their parity target is jimbot-sim or the real game, not Jackdaw plus our
-   `sim_patches`. Rollouts would no longer match the live sim exactly. That adds engine-mismatch
-   error on top of today's reconstruction error (97.4% survival match, rollout-forecast.md).
-   Results would also differ from v22, so a new benchmark is needed.
-2. **Different state model.** `rollout.build_state` builds a Jackdaw state. Using another engine
-   means converting every field, including the internals of all ~150 joker kinds. That converter
-   is 1–2k lines and is where bugs would hide.
-3. **Single authors, weeks old.** Expect to own the code.
+| | seeds identical to game over | first divergences |
+|---|---:|---:|
+| rumbot-sim | **281 / 300** | 19 (18 shared with Gambit at the same step) |
+| Gambit | 255 / 300 | 45 |
 
-They still help:
-- If both engines really match the game's RNG, the same state and the same seed string should
-  give the same rollout. That makes the divergence from Jackdaw directly measurable, rollout by
-  rollout. That is the spike.
-- rumbot-sim's `rng.rs` and its bit-level fixture method are the template for our own RNG port in
-  any case.
+Causes of rumbot-sim's 19 divergences (`classify.py`, each checked with `trace.py`):
+
+| cause | seeds | who is right |
+|---|---:|---|
+| **Marble Joker**: the dealt hand differs after blind select | 7 | Unknown. Both Rust engines agree with each other; Jackdaw seems to add the Stone card at a different point relative to the `nr` shuffle. Check against the game |
+| **Mr. Bones** saves a lost round, and Jackdaw still pays the blind reward | 5 | Probably Jackdaw is wrong. As I remember `evaluate_round`, a saved round adds a $0 "blind1" row. Confirm in the Lua dump |
+| **SMODS xMult rounding** (Ramen, Obelisk), off by 1 point | 3 | Expected. Our `sim_patches` model Steamodded's `mult + mult*(x-1)`, which the real BalatroBot game uses; rumbot-sim is vanilla. Port the patch |
+| **Satellite** payout, $1–2 less in Jackdaw | 2 | Unknown. Both Rust engines agree. Probably the unique-planets count after planets used from packs |
+| **Madness + Ceremonial Dagger** | 1 | Jackdaw is wrong. It collects every blind-select joker effect before applying any. So when Madness picks the Dagger, the doomed Dagger still destroys its right-hand neighbour. In the game a Dagger that `getting_sliced` does not act |
+| To Do List / The Mouth / Bloodstone (`P23R7MAH`): a hand scores 186 vs 310 | 1 | Not explained yet |
+
+Gambit's extra divergences:
+- **18 To Do List money differences.** That is the joker whose `pairs(G.GAME.hands)` order our
+  `sim_patches` fixed against real-game recordings, and rumbot-sim agrees with Jackdaw there.
+- **10 unexplained**, several with large score gaps (Splash, The Order, Walkie Talkie, Hologram
+  builds).
+
+### Speed (same scripted policy and seed names, one core)
+
+| engine | steps/s | games/s |
+|---|---:|---:|
+| Jackdaw + `sim_patches` (CPython 3.13) | 2,408 | 411 |
+| rumbot-sim (release) | 60,469 | 10,277 |
+
+That is **25x**. Both engines average about 5.9 steps per game, which is consistent with them
+playing the same games. rumbot-sim's own benchmark reaches 2,976 steps/s here on its
+preview-heavy rollout, where each step scores about 400 candidate plays.
+
+## Build or adopt
+
+**Adopt (fork) rumbot-sim for the engine.**
+
+What it saves:
+- the biggest piece of work: porting about 17k lines of Jackdaw engine to 20–25k lines of Rust,
+  roughly 20 sessions;
+- the RNG work. RNG matching the game bit for bit is the riskiest part of any port, and it is
+  already done and fixture-tested.
+
+What the spike shows: on our action mix it already agrees with Jackdaw plus our patches almost
+everywhere. Where it disagrees, an independent second engine sides with it in 18 of 19 cases.
+
+What it costs:
+1. **A new engine baseline.** Sim benchmarks on rumbot-sim are not comparable cell by cell with
+   v1–v22 on Jackdaw. The panel already separates results by `summary.backend`. Re-run the current
+   version once on the new backend to set the baseline.
+2. **Ownership.** One author, weeks old. Vendor it as a pinned submodule and fix it ourselves.
+   Upstreaming fixes is optional.
+3. **The SMODS layer.** Port the relevant `sim_patches` behaviour: xMult rounding, plus each of
+   the other patch items that rumbot-sim does not already match. Check them one by one with the
+   lockstep harness.
+4. **Its design.** It uses shared `Rc<RefCell<_>>` handles and `fn`-pointer hooks. That is fine for
+   one game per thread, and game states are built inside each worker. It also has a
+   `game_clone.rs` for rollout copies, whose speed is not measured yet.
+
+**When to port Jackdaw ourselves instead:** if rumbot-sim does clearly worse than Jackdaw on the
+336-game real replay (B3), and the gap does not come down to a few fixable mechanics.
+
+The lockstep harness then remains the safety net. Jackdaw plus patches stays available as a
+reference in Python until rumbot-sim passes the real-replay check.
 
 ## Plan
 
-### Step 0: profile the real split (on the PC, under 1 h)
+Each stage ends with an identity check: identical per-seed lab results against the previous step,
+on the same engine.
 
-The container has no `runs/_loc` (it needs `Balatro.exe`), so the real `Policy`, `odds` and
-`readiness` could not run here. On the PC, profile arm E and arm F of `scripts/policy_lab.py` on 3
-seeds with cProfile. Record seconds per game for:
-- `jokers.score`;
-- `hands.classify`;
-- the Jackdaw `step` inside rollouts;
-- `Snapshot.copy`;
-- the rest.
+### Stage A: scorer kernel in Rust (2–4 sessions, about 2.4x)
 
-Run `profile_rollout_engine.py` there too, to compare with the numbers above. If the kernel is
-much smaller than the ~70–80 s estimated above, revisit the plan.
+1. **Make the rules data.** `jokers.parse` returns lambdas today. Make it return declarative rule
+   specs: about 20 hand-rule kinds, 3 card predicates (suit-or-wild, rank set, all), held rules and
+   retriggers. Keep a Python evaluator of the specs as the reference.
+2. **PyO3 crate `native/`** for `hands.classify`, the subset loop of `evaluated_plays` and
+   `best_score`, and `jokers.score`. Floats are f64 with the same order of operations, so results
+   are bit-identical.
+3. **Callers:** `hands`, `readiness`, `odds`, `rollout.Policy`.
+4. **Checks:**
+   - every subset score equal, Python vs Rust, on recorded hand states;
+   - lab arms E and F on the 28 main seeds identical per seed, as was done for v22;
+   - a new prompt version with `VERSION_NOTE` "speed only", and the Rust sources added to the
+     `PROMPT_VERSION` hash.
+5. **Build:** maturin, the Rust MSVC toolchain on Windows, and a PyO3 release that supports Python
+   3.14. Fall back to Python when the module is missing, and record in `summary` which backend ran.
 
-### Stage A: scorer kernel in Rust (2–4 sessions, biggest gain per unit of work)
+### Stage B: rumbot-sim fork as the engine (8–12 sessions)
 
-- **Make the rules data.** `jokers.parse` returns lambdas today. Make it return declarative rule
-  specs: about 20 hand-rule kinds, 3 card-predicate kinds (suit-or-wild, rank set, all), held
-  rules and retriggers. Keep a Python evaluator of the specs as the reference implementation and
-  the fallback.
-- **New crate `native/`** (PyO3, abi3 wheel, built with maturin), about 1.5–2.5k lines:
-  - `classify`;
-  - the subset loop of `evaluated_plays` (including the `allowed` filter);
-  - `best_score`;
-  - `score`.
+1. **Vendor and fix.**
+   - Pin rumbot-sim as `third_party/rumbot-sim` (our fork).
+   - Add SMODS xMult arithmetic and the other `sim_patches` behaviours it lacks.
+   - Settle Marble Joker, Mr. Bones, Satellite and the `P23R7MAH` case against the Lua dump or
+     the real game. Fix whichever engine is wrong, Jackdaw included through `sim_patches`, so the
+     current Python sim gets better too.
+2. **Public view and text.** Build the gamestate the bot sees (`sim_backend.serialize`'s contract:
+   `[]` for empty tables, hidden draw order, `Base Card` labels) and the effect text (`sim_text`)
+   from a rumbot-sim state. This is about 1.5–2k lines of Rust and reads `en-us.lua` at runtime.
+3. **Real-replay parity.** Port `scripts/diagnostics/sim_parity.py`'s replay to the rumbot backend,
+   mapping recorded BalatroBot actions to rumbot-sim actions. Run it on the 336 recorded games.
+   Target: at least 329/336 replaying to the end with every state identical, like Jackdaw.
+4. **Bindings.**
+   - A PyO3 `SimBalatro` backend with the same `call(method, params)` interface, so today's
+     Python bot runs on it unchanged. Re-run the current version's benchmark to set the new
+     baseline.
+   - Rollouts: `build_state` (public state to engine state) and `play_horizon` in Rust, with
+     `Policy` on the Stage A kernel.
 
-  Floats are f64 in both languages. With the same order of operations and the same final
-  `int(max(0, chips) * max(1, mult))`, the results are bit-identical.
-- **Callers** pass a compact card array plus the specs once per call: `hands.best_score` and
-  `play_candidates`, `readiness.power` and `play_mix`, `odds.forecast`, and `rollout.Policy`. The
-  live bot on the real game uses the same path.
-- **Identity checks:**
-  - every subset score equal, Python vs Rust, on all hand states in recorded runs;
-  - a randomised test over hands × joker sets;
-  - lab arms E and F on the 28 main seeds giving identical per-seed results, as was done for v22.
-- **Versioning:**
-  - it is a new prompt version (hashed files change), with `VERSION_NOTE` "speed only";
-  - add the Rust sources to the `PROMPT_VERSION` hash, or a Rust edit would change behaviour
-    without changing the version.
-- **Build:**
-  - it is the first compiled dependency, which breaks "no other deps", so keep it optional: fall
-    back to Python when the module is missing, and record in `summary` which backend ran;
-  - on Windows it needs the Rust MSVC toolchain and VS Build Tools;
-  - Python 3.14 needs a PyO3 release that supports 3.14 (check at build time).
+### Stage C: the whole policy in Rust (8–12 sessions)
 
-### Spike: test an existing engine as the rollout engine (1–2 sessions)
+1. **Port the policy** into a `policy` crate: `decisions.py`, `hands`, `jokers`, `odds`,
+   `readiness`, `build`, `tarots`, `strategy`, `rollout`, `rollout_items` and the lab arm driver.
+   That is about 165k characters of dense Python, roughly 6–8k lines of Rust. It reads only the
+   public view from B2, so the "never see the draw order" rule still holds by construction.
+2. **One implementation.**
+   - The real-game bot calls the same crate from Python. Python keeps the JEV calls, the
+     BalatroBot connection, the recorder and the panel.
+   - The options and descriptions JEV sees must stay byte-identical, so prompt versions stay
+     meaningful.
+3. **The lab runs pure Rust**, one game per worker thread or process. Check: the Rust lab equals
+   the Python bot on the rumbot backend, seed by seed.
 
-1. Build rumbot-sim and Gambit and run their own benchmarks. Read their code before building:
-   build scripts run code.
-2. Write a minimal converter from a Jackdaw state for 5–10 `validate_rollout.py` states that use
-   only common jokers.
-3. Run the same seeds (`RO0..`) in both engines and count rollouts whose per-blind rows differ.
+### Stage 0 (optional, under 1 h on the PC)
 
-**Gate:**
-- **≥ ~99% identical and the converter looks manageable:** adopt it for Stage B. That saves most
-  of the porting; the cost is a new version and a benchmark.
-- **Otherwise:** port Jackdaw ourselves, using their RNG code and fixtures as the reference.
+Profile arms E and F on 3 seeds to confirm the time split above. It needs `runs/_loc`, which the
+cloud container does not have.
 
-### Stage B: rollout engine in Rust (own port: 15–30 sessions)
+## Follow-ups found by the spike
 
-**Scope.** Only what `play_horizon` reaches from a shop state with the build frozen:
-- run state, cards, card areas, deck draw and shuffle;
-- hand evaluation and scoring;
-- every joker's scoring and round hooks (any build can hold any joker);
-- all bosses;
-- select blind, end of round, cash-out and interest;
-- hand levels and planet use;
-- card creation by jokers and seals (Riff-raff, Cartomancer, DNA, Certificate, Marble, 8 Ball,
-  Blue Seal, ...) with the pools behind it;
-- passive voucher effects;
-- the `sim_patches` fixes on those paths.
-
-**Out of scope:**
-- shop population (already off in rollouts);
-- packs (rollouts skip them);
-- tarot and spectral use;
-- challenges;
-- env, bridge, CLI and observation code.
-
-**Size.** About 10–11k of Jackdaw's 17k engine lines, so 12–16k lines of Rust:
-
-| module | lines |
-|---|---:|
-| `rng.py` | 522 |
-| card, card area, state | ~1.5k |
-| `hand_eval` | 538 |
-| `scoring` | 946 |
-| `jokers` | 2,663 |
-| `blind` | 601 |
-| round lifecycle and economy | ~570 |
-| the play and round paths of `game.py` | ~1.3k |
-| `card_factory` and `pools` | ~0.8k |
-| planets and vouchers | ~0.3k |
-| data loading | ~0.6k |
-
-**Simplification.** Apply the option (buy, sell, redeem, or `rollout_items` pack and tarot picks)
-in Python Jackdaw as today, then convert the resulting state to Rust once per option. The Rust
-state is cloned per rollout. So the shop actions never need porting.
-
-**Python boundary.** One call per option: `forecast_runs(state, policy_spec, seeds, bosses)`
-returns the per-blind rows that `summarize` already consumes. `Policy` runs in Rust on the Stage A
-kernel. Calling back into Python for each decision would cancel most of the gain.
-
-**Incremental fallback.**
-- Rust takes a state only if every joker, boss, seal and voucher in it is implemented; otherwise
-  the forecast runs in Python.
-- Implement jokers in order of how often they appear in recorded forecast states. A large share
-  of forecasts then go native long before all 150 jokers are done.
-
-**Identity checks.**
-- RNG: a bit-level fixture from Jackdaw's oracle files (`rng_oracle_TESTSEED.json`, ...). Also
-  check `truncate_13`'s `%.13f` rounding.
-- A debug mode that logs each pseudorandom draw (stream key and value) in both engines. A single
-  extra draw in one joker hook shifts everything after it, and this log finds the first divergence
-  immediately.
-- Forecast output identical on all `validate_rollout.py` states, and identical lab per-seed
-  results, as in Stage A.
-
-**Main risk:** the long tail of joker × boss × seal interactions, and the order of RNG calls inside
-them. Jackdaw's own test suite (about 20k lines, with Lua oracles for scoring, hand evaluation, RNG
-and the shop) can be mined for fixtures.
-
-### Not planned: full port of Jackdaw
-
-The live sim game, with its shop, packs, tags, consumables and the BalatroBot serialisation in
-`sim_backend.py` and `sim_text.py`, spends about 1.5 s of engine time per game. Porting it would
-roughly double Stage B's work for no measurable gain, and would put our 336-game parity result
-(`docs/samples/sim-parity.json`) at risk.
+- Confirm the four open mechanics in `%APPDATA%\Balatro\Mods\lovely\dump`: Marble Joker timing,
+  Mr. Bones' blind reward, Satellite, and Madness with Dagger.
+- Fix the confirmed Jackdaw ones in `sim_patches`. That changes sim outcomes, so treat it as a new
+  sim baseline, not a speed-only change.
 
 ## What was not verified
 
-- **The per-game split:** taken from the v22 doc's single profiled game. It could not be
-  re-measured here without the localization files.
-- **The third-party engines:** their fidelity and speed claims are the authors'. Nothing was built
-  or run, and their source was read only for layout and notes.
-- **The ~20x factor:** comes from rumbot-sim's measurements on a different Python simulator. It is
-  not a measurement of Jackdaw.
+- **The per-game time split:** from the v22 doc's single profiled game, not re-measured here
+  (no localization in the container).
+- **The rulings above:** "Jackdaw wrong" for Madness/Dagger comes from Jackdaw's own code and the
+  game's rule. For Mr. Bones it is my memory of `evaluate_round`. Marble Joker and Satellite are
+  open. None was checked against the Lua dump here.
+- **Spike coverage:** see the coverage list above.
+- **rumbot-sim's clone speed and per-thread behaviour:** not measured.

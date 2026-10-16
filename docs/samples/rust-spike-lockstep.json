@@ -1,0 +1,3908 @@
+[
+ {
+  "seed": "9YSJUC7Z",
+  "steps": 58,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "FZI4B41W",
+  "steps": 26,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "NSPRV8TS",
+  "steps": 68,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "N4YF2WFY",
+  "steps": 26,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "LA9HZA6R",
+  "steps": 81,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "UW5J98BK",
+  "steps": 28,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "M8VN45L6",
+  "steps": 88,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "N55Q59SY",
+  "steps": 81,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "8CKGLLU5",
+  "steps": 33,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "9YUMEW2U",
+  "steps": 35,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "X5RT3KS6",
+  "steps": 33,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "WRRZLD2G",
+  "steps": 43,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "EPN12S4E",
+  "steps": 10,
+  "final_ante": 1,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 10,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "3C",
+       "8C",
+       "8S",
+       "AC",
+       "AH",
+       "JD",
+       "KD",
+       "KH"
+      ],
+      [
+       "3C",
+       "9C",
+       "9S",
+       "AC",
+       "AH",
+       "KD",
+       "QD",
+       "QH"
+      ]
+     ]
+    }
+   },
+   "gambit": {
+    "step": 10,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "3C",
+       "8C",
+       "8S",
+       "AC",
+       "AH",
+       "JD",
+       "KD",
+       "KH"
+      ],
+      [
+       "3C",
+       "9C",
+       "9S",
+       "AC",
+       "AH",
+       "KD",
+       "QD",
+       "QH"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "ZG3FCTKD",
+  "steps": 16,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "W6D71HCZ",
+  "steps": 74,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "U529MPE7",
+  "steps": 40,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "TDR7B419",
+  "steps": 85,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "CCHRPPUM",
+  "steps": 47,
+  "final_ante": 3,
+  "final_phase": "SHOP",
+  "first_diff": {
+   "rumbot": {
+    "step": 47,
+    "after": "cash",
+    "ante": 3,
+    "fields": {
+     "money": [
+      7,
+      2
+     ]
+    }
+   },
+   "gambit": {
+    "step": 47,
+    "after": "cash",
+    "ante": 3,
+    "fields": {
+     "money": [
+      7,
+      2
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "GKWZHQ9S",
+  "steps": 74,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 72,
+    "after": "play",
+    "ante": 4,
+    "fields": {
+     "money": [
+      4,
+      8
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "A2QNXHV7",
+  "steps": 95,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 29,
+    "after": "cash",
+    "ante": 2,
+    "fields": {
+     "money": [
+      23,
+      18
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "PYXT8KX7",
+  "steps": 68,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "3BQ71352",
+  "steps": 67,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "CJNYV8F7",
+  "steps": 44,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "SHDNLNRR",
+  "steps": 52,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "1IP6RR37",
+  "steps": 71,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "R4TXD4Q2",
+  "steps": 24,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "TP5SSBIW",
+  "steps": 83,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AK9I5CQT",
+  "steps": 27,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "HICEYMZZ",
+  "steps": 27,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AZGR25CQ",
+  "steps": 9,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "QBZJWNKQ",
+  "steps": 82,
+  "final_ante": 4,
+  "final_phase": "SHOP",
+  "first_diff": {
+   "rumbot": {
+    "step": 82,
+    "after": "cash",
+    "ante": 4,
+    "fields": {
+     "money": [
+      6,
+      1
+     ]
+    }
+   },
+   "gambit": {
+    "step": 82,
+    "after": "cash",
+    "ante": 4,
+    "fields": {
+     "money": [
+      6,
+      1
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "M95PB4KL",
+  "steps": 68,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "N6TVA4ZC",
+  "steps": 92,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "42T98QW8",
+  "steps": 74,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "2IKBKICE",
+  "steps": 102,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "NGWPVG1U",
+  "steps": 19,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "T3S9NXUK",
+  "steps": 40,
+  "final_ante": 3,
+  "final_phase": "EVAL",
+  "first_diff": {
+   "rumbot": {
+    "step": 40,
+    "after": "play",
+    "ante": 3,
+    "fields": {
+     "score": [
+      3438,
+      3437
+     ]
+    }
+   },
+   "gambit": {
+    "step": 13,
+    "after": "cash",
+    "ante": 1,
+    "fields": {
+     "money": [
+      7,
+      11
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "B4SLUJEG",
+  "steps": 70,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "RGEHJVB1",
+  "steps": 113,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "QSGZJ44B",
+  "steps": 91,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "IQH3ESWT",
+  "steps": 65,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "HFP9NV7M",
+  "steps": 42,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "G4FY87H8",
+  "steps": 21,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "DVYRIDN5",
+  "steps": 67,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "BZ4S12N6",
+  "steps": 76,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "EF5BKT8K",
+  "steps": 51,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "EGHL9PIK",
+  "steps": 39,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "LPJ8NC35",
+  "steps": 76,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "TEKC9GZ8",
+  "steps": 64,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "2FTITU7C",
+  "steps": 84,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AX3LJDSS",
+  "steps": 93,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 32,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "score": [
+      96,
+      540
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "Z2KW1P5P",
+  "steps": 73,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "7XZ6G4A5",
+  "steps": 13,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "CK6AL1X9",
+  "steps": 110,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "HCYTFGHJ",
+  "steps": 46,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "4WYRHAWU",
+  "steps": 22,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "KMTUIA73",
+  "steps": 18,
+  "final_ante": 1,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 18,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "4D",
+       "6S",
+       "8S",
+       "9C",
+       "JC",
+       "JS",
+       "KC",
+       "KS"
+      ],
+      [
+       "4D",
+       "7S",
+       "8S",
+       "9C",
+       "JC",
+       "KC",
+       "KS",
+       "QS"
+      ]
+     ]
+    }
+   },
+   "gambit": {
+    "step": 18,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "4D",
+       "6S",
+       "8S",
+       "9C",
+       "JC",
+       "JS",
+       "KC",
+       "KS"
+      ],
+      [
+       "4D",
+       "7S",
+       "8S",
+       "9C",
+       "JC",
+       "KC",
+       "KS",
+       "QS"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "HVTYX7NK",
+  "steps": 14,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "NLGNRITH",
+  "steps": 91,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "YQS2PBJ7",
+  "steps": 70,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AGW5NUVA",
+  "steps": 72,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "HNFG3EK8",
+  "steps": 104,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 83,
+    "after": "play",
+    "ante": 5,
+    "fields": {
+     "phase": [
+      "PLAY",
+      "EVAL"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "7EPSXTKZ",
+  "steps": 22,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "419A3K3Y",
+  "steps": 63,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "RIFA6Z4F",
+  "steps": 44,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "3K8CEDZ2",
+  "steps": 67,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "SNESE3J7",
+  "steps": 105,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 75,
+    "after": "play",
+    "ante": 5,
+    "fields": {
+     "phase": [
+      "EVAL",
+      "PLAY"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "63VE2CBZ",
+  "steps": 37,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "4JB3D1XV",
+  "steps": 34,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "FSU37SQ3",
+  "steps": 73,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "TVW45VIM",
+  "steps": 68,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AKI8J2V6",
+  "steps": 28,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "BK9P4GYQ",
+  "steps": 90,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "282H7ZJL",
+  "steps": 30,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "JZJWUHJU",
+  "steps": 39,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "LCEEXBBI",
+  "steps": 23,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "KXZURVA9",
+  "steps": 93,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "GKYF6P6T",
+  "steps": 61,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "GWS2L9DJ",
+  "steps": 35,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "UVBF2I5X",
+  "steps": 49,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 34,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "money": [
+      6,
+      2
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "G61TGVBB",
+  "steps": 25,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "MYTGE2E8",
+  "steps": 43,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "E46IIF32",
+  "steps": 43,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "87YB9SF2",
+  "steps": 20,
+  "final_ante": 2,
+  "final_phase": "SHOP",
+  "first_diff": {
+   "rumbot": {
+    "step": 20,
+    "after": "cash",
+    "ante": 2,
+    "fields": {
+     "money": [
+      8,
+      3
+     ]
+    }
+   },
+   "gambit": {
+    "step": 20,
+    "after": "cash",
+    "ante": 2,
+    "fields": {
+     "money": [
+      8,
+      3
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "THNYVP4J",
+  "steps": 92,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "6F74C862",
+  "steps": 66,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "LM9B7QY2",
+  "steps": 33,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "GVUPXANG",
+  "steps": 22,
+  "final_ante": 2,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 22,
+    "after": "select",
+    "ante": 2,
+    "fields": {
+     "jokers": [
+      [
+       "j_madness",
+       "j_acrobat"
+      ],
+      [
+       "j_madness",
+       "j_acrobat",
+       "j_clever"
+      ]
+     ]
+    }
+   },
+   "gambit": {
+    "step": 22,
+    "after": "select",
+    "ante": 2,
+    "fields": {
+     "jokers": [
+      [
+       "j_madness",
+       "j_acrobat"
+      ],
+      [
+       "j_madness",
+       "j_acrobat",
+       "j_clever"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "E1E18FYA",
+  "steps": 66,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5DGH14T8",
+  "steps": 78,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "8PI5V25W",
+  "steps": 110,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "W8S5LDLX",
+  "steps": 88,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "T8JKF7I9",
+  "steps": 49,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "WQ6FYCKV",
+  "steps": 59,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "JTA6GY7W",
+  "steps": 60,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "SUZFL5GZ",
+  "steps": 37,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "T37ZVWUK",
+  "steps": 37,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "4FKB7LC9",
+  "steps": 83,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "1TZCR9CB",
+  "steps": 32,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "Z5H1IJRN",
+  "steps": 25,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "BMN3FXID",
+  "steps": 85,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "KH3WPINS",
+  "steps": 95,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "1BP2CS19",
+  "steps": 73,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "8NM4NMC1",
+  "steps": 78,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "FHP3KXEK",
+  "steps": 59,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "ER9QCQFK",
+  "steps": 84,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "XCXWA1H2",
+  "steps": 67,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "ZE69HE21",
+  "steps": 45,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "PLDNMR5H",
+  "steps": 59,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "I49I2VKE",
+  "steps": 17,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "6RK7KH1J",
+  "steps": 86,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "U1N6VDK7",
+  "steps": 58,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "EKN26STE",
+  "steps": 87,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "SZ3QLACX",
+  "steps": 73,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "7QG6MB42",
+  "steps": 23,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "E42EEMM1",
+  "steps": 52,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "BK2SJJHP",
+  "steps": 78,
+  "final_ante": 4,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 78,
+    "after": "play",
+    "ante": 4,
+    "fields": {
+     "score": [
+      5085,
+      5084
+     ]
+    }
+   },
+   "gambit": {
+    "step": 78,
+    "after": "play",
+    "ante": 4,
+    "fields": {
+     "score": [
+      5085,
+      5084
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "25TS39KV",
+  "steps": 50,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "92RGZTBP",
+  "steps": 73,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "JPWZL5UX",
+  "steps": 75,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "VJ2DYKV6",
+  "steps": 113,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "FUQQ3IF6",
+  "steps": 42,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "JJMSDI7P",
+  "steps": 79,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "MKC12DPA",
+  "steps": 69,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "T1JJQ8KY",
+  "steps": 62,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "MY8RZPID",
+  "steps": 93,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "H3CETHYB",
+  "steps": 53,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "1E7U6VL8",
+  "steps": 98,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "1EQVASHT",
+  "steps": 40,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5EXY5FEU",
+  "steps": 79,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5E5NMIUD",
+  "steps": 64,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "CBY4XI55",
+  "steps": 46,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "SEZX6KHV",
+  "steps": 46,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "ZPPM3D3S",
+  "steps": 58,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "9EDYBAYD",
+  "steps": 94,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "725LK1MF",
+  "steps": 22,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "52Z8FF2L",
+  "steps": 52,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "P23R7MAH",
+  "steps": 28,
+  "final_ante": 2,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 28,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "score": [
+      186,
+      310
+     ]
+    }
+   },
+   "gambit": {
+    "step": 28,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "money": [
+      5,
+      1
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "J9DK7ZED",
+  "steps": 31,
+  "final_ante": 2,
+  "final_phase": "SHOP",
+  "first_diff": {
+   "rumbot": {
+    "step": 31,
+    "after": "cash",
+    "ante": 2,
+    "fields": {
+     "money": [
+      9,
+      11
+     ]
+    }
+   },
+   "gambit": {
+    "step": 31,
+    "after": "cash",
+    "ante": 2,
+    "fields": {
+     "money": [
+      9,
+      11
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "QRLK8HJW",
+  "steps": 74,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "DWT29ZMV",
+  "steps": 80,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "CWD422GG",
+  "steps": 23,
+  "final_ante": 2,
+  "final_phase": "SHOP",
+  "first_diff": {
+   "rumbot": {
+    "step": 23,
+    "after": "cash",
+    "ante": 2,
+    "fields": {
+     "money": [
+      7,
+      8
+     ]
+    }
+   },
+   "gambit": {
+    "step": 23,
+    "after": "cash",
+    "ante": 2,
+    "fields": {
+     "money": [
+      7,
+      8
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "83IWG6V5",
+  "steps": 46,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "62S6AH7L",
+  "steps": 16,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5R7BLNTR",
+  "steps": 60,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "3NSIF7JE",
+  "steps": 27,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "VMNX9H9H",
+  "steps": 31,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "EMABVB83",
+  "steps": 49,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 47,
+    "after": "play",
+    "ante": 3,
+    "fields": {
+     "money": [
+      0,
+      4
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "CS6SNLDN",
+  "steps": 60,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "TZ8279XJ",
+  "steps": 61,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "9L8BAGTU",
+  "steps": 36,
+  "final_ante": 2,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 36,
+    "after": "select",
+    "ante": 2,
+    "fields": {
+     "hand": [
+      [
+       "2S",
+       "3H",
+       "4S",
+       "9C",
+       "JC",
+       "JS",
+       "KD",
+       "QC"
+      ],
+      [
+       "3H",
+       "3S",
+       "5S",
+       "9C",
+       "JC",
+       "KS",
+       "QC",
+       "QD"
+      ]
+     ]
+    }
+   },
+   "gambit": {
+    "step": 36,
+    "after": "select",
+    "ante": 2,
+    "fields": {
+     "hand": [
+      [
+       "2S",
+       "3H",
+       "4S",
+       "9C",
+       "JC",
+       "JS",
+       "KD",
+       "QC"
+      ],
+      [
+       "3H",
+       "3S",
+       "5S",
+       "9C",
+       "JC",
+       "KS",
+       "QC",
+       "QD"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "26LF7D78",
+  "steps": 23,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "BEVC9114",
+  "steps": 97,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "QE7IJ2UE",
+  "steps": 72,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "2TMYHGUC",
+  "steps": 61,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "48TMEQCD",
+  "steps": 56,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "RPKFGK72",
+  "steps": 56,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "HD1182I7",
+  "steps": 31,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "A8EFLXGE",
+  "steps": 26,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "XKGIQUGW",
+  "steps": 37,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 23,
+    "after": "play",
+    "ante": 1,
+    "fields": {
+     "money": [
+      7,
+      3
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "RTJZM2HG",
+  "steps": 69,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "V77Q7MWL",
+  "steps": 43,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "ZWMZ69B8",
+  "steps": 48,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "8M227PCX",
+  "steps": 42,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "P45WQRAH",
+  "steps": 67,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AKR7LZF1",
+  "steps": 55,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "UMMFEKJS",
+  "steps": 60,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AMJ97S6I",
+  "steps": 71,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "DU3KZGXR",
+  "steps": 42,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "UFGT4S1G",
+  "steps": 32,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "XN97HMU7",
+  "steps": 76,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 75,
+    "after": "play",
+    "ante": 4,
+    "fields": {
+     "money": [
+      5,
+      9
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "175LP32T",
+  "steps": 82,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5NFAXJFN",
+  "steps": 73,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 57,
+    "after": "play",
+    "ante": 3,
+    "fields": {
+     "money": [
+      3,
+      7
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "LA54ULAD",
+  "steps": 79,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "EIMK5F29",
+  "steps": 25,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "8PJNMUH5",
+  "steps": 59,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "77BG4TC5",
+  "steps": 9,
+  "final_ante": 1,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 9,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "2S",
+       "3C",
+       "5S",
+       "6S",
+       "7C",
+       "9H",
+       "TC",
+       "TS"
+      ],
+      [
+       "3S",
+       "4C",
+       "4H",
+       "6S",
+       "7C",
+       "7S",
+       "AH",
+       "TC"
+      ]
+     ]
+    }
+   },
+   "gambit": {
+    "step": 9,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "2S",
+       "3C",
+       "5S",
+       "6S",
+       "7C",
+       "9H",
+       "TC",
+       "TS"
+      ],
+      [
+       "3S",
+       "4C",
+       "4H",
+       "6S",
+       "7C",
+       "7S",
+       "AH",
+       "TC"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "45Y7VPGS",
+  "steps": 39,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "C4YZY9AI",
+  "steps": 20,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "Y532T22N",
+  "steps": 74,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "TIXQA7PH",
+  "steps": 87,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 41,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "phase": [
+      "EVAL",
+      "PLAY"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "LZKEEBKB",
+  "steps": 68,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 27,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "score": [
+      4575,
+      2622
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "LMNUEDXN",
+  "steps": 66,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 27,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "money": [
+      8,
+      4
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "K9RRUNFW",
+  "steps": 63,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "F18EK7ZI",
+  "steps": 33,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "CUZ411KT",
+  "steps": 48,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "N9DIXN2H",
+  "steps": 97,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "NIWX5D31",
+  "steps": 67,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "6JUJPUVN",
+  "steps": 66,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "M891DXFX",
+  "steps": 111,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "7NT6XSKK",
+  "steps": 80,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "VBDTMAJS",
+  "steps": 42,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "JADNKZQA",
+  "steps": 62,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "B4S8NT63",
+  "steps": 116,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "JQGDKTRZ",
+  "steps": 64,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 27,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "score": [
+      2736,
+      1284
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "DGF1G3RC",
+  "steps": 65,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "LH9YSNZ7",
+  "steps": 84,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "8Z92MIDV",
+  "steps": 72,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "54TPX2PH",
+  "steps": 87,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "URTA4TX4",
+  "steps": 46,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "9ZKWIXA2",
+  "steps": 42,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "FUEGS99K",
+  "steps": 37,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "JN5SUF2H",
+  "steps": 41,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "24IYDT6D",
+  "steps": 60,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "Q53U3SD6",
+  "steps": 33,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "192YVI68",
+  "steps": 82,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "H12V2SUK",
+  "steps": 35,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "ZIMPNRY8",
+  "steps": 78,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "NPFE9YYV",
+  "steps": 23,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "RKG4DG6Z",
+  "steps": 67,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "RWDIWBDM",
+  "steps": 81,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 76,
+    "after": "play",
+    "ante": 4,
+    "fields": {
+     "score": [
+      1848,
+      3264
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "IS45LHK5",
+  "steps": 84,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "69XSKTZP",
+  "steps": 43,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "QV6E2URZ",
+  "steps": 74,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "YQBJC7F4",
+  "steps": 26,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 23,
+    "after": "play",
+    "ante": 1,
+    "fields": {
+     "money": [
+      2,
+      6
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "96FU4M4P",
+  "steps": 54,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "GXJ73M22",
+  "steps": 88,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 43,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "money": [
+      2,
+      6
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "7HPEWH28",
+  "steps": 57,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "383W6ENN",
+  "steps": 47,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "GRAZPTCH",
+  "steps": 31,
+  "final_ante": 2,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 31,
+    "after": "select",
+    "ante": 2,
+    "fields": {
+     "hand": [
+      [
+       "2H",
+       "3D",
+       "5C",
+       "6D",
+       "9H",
+       "KD",
+       "KS",
+       "QC"
+      ],
+      [
+       "2H",
+       "3D",
+       "5C",
+       "7D",
+       "AH",
+       "QC",
+       "QD",
+       "QS"
+      ]
+     ]
+    }
+   },
+   "gambit": {
+    "step": 31,
+    "after": "select",
+    "ante": 2,
+    "fields": {
+     "hand": [
+      [
+       "2H",
+       "3D",
+       "5C",
+       "6D",
+       "9H",
+       "KD",
+       "KS",
+       "QC"
+      ],
+      [
+       "2H",
+       "3D",
+       "5C",
+       "7D",
+       "AH",
+       "QC",
+       "QD",
+       "QS"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "39CHMVKY",
+  "steps": 91,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "RELDPCA3",
+  "steps": 34,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "WP1Z8I5W",
+  "steps": 50,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "2G22YKRG",
+  "steps": 68,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 35,
+    "after": "play",
+    "ante": 3,
+    "fields": {
+     "score": [
+      4284,
+      1716
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "SPP3S8K1",
+  "steps": 45,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "YKJU3LEM",
+  "steps": 66,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "XSZINJFU",
+  "steps": 34,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5N8BHG28",
+  "steps": 34,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "WAJKRS79",
+  "steps": 56,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "IDYQNSL7",
+  "steps": 20,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "Y6SYL4FN",
+  "steps": 66,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "MFSK686F",
+  "steps": 23,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "R3L2C9PN",
+  "steps": 83,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "U3IAE727",
+  "steps": 70,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "UYJ95SBT",
+  "steps": 38,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "18QUHN5X",
+  "steps": 64,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "PTZZWWBB",
+  "steps": 62,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5SG8LMNM",
+  "steps": 71,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "XMMK3MNI",
+  "steps": 64,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "Q57KRMB2",
+  "steps": 35,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "7BVJYQ2V",
+  "steps": 24,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "U9H3SNHT",
+  "steps": 58,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 57,
+    "after": "play",
+    "ante": 3,
+    "fields": {
+     "money": [
+      4,
+      8
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "B4LR1RWX",
+  "steps": 77,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "E1P6QZ5Q",
+  "steps": 31,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "7VZVEHVJ",
+  "steps": 52,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "W3BJVE4K",
+  "steps": 8,
+  "final_ante": 1,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 8,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "3D",
+       "6D",
+       "7H",
+       "7S",
+       "8S",
+       "9S",
+       "JC",
+       "TH"
+      ],
+      [
+       "3D",
+       "6D",
+       "7H",
+       "8S",
+       "9S",
+       "AS",
+       "JC",
+       "TH"
+      ]
+     ]
+    }
+   },
+   "gambit": {
+    "step": 8,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "3D",
+       "6D",
+       "7H",
+       "7S",
+       "8S",
+       "9S",
+       "JC",
+       "TH"
+      ],
+      [
+       "3D",
+       "6D",
+       "7H",
+       "8S",
+       "9S",
+       "AS",
+       "JC",
+       "TH"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "6UVKFFYD",
+  "steps": 41,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "D2BS1ZL2",
+  "steps": 72,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "PHY1CP3B",
+  "steps": 72,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "L4T1H1LZ",
+  "steps": 35,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "B519DA2R",
+  "steps": 72,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 56,
+    "after": "play",
+    "ante": 3,
+    "fields": {
+     "money": [
+      4,
+      8
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "ZCYVRSR7",
+  "steps": 7,
+  "final_ante": 1,
+  "final_phase": "PLAY",
+  "first_diff": {
+   "rumbot": {
+    "step": 7,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "2S",
+       "3D",
+       "7H",
+       "9H",
+       "AH",
+       "JS",
+       "KC",
+       "KH"
+      ],
+      [
+       "3D",
+       "3S",
+       "7H",
+       "9H",
+       "JH",
+       "KS",
+       "QC",
+       "QH"
+      ]
+     ]
+    }
+   },
+   "gambit": {
+    "step": 7,
+    "after": "select",
+    "ante": 1,
+    "fields": {
+     "hand": [
+      [
+       "2S",
+       "3D",
+       "7H",
+       "9H",
+       "AH",
+       "JS",
+       "KC",
+       "KH"
+      ],
+      [
+       "3D",
+       "3S",
+       "7H",
+       "9H",
+       "JH",
+       "KS",
+       "QC",
+       "QH"
+      ]
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "7CGQRDY4",
+  "steps": 70,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "7XD29LNF",
+  "steps": 98,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "ZM8M7YTJ",
+  "steps": 23,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 12,
+    "after": "play",
+    "ante": 1,
+    "fields": {
+     "money": [
+      4,
+      0
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "DTCLIUDH",
+  "steps": 44,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 40,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "money": [
+      6,
+      10
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "6MH4UJBB",
+  "steps": 38,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "H191975J",
+  "steps": 81,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "MKIYBCJ2",
+  "steps": 27,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "B9PEUMKD",
+  "steps": 70,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "NDNXEWMI",
+  "steps": 38,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "4YI1PNHI",
+  "steps": 73,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "BDCS5F1G",
+  "steps": 64,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "3J67VIKQ",
+  "steps": 62,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "EUKCLQFD",
+  "steps": 81,
+  "final_ante": 4,
+  "final_phase": "SHOP",
+  "first_diff": {
+   "rumbot": {
+    "step": 81,
+    "after": "cash",
+    "ante": 4,
+    "fields": {
+     "money": [
+      14,
+      10
+     ]
+    }
+   },
+   "gambit": {
+    "step": 81,
+    "after": "cash",
+    "ante": 4,
+    "fields": {
+     "money": [
+      14,
+      10
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "QS2VV9XQ",
+  "steps": 48,
+  "final_ante": 3,
+  "final_phase": "EVAL",
+  "first_diff": {
+   "rumbot": {
+    "step": 48,
+    "after": "play",
+    "ante": 3,
+    "fields": {
+     "score": [
+      4211,
+      4212
+     ]
+    }
+   },
+   "gambit": {
+    "step": 48,
+    "after": "play",
+    "ante": 3,
+    "fields": {
+     "score": [
+      4211,
+      4212
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "Q2BY7JHC",
+  "steps": 26,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 14,
+    "after": "play",
+    "ante": 1,
+    "fields": {
+     "money": [
+      0,
+      4
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "PTT7ZPHI",
+  "steps": 102,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "2VU3JH9D",
+  "steps": 102,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "4QIYY2VI",
+  "steps": 39,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AS7JKBWZ",
+  "steps": 79,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 69,
+    "after": "play",
+    "ante": 4,
+    "fields": {
+     "phase": [
+      "EVAL",
+      "OVER"
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "LWU31AIX",
+  "steps": 68,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "YCG8UCSY",
+  "steps": 64,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "S5Y497PD",
+  "steps": 87,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "84J9LT8V",
+  "steps": 25,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "WI19VCZV",
+  "steps": 103,
+  "final_ante": 6,
+  "final_phase": "SHOP",
+  "first_diff": {
+   "rumbot": {
+    "step": 103,
+    "after": "cash",
+    "ante": 6,
+    "fields": {
+     "money": [
+      15,
+      10
+     ]
+    }
+   },
+   "gambit": {
+    "step": 103,
+    "after": "cash",
+    "ante": 6,
+    "fields": {
+     "money": [
+      15,
+      10
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "EJP8J9AI",
+  "steps": 65,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "FKD5ZTEF",
+  "steps": 13,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "AZ57X8M8",
+  "steps": 22,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "NBLMBGNF",
+  "steps": 35,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "UDURYLD2",
+  "steps": 71,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "KL4WIH2S",
+  "steps": 63,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "7M63DFYK",
+  "steps": 80,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "ZMR2Z6EX",
+  "steps": 11,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "UDISRVZM",
+  "steps": 44,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 34,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "score": [
+      864,
+      1008
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "V8AU8TIS",
+  "steps": 89,
+  "final_ante": 5,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "SHFMCJYU",
+  "steps": 60,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5FQBARP2",
+  "steps": 25,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "LKBLI9DI",
+  "steps": 45,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": {
+    "step": 32,
+    "after": "play",
+    "ante": 2,
+    "fields": {
+     "score": [
+      1458,
+      3744
+     ]
+    }
+   }
+  }
+ },
+ {
+  "seed": "51U4Y5FD",
+  "steps": 78,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5BYQQMKG",
+  "steps": 21,
+  "final_ante": 1,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "HHMHZWY7",
+  "steps": 57,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "5NJQ14LB",
+  "steps": 72,
+  "final_ante": 3,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "Q9PDA847",
+  "steps": 89,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "KWUPA953",
+  "steps": 75,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "R2XEYM8L",
+  "steps": 117,
+  "final_ante": 6,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "UKWYFWEW",
+  "steps": 48,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "IUJHZP9M",
+  "steps": 77,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "6EA6Y1BB",
+  "steps": 74,
+  "final_ante": 4,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ },
+ {
+  "seed": "NRNKY9K7",
+  "steps": 47,
+  "final_ante": 2,
+  "final_phase": "OVER",
+  "first_diff": {
+   "rumbot": null,
+   "gambit": null
+  }
+ }
+]

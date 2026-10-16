@@ -6,3 +6,7 @@ __pycache__/
 # raw run recordings (large, machine-specific); prompt-version snapshots are kept
 runs/*
 !runs/_prompts/
+# Rust spike: third-party engine clones and build output
+scripts/rust_spike/ext/
+scripts/rust_spike/*/target/
+scripts/rust_spike/*/Cargo.lock
