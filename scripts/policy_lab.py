@@ -332,7 +332,9 @@ def _death(blind, final, hands, jokers):
 # planner = round_planner picks plays/discards when the round is at risk (arm G)
 # compute scaling (arm H and a middle point): forecast rollouts n, horizon bosses, Picker synthetic hands
 BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot-planner": {"planner": True},
-            "bot-mid": {"n": 48, "bosses": 4, "synth": 36}, "bot-heavy": {"n": 128, "bosses": 5, "synth": 96}}
+            "bot-mid": {"n": 48, "bosses": 4, "synth": 36}, "bot-heavy": {"n": 128, "bosses": 5, "synth": 96},
+            # shopping rollouts (src/rollout_shop.py): both shop forecasts buy jokers/planets in later shops
+            "bot-forecast-shop": {"shop": True}}
 
 
 def _code_jev(bot_ref, items=False):
@@ -442,6 +444,10 @@ def _play_bot(seed, arm_name, t0):
     decisions.VOUCHERS = {k: (v[0], False) for k, v in decisions.VOUCHERS.items()}  # no v18 strong-voucher rule
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
+    import rollout_shop
+    shop_patch = rollout_shop.Patched() if opts.get("shop") else None
+    if shop_patch:
+        shop_patch.__enter__()
     try:
         ref = [None]
         jev = _code_jev(ref, items=opts.get("items", False))
@@ -477,6 +483,7 @@ def _play_bot(seed, arm_name, t0):
         buys += [(e.get("ante"), "jev", e.get("choice")) for e in ev if e["kind"] == "decision"
                  and e.get("question") == "shop" and str(e.get("choice")).startswith(("buy", "replace"))]
         fs = [e.get("forecast_seconds") or 0 for e in ev if e.get("forecast_seconds")]
+        ifs = [e.get("item_forecast_seconds") or 0 for e in ev if e.get("item_forecast_seconds")]
         won = summ.get("result") == "won" or engine_won
         death = None
         if not won:
@@ -492,6 +499,8 @@ def _play_bot(seed, arm_name, t0):
                 "forecasts": len(fs), "forecast_errors": 0, "forecast_s": round(sum(fs), 1),
                 "game_errors": bot.stats["errors"], "seconds": round(time.time() - t0, 1), "death": death,
                 "prompt_version": summ.get("prompt_version"),
+                "item_fc": len(ifs), "item_fc_s": round(sum(ifs), 1),
+                **({"shop_stats": dict(rollout_shop.TOTALS)} if shop_patch else {}),
                 **({"item_forecasts": jev.stats["item_forecasts"], "item_s": round(jev.stats["item_seconds"], 1),
                     "item_errors": jev.stats["item_errors"], "item_buys": jev.stats["item_buys"],
                     "pack_picks": jev.stats["pack_picks"]} if opts.get("items") else {}),
@@ -500,6 +509,8 @@ def _play_bot(seed, arm_name, t0):
                     "planner_errors": pstats["errors"]} if opts.get("planner") else {})}
     finally:
         decisions.selecting_hand = orig_selecting_hand  # workers play many games: never leak the wrapper
+        if shop_patch:
+            shop_patch.__exit__(None, None, None)
         shutil.rmtree(tmp, ignore_errors=True)
 
 
@@ -686,7 +697,8 @@ def report(name, pairs=None, only=None):
     pairs += [(x, "gain") for x in arms if x.startswith("forecast-long-") and "gain" in arms]
     pairs += [(x, y) for x, y in (("bot-forecast-items", "bot-forecast-long"), ("bot-forecast-long", "forecast-long"),
                                   ("bot-planner", "bot-forecast-long"), ("bot-heavy", "bot-forecast-long"),
-                                  ("bot-mid", "bot-forecast-long"), ("bot-heavy", "bot-mid"))
+                                  ("bot-mid", "bot-forecast-long"), ("bot-heavy", "bot-mid"),
+                                  ("bot-forecast-shop", "bot-forecast-long"))
               if x in arms and y in arms and (x, y) not in pairs]
     out["paired"] = {f"{x} - {y}": {"ante": paired(rows, x, y), "blinds": paired(rows, x, y, "blinds"),
                                     "won": paired(rows, x, y, "won")} for x, y in pairs}
