@@ -303,6 +303,20 @@ def _items_desc(b):
     return _ITEMS[suit]
 
 
+def _refresh(gs, pol, held, policy_for):
+    """The rollout policy after the jokers may have changed. v27: when jokers were only removed (Madness,
+    Ceremonial Dagger, Popcorn or Gros Michel running out), the policy keeps the other jokers' entries
+    as they were; otherwise it is rebuilt from the jokers' current text (policy_for). Rust does the
+    same (jev_sim refresh_policy), so these rollouts no longer hand back to Python."""
+    cur = gs.get("jokers", [])
+    if len(cur) == len(held) and all(a is b for a, b in zip(cur, held)):
+        return pol, held
+    keep = [next((i for i, h in enumerate(held) if h is c), None) for c in cur]
+    if None in keep or any(j["label"] in ("Blueprint", "Brainstorm") for j in pol.js):
+        return policy_for(gs), list(cur)
+    return rollout.Policy.of_entries([pol.js[i] for i in keep]), list(cur)
+
+
 def play_horizon(gs, policy_for, b, bosses=3, max_steps=900):
     """rollout.play_horizon plus the bot's consumable use and policy rebuilds when jokers change.
 
@@ -312,6 +326,7 @@ def play_horizon(gs, policy_for, b, bosses=3, max_steps=900):
     out, cur, done = [], None, 0
     failed = set()
     pol = policy_for(gs)
+    held = list(gs.get("jokers", []))  # the jokers pol was made for, in order
     native = sim_bridge.available()
     for _ in range(max_steps):
         ph = gs["phase"]
@@ -332,14 +347,14 @@ def play_horizon(gs, policy_for, b, bosses=3, max_steps=900):
             cur = {"ante": gs["round_resets"]["ante"], "type": typ, "boss": getattr(bl, "name", typ),
                    "target": getattr(bl, "chips", 0)}
             failed = {f for f in failed if f[1] != "SELECTING_HAND"}  # the bot retries each round
-            pol = policy_for(gs)
+            pol, held = _refresh(gs, pol, held, policy_for)
         elif ph == GamePhase.SELECTING_HAND:
             if not gs["hand"]:
                 out.append({**cur, "chips": gs.get("chips", 0), "cleared": False})
                 return out
             if gs.get("consumables"):
                 use_items(gs, b, "SELECTING_HAND", failed)
-                pol = policy_for(gs)
+                pol, held = _refresh(gs, pol, held, policy_for)
             kind, idx = pol.decide(gs)
             try:
                 step(gs, (PlayHand if kind == "play" else Discard)(card_indices=tuple(idx)))

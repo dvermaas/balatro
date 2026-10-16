@@ -440,6 +440,7 @@ fn candidates(infos: &[kernel::Card]) -> Vec<Vec<usize>> {
     out
 }
 
+#[derive(Clone)]
 struct Policy {
     jokers: Vec<(u8, Option<RuleIn>)>,
 }
@@ -803,15 +804,38 @@ fn play_horizon(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: us
 /// Returned by a strict rollout that reached a state rollout_items.play_horizon handles differently.
 const STRICT_ABORT: &str = "strict: needs the Python rollout";
 
+/// rollout_items.play_horizon's refresh: unchanged jokers keep the policy; removals drop their entries;
+/// anything else (a joker added, Blueprint/Brainstorm in the policy) is STRICT_ABORT.
+fn refresh_policy(g: &GameState, pol: &mut Policy, pol_uids: &mut Vec<u64>, pol_names: &mut Vec<String>) -> Result<(), String> {
+    let cur: Vec<u64> = g.jokers.iter().map(|j| j.borrow().uid).collect();
+    if cur == *pol_uids {
+        return Ok(());
+    }
+    if pol_names.iter().any(|n| n == "Blueprint" || n == "Brainstorm") {
+        return Err(STRICT_ABORT.into());
+    }
+    let mut keep = Vec::with_capacity(cur.len());
+    for u in &cur {
+        match pol_uids.iter().position(|p| p == u) {
+            Some(i) => keep.push(i),
+            None => return Err(STRICT_ABORT.into()),
+        }
+    }
+    pol.jokers = keep.iter().map(|&i| pol.jokers[i].clone()).collect();
+    *pol_names = keep.iter().map(|&i| pol_names[i].clone()).collect();
+    *pol_uids = cur;
+    Ok(())
+}
+
 fn joker_names(g: &GameState) -> Vec<String> {
     g.jokers.iter().map(|j| j.borrow().name().to_string()).collect()
 }
 
 /// items (v25, rollout_items): consumables are used like rollout_items.use_items (planets, safe
-/// untargeted cards, tarots.plan targets in a round), and the jokers just after each blind select
-/// and after each use in a round must be the starting ones (Python rebuilds its policy when they
-/// change): otherwise STRICT_ABORT, and Python carries on with that rollout. Without items: the
-/// shop forecast's loop (rollout.play_horizon), planets only.
+/// untargeted cards, tarots.plan targets in a round). Just after each blind select and after each use
+/// in a round the policy is refreshed like Python's (refresh_policy: v27 drops removed jokers' entries);
+/// an added joker or a copier returns STRICT_ABORT, and Python carries on. Without items: the shop
+/// forecast's loop (rollout.play_horizon), planets only, and the policy never changes.
 fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize, mut trace: Option<&mut Vec<String>>, items: Option<&ItemsDesc>) -> Result<Vec<Row>, String> {
     let strict = items.is_some();
     let mut failed: HashSet<(String, u8)> = HashSet::new();
@@ -819,7 +843,11 @@ fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_st
     let mut cur: Option<(i32, String, String, i64)> = None;
     let mut done = 0;
     let mut recorded = false;
-    let start_jokers = if strict { joker_names(g) } else { Vec::new() };
+    // v27: the policy follows joker removals (Madness, Dagger, Popcorn eaten...) by dropping the removed
+    // jokers' entries, like rollout_items.play_horizon; an added joker or a copier in the policy aborts.
+    let mut pol = policy.clone();
+    let mut pol_uids: Vec<u64> = g.jokers.iter().map(|j| j.borrow().uid).collect();
+    let mut pol_names = joker_names(g);
     for _ in 0..max_steps {
         match g.phase {
             Phase::Shop => {
@@ -842,9 +870,9 @@ fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_st
                 }
                 act(g, ActionType::SelectBlind);
                 failed.retain(|f| f.1 != SELECTING_HAND); // the bot retries targeted cards each round
-                // Python rebuilds its policy right after the select (Madness, Riff-raff act in it)
-                if strict && joker_names(g) != start_jokers {
-                    return Err(STRICT_ABORT.into());
+                // Python refreshes its policy right after the select (Madness, Riff-raff act in it)
+                if strict {
+                    refresh_policy(g, &mut pol, &mut pol_uids, &mut pol_names)?;
                 }
                 let b = g.blind.as_ref().ok_or("no blind after select")?;
                 cur = Some((g.ante, typ.to_string(), b.name(), b.target));
@@ -859,12 +887,10 @@ fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_st
                 if let Some(it) = items {
                     if !g.consumables.is_empty() {
                         use_items(g, it, SELECTING_HAND, &mut failed)?;
-                        if joker_names(g) != start_jokers {
-                            return Err(STRICT_ABORT.into()); // Python rebuilds its policy here
-                        }
+                        refresh_policy(g, &mut pol, &mut pol_uids, &mut pol_names)?; // Python refreshes here too
                     }
                 }
-                let (is_discard, idx) = policy.decide(g);
+                let (is_discard, idx) = pol.decide(g);
                 if let Some(t) = trace.as_mut() {
                     let hand: Vec<String> = g.hand.iter().map(card_str).collect();
                     let counters: Vec<String> = g.jokers.iter().map(|j| format!("{:?}", j.borrow().counter)).collect();

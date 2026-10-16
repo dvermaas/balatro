@@ -422,6 +422,13 @@ class Policy:
     def __init__(self, joker_dicts):
         self.js = text_jokers.build({}, list(joker_dicts))
 
+    @classmethod
+    def of_entries(cls, js):
+        """A policy from already-parsed joker entries (rollout_items' refresh after removals)."""
+        p = cls.__new__(cls)
+        p.js = js
+        return p
+
     @staticmethod
     def levels(gs):
         hl = gs["hand_levels"]

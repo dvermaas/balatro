@@ -6,6 +6,12 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v27: item-forecast rollouts keep their policy when jokers are only removed (Madness, Ceremonial "
+    "Dagger, Popcorn or Gros Michel running out): the removed jokers' entries are dropped instead of "
+    "rebuilding the policy from the jokers' current text. Rust does the same, so Rust gives up on 1% "
+    "of item rollouts instead of 19%. A small behaviour change in rollouts only: lab E+F on 28 seeds, "
+    "1 game of 28 changed per arm (-0.11 +- 0.11 ante, noise). 56/56 identical to JEV_NATIVE=0; "
+    "683 s -> 60 s. Based on: "
     "v26: speed only, same decisions as v25 on the new sim baseline. Item rollouts run in Rust from "
     "their first shop, including the bot's tarot/spectral use (use_items and tarots.plan ported, with "
     "the tarot table and build suit passed in). Rust gives up only when the jokers change. The Fool's "
