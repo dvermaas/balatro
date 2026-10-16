@@ -705,6 +705,9 @@ pub struct GameState {
 
     pub logs: Vec<String>,
     pub verbose: bool,
+    /// jev (local patch): frozen-build forecast rollouts never shop, so `_open_shop` leaves the
+    /// shop empty (no slot, pack or voucher draws) when this is set. Never set for a played game.
+    pub no_shop: bool,
 }
 
 impl GameState {
@@ -811,6 +814,7 @@ impl GameState {
             preview_trigger: false,
             logs: Vec::new(),
             verbose: false,
+            no_shop: false,
         };
         let config = game.deck_config();
         game.money += config.dollars;
@@ -3377,6 +3381,11 @@ impl GameState {
 impl GameState {
     /// Open the shop: the row, its packs, its voucher, and the tags.
     pub fn _open_shop(&mut self) {
+        if self.no_shop {
+            self.shop = Some(Shop::default());
+            self.phase = Phase::Shop;
+            return;
+        }
         let mut shop = Shop::default();
         shop.free_rerolls = self
             .active_jokers()

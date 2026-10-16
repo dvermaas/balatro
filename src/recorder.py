@@ -25,7 +25,8 @@ def version_hash(files, root=SRC):
 # decisions.py joined in v6; earlier versions lack it, so their ids are unchanged. v23 adds the native
 # scoring kernel (src/native.py and the Rust sources), which computes the same scores as jokers.score.
 PROMPT_VERSION = version_hash(("prompts.py", "hands.py", "strategy.py", "decisions.py", "jokers.py", "odds.py", "build.py", "tarots.py", "readiness.py", "rollout.py", "rollout_items.py",
-                               "native.py", "../native/src/lib.rs", "../native/Cargo.toml"))
+                               "native.py", "../native/src/lib.rs", "../native/Cargo.toml",
+                               "../native/kernel/src/lib.rs", "../native/kernel/Cargo.toml"))
 
 
 def snapshot_prompts():

@@ -176,7 +176,7 @@ on the same engine.
 
 ### Stage A: scorer kernel in Rust (2–4 sessions, about 2.4x)
 
-**Status (2026-10-16): built as the v23 draft (prompt version `92064164`). The lab check on the PC
+**Status (2026-10-16): built as the v23 draft (prompt version `f3bab272`). The lab check on the PC
 is still to do.**
 
 What changed:

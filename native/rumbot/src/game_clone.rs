@@ -259,6 +259,7 @@ impl GameState {
 
             logs: self.logs.clone(),
             verbose: self.verbose,
+            no_shop: self.no_shop,
         }
     }
 }

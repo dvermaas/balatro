@@ -1,0 +1,10 @@
+[package]
+name = "jev_kernel"
+version = "0.1.0"
+edition = "2021"
+description = "The bot's joker-aware hand scorer (classify, play subsets, jokers.score), shared by jev_native and jev_sim"
+license = "MIT"
+
+[lib]
+name = "jev_kernel"
+path = "src/lib.rs"
