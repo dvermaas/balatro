@@ -351,7 +351,10 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             # xMult probe: add `xm_bonus` blinds to the forecast gain of xMult joker buys/swaps (does the frozen-
             # build forecast undervalue them?)
             "bot-xm-03": {"items": True, "xm_bonus": 0.3},
-            "bot-xm-06": {"items": True, "xm_bonus": 0.6}}
+            "bot-xm-06": {"items": True, "xm_bonus": 0.6},
+            # late spending (lab only): from ante `late`, keep only `late_buffer` dollars and allow `late_rerolls`
+            "bot-late5": {"items": True, "late": 5, "late_buffer": 5, "late_rerolls": 6},
+            "bot-late6": {"items": True, "late": 6, "late_buffer": 5, "late_rerolls": 6}}
 _DEFAULTS = {}
 
 
@@ -523,6 +526,15 @@ def _play_bot(seed, arm_name, t0):
     decisions.VOUCHERS = {k: (v[0], False) for k, v in decisions.VOUCHERS.items()}  # no v18 strong-voucher rule
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
+    _DEFAULTS.setdefault("shop", decisions.shop)
+    decisions.shop = _DEFAULTS["shop"]
+    if opts.get("late"):
+        def late_shop(bot, gs, _orig=_DEFAULTS["shop"]):
+            late = (gs.get("ante_num") or 1) >= opts["late"]
+            decisions.INTEREST_BUFFER = opts["late_buffer"] if late else _DEFAULTS["rr"][1]
+            decisions.MAX_REROLLS = opts["late_rerolls"] if late else _DEFAULTS["rr"][0]
+            return _orig(bot, gs)
+        decisions.shop = late_shop
     _DEFAULTS.setdefault("ff", decisions._forecast_fields)
     decisions._forecast_fields = _DEFAULTS["ff"]
     import rollout_shop
@@ -603,6 +615,7 @@ def _play_bot(seed, arm_name, t0):
                     "planner_errors": pstats["errors"]} if opts.get("planner") else {})}
     finally:
         decisions._forecast_fields = _DEFAULTS["ff"]
+        decisions.shop = _DEFAULTS["shop"]
         decisions.selecting_hand = orig_selecting_hand  # workers play many games: never leak the wrapper
         if shop_patch:
             shop_patch.__exit__(None, None, None)
