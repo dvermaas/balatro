@@ -159,9 +159,9 @@ class IntegrationTests(unittest.TestCase):
         original = copy.deepcopy(gs)
         js = jokers.after_discard(gs, [hands.card_info(card("2"))] * 2, 3)
         ctx = {}
-        self.assertEqual(js[0]["rule"]["hand"](ctx), (14, 0, 1))
-        self.assertEqual(js[1]["rule"]["hand"](ctx), (0, 0, 1.98))
-        self.assertEqual(js[2]["rule"]["hand"](ctx), (0, 4, 1))
+        self.assertEqual(jokers._hand(js[0]["rule"]["hand"], ctx), (14, 0, 1))
+        self.assertEqual(jokers._hand(js[1]["rule"]["hand"], ctx), (0, 0, 1.98))
+        self.assertEqual(jokers._hand(js[2]["rule"]["hand"], ctx), (0, 4, 1))
         self.assertEqual(gs, original)
 
     def test_both_questions_receive_the_forecast_without_network(self):

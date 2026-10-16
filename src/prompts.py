@@ -6,6 +6,7 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v24 draft: speed only, same decisions as v23, in two parts. (1) jokers.score over every play subset (hands.evaluated_plays, best_score, best_play: odds forecasts, readiness, setup plays) and rollout.Policy's candidates run in a Rust kernel (native/, src/native.py); joker rules are data tuples instead of lambdas so both evaluate the same rule; every subset score identical (tests/test_native.py). (2) The shop forecast's rollouts (rollout.forecast) run on rumbot-sim in Rust (native/sim, src/sim_bridge.py): each option's Jackdaw state is converted once and rollout.Policy/play_horizon run in Rust, rows identical to the Python loop (150/150 jokers, 10,764 rollouts; 123/123 forecast options). Python stays the fallback (JEV_NATIVE=0 or modules not built). Pack/tarot forecasts (rollout_items) stay in Python. Based on: "
     "v23: early joker slots are filled by code. Through ante 3 with fewer than 4 jokers, when no shop "
     "option clears the 2 SE bar, code buys the joker the forecast rates best above buying nothing "
     "(any positive margin). On the 4 seeds where JEV v20 beat the code-only bot most (XYK41G5M, "

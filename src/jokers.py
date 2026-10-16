@@ -11,6 +11,7 @@ Part of the prompt version hash (see recorder.PROMPT_VERSION).
 
 import re
 
+import native
 from hands import RANK_CHIPS, RANK_ORDER, _d
 from strategy import CONTAINED_IN, HAND_NAMES
 
@@ -32,23 +33,34 @@ def _parts(text):
 
 
 def _card_pred(subject):
-    """Which scoring cards a per-card effect applies to, from e.g. 'face cards', 'Aces', '10 or 4'."""
+    """Which scoring cards a per-card effect applies to, from e.g. 'face cards', 'Aces', '10 or 4'.
+
+    v24: a data tuple instead of a lambda, so the native kernel evaluates the same rule (_pred)."""
     s = subject
     suit = next((v for k, v in WORD_SUIT.items() if k in s), None)
     if suit:
-        return lambda i: i["suit"] == suit or i["enh"] == "WILD"
+        return ("suit", suit)
     if "face" in s:
-        return lambda i: i["rank"] in FACES
+        return ("ranks", frozenset(FACES))
     if "odd rank" in s:
-        return lambda i: i["rank"] in set("A9753")
+        return ("ranks", frozenset("A9753"))
     if "even rank" in s:
-        return lambda i: i["rank"] in set("T8642")
+        return ("ranks", frozenset("T8642"))
     ranks = {WORD_RANK[w] for w in re.findall(r"Ace|King|Queen|Jack|10|[2-9]", s)}
     if ranks:
-        return lambda i: i["rank"] in ranks
+        return ("ranks", frozenset(ranks))
     if "all" in s or "cards" in s:
-        return lambda i: True
+        return ("all",)
     return None
+
+
+def _pred(pred, i):
+    kind = pred[0]
+    if kind == "suit":
+        return i["suit"] == pred[1] or i["enh"] == "WILD"
+    if kind == "ranks":
+        return i["rank"] in pred[1]
+    return True
 
 
 def parse(effect):
@@ -89,10 +101,10 @@ def parse(effect):
     if m and m.group(1) in WORD_RANK:
         r = WORD_RANK[m.group(1)]
         c, mu, x = _parts(m.group(2))
-        rule["held"].append((lambda i, r=r: i["rank"] == r, mu, x))
+        rule["held"].append((("ranks", frozenset(r)), mu, x))
         return rule
     if e.startswith("Adds double the rank of lowest ranked card held in hand"):
-        rule["hand"] = lambda ctx: (0, 2 * min([_nominal(i) for i in ctx["held"]] or [0]), 1)
+        rule["hand"] = ("lowest_held",)
         return rule
 
     cur = re.search(r"\(Currently ([+X]?)\$?" + NUM + r"(?: (Mult|Chips))?\)", e)
@@ -103,53 +115,53 @@ def parse(effect):
     if m:
         sign, val, unit, need = m.groups()
         eff = _effect(sign, float(val), unit)
-        rule["hand"] = lambda ctx: eff if ctx["name"] in CONTAINED_IN.get(need, {need}) else (0, 0, 1)
+        rule["hand"] = ("cond", "names", frozenset(CONTAINED_IN.get(need, {need})), eff, (0, 0, 1))
         return rule
     m = re.match(r"([+X])" + NUM + r" (Mult|Chips) if played hand contains 3 or fewer cards", e)
     if m:
         eff = _effect(m.group(1), float(m.group(2)), m.group(3))
-        rule["hand"] = lambda ctx: eff if ctx["n_played"] <= 3 else (0, 0, 1)
+        rule["hand"] = ("cond", "le3", None, eff, (0, 0, 1))
         return rule
     m = re.match(r"([+X])" + NUM + r" (Mult|Chips) on final hand of round", e)
     if m:
         eff = _effect(m.group(1), float(m.group(2)), m.group(3))
-        rule["hand"] = lambda ctx: eff if ctx["hands_left"] == 1 else (0, 0, 1)
+        rule["hand"] = ("cond", "final", None, eff, (0, 0, 1))
         return rule
     m = re.match(r"([+X])" + NUM + r" (Mult|Chips) when 0 discards remaining", e)
     if m:
         eff = _effect(m.group(1), float(m.group(2)), m.group(3))
-        rule["hand"] = lambda ctx: eff if ctx["discards_left"] == 0 else (0, 0, 1)
+        rule["hand"] = ("cond", "no_discards", None, eff, (0, 0, 1))
         return rule
     m = re.match(r"X" + NUM + r" Mult every \d+ hands played", e)
     if m:
         x = float(m.group(1))
-        rule["hand"] = lambda ctx: (0, 0, x) if re.search(r"Active|\b0 remaining", e) else (0, 0, 1)
+        rule["hand"] = ("const", (0, 0, x) if re.search(r"Active|\b0 remaining", e) else (0, 0, 1))
         return rule
     if e.startswith("Adds the number of times poker hand has been played"):
-        rule["hand"] = lambda ctx: (0, ctx["times_played"] + 1, 1)
+        rule["hand"] = ("times_played",)
         return rule
     m = re.match(r"\+" + NUM + r" Chips for each remaining discard", e)
     if m:
         v = float(m.group(1))
-        rule["hand"] = lambda ctx: (v * ctx["discards_left"], 0, 1)
+        rule["hand"] = ("per_discard", v)
         return rule
     m = re.match(r"X" + NUM + r" Mult if all cards held in hand are (\w+?)s? or (\w+?)s?$", e)
     if m:
         x, suits = float(m.group(1)), {WORD_SUIT.get(m.group(2)), WORD_SUIT.get(m.group(3))}
-        rule["hand"] = lambda ctx: (0, 0, x) if all(i["suit"] in suits for i in ctx["held"]) else (0, 0, 1)
+        rule["hand"] = ("cond", "held_suits", frozenset(suits), (0, 0, x), (0, 0, 1))
         return rule
     m = re.match(r"X" + NUM + r" Mult if poker hand contains a Diamond card, Club card, Heart card, and Spade", e)
     if m:
         x = float(m.group(1))
-        rule["hand"] = lambda ctx: (0, 0, x) if len(ctx["scoring_suits"]) + ctx["wild"] >= 4 else (0, 0, 1)
+        rule["hand"] = ("cond", "four_suits", None, (0, 0, x), (0, 0, 1))
         return rule
     m = re.match(r"X" + NUM + r" Mult if played poker hand has already been played this round", e)
     if m:
         x = float(m.group(1))
-        rule["hand"] = lambda ctx: (0, 0, x) if ctx["played_this_round"] else (0, 0, 1)
+        rule["hand"] = ("cond", "played_this_round", None, (0, 0, x), (0, 0, 1))
         return rule
     if e.startswith("+0-23 Mult"):  # Misprint: random, count the average
-        rule["hand"] = lambda ctx: (0, 11.5, 1)
+        rule["hand"] = ("const", (0, 11.5, 1))
         return rule
 
     # Scaling jokers that also gain during this hand: count the gain when its condition holds
@@ -159,17 +171,16 @@ def parse(effect):
         g = re.search(r"[Gg]ains ([+X])" + NUM + r" (Mult|Chips) if played hand contains an? (" + HAND_RE + ")", e)
         if g:
             gain, need = float(g.group(2)), g.group(4)
-            rule["hand"] = lambda ctx: _effect(sign, val + gain, unit) \
-                if ctx["name"] in CONTAINED_IN.get(need, {need}) else base
+            rule["hand"] = ("cond", "names", frozenset(CONTAINED_IN.get(need, {need})), _effect(sign, val + gain, unit), base)
         else:
-            rule["hand"] = lambda ctx: base
+            rule["hand"] = ("const", base)
         return rule
 
     # Plain values: "+4 Mult", "X1.44 Mult, loses ...", "+60 Chips -5 Chips for every hand played"
     m = re.match(r"([+X])" + NUM + r" (Mult|Chips)(.*)$", e)
     if m and not re.match(r"\s*(if|on|when|every|for each|per)\b", m.group(4)):
         eff = _effect(m.group(1), float(m.group(2)), m.group(3))
-        rule["hand"] = lambda ctx: eff
+        rule["hand"] = ("const", eff)
         return rule
     return None
 
@@ -291,7 +302,7 @@ def score(infos, combo, name, scoring, hand_levels, jokers, rnd):
         for r in rules:
             for pred, times in r["retrigger"]:
                 if (pred == "first" and k == 0) or (pred == "final" and hands_left == 1) or (
-                        callable(pred) and pred(c)):
+                        type(pred) is tuple and _pred(pred, c)):
                     reps += times
         for _ in range(reps):
             chips += (50 if c["enh"] == "STONE" or not c["rank"] else RANK_CHIPS[c["rank"]])
@@ -300,7 +311,7 @@ def score(infos, combo, name, scoring, hand_levels, jokers, rnd):
             mult *= {"GLASS": 2}.get(c["enh"], 1) * {"POLYCHROME": 1.5}.get(c["edition"], 1)
             for r in rules:
                 for pred, cc, mm, xx in r["card"]:
-                    if (pred == "first_face" and p == first_face) or (callable(pred) and pred(c)):
+                    if (pred == "first_face" and p == first_face) or (type(pred) is tuple and _pred(pred, c)):
                         chips, mult = chips + cc, (mult + mm) * xx
 
     held_reps = 1 + sum(r.get("held_retrigger", 0) for r in rules)
@@ -312,7 +323,7 @@ def score(infos, combo, name, scoring, hand_levels, jokers, rnd):
                 mult *= 1.5
             for r in rules:
                 for pred, mm, xx in r["held"]:
-                    if pred(c):
+                    if _pred(pred, c):
                         mult = (mult + mm) * xx
 
     ctx = {"name": name, "n_played": len(played), "held": held, "hands_left": hands_left,
@@ -325,10 +336,58 @@ def score(infos, combo, name, scoring, hand_levels, jokers, rnd):
         chips += 50 if ed == "FOIL" else 0
         mult += 10 if ed == "HOLO" else 0
         if j["rule"] and j["rule"]["hand"]:
-            cc, mm, xx = j["rule"]["hand"](ctx)
+            cc, mm, xx = _hand(j["rule"]["hand"], ctx)
             chips, mult = chips + cc, (mult + mm) * xx
         mult *= 1.5 if ed == "POLYCHROME" else 1
     return int(max(0, chips) * max(1, mult))
+
+
+def _hand(spec, ctx):
+    """(chips, mult, xmult) of a joker's whole-hand rule (a parse() data tuple) in this hand."""
+    kind = spec[0]
+    if kind == "const":
+        return spec[1]
+    if kind == "cond":
+        _, cond, arg, yes, no = spec
+        if cond == "names":
+            ok = ctx["name"] in arg
+        elif cond == "le3":
+            ok = ctx["n_played"] <= 3
+        elif cond == "final":
+            ok = ctx["hands_left"] == 1
+        elif cond == "no_discards":
+            ok = ctx["discards_left"] == 0
+        elif cond == "held_suits":
+            ok = all(i["suit"] in arg for i in ctx["held"])
+        elif cond == "four_suits":
+            ok = len(ctx["scoring_suits"]) + ctx["wild"] >= 4
+        else:  # played_this_round
+            ok = ctx["played_this_round"]
+        return yes if ok else no
+    if kind == "times_played":
+        return 0, ctx["times_played"] + 1, 1
+    if kind == "per_discard":
+        return spec[1] * ctx["discards_left"], 0, 1
+    return 0, 2 * min([_nominal(i) for i in ctx["held"]] or [0]), 1  # lowest_held
+
+
+class Scorer:
+    """score() bound to one decision's hand levels, jokers and round: scorer(infos, combo, name, scoring).
+
+    v24: hands.evaluated_plays/best_score/best_play hand a Scorer to the Rust kernel (native.py, native/)
+    when it is built, with identical results; any other callable keeps the Python loop."""
+
+    def __init__(self, hand_levels, jokers, rnd):
+        self.hand_levels, self.jokers, self.rnd = hand_levels, jokers, rnd
+        self._native = False  # not built yet; None once we know it can't be
+
+    def __call__(self, infos, combo, name, scoring):
+        return score(infos, combo, name, scoring, self.hand_levels, self.jokers, self.rnd)
+
+    def native(self):
+        if self._native is False:
+            self._native = native.scorer(self.hand_levels, self.jokers, self.rnd)
+        return self._native
 
 
 # ---- measured value of a shop item (v9) ---------------------------------------

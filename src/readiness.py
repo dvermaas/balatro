@@ -13,7 +13,7 @@ from random import Random
 from statistics import median
 
 import jokers
-from hands import RANK_ORDER, _d, best_score, card_info, evaluated_plays
+from hands import RANK_ORDER, _d, best_play, best_score, card_info
 
 # Balatro's base blind amounts at White stake (get_blind_amount, scaling 1), antes 1-8.
 BASE = [300, 800, 2000, 5000, 11000, 20000, 35000, 50000]
@@ -56,11 +56,7 @@ def power(gs, samples=24, js=None, levels=None):
         return None
     js = jokers.build(gs) if js is None else js
     levels = _d(gs.get("hands")) if levels is None else levels
-    rnd = {"hands_left": 2, "discards_left": 1}
-
-    def scorer(infos, combo, name, sc):
-        return jokers.score(infos, combo, name, sc, levels, js, rnd)
-
+    scorer = jokers.Scorer(levels, js, {"hands_left": 2, "discards_left": 1})
     rng = Random(13013)  # fixed local seed: the same deck always gets the same estimate
     scores = []
     for _ in range(samples):
@@ -118,16 +114,12 @@ def play_mix(gs, samples=24):
     if len(deck) < size:
         return {}
     js = jokers.build(gs)
-    rnd = {"hands_left": 2, "discards_left": 1}
-
-    def scorer(infos, combo, name, sc):
-        return jokers.score(infos, combo, name, sc, levels, js, rnd)
-
+    scorer = jokers.Scorer(levels, js, {"hands_left": 2, "discards_left": 1})
     rng = Random(15015)
     total = {}
     for _ in range(samples):
         hand = rng.sample(deck, size)
-        best = max(((s, n) for s, n, _, _ in evaluated_plays(hand, levels, scorer)), default=(0, None))
+        best = best_play(hand, levels, scorer)
         if best[1]:
             total[best[1]] = total.get(best[1], 0) + best[0]
     norm = sum(total.values()) or 1

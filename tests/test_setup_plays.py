@@ -162,7 +162,7 @@ class SetupTests(unittest.TestCase):
         gs["jokers"]["cards"] = [{"label": "Blue Joker", "value": {"effect": "+2 Chips for each remaining card in deck (Currently +60 Chips)"}}]
         before = copy.deepcopy(gs)
         js = jokers.after_play(gs, 4)
-        self.assertEqual(js[0]["rule"]["hand"]({}), (2 * (len(gs["cards"]["cards"]) - 4), 0, 1))
+        self.assertEqual(jokers._hand(js[0]["rule"]["hand"], {}), (2 * (len(gs["cards"]["cards"]) - 4), 0, 1))
         self.assertEqual(gs, before)
 
     def test_serpent_forecasts_three_draws_after_short_plays(self):

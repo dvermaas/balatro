@@ -1,0 +1,14 @@
+[package]
+name = "rumbot_sim"
+version = "0.1.0"
+edition = "2021"
+description = "Balatro as a Rust library: the pure-Python simulator from jimbot-sim, translated"
+license = "MIT"
+
+[dependencies]
+
+[dev-dependencies]
+
+[lib]
+name = "rumbot_sim"
+path = "src/lib.rs"
