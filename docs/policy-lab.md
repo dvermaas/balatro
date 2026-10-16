@@ -110,3 +110,49 @@ with JEV judging only what the forecast can't see.
    close calls, with the forecast numbers in the item fields as v19 does.
 4. Verify with JEV only after the code-level change. A JEV sim benchmark needs at least 150-200
    seeds to see effects of about 0.5 ante, given the run-to-run variance seen.
+
+## Arm E: the bot's real play code, JEV replaced by its top-ranked option
+
+The question: how much of JEV's apparent edge over the lab play policy comes from our code's play
+forecasts, and how much from JEV's judgement? Arm E runs the real `JevBot` on `SimBalatro` with
+`decisions.py` (v20 14f19901). Each question gets a code answer:
+- every Choice takes the first option, which is the bot's top-ranked one (best play, best discard,
+  play the blind; cash-tarot steps continue shopping);
+- `play_now` plays when the strongest play clears or matches the best measured discard;
+- shop and pack item scores are 0, except the shared planet rule (4 for the most played hand's
+  planet, keeping $4).
+
+The shop is therefore v20's code path only: forecast auto-buys at more than 2 SE (3 bosses, n=16 as
+in C) and the reroll rule. v18's strong-voucher rule was switched off so the shop matches arm C.
+Joker rearranging and planet auto-use come from `strategy.auto_action` as in the bot. Same 600
+seeds. About 109 s per game (odds forecasts on every hand), so 600 games took about 80 minutes on
+15 workers.
+
+| arm | mean ante (SE) | ante-8 clear | blinds cleared |
+|---|---:|---:|---:|
+| A gain (lab play) | 4.00 (0.08) | 1.2% | 10.4 |
+| C forecast-long (lab play) | 4.90 (0.09) | 6.0% | 14.1 |
+| **E forecast-long + bot play code** | **5.47** (0.08) | 5.8% | 15.9 |
+| D none | 1.74 (0.02) | 0% | 3.2 |
+
+Paired differences:
+
+| | ante | blinds cleared | ante-8 clear |
+|---|---:|---:|---:|
+| E − C | +0.56 ± 0.09 | +1.83 ± 0.29 | -0.2 ± 1.1 pts |
+| E − A | +1.47 ± 0.10 | +5.46 ± 0.30 | +4.7 ± 1.0 pts |
+| E − D | +3.73 ± 0.08 | +12.7 ± 0.27 | +5.8 ± 1.0 pts |
+
+Death ante for E: 1: 44, 2: 34, 3: 15, 4: 44, 5: 116, 6: 153, 7: 104, 8: 55, won 35. That is far
+fewer early deaths than C (93 against 168 at ante 1-3), but no more wins.
+
+**Reading.** The bot's play code (hands.py candidates, odds and setup forecasts, discard plans)
+is worth about +0.56 ante over the lab's simple policy. Most of that comes from surviving ante 1-3;
+it adds nothing at ante 8. The code-only bot reaches a mean ante of **5.47**, the same as JEV's sim
+benchmarks: v18 5.50 and v19 5.47 on sim30-a, v20 pending. The seed sets and shop versions differ,
+so this is not a paired comparison. Still, the gap the coordinator called "JEV's +1.5 over the lab"
+looks like it is almost all our code's play forecasts plus the forecast shop: E − A = +1.47 ± 0.10.
+On these numbers JEV's own judgement adds roughly nothing on top of taking its top-ranked options.
+
+The direct test is cheap: run arm E on sim30-a or sim60-a (no JEV) and compare it paired with the
+JEV runs of the same version.

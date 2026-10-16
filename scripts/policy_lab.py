@@ -201,6 +201,8 @@ def play_game(task):
     seed, arm_name = task
     t0 = time.time()
     try:
+        if arm_name == "bot-forecast-long":
+            return _play_bot(seed, arm_name, t0)
         return _play(seed, arm_name, t0)
     except Exception as e:  # noqa: BLE001
         return {"seed": seed, "arm": arm_name, "error": f"{type(e).__name__}: {e}",
@@ -299,6 +301,104 @@ def _play(seed, arm_name, t0):
 
 
 # ---------------------------------------------------------------------------
+# Arm E: the bot's real code path (JevBot + decisions.py) with a code stand-in for JEV
+# ---------------------------------------------------------------------------
+
+def _code_jev(bot_ref):
+    """JEV replaced by 'take the top-ranked option': Choice -> the first option (the bot lists its best
+    measured option first; cash tarot steps -> continue shopping), play_now -> play when the strongest
+    play clears or beats the best measured discard, item scores -> 0 except the shared planet rule
+    (the most played hand's planet, keeping $4), so shop buying is the forecast's code path alone."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from sim_run import FirstOptionJev
+    from typesafe_sdk import SystemOneResponse
+
+    class CodeJev(FirstOptionJev):
+        model = "code-top-option"
+
+        def system_one(self, state, questions):
+            answers = {}
+            for qid, q in questions.items():
+                if q.type == "choice":
+                    keys = list(q.criteria)
+                    c = "continue_shopping" if "continue_shopping" in keys else keys[0]
+                    answers[qid] = {"type": "choice", "choice": c, "confidence": 1.0,
+                                    "probabilities": {k: float(k == c) for k in keys}}
+                elif q.type == "noul":
+                    sp = _d(state.get("strongest_play"))
+                    bd = _d(state.get("best_draw_by_measurement"))
+                    play = sp.get("clears_blind_alone") or "modeled_average_next_play" not in bd or                         (sp.get("estimated_score") or 0) >= (bd.get("modeled_average_next_play") or 0)
+                    answers[qid] = {"type": "noul", "noul": 1.0 if play else 0.0}
+                else:
+                    answers[qid] = {"type": "score", "score": self.item_score(q), "confidence": 1.0, "legend": {},
+                                    "probabilities": {}}
+            return SystemOneResponse.model_validate({"model": self.model, "answers": answers,
+                                                     "usage": {"input_tokens": 0, "output_tokens": 0}})
+
+        def item_score(self, q):
+            item = _d(_d(q.instructions).get("item")) if isinstance(q.instructions, dict) else {}
+            gs = bot_ref[0].last_state or {}
+            hands = _d(gs.get("hands"))
+            top = max(hands.items(), key=lambda kv: (_d(kv[1]).get("played") or 0, _d(kv[1]).get("level") or 0),
+                      default=(None, {}))
+            if item.get("kind") == "planet" and top[0] and (_d(top[1]).get("played") or 0) > 0                     and f"Level up {top[0]} " in (item.get("what") or "") and (item.get("money_after") or 0) >= 4:
+                return 4.0
+            return 0.0
+
+    return CodeJev()
+
+
+def _play_bot(seed, arm_name, t0):
+    import shutil
+    import tempfile
+    import decisions
+    from jev_bot import BenchmarkComplete, JevBot
+    from sim_backend import SimBalatro
+    decisions.FORECAST_N, decisions.FORECAST_BUDGET, decisions.FORECAST_BOSSES = FORECAST_N, None, 3  # = arm C
+    decisions.VOUCHERS = {k: (v[0], False) for k, v in decisions.VOUCHERS.items()}  # no v18 strong-voucher rule
+    tmp = tempfile.mkdtemp(prefix="plab_")
+    try:
+        ref = [None]
+        jev = _code_jev(ref)
+        bot = JevBot(deck="RED", stake="WHITE", game=SimBalatro(), jev=jev, log_dir=Path(tmp))
+        ref[0] = bot
+        bot.model = jev.model
+        bot.act("start", {"seed": seed, "deck": "RED", "stake": "WHITE"})
+        engine_won = False
+        for _ in range(20000):
+            try:
+                bot.step()
+            except BenchmarkComplete:
+                break
+            except RuntimeError as e:
+                # jev_bot's victory guard pauses for review when it can't verify the final boss (e.g. after
+                # Hieroglyph moved the ante counter); the engine's own won flag is the ground truth here.
+                if "Victory reported" in str(e) and bot.game.gs.get("won"):
+                    engine_won = True
+                    break
+                raise
+            if bot.stats["runs"] >= 1 and (bot.last_state or {}).get("state") == "MENU":
+                break
+        r = bot.recorder
+        summ = json.loads((r.dir / "summary.json").read_text(encoding="utf-8"))
+        ev = [json.loads(l) for l in open(r.dir / "decisions.jsonl", encoding="utf-8")]
+        blinds = sum(1 for e in ev if e["kind"] == "round_end" and (e.get("scored") or 0) >= (e.get("target") or 1))
+        rerolls = sum(1 for e in ev if e["kind"] == "action" and e.get("method") == "reroll")
+        buys = [(e.get("ante"), "auto", e.get("desc")) for e in ev if e["kind"] == "auto" and e.get("question") == "shop"]
+        buys += [(e.get("ante"), "jev", e.get("choice")) for e in ev if e["kind"] == "decision"
+                 and e.get("question") == "shop" and str(e.get("choice")).startswith(("buy", "replace"))]
+        fs = [e.get("forecast_seconds") or 0 for e in ev if e.get("forecast_seconds")]
+        won = summ.get("result") == "won" or engine_won
+        return {"seed": seed, "arm": arm_name, "won": won, "ante": 8 if won else summ.get("ante"), "blinds": blinds,
+                "round": summ.get("round"), "rerolls": rerolls, "reroll_spent": 0, "spent": 0,
+                "buys": [[b[0], "swap" if "replace" in str(b[2]) else "joker", b[2]] for b in buys],
+                "forecasts": len(fs), "forecast_errors": 0, "forecast_s": round(sum(fs), 1),
+                "game_errors": bot.stats["errors"], "seconds": round(time.time() - t0, 1)}
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+# ---------------------------------------------------------------------------
 # Runner and report
 # ---------------------------------------------------------------------------
 
@@ -356,7 +456,7 @@ def report(name, pairs=None, only=None):
             "mean_buys": round(statistics.mean(len(r["buys"]) for r in rs), 2),
             "mean_swaps": round(statistics.mean(sum(b[1] == "swap" for b in r["buys"]) for r in rs), 2),
             "mean_vouchers": round(statistics.mean(sum(b[1] == "voucher" for b in r["buys"]) for r in rs), 2),
-            "first_buy_ante_mean": round(statistics.mean([r["buys"][0][0] for r in rs if r["buys"]] or [0]), 2),
+            "first_buy_ante_mean": round(statistics.mean([r["buys"][0][0] for r in rs if r["buys"] and r["buys"][0][0]] or [0]), 2),
             "mean_game_seconds": round(statistics.mean(r["seconds"] for r in rs), 1),
             "mean_forecasts": round(statistics.mean(r["forecasts"] for r in rs), 1),
             "forecast_seconds_per_call": round(sum(r["forecast_s"] for r in rs) / max(1, sum(r["forecasts"] for r in rs)), 2),

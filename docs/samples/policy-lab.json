@@ -33,6 +33,11 @@
    "reroll_se": 1,
    "reroll_floor": 25,
    "max_rerolls": 0
+  },
+  "bot-forecast-long": {
+   "n": 16,
+   "bosses": 3,
+   "play": "hands.py candidates + odds/decisions forecasts, top option"
   }
  },
  "main": {
@@ -614,6 +619,182 @@
      15
     ]
    ]
+  }
+ },
+ "arm_e_bot_code_path": {
+  "description": "JevBot + decisions.py (v20 14f19901 shop, FORECAST_N=16, bosses=3, no budget, v18 strong-voucher rule off) on SimBalatro; JEV replaced by the top-ranked option (play_now: play when the strongest play clears or beats the best measured discard; item scores 0 except the shared planet rule; cash steps: continue)",
+  "name": "main",
+  "seeds_complete": 600,
+  "errors": 0,
+  "arms": {
+   "bot-forecast-long": {
+    "games": 600,
+    "mean_ante": 5.465,
+    "se_ante": 0.081,
+    "win_rate": 0.058,
+    "mean_blinds": 15.88,
+    "death_ante": {
+     "1": 44,
+     "2": 34,
+     "3": 15,
+     "4": 44,
+     "5": 116,
+     "6": 153,
+     "7": 104,
+     "8": 55,
+     "won": 35
+    },
+    "mean_rerolls": 15.31,
+    "mean_reroll_spent": 0,
+    "mean_spent": 0,
+    "mean_buys": 9.39,
+    "mean_swaps": 0,
+    "mean_vouchers": 0,
+    "first_buy_ante_mean": 1,
+    "mean_game_seconds": 109.1,
+    "mean_forecasts": 40.1,
+    "forecast_seconds_per_call": 1.15
+   },
+   "forecast-long": {
+    "games": 600,
+    "mean_ante": 4.903,
+    "se_ante": 0.09,
+    "win_rate": 0.06,
+    "mean_blinds": 14.05,
+    "death_ante": {
+     "0": 1,
+     "1": 59,
+     "2": 68,
+     "3": 41,
+     "4": 41,
+     "5": 112,
+     "6": 120,
+     "7": 84,
+     "8": 38,
+     "won": 36
+    },
+    "mean_rerolls": 12.25,
+    "mean_reroll_spent": 65.8,
+    "mean_spent": 101.6,
+    "mean_buys": 7.16,
+    "mean_swaps": 2.33,
+    "mean_vouchers": 0.71,
+    "first_buy_ante_mean": 1.1,
+    "mean_game_seconds": 35.0,
+    "mean_forecasts": 31.6,
+    "forecast_seconds_per_call": 1.1
+   },
+   "gain": {
+    "games": 600,
+    "mean_ante": 3.997,
+    "se_ante": 0.081,
+    "win_rate": 0.012,
+    "mean_blinds": 10.42,
+    "death_ante": {
+     "1": 81,
+     "2": 106,
+     "3": 51,
+     "4": 79,
+     "5": 139,
+     "6": 87,
+     "7": 37,
+     "8": 13,
+     "won": 7
+    },
+    "mean_rerolls": 8.15,
+    "mean_reroll_spent": 43.7,
+    "mean_spent": 72.7,
+    "mean_buys": 5.44,
+    "mean_swaps": 0.75,
+    "mean_vouchers": 0.72,
+    "first_buy_ante_mean": 1.18,
+    "mean_game_seconds": 0.1,
+    "mean_forecasts": 0,
+    "forecast_seconds_per_call": 0.0
+   },
+   "none": {
+    "games": 600,
+    "mean_ante": 1.74,
+    "se_ante": 0.018,
+    "win_rate": 0.0,
+    "mean_blinds": 3.19,
+    "death_ante": {
+     "1": 156,
+     "2": 444
+    },
+    "mean_rerolls": 0,
+    "mean_reroll_spent": 0,
+    "mean_spent": 0,
+    "mean_buys": 0,
+    "mean_swaps": 0,
+    "mean_vouchers": 0,
+    "first_buy_ante_mean": 0,
+    "mean_game_seconds": 0.0,
+    "mean_forecasts": 0,
+    "forecast_seconds_per_call": 0.0
+   }
+  },
+  "paired": {
+   "bot-forecast-long - forecast-long": {
+    "ante": {
+     "n": 600,
+     "diff": 0.562,
+     "se": 0.091,
+     "sd": 2.227
+    },
+    "blinds": {
+     "n": 600,
+     "diff": 1.832,
+     "se": 0.294,
+     "sd": 7.207
+    },
+    "won": {
+     "n": 600,
+     "diff": -0.002,
+     "se": 0.011,
+     "sd": 0.28
+    }
+   },
+   "bot-forecast-long - gain": {
+    "ante": {
+     "n": 600,
+     "diff": 1.468,
+     "se": 0.095,
+     "sd": 2.317
+    },
+    "blinds": {
+     "n": 600,
+     "diff": 5.46,
+     "se": 0.299,
+     "sd": 7.322
+    },
+    "won": {
+     "n": 600,
+     "diff": 0.047,
+     "se": 0.01,
+     "sd": 0.248
+    }
+   },
+   "bot-forecast-long - none": {
+    "ante": {
+     "n": 600,
+     "diff": 3.725,
+     "se": 0.083,
+     "sd": 2.044
+    },
+    "blinds": {
+     "n": 600,
+     "diff": 12.688,
+     "se": 0.268,
+     "sd": 6.572
+    },
+    "won": {
+     "n": 600,
+     "diff": 0.058,
+     "se": 0.01,
+     "sd": 0.235
+    }
+   }
   }
  }
 }
