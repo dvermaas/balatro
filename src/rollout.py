@@ -538,6 +538,9 @@ def play_horizon(gs, policy, bosses=2, max_steps=600):
             cur = {"ante": gs["round_resets"]["ante"], "type": typ, "boss": getattr(b, "name", typ),
                    "target": getattr(b, "chips", 0)}
         elif ph == GamePhase.SELECTING_HAND:
+            if not gs["hand"]:  # deck and hand exhausted: no legal play, the run is lost
+                out.append({**cur, "chips": gs.get("chips", 0), "cleared": False})
+                return out
             kind, idx = policy.decide(gs)
             try:
                 step(gs, (PlayHand if kind == "play" else Discard)(card_indices=tuple(idx)))

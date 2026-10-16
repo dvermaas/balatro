@@ -141,7 +141,7 @@ class ShopWiring(unittest.TestCase):
         self.assertIn("skip", fc["options"])
         for key in fc["options"]:
             f = decisions._forecast_fields(fc, key)
-            for field in ("next_boss_clear", "survive_2_bosses", "blinds_cleared_next_6", "_fc_delta", "_fc_se"):
+            for field in ("next_boss_clear", "survive_horizon", "blinds_cleared_horizon", "_fc_delta", "_fc_se"):
                 self.assertIn(field, f)
             self.assertIn("skip", f["next_boss_clear"])
         self.assertEqual(fc["options"]["skip"]["vs_skip"]["blinds"], [0.0, 0.0])

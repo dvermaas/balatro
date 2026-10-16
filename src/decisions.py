@@ -76,12 +76,12 @@ INVEST_FLOOR = 5       # money kept in invest mode
 INVEST_REROLL_FLOOR = 10
 # v19: rollout forecast (rollout.py): each shop option is simulated through the next 2 bosses with the
 # build frozen, common random numbers across options; numbers are paired differences against skip.
-FORECAST_N = 32
-FORECAST_BOSSES = 2
+FORECAST_N = 24          # v20: 3-boss rollouts cost ~1.5x; 24 x ~5 options fits the budget (~1.7 s)
+FORECAST_BOSSES = 3      # v20: policy lab, 600 paired seeds: 3 bosses +0.21 +- 0.05 ante over 2
 FORECAST_BUDGET = 4.0    # seconds: stop adding rollouts (every option keeps the same count)
 FORECAST_TIMEOUT = 10.0  # slower than this, or failing: back to the v18 measured-gain path
 SWAP_SELLS = 2           # sell-swaps only consider our 2 weakest jokers (smallest loss on recent hands)
-SURE_SE = 2              # beats skip by > 2 SE in blinds cleared: bought without waiting for a top score
+SURE_SE = 2              # v20: beats skip by > 2 SE in blinds cleared: code buys it, no JEV question
 HIDE_SE = 2              # worse than skip by > 2 SE: not offered (unless it is an economy item)
 REROLL_SE = 1            # nothing beats skip by 1 SE: reroll from money above the interest floor
 
@@ -516,8 +516,8 @@ def _forecast_fields(fc, key):
     nb, bl = o["vs_skip"]["next_boss"], o["vs_skip"]["blinds"]
     out = {"next_boss_clear": f"{_pct(o['p_next_boss'])} (skip {_pct(s['p_next_boss'])}, "
                               f"{100 * nb[0]:+.0f} ± {100 * nb[1]:.0f} pts)",
-           "survive_2_bosses": f"{_pct(o['p_survive'])} (skip {_pct(s['p_survive'])})",
-           "blinds_cleared_next_6": f"{o['exp_blinds_cleared']} of {o['horizon_blinds']} "
+           "survive_horizon": f"{_pct(o['p_survive'])} clear all {fc['bosses']} next bosses (skip {_pct(s['p_survive'])})",
+           "blinds_cleared_horizon": f"{o['exp_blinds_cleared']} of {o['horizon_blinds']} "
                                     f"(skip {s['exp_blinds_cleared']}, {bl[0]:+.2f} ± {bl[1]:.2f})",
            "_fc_delta": bl[0], "_fc_se": bl[1]}
     if o.get("next_boss_margin") is not None:
@@ -663,6 +663,22 @@ def shop(bot, gs):
         _shop_act(bot, gs, fallback[1])
         return
 
+    if fc:  # v20: a clear forecast winner is bought by code (policy lab arm C); JEV gets the close calls
+        auto = [k for k, v in items.items() if "_fc_delta" in v[1]
+                and v[1]["_fc_delta"] > SURE_SE * max(v[1]["_fc_se"], 1e-9)]
+        if auto:
+            k = max(auto, key=lambda x: items[x][1]["_fc_delta"])
+            o = items[k][1]
+            numbers = {f: o[f] for f in ("next_boss_clear", "survive_horizon", "boss_margin", "blinds_cleared_horizon")
+                       if f in o}
+            bot.emit("auto", question="shop", choice=k, action=list(items[k][2]), desc=f"${items[k][3]} {items[k][0]}",
+                     reason=f"forecast: beats buying nothing by {o['_fc_delta']:+.2f} blinds "
+                            f"(> {SURE_SE} SE = {SURE_SE * o['_fc_se']:.2f})",
+                     msg=f"Forecast buy {items[k][0][:40]}: {o['blinds_cleared_horizon']} blinds",
+                     forecast=numbers, forecast_seconds=fc["seconds"], forecast_rollouts=fc["rollouts"],
+                     forecast_note=state.get("forecast"))
+            _shop_act(bot, gs, items[k][2])
+            return
     scores, meta = _score_items(bot, gs, "shop", state, {k: v[:3] for k, v in items.items()})
     if fc:
         meta["forecast_seconds"], meta["forecast_rollouts"] = fc["seconds"], fc["rollouts"]
@@ -703,7 +719,7 @@ def shop(bot, gs):
     elif sure:
         if fc:
             choice = max(sure, key=lambda k: items[k][1]["_fc_delta"])
-            bot.emit("info", msg=f"Buying {items[choice][0][:40]}: {items[choice][1]['blinds_cleared_next_6']} blinds")
+            bot.emit("info", msg=f"Buying {items[choice][0][:40]}: {items[choice][1]['blinds_cleared_horizon']} blinds")
         else:
             choice = max(sure, key=lambda k: items[k][1]["_gain"])
             bot.emit("info", msg=f"Buying {items[choice][0][:40]}: +{round(100 * items[choice][1]['_gain'])}% "

@@ -6,6 +6,12 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v20 draft: the policy lab's arm C in production. Forecast horizon 3 bosses (n=24); a forecast "
+    "option that beats buying nothing by > 2 SE in blinds cleared is bought by code (recorded as an "
+    "'auto' shop event with its numbers), without a JEV question; JEV still rates close calls, packs, "
+    "tarots, spectrals and economy items with the forecast fields (survive_2_bosses and "
+    "blinds_cleared_next_6 renamed survive_horizon and blinds_cleared_horizon); reroll rule kept; rollout guard for "
+    "an empty deck and hand. Based on: "
     "v19 draft: rollout forecast in the shop (rollout.py). Each joker, planet, voucher and swap is "
     "simulated through the next 2 bosses with the build frozen (32 rollouts, common random numbers); "
     "JEV sees next_boss_clear vs skip (paired difference and SE), survive_2_bosses, boss_margin and "
@@ -52,7 +58,7 @@ INSTRUCTIONS = {
     ),
     "item_value": (
         "How much would taking the item in `item` (described in this question) strengthen this run? "
-        "`next_boss_clear`, `survive_2_bosses`, `boss_margin` and `blinds_cleared_next_6` simulate the "
+        "`next_boss_clear`, `survive_horizon`, `boss_margin` and `blinds_cleared_horizon` simulate the "
         "next blinds with this item and the build otherwise frozen (see `forecast`): trust them for scoring "
         "power and add what they cannot see (money, later purchases). `measured_gain`, when shown instead, "
         "is its measured effect on the scores of our recent hands, jokers included: trust it "

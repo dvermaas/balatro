@@ -255,3 +255,27 @@ line and item fields, and forecasts took under 1 s. One JEV game on the sim (TU9
 - **Shop decisions:** 45 of 48 carried forecast item fields. The other 3 offered only packs or
   tarots and carried the state line only.
 - **Watch the reroll rule:** it fired 17 times in that game.
+
+## v20: arm C in production (draft, prompt version 14f19901)
+
+Following [policy-lab.md](policy-lab.md):
+- **Horizon and rollouts.** `FORECAST_BOSSES = 3` and `FORECAST_N = 24`, with the same 4 s budget.
+  With a stubbed JEV over 4 smoke games, 204 forecasts took median 1.8 s, p90 3.7 s, max 4.25 s.
+- **Code buys clear winners.** A forecast option that beats buying nothing by more than 2 SE in
+  blinds cleared is bought by code before JEV is asked; with several, the largest gain wins. It is
+  recorded as an `auto` event with `question: "shop"`, the choice, the action, a reason ("beats
+  buying nothing by +2.29 blinds (> 2 SE = 0.76)"), the forecast numbers, and the forecast time and
+  rollout count. JEV still rates close calls, packs, tarots, spectrals and economy items, with the
+  forecast fields in each item.
+- **Unchanged from v19:** the reroll rule, swaps limited to the 2 weakest jokers, hiding items more
+  than 2 SE worse, and the v18 fallback.
+- **Renamed fields.** `survive_2_bosses` is now `survive_horizon` ("x% clear all 3 next bosses")
+  and `blinds_cleared_next_6` is now `blinds_cleared_horizon`, because the horizon is no longer
+  2 bosses and 6 blinds.
+- **Empty deck guard.** `rollout.play_horizon` treats an empty deck and hand as a lost blind instead
+  of crashing.
+
+**Smoke run** (no JEV, `--policy greedy`, 4 seeds, `runs/_rollout_validation/smoke20`): the auto
+path fired 44 times, and every one was recorded with its reason and numbers. All 158 JEV-path shop
+decisions carried the forecast fields. Greedy games now reach ante 6-8; under v19 the same stub died
+at ante 2 because it never buys.
