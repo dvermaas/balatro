@@ -26,6 +26,7 @@ import re
 import time
 
 import rollout
+import sim_bridge  # noqa: E402  (v25: item rollouts finish on rumbot-sim when jev_sim is built)
 import sim_backend
 from jackdaw.engine.actions import (BuyCard, CashOut, Discard, GamePhase, NextRound, OpenBooster,  # noqa: E402
                                     PickPackCard, PlayHand, SelectBlind, SkipPack, UseConsumable)
@@ -290,12 +291,22 @@ def _jsig(gs):
 
 
 def play_horizon(gs, policy_for, b, bosses=3, max_steps=900):
-    """rollout.play_horizon plus the bot's consumable use and policy rebuilds when jokers change."""
+    """rollout.play_horizon plus the bot's consumable use and policy rebuilds when jokers change.
+
+    v25: with jev_sim, at each shop holding no consumables the rest of the rollout is tried in Rust
+    (sim_bridge.run_strict, RNG streams carried over). Rust gives up when the bot would use a tarot or
+    rebuild its policy; this loop then carries on from the unchanged state. Same rows either way."""
     out, cur, done = [], None, 0
     failed = set()
     pol = policy_for(gs)
+    native = sim_bridge.available()
     for _ in range(max_steps):
         ph = gs["phase"]
+        if ph == GamePhase.SHOP and native and not gs.get("consumables"):
+            rest = sim_bridge.run_strict(gs, policy_for(gs), bosses - done)
+            if rest is not None:
+                return out + rest
+            native = False  # it would give up again at the next shop for the same reason, mostly
         if ph == GamePhase.SHOP:
             use_items(gs, b, "SHOP", failed)
             step(gs, NextRound())

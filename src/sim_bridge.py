@@ -98,8 +98,9 @@ def _joker(c):
     return d
 
 
-def describe(gs):
-    """JSON for jev_sim.rollouts from a Jackdaw state in the SHOP phase."""
+def describe(gs, rng=False):
+    """JSON for jev_sim.rollouts from a Jackdaw state in the SHOP phase. rng (v25): include the state's
+    pseudoseed streams, so jev_sim.rollout_strict continues this exact rollout."""
     rr, cr = gs["round_resets"], gs.get("current_round", {})
     cards = []
     for area in ("deck", "hand", "discard_pile", "played_cards_area"):
@@ -135,6 +136,8 @@ def describe(gs):
         "hand_size": int(gs.get("hand_size", 8)), "joker_slots": int(gs.get("joker_slots", 5)),
         "consumable_slots": int(gs.get("consumable_slots", 2)),
     }
+    if rng:
+        desc["rng_pools"] = {k: v for k, v in gs["rng"].get_state().items() if k not in ("seed", "hashed_seed")}
     return json.dumps(desc)
 
 
@@ -157,6 +160,16 @@ def run(desc, policy, seeds, bosses):
     raw = _rs.rollouts(desc, policy_jokers(policy), seeds, bosses)
     return [[{"ante": a, "type": t, "boss": b, "target": tg, "chips": ch, "cleared": cl} for a, t, b, tg, ch, cl in r]
             for r in raw]
+
+
+def run_strict(gs, policy, bosses):
+    """v25, rollout_items: the rest of this Jackdaw rollout (a SHOP state, its RNG streams included) in
+    Rust, as rows; None when it reaches a state only rollout_items.play_horizon handles. gs is not
+    changed, so the caller can continue it in Python."""
+    raw = _rs.rollout_strict(describe(gs, rng=True), policy_jokers(policy), gs["rng"].seed_str, bosses)
+    if raw is None:
+        return None
+    return [{"ante": a, "type": t, "boss": b, "target": tg, "chips": ch, "cleared": cl} for a, t, b, tg, ch, cl in raw]
 
 
 def rollouts(gs, policy, n, bosses, tag="RO"):

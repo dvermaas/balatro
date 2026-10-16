@@ -122,6 +122,10 @@ struct StateDesc {
     hand_size: i32,
     joker_slots: i32,
     consumable_slots: i32,
+    /// v25: the Jackdaw rollout's pseudoseed streams at the handoff (rollout_items), so the rollout
+    /// continues exactly; absent, every rollout starts its streams fresh from its seed.
+    #[serde(default)]
+    rng_pools: Option<HashMap<String, f64>>,
 }
 
 fn rank_of(code: &str) -> PyResult<Rank> {
@@ -619,15 +623,37 @@ fn card_str(c: &CardRef) -> String {
 }
 
 fn play_horizon(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize) -> Result<Vec<Row>, String> {
-    play_horizon_traced(g, policy, bosses, max_steps, None)
+    play_horizon_traced(g, policy, bosses, max_steps, None, false)
 }
 
-fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize, mut trace: Option<&mut Vec<String>>) -> Result<Vec<Row>, String> {
+/// Returned by a strict rollout that reached a state rollout_items.play_horizon handles differently.
+const STRICT_ABORT: &str = "strict: needs the Python rollout";
+
+fn joker_names(g: &GameState) -> Vec<String> {
+    g.jokers.iter().map(|j| j.borrow().name().to_string()).collect()
+}
+
+/// strict (v25, rollout_items): this loop equals rollout_items.play_horizon only while no consumable
+/// but a planet is held in the shop, none at all at blind select or in a round (the bot's tarot use
+/// lives in Python), and the jokers just after each blind select are the starting ones (Python rebuilds its
+/// policy when they change). Anything else returns STRICT_ABORT and Python carries on with that rollout.
+fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize, mut trace: Option<&mut Vec<String>>, strict: bool) -> Result<Vec<Row>, String> {
     let mut out: Vec<Row> = Vec::new();
     let mut cur: Option<(i32, String, String, i64)> = None;
     let mut done = 0;
     let mut recorded = false;
+    let start_jokers = if strict { joker_names(g) } else { Vec::new() };
     for _ in 0..max_steps {
+        if strict {
+            let held = match g.phase {
+                Phase::Shop => g.consumables.iter().any(|c| c.borrow().spec.kind != ConsumableKind::Planet),
+                Phase::BlindSelect | Phase::Playing => !g.consumables.is_empty(),
+                _ => false,
+            };
+            if held {
+                return Err(STRICT_ABORT.into());
+            }
+        }
         match g.phase {
             Phase::Shop => {
                 use_planets(g);
@@ -640,6 +666,10 @@ fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_st
                     _ => "Boss",
                 };
                 act(g, ActionType::SelectBlind);
+                // Python rebuilds its policy right after the select (Madness, Riff-raff act in it)
+                if strict && joker_names(g) != start_jokers {
+                    return Err(STRICT_ABORT.into());
+                }
                 let b = g.blind.as_ref().ok_or("no blind after select")?;
                 cur = Some((g.ante, typ.to_string(), b.name(), b.target));
                 recorded = false;
@@ -719,6 +749,26 @@ fn rollouts(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, seeds: V
     Ok(out)
 }
 
+/// v25, rollout_items: one strict rollout from a described shop state mid-rollout, its pseudoseed
+/// streams continued from `rng_pools`. None when it reaches a state only the Python rollout handles
+/// (see play_horizon_traced); the caller then replays it in Python.
+#[pyfunction]
+fn rollout_strict(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, seed: String, bosses: usize) -> PyResult<Option<Vec<Row>>> {
+    let desc: StateDesc = serde_json::from_str(state_json).map_err(|e| PyValueError::new_err(e.to_string()))?;
+    let mut g = build(&desc)?;
+    g.seed = seed.clone();
+    g.rng = RunRng::new(seed);
+    if let Some(pools) = &desc.rng_pools {
+        g.rng.pools = pools.clone();
+    }
+    let policy = Policy { jokers: policy_jokers };
+    match play_horizon_traced(&mut g, &policy, bosses, 900, None, true) {
+        Ok(rows) => Ok(Some(rows)),
+        Err(e) if e == STRICT_ABORT => Ok(None),
+        Err(e) => Err(PyRuntimeError::new_err(e)),
+    }
+}
+
 /// One rollout with a decision log: (rows, ["play [..] hand=.. chips=..", ...]).
 #[pyfunction]
 fn rollout_trace(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, seed: String, bosses: usize) -> PyResult<(Vec<Row>, Vec<String>)> {
@@ -728,7 +778,7 @@ fn rollout_trace(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, see
     g.rng = RunRng::new(seed);
     let policy = Policy { jokers: policy_jokers };
     let mut log = Vec::new();
-    let rows = play_horizon_traced(&mut g, &policy, bosses, 600, Some(&mut log)).map_err(PyRuntimeError::new_err)?;
+    let rows = play_horizon_traced(&mut g, &policy, bosses, 600, Some(&mut log), false).map_err(PyRuntimeError::new_err)?;
     Ok((rows, log))
 }
 
@@ -748,5 +798,6 @@ fn jev_sim(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(rollouts, m)?)?;
     m.add_function(wrap_pyfunction!(names, m)?)?;
     m.add_function(wrap_pyfunction!(rollout_trace, m)?)?;
+    m.add_function(wrap_pyfunction!(rollout_strict, m)?)?;
     Ok(())
 }
