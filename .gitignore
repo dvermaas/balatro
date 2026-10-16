@@ -14,3 +14,4 @@ scripts/rust_spike/*/Cargo.lock
 native/**/target/
 native/**/Cargo.lock
 !native/Cargo.lock
+!native/sim/Cargo.lock
