@@ -354,7 +354,11 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-xm-06": {"items": True, "xm_bonus": 0.6},
             # late spending (lab only): from ante `late`, keep only `late_buffer` dollars and allow `late_rerolls`
             "bot-late5": {"items": True, "late": 5, "late_buffer": 5, "late_rerolls": 6},
-            "bot-late6": {"items": True, "late": 6, "late_buffer": 5, "late_rerolls": 6}}
+            "bot-late6": {"items": True, "late": 6, "late_buffer": 5, "late_rerolls": 6},
+            # scaling probe: winners held 2-3x more scaling jokers from ante 3; credit their growth past the
+            # forecast horizon with `bonus` blinds through ante `bonus_ante`
+            "bot-scale-03": {"items": True, "bonus_kind": "scaling", "bonus": 0.3, "bonus_ante": 4},
+            "bot-scale-06": {"items": True, "bonus_kind": "scaling", "bonus": 0.6, "bonus_ante": 4}}
 _DEFAULTS = {}
 
 
@@ -550,16 +554,17 @@ def _play_bot(seed, arm_name, t0):
             decisions.selecting_hand = round_planner.wrap(orig_selecting_hand, pstats)
         bot = JevBot(deck="RED", stake="WHITE", game=SimBalatro(), jev=jev, log_dir=Path(tmp))
         ref[0] = bot
-        if opts.get("xm_bonus"):
+        if opts.get("xm_bonus") or opts.get("bonus_kind"):
             import strategy
-            orig_ff, bonus = _DEFAULTS["ff"], opts["xm_bonus"]
+            orig_ff = _DEFAULTS["ff"]
+            bonus, kind = opts.get("xm_bonus") or opts["bonus"], opts.get("bonus_kind", "xmult")
 
             def ff(fc, key):
                 out = orig_ff(fc, key)
                 gs = bot.last_state or {}
-                if key.startswith(("buy_card_", "replace_")):
+                if key.startswith(("buy_card_", "replace_")) and (gs.get("ante_num") or 1) <= opts.get("bonus_ante", 99):
                     c = _cards(gs, "shop")[int(key.split("_")[-1])]
-                    if c.get("set") == "JOKER" and strategy.joker_kind(_d(c.get("value")).get("effect")) == "xmult":
+                    if c.get("set") == "JOKER" and strategy.joker_kind(_d(c.get("value")).get("effect")) == kind:
                         out["_fc_delta"] += bonus
                 return out
             decisions._forecast_fields = ff
