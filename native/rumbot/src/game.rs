@@ -533,6 +533,8 @@ pub struct GameState {
     /// getting_sliced. None outside the pass, when there is nothing to wait for.
     pub blind_select_events: Option<Vec<BlindSelectEvent>>,
     pub getting_sliced: Vec<(u64, String)>,
+    /// The joker Crimson Heart holds (its uid): SMODS' ability.crimson_heart_chosen.
+    pub crimson_chosen: Option<u64>,
     pub joker_buffer: i32,
     /// The jokers that get a money row on the cash-out screen, settled when the
     /// round is evaluated -- before the beaten blind lets go of the joker Crimson
@@ -748,6 +750,7 @@ impl GameState {
             playing_tarot: false,
             blind_select_events: None,
             getting_sliced: Vec::new(),
+            crimson_chosen: None,
             joker_buffer: 0,
             dollar_rows: None,
             ante_tag_keys: Vec::new(),
@@ -1807,18 +1810,25 @@ impl GameState {
         }
         let boss = self.boss();
         if boss.is_some_and(|b| b.debuff_a_joker) && prepped && !self.jokers.is_empty() {
-            let count = self.jokers.len();
-            let mut eligible: Vec<JokerRef> = self
-                .jokers
-                .iter()
-                .filter(|j| !j.borrow().debuffed || count < 2)
-                .cloned()
-                .collect();
-            for joker in self.jokers.clone() {
-                self.set_joker_debuff(&joker, false);
+            // jev fork: the SMODS rule the game runs (blind.lua drawn_to_hand, lovely dump), not
+            // vanilla's. The joker it held is let go (only that one: a perishable stays debuffed);
+            // the pick is over the jokers not debuffed, leaving out the one it held unless nothing
+            // else is left.
+            let prev = self.crimson_chosen.take();
+            if let Some(uid) = prev {
+                if let Some(j) = self.jokers.iter().find(|j| j.borrow().uid == uid).cloned() {
+                    self.set_joker_debuff(&j, false);
+                }
+            }
+            let fallback: Vec<JokerRef> = self.jokers.iter().filter(|j| !j.borrow().debuffed).cloned().collect();
+            let mut eligible: Vec<JokerRef> =
+                fallback.iter().filter(|j| Some(j.borrow().uid) != prev).cloned().collect();
+            if eligible.is_empty() {
+                eligible = fallback;
             }
             eligible.sort_by_key(|j| j.borrow().uid);
             if let Some(chosen) = pick_from(&mut self.rng, "crimson_heart", &eligible) {
+                self.crimson_chosen = Some(chosen.borrow().uid);
                 self.set_joker_debuff(&chosen, true);
             }
         }
@@ -2752,6 +2762,7 @@ impl GameState {
         for joker in self.jokers.clone() {
             self.set_joker_debuff(&joker, false);
         }
+        self.crimson_chosen = None;
     }
 
     /// Take the payout and move on, as pressing Cash Out does.

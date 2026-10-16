@@ -182,6 +182,7 @@ impl GameState {
             playing_tarot: self.playing_tarot,
             blind_select_events: self.blind_select_events.clone(),
             getting_sliced: self.getting_sliced.clone(),
+            crimson_chosen: self.crimson_chosen,
             joker_buffer: self.joker_buffer,
             dollar_rows: self.dollar_rows.as_ref().map(|r| memo.jokers(r)),
             ante_tag_keys: self.ante_tag_keys.clone(),

@@ -16,3 +16,7 @@ Local changes to this copy are listed here, newest last:
   per-card `context.discard` does, instead of one `-0.01 * n` step (last-bit xMult difference).
 - Certificate (joker_specs.rs `certificate`): the created card goes through the blind's `debuff_card`, as
   card.lua's event does (`G.GAME.blind:debuff_card(_card)`), so it is debuffed under The Head etc.
+- Crimson Heart (game.rs `_drawn_to_hand`, new `crimson_chosen`): the SMODS rule the game runs (blind.lua
+  drawn_to_hand in the lovely dump): only the joker it held is released, and the pick is over non-debuffed
+  jokers except that one (all of them if none is left). Vanilla re-enabled every joker first
+  (Jackdaw: `sim_patches.crimson_heart`). Found by the v25 identity check (9YUMEW2U).

@@ -700,13 +700,14 @@ def _run_options_native(snap, opts, pols, n, bosses, t0, budget_s):
     for o in opts:
         gs = snap.copy()
         gs["rng"] = PseudoRandom(_seed(0))
-        before = pickle.dumps(gs["rng"])
+        before = dict(gs["rng"].get_state())
         try:
             apply_option(gs, o)
         except IllegalActionError as e:
             o["error"] = str(e)
             continue
-        desc[o["key"]] = sim_bridge.describe(gs) if pickle.dumps(gs["rng"]) == before else None
+        # v25: compare the streams themselves (pickled bytes vary with process history)
+        desc[o["key"]] = sim_bridge.describe(gs) if gs["rng"].get_state() == before else None
     k = 0
     while k < n:
         step_n = min(8, n - k) if budget_s else n - k
@@ -721,7 +722,7 @@ def _run_options_native(snap, opts, pols, n, bosses, t0, budget_s):
                 gs = snap.copy()
                 gs["rng"] = PseudoRandom(sd)
                 apply_option(gs, o)
-                runs[key] += sim_bridge.run(sim_bridge.describe(gs), pols[key], [sd], bosses)
+                runs[key] += sim_bridge.run(sim_bridge.describe(gs, rng=True), pols[key], [sd], bosses)
         k += step_n
         if budget_s and time.time() - t0 > budget_s and k >= 8:
             break

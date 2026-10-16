@@ -98,9 +98,10 @@ def _joker(c):
     return d
 
 
-def describe(gs, rng=False):
+def describe(gs, rng=False, items=None):
     """JSON for jev_sim.rollouts from a Jackdaw state in the SHOP phase. rng (v25): include the state's
-    pseudoseed streams, so jev_sim.rollout_strict continues this exact rollout."""
+    pseudoseed streams, so jev_sim.rollout_strict continues this exact rollout.
+    items: the bot's consumable use (items_desc)."""
     rr, cr = gs["round_resets"], gs.get("current_round", {})
     cards = []
     for area in ("deck", "hand", "discard_pile", "played_cards_area"):
@@ -135,9 +136,12 @@ def describe(gs, rng=False):
         "most_played": cr.get("most_played_poker_hand"),
         "hand_size": int(gs.get("hand_size", 8)), "joker_slots": int(gs.get("joker_slots", 5)),
         "consumable_slots": int(gs.get("consumable_slots", 2)),
+        "last_tarot_planet": gs.get("last_tarot_planet") or None,
     }
     if rng:
         desc["rng_pools"] = {k: v for k, v in gs["rng"].get_state().items() if k not in ("seed", "hashed_seed")}
+    if items is not None:
+        desc["items"] = items
     return json.dumps(desc)
 
 
@@ -162,11 +166,18 @@ def run(desc, policy, seeds, bosses):
             for r in raw]
 
 
-def run_strict(gs, policy, bosses):
+def items_desc(targeted, safe, suit):
+    """rollout_items' consumable policy for jev_sim, by rumbot name: targeted {key: (kind, n, arg)}
+    (tarots.TARGETED), safe {key: condition or None} (tarots.SAFE_UNTARGETED), the build's flush suit."""
+    return {"targeted": {_name(k): list(v) for k, v in targeted.items()},
+            "safe": {_name(k): c for k, c in safe.items()}, "suit": suit}
+
+
+def run_strict(gs, policy, bosses, items):
     """v25, rollout_items: the rest of this Jackdaw rollout (a SHOP state, its RNG streams included) in
-    Rust, as rows; None when it reaches a state only rollout_items.play_horizon handles. gs is not
-    changed, so the caller can continue it in Python."""
-    raw = _rs.rollout_strict(describe(gs, rng=True), policy_jokers(policy), gs["rng"].seed_str, bosses)
+    Rust, consumables used like rollout_items.use_items (items: items_desc), as rows; None when the
+    jokers change (Python rebuilds its policy). gs is not changed, so the caller can continue it."""
+    raw = _rs.rollout_strict(describe(gs, rng=True, items=items), policy_jokers(policy), gs["rng"].seed_str, bosses)
     if raw is None:
         return None
     return [{"ante": a, "type": t, "boss": b, "target": tg, "chips": ch, "cleared": cl} for a, t, b, tg, ch, cl in raw]

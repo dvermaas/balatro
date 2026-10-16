@@ -162,6 +162,23 @@ class IssueTwoMechanics(unittest.TestCase):
         self.game.call("discard", {"cards": [idx]})
         self.assertEqual(castle.ability["extra"]["chips"], 3)
 
+    def test_debuffed_joker_loses_its_passive(self):
+        # Card:set_debuff calls remove_from_deck(true) on a joker: a debuffed Stuntman gives back 2 hand size.
+        from sim_patches import _ACTING
+        gs = self.game.gs
+        stuntman = self.joker("j_stuntman")
+        gs["jokers"] = [stuntman]
+        stuntman.add_to_deck(gs)
+        size = gs["hand_size"]
+        _ACTING[0] = gs
+        try:
+            stuntman.set_debuff(True)
+            self.assertEqual(gs["hand_size"], size + 2)
+            stuntman.set_debuff(False)
+            self.assertEqual(gs["hand_size"], size)
+        finally:
+            _ACTING[0] = None
+
     def test_satellite_pays_per_distinct_planet(self):
         from jackdaw.engine import game as engine
         self.game.call("select")

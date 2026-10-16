@@ -6,7 +6,7 @@
 //! `rollout.play_horizon`. The policy scores its candidates with the bot's text scorer (the shared
 //! jev_kernel, the same rules src/native.py encodes).
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use jev_kernel::{self as kernel, RuleIn, HAND_NAMES};
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
@@ -126,6 +126,23 @@ struct StateDesc {
     /// continues exactly; absent, every rollout starts its streams fresh from its seed.
     #[serde(default)]
     rng_pools: Option<HashMap<String, f64>>,
+    /// v25: the bot's consumable use (rollout_items.use_items / tarots.plan) for strict rollouts.
+    #[serde(default)]
+    items: Option<ItemsDesc>,
+    /// v25: G.GAME.last_tarot_planet, the card The Fool copies
+    #[serde(default)]
+    last_tarot_planet: Option<String>,
+}
+
+/// tarots.TARGETED and SAFE_UNTARGETED by rumbot name, and the build's flush suit (build.decide).
+#[derive(Deserialize, Clone)]
+struct ItemsDesc {
+    /// name -> (kind, count, arg): enhance/suit/rank_up/remove/copy/best/held
+    targeted: HashMap<String, (String, usize, Option<String>)>,
+    /// name -> condition: "money4" (The Hermit), "joker_room" (Judgement), "jokers" (Wheel), or none
+    safe: HashMap<String, Option<String>>,
+    #[serde(default)]
+    suit: Option<String>,
 }
 
 fn rank_of(code: &str) -> PyResult<Rank> {
@@ -175,6 +192,7 @@ fn build(desc: &StateDesc) -> PyResult<GameState> {
     g.bosses_used = desc.bosses_used.clone();
     g.tarots_used = desc.tarots_used;
     g.planets_used = desc.planets_used;
+    g.last_tarot_planet = desc.last_tarot_planet.clone().unwrap_or_default();
     g.unique_planets = desc.unique_planets.iter().cloned().collect();
     g.pool_flags = desc.pool_flags.iter().cloned().collect();
     g.idol_rank = None;
@@ -595,6 +613,162 @@ fn act(g: &mut GameState, t: ActionType) {
 }
 
 /// rollout.use_planets
+const SHOP: u8 = 0;
+const BLIND_SELECT: u8 = 1;
+const SELECTING_HAND: u8 = 2;
+
+#[allow(non_snake_case)]
+fn NO_ITEMS() -> ItemsDesc {
+    ItemsDesc { targeted: HashMap::new(), safe: HashMap::new(), suit: None }
+}
+
+/// build.card_value: how much a hand card matters to the build (debuffed cards are never ranked).
+fn card_value(c: &Card, suit: Option<&str>) -> f64 {
+    if c.debuffed {
+        return -1.0;
+    }
+    if c.enhancement == Enhancement::Stone {
+        return 0.3;
+    }
+    let mut v = ("23456789TJQKA".find(c.rank.short()).unwrap() + 2) as f64 / 14.0;
+    if c.enhancement != Enhancement::None || c.edition != Edition::None || c.seal != Seal::None {
+        v += 0.5;
+    }
+    if let Some(s) = suit {
+        v += if c.suit.as_str() == s || c.enhancement == Enhancement::Wild { 2.0 } else { 0.0 };
+    }
+    v
+}
+
+fn enh_code(e: Enhancement) -> &'static str {
+    match e {
+        Enhancement::None => "",
+        Enhancement::Bonus => "BONUS",
+        Enhancement::Mult => "MULT",
+        Enhancement::Wild => "WILD",
+        Enhancement::Glass => "GLASS",
+        Enhancement::Steel => "STEEL",
+        Enhancement::Stone => "STONE",
+        Enhancement::Gold => "GOLD",
+        Enhancement::Lucky => "LUCKY",
+    }
+}
+
+/// tarots.plan: hand positions to target, Ok(None) when no use fits the build, Err when the Python
+/// version would raise (best/held with every card debuffed).
+fn plan(kind: &str, n: usize, arg: Option<&str>, hand: &[CardRef], suit: Option<&str>) -> Result<Option<Vec<usize>>, ()> {
+    let cs: Vec<std::cell::Ref<Card>> = hand.iter().map(|c| c.borrow()).collect();
+    if cs.len() < (if kind == "copy" { 2 } else { 1 }) {
+        return Ok(None);
+    }
+    let idx: Vec<usize> = (0..cs.len()).filter(|&i| !cs[i].debuffed).collect();
+    let val: Vec<f64> = (0..cs.len()).map(|i| card_value(&cs[i], suit)).collect();
+    let mut order = idx.clone();
+    order.sort_by(|&a, &b| val[b].partial_cmp(&val[a]).unwrap()); // stable, like sorted(key=-val)
+    let some = |p: Vec<usize>| Ok(if p.is_empty() { None } else { Some(p) });
+    match kind {
+        "enhance" => {
+            let arg = arg.unwrap_or("");
+            let fresh: Vec<usize> = order.iter().copied().filter(|&i| cs[i].enhancement == Enhancement::None).collect();
+            let pick: Vec<usize> = if arg == "WILD" {
+                let Some(s) = suit else { return Ok(None) };
+                fresh.into_iter().filter(|&i| cs[i].suit.as_str() != s).take(n).collect()
+            } else if arg == "STEEL" || arg == "GOLD" || arg == "STONE" {
+                fresh.into_iter().rev().take(n).collect()
+            } else {
+                fresh.into_iter().take(n).collect()
+            };
+            some(pick)
+        }
+        "suit" => {
+            let arg = arg.unwrap_or("");
+            if let Some(s) = suit {
+                if s != arg {
+                    return Ok(None);
+                }
+            }
+            let pick: Vec<usize> = order.iter().rev().copied()
+                .filter(|&i| cs[i].suit.as_str() != arg && !matches!(enh_code(cs[i].enhancement), "WILD" | "STONE"))
+                .take(n).collect();
+            some(pick)
+        }
+        "remove" => Ok(Some(order.iter().rev().copied().take(n).collect())),
+        "rank_up" => some(order.iter().copied().filter(|&i| cs[i].rank != Rank::Ace).take(n).collect()),
+        "copy" => {
+            let mut best: Option<(usize, usize)> = None;
+            for &i in &idx {
+                for &j in &idx {
+                    if i < j && best.map_or(true, |(a, b)| val[j] - val[i] > val[b] - val[a]) {
+                        best = Some((i, j));
+                    }
+                }
+            }
+            match best {
+                Some((i, j)) if val[j] - val[i] >= 0.3 => Ok(Some(vec![i, j])),
+                _ => Ok(None),
+            }
+        }
+        "best" => order.first().map(|&i| Some(vec![i])).ok_or(()),
+        "held" => order.last().map(|&i| Some(vec![i])).ok_or(()),
+        _ => Ok(None),
+    }
+}
+
+/// rollout_items.use_items: up to 8 uses, each the first usable card in slot order (planets always;
+/// safe untargeted cards when their condition holds; targeted cards in a round, on tarots.plan's
+/// targets). A card the engine refuses is not retried in the same state.
+fn use_items(g: &mut GameState, it: &ItemsDesc, state: u8, failed: &mut HashSet<(String, u8)>) -> Result<(), String> {
+    for _ in 0..8 {
+        if g.consumables.is_empty() {
+            return Ok(());
+        }
+        let free = g.joker_slots() - g.jokers.len() as i32;
+        let mut chosen: Option<(usize, String, Vec<usize>)> = None;
+        for (i, c) in g.consumables.iter().enumerate() {
+            let spec = c.borrow().spec;
+            let name = spec.name.to_string();
+            if spec.kind == ConsumableKind::Planet {
+                chosen = Some((i, name, vec![]));
+                break;
+            }
+            if failed.contains(&(name.clone(), state)) {
+                continue;
+            }
+            if let Some(cond) = it.safe.get(&name) {
+                match cond.as_deref() {
+                    Some("money4") if g.money < 4 => continue,
+                    Some("joker_room") if free < 1 => continue,
+                    Some("jokers") if g.jokers.is_empty() => continue,
+                    _ => {}
+                }
+                chosen = Some((i, name, vec![]));
+                break;
+            }
+            if state == SELECTING_HAND {
+                if let Some((kind, n, arg)) = it.targeted.get(&name) {
+                    match plan(kind, *n, arg.as_deref(), &g.hand, it.suit.as_deref()) {
+                        Ok(Some(p)) => {
+                            chosen = Some((i, name, p));
+                            break;
+                        }
+                        Ok(None) => {}
+                        Err(()) => return Err(STRICT_ABORT.into()),
+                    }
+                }
+            }
+        }
+        let Some((i, name, mut targets)) = chosen else { return Ok(()) };
+        targets.sort_unstable();
+        let a = Action { r#type: ActionType::UseConsumable, index: i as i32, cards: targets };
+        if g.is_legal(&a) {
+            g.step(&a);
+        } else {
+            failed.insert((name, state));
+        }
+    }
+    Ok(())
+}
+
 fn use_planets(g: &mut GameState) {
     let mut i = 0;
     while i < g.consumables.len() {
@@ -623,7 +797,7 @@ fn card_str(c: &CardRef) -> String {
 }
 
 fn play_horizon(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize) -> Result<Vec<Row>, String> {
-    play_horizon_traced(g, policy, bosses, max_steps, None, false)
+    play_horizon_traced(g, policy, bosses, max_steps, None, None)
 }
 
 /// Returned by a strict rollout that reached a state rollout_items.play_horizon handles differently.
@@ -633,30 +807,26 @@ fn joker_names(g: &GameState) -> Vec<String> {
     g.jokers.iter().map(|j| j.borrow().name().to_string()).collect()
 }
 
-/// strict (v25, rollout_items): this loop equals rollout_items.play_horizon only while no consumable
-/// but a planet is held in the shop, none at all at blind select or in a round (the bot's tarot use
-/// lives in Python), and the jokers just after each blind select are the starting ones (Python rebuilds its
-/// policy when they change). Anything else returns STRICT_ABORT and Python carries on with that rollout.
-fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize, mut trace: Option<&mut Vec<String>>, strict: bool) -> Result<Vec<Row>, String> {
+/// items (v25, rollout_items): consumables are used like rollout_items.use_items (planets, safe
+/// untargeted cards, tarots.plan targets in a round), and the jokers just after each blind select
+/// and after each use in a round must be the starting ones (Python rebuilds its policy when they
+/// change): otherwise STRICT_ABORT, and Python carries on with that rollout. Without items: the
+/// shop forecast's loop (rollout.play_horizon), planets only.
+fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize, mut trace: Option<&mut Vec<String>>, items: Option<&ItemsDesc>) -> Result<Vec<Row>, String> {
+    let strict = items.is_some();
+    let mut failed: HashSet<(String, u8)> = HashSet::new();
     let mut out: Vec<Row> = Vec::new();
     let mut cur: Option<(i32, String, String, i64)> = None;
     let mut done = 0;
     let mut recorded = false;
     let start_jokers = if strict { joker_names(g) } else { Vec::new() };
     for _ in 0..max_steps {
-        if strict {
-            let held = match g.phase {
-                Phase::Shop => g.consumables.iter().any(|c| c.borrow().spec.kind != ConsumableKind::Planet),
-                Phase::BlindSelect | Phase::Playing => !g.consumables.is_empty(),
-                _ => false,
-            };
-            if held {
-                return Err(STRICT_ABORT.into());
-            }
-        }
         match g.phase {
             Phase::Shop => {
-                use_planets(g);
+                match items {
+                    Some(it) => use_items(g, it, SHOP, &mut failed)?,
+                    None => use_planets(g),
+                }
                 act(g, ActionType::LeaveShop);
             }
             Phase::BlindSelect => {
@@ -665,7 +835,13 @@ fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_st
                     1 => "Big",
                     _ => "Boss",
                 };
+                if let Some(it) = items {
+                    if !g.consumables.is_empty() {
+                        use_items(g, it, BLIND_SELECT, &mut failed)?;
+                    }
+                }
                 act(g, ActionType::SelectBlind);
+                failed.retain(|f| f.1 != SELECTING_HAND); // the bot retries targeted cards each round
                 // Python rebuilds its policy right after the select (Madness, Riff-raff act in it)
                 if strict && joker_names(g) != start_jokers {
                     return Err(STRICT_ABORT.into());
@@ -679,6 +855,14 @@ fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_st
                 if g.hand.is_empty() {
                     out.push((ante, typ, boss, target, g.chips_scored, false));
                     return Ok(out);
+                }
+                if let Some(it) = items {
+                    if !g.consumables.is_empty() {
+                        use_items(g, it, SELECTING_HAND, &mut failed)?;
+                        if joker_names(g) != start_jokers {
+                            return Err(STRICT_ABORT.into()); // Python rebuilds its policy here
+                        }
+                    }
                 }
                 let (is_discard, idx) = policy.decide(g);
                 if let Some(t) = trace.as_mut() {
@@ -744,6 +928,9 @@ fn rollouts(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, seeds: V
         let mut g = base.deep_clone();
         g.seed = seed.clone();
         g.rng = RunRng::new(seed);
+        if let Some(pools) = &desc.rng_pools {
+            g.rng.pools = pools.clone(); // v25: an option that drew random numbers continues its streams
+        }
         out.push(play_horizon(&mut g, &policy, bosses, 600).map_err(PyRuntimeError::new_err)?);
     }
     Ok(out)
@@ -762,7 +949,8 @@ fn rollout_strict(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, se
         g.rng.pools = pools.clone();
     }
     let policy = Policy { jokers: policy_jokers };
-    match play_horizon_traced(&mut g, &policy, bosses, 900, None, true) {
+    let no_items = NO_ITEMS();
+    match play_horizon_traced(&mut g, &policy, bosses, 900, None, Some(desc.items.as_ref().unwrap_or(&no_items))) {
         Ok(rows) => Ok(Some(rows)),
         Err(e) if e == STRICT_ABORT => Ok(None),
         Err(e) => Err(PyRuntimeError::new_err(e)),
@@ -778,7 +966,7 @@ fn rollout_trace(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, see
     g.rng = RunRng::new(seed);
     let policy = Policy { jokers: policy_jokers };
     let mut log = Vec::new();
-    let rows = play_horizon_traced(&mut g, &policy, bosses, 600, Some(&mut log), false).map_err(PyRuntimeError::new_err)?;
+    let rows = play_horizon_traced(&mut g, &policy, bosses, 600, Some(&mut log), None).map_err(PyRuntimeError::new_err)?;
     Ok((rows, log))
 }
 

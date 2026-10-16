@@ -11,6 +11,7 @@ from jackdaw.engine import game as _game
 from jackdaw.engine.actions import GamePhase
 
 PATCHES = []
+_ACTING = [None]  # the game state step() is acting on (set by smeared_applies_to_every_suit_check)
 
 
 def patch(fn):
@@ -452,24 +453,81 @@ def smeared_applies_to_every_suit_check():
     rated Smeared Joker +0.31 blinds, Jackdaw exactly 0). The acting game is tracked around
     _dispatch, which step() looks up at call time."""
     from jackdaw.engine.card import Card
-    current = [None]
     orig_dispatch, orig_is_suit = _game._dispatch, Card.is_suit
 
     def dispatch(gs, action):
-        prev, current[0] = current[0], gs
+        prev, _ACTING[0] = _ACTING[0], gs
         try:
             return orig_dispatch(gs, action)
         finally:
-            current[0] = prev
+            _ACTING[0] = prev
 
     def is_suit(self, suit, *, bypass_debuff=False, flush_calc=False, smeared=False):
-        gs = current[0]
+        gs = _ACTING[0]
         if not smeared and gs is not None:
             smeared = any(getattr(j, "center_key", None) == "j_smeared" and not getattr(j, "debuff", False)
                           for j in gs.get("jokers") or ())
         return orig_is_suit(self, suit, bypass_debuff=bypass_debuff, flush_calc=flush_calc, smeared=smeared)
     _game._dispatch = dispatch
     Card.is_suit = is_suit
+
+
+@patch
+def debuffed_jokers_lose_passives():
+    """Card:set_debuff (card.lua) calls remove_from_deck(true) when a joker in G.jokers is debuffed and
+    add_to_deck(true) when it is restored, so a joker Crimson Heart disables gives back its passive
+    effect (Stuntman's -2 hand size, Juggler/Troubadour/Turtle Bean hand size, Drunkard discards, ...)
+    for as long as it is off; an expiring Perishable goes through the same set_debuff. Jackdaw only
+    flipped the flag. Joker slots are kept: a debuffed Negative's slot is only queued for removal
+    (queue_negative_removal). Found by the v25 identity check (9YUMEW2U: Stuntman under Crimson Heart)."""
+    from jackdaw.engine import round_lifecycle as _rl
+    from jackdaw.engine.card import Card
+    orig_set = Card.set_debuff
+
+    def owned(card):
+        gs = _ACTING[0]
+        return gs if gs is not None and any(j is card for j in gs.get("jokers") or ()) else None
+
+    def toggle(card, gs, off):
+        slots = gs.get("joker_slots")
+        (card.remove_from_deck if off else card.add_to_deck)(gs)
+        if slots is not None:
+            gs["joker_slots"] = slots
+
+    def set_debuff(self, should_debuff):
+        gs = owned(self)
+        if gs is not None and bool(should_debuff) != bool(self.debuff):
+            if getattr(self, "perishable", False) and (getattr(self, "perish_tally", 1) or 0) <= 0 and self.debuff:
+                return  # a perished joker stays debuffed (card.lua set_debuff)
+            toggle(self, gs, bool(should_debuff))
+        orig_set(self, should_debuff)
+    Card.set_debuff = set_debuff
+
+    orig_round_end = _rl.process_round_end_cards
+
+    def process_round_end_cards(jokers, game_state):
+        was_off = {id(j) for j in jokers if j.debuff}
+        result = orig_round_end(jokers, game_state)
+        for j in result.perished:
+            if id(j) not in was_off and any(x is j for x in game_state.get("jokers") or ()):
+                toggle(j, game_state, True)
+        return result
+    _rl.process_round_end_cards = process_round_end_cards
+
+    # SMODS (utils.lua card-limit update): hand slots that grow while SELECTING_HAND are filled from the
+    # deck at once. Crimson Heart picks in drawn_to_hand, after the state is SELECTING_HAND (game.lua),
+    # so a Stuntman it disables gives two more cards right away.
+    from jackdaw.engine.blind import Blind
+    orig_dth = Blind.drawn_to_hand
+
+    def drawn_to_hand(self, hand_cards, joker_cards=None, rng=None):
+        gs = _ACTING[0]
+        before = gs.get("hand_size") if gs is not None else None
+        result = orig_dth(self, hand_cards, joker_cards, rng)
+        if before is not None and (gs.get("hand_size") or 0) > before and gs.get("hand") is hand_cards:
+            _game._draw_hand(gs)
+        return result
+    Blind.drawn_to_hand = drawn_to_hand
 
 
 def apply():

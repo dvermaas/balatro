@@ -6,6 +6,14 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v26: speed only, same decisions as v25 on the new sim baseline. Item rollouts run in Rust from "
+    "their first shop, including the bot's tarot/spectral use (use_items and tarots.plan ported, with "
+    "the tarot table and build suit passed in). Rust gives up only when the jokers change. The Fool's "
+    "last_tarot_planet is passed. The joker forecast's per-seed path now carries RNG streams and "
+    "compares RNG state, not pickled bytes. Sim fixes (new sim baseline, real-replay parity still "
+    "329/336): a debuffed joker loses its passive (Stuntman hand size); SMODS fills grown hand slots "
+    "at once; rumbot's Crimson Heart follows SMODS. Lab E+F on 28 seeds: 56/56 identical to "
+    "JEV_NATIVE=0, 677 s -> 70 s. Based on: "
     "v25: speed only, same decisions as v24. The pack/tarot/spectral forecast's rollouts (rollout_items) "
     "hand off to rumbot-sim at the first shop holding no consumables, with Jackdaw's pseudoseed streams "
     "carried over (sim_bridge.run_strict, jev_sim.rollout_strict). Rust gives up (and Python carries on) "

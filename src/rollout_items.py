@@ -290,20 +290,33 @@ def _jsig(gs):
     return tuple(j.center_key for j in gs.get("jokers", []))
 
 
+_ITEMS = {}
+# use_items' conditions on the safe untargeted cards, for the Rust copy (jev_sim use_items)
+_SAFE_COND = {"c_hermit": "money4", "c_judgement": "joker_room", "c_wheel_of_fortune": "jokers"}
+
+
+def _items_desc(b):
+    suit = b.get("suit")
+    if suit not in _ITEMS:
+        _ITEMS[suit] = sim_bridge.items_desc(tarots.TARGETED, {k: _SAFE_COND.get(k) for k in tarots.SAFE_UNTARGETED},
+                                             suit)
+    return _ITEMS[suit]
+
+
 def play_horizon(gs, policy_for, b, bosses=3, max_steps=900):
     """rollout.play_horizon plus the bot's consumable use and policy rebuilds when jokers change.
 
-    v25: with jev_sim, at each shop holding no consumables the rest of the rollout is tried in Rust
-    (sim_bridge.run_strict, RNG streams carried over). Rust gives up when the bot would use a tarot or
-    rebuild its policy; this loop then carries on from the unchanged state. Same rows either way."""
+    v25: with jev_sim the rollout runs in Rust from its first shop (sim_bridge.run_strict: RNG streams
+    carried over, consumables used like use_items). Rust gives up when the jokers change, since Python
+    rebuilds its policy then; this loop carries on from the unchanged state. Same rows either way."""
     out, cur, done = [], None, 0
     failed = set()
     pol = policy_for(gs)
     native = sim_bridge.available()
     for _ in range(max_steps):
         ph = gs["phase"]
-        if ph == GamePhase.SHOP and native and not gs.get("consumables"):
-            rest = sim_bridge.run_strict(gs, policy_for(gs), bosses - done)
+        if ph == GamePhase.SHOP and native:
+            rest = sim_bridge.run_strict(gs, policy_for(gs), bosses - done, _items_desc(b))
             if rest is not None:
                 return out + rest
             native = False  # it would give up again at the next shop for the same reason, mostly

@@ -14,7 +14,14 @@ Balatro (+ BalatroBot mod)  ──JSON-RPC──▶  jev_bot.py  ──typed Cho
 **How decisions work.** Code enumerates the sensible legal moves (best play per hand type with a
 score estimate, a few discard strategies, shop buys, pack picks) and JEV answers one `Choice`
 question over them, returning a probability for every option. Code owns the rules and execution;
-JEV supplies the judgment.
+JEV supplies the judgment. In the shop, code forecasts each option by simulating the next few
+blinds (rollouts) and buys outright when one is clearly better; JEV rates the close calls.
+
+**Where games run.** The same bot plays either the real game (through BalatroBot) or a
+simulator: [Jackdaw](third_party/jackdaw), a pure-Python Balatro engine, wrapped to look like
+BalatroBot. The forecasts' rollouts also run on a simulator, in Rust when the native modules are
+built. Big experiments run in the simulator; see [How faithful is the simulator?](#how-faithful-is-the-simulator)
+for how closely it matches the game.
 
 ## Setup (one-time)
 
@@ -32,8 +39,15 @@ Already done on this machine; listed here so it can be redone.
    if G.GAME.viewed_back then G.GAME.viewed_back:change_to(deck_data) end
    ```
    Re-apply it after updating BalatroBot.
-4. **Python env**: `uv venv .venv` then `uv pip install --python .venv typesafe-sdk`.
+4. **Python env**: `uv venv .venv` then `uv pip install --python .venv typesafe-sdk`, and
+   `git submodule update --init` for Jackdaw.
 5. **`.env`**: `JEV_API_KEY=...` (a TypeSafe API key; the org needs credits on the API).
+6. **Rust modules (optional, about 8x faster forecasts)**: install Rust with rustup (stable, MSVC),
+   then `uv pip install --python .venv/Scripts/python.exe ./native ./native/sim`. Rebuild after any
+   change under `native/` (add `--reinstall-package jev-sim` or `jev-native`). Without them, or with
+   `JEV_NATIVE=0`, the same code runs in Python with identical results.
+7. **Localization for the simulator**: `python scripts/extract_localization.py` writes `runs/_loc`
+   (card effect text) from the game files.
 
 ## Running
 
@@ -64,17 +78,82 @@ Already done on this machine; listed here so it can be redone.
 All text JEV reads lives in **[`src/prompts.py`](src/prompts.py)**: game rules, the question per decision
 type, and the option templates. Always-right moves and the context JEV gets live in
 **[`src/strategy.py`](src/strategy.py)**: auto-using planets, keeping xMult jokers rightmost, and tagging
-jokers by role and by synergy with the run's main hands. The version is a hash of `prompts.py` +
-`hands.py` + `strategy.py` (+ `decisions.py` from v6 and `jokers.py` from v8, where the per-decision questions and buy/skip
-thresholds live), so **any edit creates a new version** (v1, v2, …) with its own stats.
-Update `VERSION_NOTE` to say what changed and restart the panel.
+jokers by role and by synergy with the run's main hands. The version id is a hash of every file
+that shapes a decision (the full list is `PROMPT_VERSION` in [`src/recorder.py`](src/recorder.py): the
+policy modules, the forecasts, and since v24 the Rust sources), so **any edit to one of them
+creates a new version** (v1, v2, …) with its own stats. Update `VERSION_NOTE` to say what changed
+and restart the panel.
 
 ### Benchmark
 
 To compare versions cleanly, open the **Benchmark** tab and press **Benchmark current version**.
-The bot plays the same 10 fixed seeds ([`src/benchmark.py`](src/benchmark.py)) and stops when done. The tab
-shows a summary per version and a seed × version grid of the ante reached. Seeded runs don't
-trigger unlocks.
+The bot plays a fixed seed set ([`src/benchmark.py`](src/benchmark.py), `NAME`; 30 seeds) and stops
+when done, or early after 10 seeds if the version clearly trails the best one. The tab shows a
+summary per version and a seed × version grid of the ante reached. Seeded runs don't trigger
+unlocks. Thirty games only detect differences of about 0.9 ante, so small changes are tested in
+the simulator first (next section).
+
+## Simulator and policy lab
+
+- **Sim games with JEV**: `python scripts/sim_run.py --set sim30-a --jobs 8` plays a seed set in
+  the simulator with the real bot code and real JEV calls. Runs are recorded under `runs/sim/`
+  and never share benchmark cells with real-game runs.
+- **Policy lab (no JEV)**: `python scripts/policy_lab.py --set sim30-a --arms bot-forecast-long`
+  plays the production code path with JEV replaced by the top-ranked option, in parallel and at no
+  token cost. Arms compare policies on the same seeds (paired), with sequential stopping. See
+  [docs/policy-lab.md](docs/policy-lab.md).
+- **Speed**: with the Rust modules, 56 lab games take about 80 s on 12 workers, against 670 s in
+  pure Python.
+
+## How faithful is the simulator?
+
+There are three versions of "the game" here, and they can differ:
+
+1. **Vanilla Balatro**, as sold.
+2. **The game the bot plays**: Balatro with Lovely (a loader that patches the game's Lua at
+   startup and changes no rules itself), **Steamodded (SMODS)**, which BalatroBot needs, and
+   BalatroBot. This is the reference: the simulator must match *this*, and the patched Lua that
+   actually runs is dumped to `%APPDATA%\Balatro\Mods\lovely\dump`.
+3. **The simulators**: Jackdaw (Python) plays whole games, and rumbot-sim (Rust, `native/rumbot`)
+   runs the forecasts' rollouts.
+
+**SMODS vs vanilla.** SMODS rewrites some game functions so mods can coexist, and a few
+rewrites change behaviour in edge cases. Ones we hit:
+- xMult arithmetic (rounding).
+- Crimson Heart: it only releases the joker it disabled, where vanilla re-enables every joker.
+- Hand slots that grow mid-round are filled from the deck at once.
+- Hand-type iteration order, which matters for To Do List.
+
+In normal play these rarely matter, and we model the SMODS behaviour because that is what the bot
+faces. BalatroBot also differs from the game: it accepts a few consumable uses the game would
+refuse, for example Judgement with full joker slots.
+
+**Game vs Jackdaw.** Jackdaw had bugs. Each one we confirmed against the Lua dump, or in a live
+test in the real game, is fixed in [`src/sim_patches.py`](src/sim_patches.py) (about 20 patches, each citing
+its source). Checks:
+- *Real-replay parity* (`scripts/diagnostics/sim_parity.py`): 336 recorded real games replayed
+  action by action. 329 replay to the end with every recorded state identical, and 25,304 of
+  25,454 states match exactly. The 7 that diverge are listed in `docs/samples/sim-parity.json`
+  (hand levels, one consumable, one joker order, one scoring case and so on); known gaps are in
+  [docs/sim-backend.md](docs/sim-backend.md).
+- *Live tests* in the real game for mechanics a replay can't settle, for example
+  `scripts/diagnostics/marble_live_test.py`.
+- The simulator matches today's real game only with **every item unlocked** (the profile we play
+  on). Older recordings were made with 58 items locked.
+
+**Jackdaw vs Rust.** Every speed-only change must give identical results seed by seed
+(`JEV_NATIVE=0` vs native, lab arms on 28 seeds). The differences this found so far were all
+real mechanics bugs. Several were in Jackdaw and are now fixed in `sim_patches`:
+- Smeared Joker in suit checks.
+- Disabled jokers keeping their passive effects (Stuntman's hand size).
+- SMODS' immediate draw.
+
+One was in rumbot-sim: its Crimson Heart followed vanilla instead of SMODS. Fixes to our rumbot
+fork are listed in [native/rumbot/VENDORED.md](native/rumbot/VENDORED.md).
+
+**What this means for results.** Sim results are a strong guide but not proof: a change that wins
+in the sim should still be confirmed on the real game. Sim and real benchmark numbers are
+recorded separately and never mixed.
 
 ## Recorded data
 
@@ -100,18 +179,28 @@ src/                    the bot and control panel (run: python src/panel.py)
   build.py              the run's committed build (target hand + flush suit) (v10+)
   tarots.py             tarot/spectral mechanics: targets for the build, auto-use (v10+)
   readiness.py          can the deck beat the next blinds? drives shop invest/bank mode (v13+)
+  rollout.py            shop forecast: simulate each joker/planet/voucher buy through the next bosses (v19+)
+  rollout_items.py      the same for packs, shop tarots and spectrals (v21+)
+  native.py             Rust hand-scoring kernel bridge (v24+; Python fallback)
+  sim_bridge*.py        Jackdaw state -> rumbot-sim (Rust) rollouts (v24+; Python fallback)
+  sim_backend.py        Jackdaw wrapped as a BalatroBot-shaped game (JEV_BACKEND=sim)
+  sim_patches.py        fixes to Jackdaw so it matches the game (see "How faithful...")
+  sim_text.py           card effect text for sim states, from runs/_loc
   hands.py              hand evaluation, score estimates, play and discard candidates
   prompts.py            everything JEV reads (rules, questions, option templates)
   strategy.py           code-level policy: auto planets, joker ordering, joker tags, interest
   jev_bot.py            the game loop: one handler per game state, asks JEV, executes
   recorder.py           per-run recording and prompt-version snapshots/ids
   analytics.py          per-run, per-version and benchmark metrics
-  benchmark.py          the fixed 10-seed benchmark set
+  benchmark.py          the fixed seed sets (NAME = the panel's benchmark)
   panel.py, panel.html  control panel server and single-page UI
   legacy/               byte-exact rebuild of v1, runnable with `python src/panel.py --legacy v1`
+native/                 Rust: scoring kernel (jev_native), rollouts (sim -> jev_sim), rumbot-sim fork
+third_party/jackdaw/    Jackdaw, the Python Balatro engine (git submodule)
 mods/jev_tweaks/        companion Balatro mod: skips blocking "unlocked" popups
-scripts/launch_fast.cmd starts Balatro in fast mode with audio
-docs/                   TypeSafe skill notes, sample game states
+scripts/                launch_fast.cmd, sim_run.py (sim games), policy_lab.py (no-JEV lab),
+                        audit_*.py (loss/win audits), diagnostics/ (parity and live tests)
+docs/                   experiment write-ups, fidelity audits, sample states
 runs/                   recordings (git-ignored except runs/_prompts version snapshots)
 ```
 
@@ -120,9 +209,9 @@ runs/                   recordings (git-ignored except runs/_prompts version sna
 - **Something blocks the game** (a popup, a menu): Balatro stops answering, and after 60 s the
   bot pauses with a hint in the feed. Clear it in the game and press Run. Unlock popups are
   handled by `jev_tweaks`.
-- **Scoring is approximate.** Most joker effects are modeled, but some interactions and special
-  hand classifiers remain unsupported. V12's discard forecasts sample 32 unordered draws;
-  see [the experiment notes](docs/v12-experiment.md) for checks and limits.
+- **The bot's own scoring is approximate.** Its hand scorer reads joker text and models most
+  effects, but not Smeared Joker, Four Fingers or Shortcut when it builds hands. The simulators do
+  model them, so forecasts see their value even where the bot won't exploit it.
 - **Consumables** are auto-used with build-aware targets. Some unsupported pack interactions
   still use fallback targets after an API error.
 - The JEV API returns **HTTP 402** when the TypeSafe org has no usable API credits. The free

@@ -6,12 +6,18 @@ local control panel for watching runs and comparing prompt versions. See README.
 ## Commands
 
 - Venv: `.venv/Scripts/python` (Python 3.14, `typesafe-sdk`). No other deps; panel is stdlib.
-- Native scorer (optional, v24+): with Rust installed (rustup, MSVC toolchain), `.venv/Scripts/python -m pip
-  install ./native` builds `jev_native`; reinstall after editing `native/src`. `native.backend()` says which
-  scorer runs (also `summary.scorer`); `JEV_NATIVE=0` forces Python. Results are identical either way
-  (`tests/test_native.py`). Also v24: `.venv/Scripts/python -m pip install ./native/sim` builds `jev_sim`, which
-  runs the shop forecast's rollouts on rumbot-sim (vendored in `native/rumbot`, local patches in its
-  `VENDORED.md`); `summary.rollouts` says which engine ran. Parity checks: `scripts/diagnostics/rumbot_*.py`.
+- Native modules (optional, v24+). Rust is installed via rustup (stable MSVC) in `~/.cargo/bin`, which may be
+  missing from PATH: prepend it. The venv is uv-made and has no pip, so build with
+  `uv pip install --python .venv/Scripts/python.exe ./native ./native/sim`, plus
+  `--reinstall-package jev-sim` (or `jev-native`) after editing `native/`.
+  - `jev_native` is the scoring kernel; `jev_sim` runs the forecasts' rollouts on rumbot-sim (vendored in
+    `native/rumbot`; our fork's changes are in its `VENDORED.md`).
+  - `JEV_NATIVE=0` forces Python everywhere. `summary.scorer` and `summary.rollouts` say which ran.
+  - v25: `rollout_items` rollouts hand off to Rust with Jackdaw's RNG streams (`sim_bridge.run_strict`),
+    and Rust runs the bot's tarot use too.
+- Sim and lab: `scripts/sim_run.py --set sim30-a --jobs 8` (sim games with JEV, recorded in `runs/sim/`);
+  `scripts/policy_lab.py --set sim30-a --arms bot-forecast-long,bot-forecast-items --jobs 12` (no JEV, free).
+  Seed sets live in `benchmark.py` (sim30-a, sim60-a, gap4-a, bench30-a, ...).
 - Layout: code in `src/` (flat modules, run as scripts; no package, so the hashed files never need
   import edits), `scripts/`, `mods/`, `docs/`, `runs/` at the repo root.
 - Panel: `.venv/Scripts/python src/panel.py` → http://127.0.0.1:8765, or `preview_start` with the
@@ -39,6 +45,12 @@ local control panel for watching runs and comparing prompt versions. See README.
   `prompts.py` + `hands.py` + `strategy.py` (+ `decisions.py` from v6, `jokers.py` from v8, `odds.py` from v9, `build.py` + `tarots.py` from v10, `readiness.py` from v13, `rollout.py` from v19, `rollout_items.py` from v21, `native.py`, `native/` (incl. `kernel/`, `sim/`, `rumbot/`), `sim_bridge.py` + `sim_bridge_jokers.py` from v24). Snapshots in `runs/_prompts/` (v1 was reconstructed
   by hand).
 - `analytics.py`: metrics derived from `decisions.jsonl`, cached by mtime.
+- Simulator: `sim_backend.py` wraps Jackdaw (`third_party/jackdaw`, a submodule) as a BalatroBot-shaped
+  game (`JEV_BACKEND=sim`). `sim_patches.py` holds every fix that makes Jackdaw match the game.
+  README "How faithful is the simulator?" explains the three levels:
+  1. vanilla Balatro;
+  2. the modded game we play (SMODS + BalatroBot), which is the reference;
+  3. Jackdaw and rumbot-sim.
 
 ## Gotchas
 
@@ -57,8 +69,18 @@ local control panel for watching runs and comparing prompt versions. See README.
   understand game behaviour. Logs: `Mods\lovely\log`.
 - `.env` holds `JEV_API_KEY`; never print it. HTTP 402 from TypeSafe = org has no usable credits.
 - The user's weekly Claude usage is tight: prefer targeted reads and avoid long polling loops.
-- Prompt-version ids hash the exact bytes of `src/prompts.py`, `src/hands.py`, `src/strategy.py`, `src/decisions.py`, `src/jokers.py`, `src/odds.py`, `src/build.py`, `src/tarots.py`, `src/readiness.py`, `src/rollout.py`, `src/rollout_items.py`
+- Prompt-version ids hash the exact bytes of the files listed in `recorder.PROMPT_VERSION`
   (`.gitattributes` keeps `*.py` byte-exact). Moving them is fine; editing them (even an import or
   line ending) makes a new version. `src/legacy/v1/` must stay byte-identical (id f67d4d14).
 - Write Python edits with a script that preserves each file's line endings, or the Edit tool; heredocs are fine with a quoted delimiter, but
   inside non-raw Python strings `"\b"` becomes a backspace: use raw strings, `chr(92)` or the Edit tool.
+- Sim fidelity: the reference is the modded game's Lua in `Mods\lovely\dump` (SMODS rewrites some
+  functions, e.g. Crimson Heart, card-limit draws, xMult rounding), not vanilla. Fix Jackdaw in
+  `sim_patches.py` and rumbot in `native/rumbot` (note it in `VENDORED.md`), citing the Lua line. After
+  any sim change, rerun `scripts/diagnostics/sim_parity.py` (must stay 329/336 or better). A sim change is
+  a new sim baseline: lab or benchmark numbers from before it aren't comparable.
+- Speed-only versions must be identical seed by seed: run the lab arms bot-forecast-long and
+  bot-forecast-items on 28 seeds with `JEV_NATIVE=0`, then native, and compare each `results.jsonl`.
+  Every mismatch so far was a real mechanics bug in one engine. Debug by tracing each forecast call's
+  input hash and output in both modes, then comparing one rollout's play log
+  (`jev_sim.rollout_trace`). Don't decide things on pickled bytes: they vary with process history.
