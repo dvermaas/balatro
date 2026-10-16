@@ -399,3 +399,54 @@ options also grows: in first-shop smoke tests the SE of a buy against skip rose 
 **Reading.** The direction is positive (1.4 SE), but 30 seeds can't confirm it. Blinds cleared is
 nearly a coin flip seed by seed (13 better, 11 worse). A 300-seed lab run is needed before this
 ships.
+
+## Mid-game scaling experiments (2026-10-16, cloud box, 4 workers): v28
+
+All arms are arm F (`bot-forecast-items`) plus one change, paired on the same seeds, code only. v27
+baseline: sim60-a 5.90 ante (4 wins); 60 fresh seeds (`--seeds 60`) 6.15 (6 wins).
+`PLAB_KEEP_LOGS=<dir>` keeps each game's `decisions.jsonl` and `states.jsonl.gz` for these analyses.
+
+**Diagnosis (v27, sim60-a).**
+- Hand levels barely move: the median best hand level is 2 at antes 5-7 and about 3 levels are
+  gained in total by ante 6. 18 of 60 games never used a planet from a consumable slot.
+- Joker slots are full from ante 3. Buys fall from about 2 per ante to 1 per ante after ante 4, with
+  about $30 held.
+- Jokers held at death are mostly flat +Mult/+Chips (Abstract, Blue Joker, Banner, Odd Todd). xMult
+  jokers are offered about 3 times a game and rarely bought: their forecast gain, re-run at n=64 on
+  saved states, is mostly negative for swaps (The Order -0.62 +- 0.17, The Tribe -0.44 +- 0.20).
+- The forecast is not saturated: from ante 3 the skip option already survives all 3 bosses in ~0%
+  of rollouts. Forecast skip blinds sit below what the game then clears (the game keeps shopping).
+
+**Planets (shipped as v28).** `jokers.gain` keeps each sample's play fixed, so a planet for a hand we
+don't play yet was worth 0: pack picks tied at +0.001 and levels spread over Pair, High Card and
+Straight Flush. v28 values a pack's planet with the best play re-chosen after the level-up on deals of
+hand size + 3 (`rollout_items.planet_gain`, Rust `best_score`), and the shop buys the planet for the
+`play_mix` top hand and the biggest Celestial pack while $4 stays (`decisions._planet_rule`).
+
+| change (lab arm) | sim60-a | fresh 60 |
+|---|---:|---:|
+| shop planet for the `play_mix` top hand (`bot-pl-mix`) | +0.00 +- 0.08 | |
+| + Celestial packs, keep $10 (`bot-pl-mix-cel10`) | +0.18 +- 0.15 | |
+| + Celestial packs, keep $4 (`bot-pl-mix-cel4`) | +0.20 +- 0.20 | |
+| + re-chosen planet picks (`bot-pl-reopt-cel4`) | +0.25 +- 0.19 | +0.13 +- 0.16 |
+| **v28 production code** (cb57eae7) | **+0.27 +- 0.20** (10 wins vs 4) | **+0.35 +- 0.14** (10 vs 6) |
+
+Pooled over 120 seeds v28 is about +0.31 +- 0.12 ante, wins 20 against 10. Levels gained by ante 6:
+2.8 -> 8.8. Lab time per game 16 -> 22 s.
+
+**Did not help.**
+- Rerolls: 4 per shop +0.12 +- 0.07; 4 down to $15 -0.03 +- 0.12; 6 down to $10 -0.12 +- 0.14.
+- An xMult bonus (+0.3 / +0.6 blinds added to xMult joker forecasts, `bot-xm-03/06`): 24 -> 39 xMult
+  buys, -0.05 / -0.08 +- 0.14 ante. Bought blindly, they are mostly conditional effects the build
+  doesn't meet (Baseball Card without Uncommons, Vampire without enhanced cards).
+- A joker-aware rollout discard (Rust only, `docs/samples/smart-discard.patch`, env
+  `JEV_SMART_DISCARD=1`): holds by suit (3+), rank groups, the best straight window and the best play,
+  each scored over 8 redraws with the text scorer. It is a stronger rollout player (skip clears 3.90
+  vs 3.61 blinds over the 3-boss horizon on 12 games' shops) but the shop decisions did not improve:
+  -0.02 +- 0.24 on sim60-a against v28, 2x slower. Every option gets the same better player, so
+  paired option differences barely move.
+
+**Reading.** The forecast judges each item alone against a frozen build. What it cannot see is the
+build changing around an item (later buys, planets and tarots aimed at a joker's condition), which is
+how strong runs find a working xMult. The shopping rollouts above were the one experiment that
+models later buys (+0.63 +- 0.45 on 30 seeds, Python only and slow).
