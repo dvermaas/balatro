@@ -358,7 +358,11 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             # scaling probe: winners held 2-3x more scaling jokers from ante 3; credit their growth past the
             # forecast horizon with `bonus` blinds through ante `bonus_ante`
             "bot-scale-03": {"items": True, "bonus_kind": "scaling", "bonus": 0.3, "bonus_ante": 4},
-            "bot-scale-06": {"items": True, "bonus_kind": "scaling", "bonus": 0.6, "bonus_ante": 4}}
+            "bot-scale-06": {"items": True, "bonus_kind": "scaling", "bonus": 0.6, "bonus_ante": 4},
+            # swaps: forecast selling any of our `swap_sells` weakest jokers (production: 2, by measured loss on
+            # recent hands, which ranks unparsed or situational jokers as free to sell)
+            "bot-swap3": {"items": True, "swap_sells": 3},
+            "bot-swap5": {"items": True, "swap_sells": 5}}
 _DEFAULTS = {}
 
 
@@ -512,6 +516,8 @@ def _play_bot(seed, arm_name, t0):
     decisions.FORECAST_N, decisions.FORECAST_BUDGET = opts.get("n", FORECAST_N), None
     decisions.FORECAST_BOSSES = opts.get("bosses", 3)
     _DEFAULTS.setdefault("rr", (decisions.MAX_REROLLS, decisions.INTEREST_BUFFER))
+    _DEFAULTS.setdefault("weak", decisions._weakest_jokers.__defaults__)
+    decisions._weakest_jokers.__defaults__ = (opts["swap_sells"],) if opts.get("swap_sells") else _DEFAULTS["weak"]
     decisions.MAX_REROLLS = opts.get("max_rerolls", _DEFAULTS["rr"][0])
     decisions.INTEREST_BUFFER = opts.get("buffer", _DEFAULTS["rr"][1])
     _DEFAULTS.setdefault("pv", rollout_items.Picker.planet_value)
