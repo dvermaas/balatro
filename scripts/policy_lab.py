@@ -511,6 +511,11 @@ def _play_bot(seed, arm_name, t0):
         decisions.selecting_hand = orig_selecting_hand  # workers play many games: never leak the wrapper
         if shop_patch:
             shop_patch.__exit__(None, None, None)
+        keep = os.environ.get("PLAB_KEEP_LOGS")  # a dir: keep each game's decisions.jsonl for diagnostics
+        if keep:
+            for f in Path(tmp).rglob("decisions.jsonl"):
+                Path(keep).mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(f, Path(keep) / f"{seed}-{arm_name}.jsonl")
         shutil.rmtree(tmp, ignore_errors=True)
 
 
