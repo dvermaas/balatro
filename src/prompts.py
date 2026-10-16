@@ -6,6 +6,10 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v22 draft: speed only, same decisions as v21 (per-seed results of the lab's arms E and F identical on "
+    "28 seeds): rollout copies by unpickling one snapshot instead of deepcopy; cash-outs inside forecast "
+    "rollouts skip shop population; hands.classify memoised; tarots.auto_use builds the build plan only "
+    "when a targeted card needs it. Based on: "
     "v21 draft: the policy lab's arm F in production (+0.44 +- 0.12 ante over v20's code path, 303 paired "
     "seeds). Packs, shop tarots and shop spectrals get their own rollout forecast (rollout_items.py: packs "
     "opened with sampled contents and the Picker rule, tarots used on tarots.plan targets) in what is left "

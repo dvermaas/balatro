@@ -340,6 +340,22 @@ def crimson_heart():
     _game._round_won = round_won
 
 
+@patch
+def rollout_skips_shop_population():
+    """Speed, not fidelity: frozen-build rollouts never shop, so a state flagged `_rollout_no_shop`
+    (rollout.build_state's copies only, never the live sim) skips populating the shop at cash-out.
+    The played-hand sync (planet pool filter) still runs."""
+    orig = _game._populate_shop
+
+    def populate(gs):
+        if gs.get("_rollout_no_shop"):
+            _game._sync_played_hand_types(gs)
+            gs["shop_cards"], gs["shop_vouchers"], gs["shop_boosters"] = [], [], []
+            return
+        orig(gs)
+    _game._populate_shop = populate
+
+
 def apply():
     for fn in PATCHES:
         fn()

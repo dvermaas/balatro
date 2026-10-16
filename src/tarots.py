@@ -126,7 +126,7 @@ def auto_use(gs):
     jok = _d(gs.get("jokers"))
     jokers_free = (jok.get("limit") or 5) - (jok.get("count") or 0)
     cons_free = (_d(gs.get("consumables")).get("limit") or 2) - len(cons)
-    b = build.decide(gs)
+    b = None  # v22 speed: build.decide only when a targeted card needs a plan (it ran on every bot step)
     for i, c in enumerate(cons):
         key = c.get("key") or ""
         label = c.get("label") or key
@@ -141,6 +141,7 @@ def auto_use(gs):
                 continue
             return "use", {"consumable": i}, f"use {label}"
         if key in TARGETED and state == "SELECTING_HAND":
+            b = b or build.decide(gs)
             p = plan(key, _d(gs.get("hand")).get("cards") or [], b)
             if p:
                 return "use", {"consumable": i, "cards": p[0]}, f"use {label}: {p[1]}"

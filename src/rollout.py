@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import copy
 import math
+import pickle
 import re
 import statistics
 import time
@@ -278,6 +279,7 @@ def build_state(pub, seed="ROLLOUT"):
             on_deck = on_deck or typ
     gs["blind_on_deck"] = on_deck or "Small"
     gs["phase"] = GamePhase.SHOP
+    gs["_rollout_no_shop"] = True  # v22 speed: cash-outs inside rollouts skip shop population (sim_patches)
     gs["shop_cards"] = [item_card(c, ctx) for c in _cards(pub, "shop")]
     gs["shop_vouchers"] = [item_card(c, ctx) for c in _cards(pub, "vouchers")]
     gs["shop_boosters"] = []
@@ -636,6 +638,21 @@ def rollouts(base_gs, opt, joker_dicts, n, bosses, tag="RO", reseed=True):
     return runs
 
 
+class Snapshot:
+    """v22 speed: copies of one engine state by unpickling a single pickle (about 3x faster than
+    copy.deepcopy for the same objects); deepcopy if the state can't be pickled."""
+
+    def __init__(self, gs):
+        self.gs = gs
+        try:
+            self.blob = pickle.dumps(gs, pickle.HIGHEST_PROTOCOL)
+        except Exception:  # noqa: BLE001
+            self.blob = None
+
+    def copy(self):
+        return pickle.loads(self.blob) if self.blob is not None else copy.deepcopy(self.gs)
+
+
 def forecast(pub, n=40, bosses=2, keys=None, budget_s=None):
     """Per-option rollout forecast from a public shop gamestate.
 
@@ -652,6 +669,7 @@ def forecast(pub, n=40, bosses=2, keys=None, budget_s=None):
 def _forecast(pub, n, bosses, keys, budget_s):
     t0 = time.time()
     base = build_state(pub)
+    snap = Snapshot(base)
     opts = [o for o in options(pub) if o["supported"] and (keys is None or o["key"] in keys or o["key"] == "skip")]
     res = {}
     runs = {o["key"]: [] for o in opts}
@@ -661,7 +679,7 @@ def _forecast(pub, n, bosses, keys, budget_s):
         for o in opts:
             if o.get("error"):
                 continue
-            gs = copy.deepcopy(base)
+            gs = snap.copy()
             gs["rng"] = PseudoRandom(_seed(k))
             try:
                 apply_option(gs, o)

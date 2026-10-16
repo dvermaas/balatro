@@ -55,8 +55,22 @@ def _is_straight(ranks):
     return idx[-1] - idx[0] == 4 or idx == [0, 1, 2, 3, 12]  # A-2-3-4-5
 
 
+_CLASSIFY = {}
+
+
 def classify(cards):
-    """Return (hand name, positions of scoring cards) for 1-5 card infos."""
+    """Return (hand name, positions of scoring cards) for 1-5 card infos. v22: memoised on the cards'
+    rank, suit and enhancement (all it reads)."""
+    key = tuple((c["rank"], c["suit"], c["enh"]) for c in cards)
+    hit = _CLASSIFY.get(key)
+    if hit is None:
+        if len(_CLASSIFY) > 200000:
+            _CLASSIFY.clear()
+        hit = _CLASSIFY[key] = _classify(cards)
+    return hit[0], list(hit[1])
+
+
+def _classify(cards):
     ranked = [p for p, c in enumerate(cards) if c["enh"] != "STONE" and c["rank"]]
     stones = [p for p in range(len(cards)) if p not in ranked]
     by_rank = Counter(cards[p]["rank"] for p in ranked)

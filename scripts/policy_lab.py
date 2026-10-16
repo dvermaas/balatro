@@ -330,7 +330,9 @@ def _death(blind, final, hands, jokers):
 
 # arm -> options: items = arm F's lab item forecast (redundant from v21, where production has it);
 # planner = round_planner picks plays/discards when the round is at risk (arm G)
-BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot-planner": {"planner": True}}
+# compute scaling (arm H and a middle point): forecast rollouts n, horizon bosses, Picker synthetic hands
+BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot-planner": {"planner": True},
+            "bot-mid": {"n": 48, "bosses": 4, "synth": 36}, "bot-heavy": {"n": 128, "bosses": 5, "synth": 96}}
 
 
 def _code_jev(bot_ref, items=False):
@@ -430,13 +432,18 @@ def _play_bot(seed, arm_name, t0):
     import decisions
     from jev_bot import BenchmarkComplete, JevBot
     from sim_backend import SimBalatro
-    decisions.FORECAST_N, decisions.FORECAST_BUDGET, decisions.FORECAST_BOSSES = FORECAST_N, None, 3  # = arm C
+    import rollout_items
+    opts = BOT_ARMS[arm_name]
+    # = arm C (n=16, 3 bosses, no time budget) unless the arm scales compute; set for every game, since a
+    # worker process plays games of several arms
+    decisions.FORECAST_N, decisions.FORECAST_BUDGET = opts.get("n", FORECAST_N), None
+    decisions.FORECAST_BOSSES = opts.get("bosses", 3)
+    rollout_items.synth_plays.__defaults__ = (opts.get("synth", rollout_items.SYNTH_HANDS), "SYNTH")
     decisions.VOUCHERS = {k: (v[0], False) for k, v in decisions.VOUCHERS.items()}  # no v18 strong-voucher rule
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
     try:
         ref = [None]
-        opts = BOT_ARMS[arm_name]
         jev = _code_jev(ref, items=opts.get("items", False))
         pstats = {"evals": 0, "plans": 0, "seconds": 0.0, "plays": 0, "discards": 0, "errors": 0}
         if opts.get("planner"):
@@ -678,7 +685,8 @@ def report(name, pairs=None, only=None):
     pairs += [(x, "forecast-long") for x in arms if x.startswith("forecast-long-") and "forecast-long" in arms]
     pairs += [(x, "gain") for x in arms if x.startswith("forecast-long-") and "gain" in arms]
     pairs += [(x, y) for x, y in (("bot-forecast-items", "bot-forecast-long"), ("bot-forecast-long", "forecast-long"),
-                                  ("bot-planner", "bot-forecast-long"))
+                                  ("bot-planner", "bot-forecast-long"), ("bot-heavy", "bot-forecast-long"),
+                                  ("bot-mid", "bot-forecast-long"), ("bot-heavy", "bot-mid"))
               if x in arms and y in arms and (x, y) not in pairs]
     out["paired"] = {f"{x} - {y}": {"ante": paired(rows, x, y), "blinds": paired(rows, x, y, "blinds"),
                                     "won": paired(rows, x, y, "won")} for x, y in pairs}

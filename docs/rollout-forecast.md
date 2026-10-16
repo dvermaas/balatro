@@ -307,3 +307,34 @@ From the policy lab's arm F ([policy-lab.md](policy-lab.md)). `rollout_items.py`
   - joker forecast: median 1.58 s, max 3.14 s;
   - item forecast: median 1.17 s, max 2.58 s;
   - no forecast errors.
+
+## v22: speed only (draft, prompt version 8ab5f825)
+
+Same decisions as v21. On 28 main seeds, the lab's arms E and F gave identical per-seed results
+before and after: all 56 games matched in ante, blinds, rounds, rerolls, buys, item buys, pack picks,
+forecast counts and death. Changes:
+- **(a) No shop population in rollouts.** `rollout.build_state` flags its state `_rollout_no_shop`.
+  A `sim_patches` patch then makes cash-out skip `populate_shop` for flagged states only (the
+  played-hand sync for the planet pool still runs). The live sim is never flagged.
+- **Snapshot copies.** `rollout.Snapshot` pickles the base state once and unpickles it for each
+  rollout (`rollout.forecast` and `rollout_items.forecast`). This is about 3x faster than
+  `copy.deepcopy`; it falls back to deepcopy if the state can't be pickled.
+- **(c) Memoised `hands.classify`**, keyed by rank, suit and enhancement (all it reads). The hit
+  rate is about 80%. Memoising `jokers.score` was tried and dropped: keyed on everything it reads,
+  it hit only 1% of the time (each held-card set is new), so the key cost more than it saved.
+- **(b) `tarots.auto_use`** now calls `build.decide` only when a targeted card needs a plan.
+  `readiness.play_mix` is already cached per round, state and jokers. In the profile, its cost is
+  its genuine per-round recomputation (24 deals x all subsets), not auto_use.
+
+**Speed** (lab, arms E+F, 28 seeds, 14 workers, no other load):
+
+| | wall time | games/hour | summed game seconds |
+|---|---:|---:|---:|
+| v21 | 768 s | 262 | 9,369 |
+| v22 | 597 s | 338 | 7,333 |
+
+That is +29% games per hour. In a profiled arm-E game, the shop forecasts fall from 79 s to 59 s.
+Most of the remaining time is `jokers.score` over every play subset:
+- `odds.forecast`'s `best_score` in hand decisions, about 40 s per game;
+- `readiness.play_mix`, about 28 s per game;
+- `rollout.Policy` and the engine inside rollouts, about 45 s per game.

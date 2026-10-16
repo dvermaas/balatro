@@ -179,6 +179,47 @@ class FortuneTeller(unittest.TestCase):
         self.assertEqual(gs["consumable_usage_total"]["planet"], 1)
 
 
+@NEEDS_SIM
+class SpeedPaths(unittest.TestCase):
+    """v22 speed changes must not change outcomes."""
+
+    def test_snapshot_copy_plays_like_deepcopy(self):
+        import rollout
+        import sim_backend
+        from jackdaw.engine.rng import PseudoRandom
+        base = rollout.build_state(sim_backend.serialize(_first_shop("ITEMSNAP")))
+        snap = rollout.Snapshot(base)
+        self.assertIsNotNone(snap.blob)
+        skip = rollout.options(sim_backend.serialize(_first_shop("ITEMSNAP")))[0]
+        out = []
+        for g in (copy.deepcopy(base), snap.copy()):
+            g["rng"] = PseudoRandom(rollout._seed(3))
+            rollout.apply_option(g, skip)
+            out.append(rollout.play_horizon(g, rollout.Policy([]), 2))
+        self.assertEqual(out[0], out[1])
+
+    def test_rollout_states_skip_shop_population_live_states_do_not(self):
+        import rollout
+        import sim_backend
+        from jackdaw.engine.actions import CashOut
+        from jackdaw.engine.game import step
+        live = _first_shop("ITEMSHOP")
+        self.assertTrue(live["shop_cards"] or live["shop_boosters"])  # the live sim still shops
+        gs = rollout.build_state(sim_backend.serialize(live))
+        self.assertTrue(gs["_rollout_no_shop"])
+        r = rollout.play_horizon(gs, rollout.Policy([]), bosses=0)
+        if r[-1]["cleared"]:
+            step(gs, CashOut())
+            self.assertEqual((gs["shop_cards"], gs["shop_vouchers"], gs["shop_boosters"]), ([], [], []))
+
+    def test_classify_memo_returns_fresh_lists(self):
+        from hands import classify
+        cards = [{"rank": "K", "suit": "H", "enh": None}, {"rank": "K", "suit": "S", "enh": None}]
+        name, sc = classify(cards)
+        sc.append(99)
+        self.assertEqual(classify(cards), ("Pair", [0, 1]))
+
+
 class DeathTables(unittest.TestCase):
     def test_death_stats_and_tables(self):
         import policy_lab

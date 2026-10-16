@@ -21,7 +21,6 @@ Values are on one scale, "fractional score gain per hand", with $1 = 0.01.
 """
 from __future__ import annotations
 
-import copy
 import random
 import re
 import time
@@ -388,6 +387,7 @@ def forecast(pub, n=16, bosses=3, keys=None, budget_s=None):
 def _forecast(pub, n, bosses, keys, budget_s):
     t0 = time.time()
     base = build_state(pub)
+    snap = rollout.Snapshot(base)
     picker = Picker(pub)
     b = picker.b
     opts = [o for o in options(pub) if keys is None or o["key"] in keys or o["key"] == "skip"]
@@ -405,7 +405,7 @@ def _forecast(pub, n, bosses, keys, budget_s):
         for o in opts:
             if o.get("error"):
                 continue
-            gs = copy.deepcopy(base)
+            gs = snap.copy()
             gs["rng"] = PseudoRandom(rollout._seed(k))
             try:
                 apply_option(gs, o, picker)
