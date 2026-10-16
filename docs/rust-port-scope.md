@@ -236,6 +236,8 @@ Plan as written:
 
 ### Stage B: rumbot-sim fork as the engine (8–12 sessions)
 
+**Parked (2026-10-16) at v27: see the README section "Rust port: status and parked plan". Stage B status below.**
+
 **Status (2026-10-16): wired in as part 2 of the v24 draft (prompt version `776c2291`).**
 - `rollout.forecast`, the joker/planet/voucher/swap forecast, runs its rollouts on rumbot-sim
   whenever `jev_sim` is installed (`rollout.run_options`).

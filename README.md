@@ -102,8 +102,52 @@ the simulator first (next section).
   plays the production code path with JEV replaced by the top-ranked option, in parallel and at no
   token cost. Arms compare policies on the same seeds (paired), with sequential stopping. See
   [docs/policy-lab.md](docs/policy-lab.md).
-- **Speed**: with the Rust modules, 56 lab games take about 80 s on 12 workers, against 670 s in
+- **Speed**: with the Rust modules, 56 lab games take about 60 s on 12 workers, against 680 s in
   pure Python.
+- **Current baseline (v27, 2026-10-16)**, code only (no JEV), arm `bot-forecast-items` on `sim60-a`:
+  - mean ante **5.90 ± 0.22**, 4 wins out of 60 (6.7%);
+  - 41 of 60 games end at antes 5-7, the mid-game scaling wall from [docs/loss-audit.md](docs/loss-audit.md);
+  - by half: `sim30-a` alone 5.37 with 0 wins, the other 30 seeds 6.43.
+
+  The last JEV sim benchmark (v23, `sim30-a`, before later sim fixes) reached 6.43. Thirty seeds
+  detect about 0.9 ante, so test changes code-only on 60+ seeds first.
+
+## Rust port: status and parked plan
+
+The goal is an all-Rust lab. It is **parked** at v27 (2026-10-16) because the lab is already fast
+enough for large code-only tests; the work moved back to improving the bot. Every step so far was
+checked for identical per-seed results against the Python path (`JEV_NATIVE=0`), and Python stays
+the fallback.
+
+Lab games per minute (no JEV, 12 workers). Done steps are measured; remaining ones are estimates
+from the v27 profile.
+
+| Step | Moved to Rust | Games/min | Status |
+|---|---|---:|---|
+| Pure Python | – | ~5 | before v24 |
+| v24 | Hand scorer; joker/planet/voucher forecast rollouts | ~14 | done |
+| v25-v26 | Pack/tarot/spectral forecast rollouts, including the bot's tarot use | ~48 | done |
+| v27 | Rollout policy follows joker removals, so Rust rarely hands back | **~56** | done |
+| Next | Whole pack forecast in Rust: pack opening and the pick (`rollout_items.Picker`) | ~90 | 1-2 sessions |
+| Stage C | The bot's decisions: `decisions`, `hands`, `jokers`, `odds`, `build`, `tarots`, ... | ~140 | 6-10 sessions |
+| Engine swap | rumbot-sim plays whole games instead of Jackdaw: public view, effect text, replay parity | ~200+ | 3-5 sessions |
+
+Where v27 spends its time (profile of 3 games):
+
+| Part | Share |
+|---|---:|
+| Pack/tarot forecasts | 69% |
+| ↳ Rust rollouts | 17% |
+| ↳ Python pack opening and picks | ~17% |
+| ↳ JSON conversion and snapshot copies | ~19% |
+| Joker forecasts | 9% |
+| Odds forecasts | 6% |
+| Game engine and state serialisation | 7% |
+
+Details: [docs/rust-port-scope.md](docs/rust-port-scope.md). The simulator needs the game's
+localization in `runs/_loc` (`scripts/extract_localization.py`). It is not in git because it is
+the game's own text, so a machine without Balatro (a cloud agent) can build and run tests but
+not sim games or lab runs.
 
 ## How faithful is the simulator?
 
