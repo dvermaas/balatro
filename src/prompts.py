@@ -6,7 +6,12 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
-    "v22 draft: speed only, same decisions as v21 (per-seed results of the lab's arms E and F identical on "
+    "v23: early joker slots are filled by code. Through ante 3 with fewer than 4 jokers, when no shop "
+    "option clears the 2 SE bar, code buys the joker the forecast rates best above buying nothing "
+    "(any positive margin). On the 4 seeds where JEV v20 beat the code-only bot most (XYK41G5M, "
+    "68RZS4XR, R8ZXJN6L, 54ATPSF9), the code-only bot reached ante 2 with 0-2 jokers and died, "
+    "while JEV filled slots and went to ante 6-9. Based on: "
+    "v22: speed only, same decisions as v21 (per-seed results of the lab's arms E and F identical on "
     "28 seeds): rollout copies by unpickling one snapshot instead of deepcopy; cash-outs inside forecast "
     "rollouts skip shop population; hands.classify memoised; tarots.auto_use builds the build plan only "
     "when a targeted card needs it. Based on: "

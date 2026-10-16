@@ -34,6 +34,8 @@ SETS = {
                   "XYK41G5M", "JU76QQT6", "USJXYQLN", "2HKM8YZ8", "BAF8SB49",
                   "6MV2BE26", "54ATPSF9", "NSMRHDU9", "7NULGXWV", "3F5ILH3G",
                   "D54JXDEK", "GTYIS5F4", "RS718JG4", "RHPJ6FZH", "QQ7KIM4A"],
+    # The 4 sim60-a seeds where JEV v20 beat the code-only bot most (v23 diagnosis). Development only.
+    "gap4-a": ["XYK41G5M", "68RZS4XR", "R8ZXJN6L", "54ATPSF9"],
 }
 SETS["sim60-a"] = SETS["sim30-a"] + SETS["sim60-a"]
 NAME = "bench30-a"  # the set the "Benchmark" button runs
