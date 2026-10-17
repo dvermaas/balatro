@@ -1,0 +1,14 @@
+[package]
+name = "pycompat"
+version = "0.1.0"
+edition = "2021"
+description = "CPython-exact helpers for the Rust port: float repr/format/round, fsum, comb, statistics, random.Random, json.dumps"
+license = "MIT"
+
+[lib]
+name = "pycompat"
+path = "src/lib.rs"
+
+[dependencies]
+sha2 = "0.10"
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
