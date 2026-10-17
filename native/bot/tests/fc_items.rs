@@ -113,7 +113,3 @@ PY   {}", strip(&got), strip(&l["ret"]));
     }
     assert_eq!(ok, total);
 }
-
-fn gs_jokers(p: &Value) -> Vec<String> {
-    p["jokers"]["cards"].as_array().map(|a| a.iter().map(|c| format!("{}", c["key"])).collect()).unwrap_or_default()
-}

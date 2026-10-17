@@ -7,8 +7,8 @@
   with metrics). Prompt version = `recorder::bot_version` (sha1 of
   native/{bot,simcore,kernel,rumbot,pycompat} `src/**/*.rs`, sorted); `behaviour_sources` lists them. Needs the
   `native/` dir at runtime (compile-time path, or JEV_NATIVE_DIR); a deployed binary without sources hashes nothing.
-- readiness: `play_mix` keeps Python's process-wide `_MIX_CACHE` (cleared past 256 entries). In Rust keep
-  one cache per game; check in the full-game replay that no recorded game hit a mid-game clear.
+- readiness: done (v28). `play_mix`'s cache is per game (thread-local, reset at each `start`); the process-wide one
+  made threaded lab runs nondeterministic. Lab E+F on sim30-a identical to the old cache, threaded or not.
 - odds: only 9 of 1545 fixture plans took the exact-enumeration path; the decisions replay covers the
   real call path (`score_after_discard`).
 - strategy: `interest(money)` handles int money only (BalatroBot money is always int).
@@ -42,8 +42,7 @@
   (`fool_always_usable`, `pack_ignores_played`, `jackdaw_unmarked_jokers`) for v27 identity; drop them once Jackdaw is not the reference.
 - analytics (Python too): run_metrics "progress" never adds the final-blind share (last_move only holds
   discards_left, so target is 0): progress == rounds_won. Ported as-is; fix in both if the share was intended.
-- panel: `--legacy` (v1 bot) is not ported: `jevbot panel --legacy` prints "the v1 bot is Python-only: run
-  src/panel.py --legacy" to stderr and exits 2. Error-event tracebacks not ported (see decisions above).
+- panel: `--legacy` (the v1 bot) went with the Python code. Error-event tracebacks not ported (see decisions above).
 - forecast_items (fc-items4): more Jackdaw-mirroring for v27 identity, forecast only: Cryptid copies don't grow
   Hologram (Jackdaw game.py:2606-2625 skips playing_card_added), `pack_ignores_played` now also makes rumbot
   `add_random_joker` ignore seen centers (Jackdaw never fills used_jokers); not yet noted in native/rumbot/VENDORED.md.

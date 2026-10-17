@@ -123,6 +123,7 @@ fn play(seed: &str) -> Result<Value, String> {
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
     bot.dec = jevbot::decisions::DecisionCfg::lab();
+    bot.recorder.raw_states = want_trace; // only decisions.jsonl is read back
     bot.act("start", Some(&json!({"seed": seed, "deck": "RED", "stake": "WHITE"}))).map_err(|e| format!("start: {e:?}"))?;
     let mut engine_won = false;
     for _ in 0..20000 {

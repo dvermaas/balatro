@@ -203,7 +203,8 @@ pub fn run_metrics(run_dir: &Path) -> Value {
     Value::Object(m)
 }
 
-/// Python `run_backend`: "balatrobot" (real game, and runs from before the field existed) or "jackdaw".
+/// `summary.backend`: "balatrobot" (real game, and runs from before the field existed), "rumbot" (Rust sim)
+/// or "jackdaw" (the former Python sim).
 pub fn run_backend(r: &Value) -> String {
     match r.get("backend") {
         Some(Value::String(b)) if !b.is_empty() => b.clone(),

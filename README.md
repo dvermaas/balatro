@@ -6,9 +6,9 @@ asking JEV to pick the next move, executing it, and repeating. Every decision is
 prompt changes can be compared run by run.
 
 ```
-Balatro (+ BalatroBot mod)  ──JSON-RPC──▶  jev_bot.py  ──typed Choice──▶  JEV API
+Balatro (+ BalatroBot mod)  ──JSON-RPC──▶  jevbot (Rust)  ──typed Choice──▶  JEV API
         ▲                                     │
-        └────────────── action ◀──────────────┘          panel.py: control panel + run analytics
+        └────────────── action ◀──────────────┘          jevbot panel: control panel + run analytics
 ```
 
 **How decisions work.** Code enumerates the sensible legal moves (best play per hand type with a
@@ -17,11 +17,13 @@ question over them, returning a probability for every option. Code owns the rule
 JEV supplies the judgment. In the shop, code forecasts each option by simulating the next few
 blinds (rollouts) and buys outright when one is clearly better; JEV rates the close calls.
 
-**Where games run.** The same bot plays either the real game (through BalatroBot) or a
-simulator: [Jackdaw](third_party/jackdaw), a pure-Python Balatro engine, wrapped to look like
-BalatroBot. The forecasts' rollouts also run on a simulator, in Rust when the native modules are
-built. Big experiments run in the simulator; see [How faithful is the simulator?](#how-faithful-is-the-simulator)
-for how closely it matches the game.
+**Where games run.** The same bot plays either the real game (through BalatroBot) or
+[rumbot-sim](native/rumbot), a Balatro engine in Rust, behind the same interface. The forecasts'
+rollouts run on rumbot too. Big experiments run in the simulator; see
+[How faithful is the simulator?](#how-faithful-is-the-simulator) for how closely it matches the game.
+
+The bot was written in Python first and ported to Rust line by line (frozen at Python v27, identical
+seed by seed). The Python code was removed afterwards; it is in the git history up to `b146a7a`.
 
 ## Setup (one-time)
 
@@ -39,15 +41,16 @@ Already done on this machine; listed here so it can be redone.
    if G.GAME.viewed_back then G.GAME.viewed_back:change_to(deck_data) end
    ```
    Re-apply it after updating BalatroBot.
-4. **Python env**: `uv venv .venv` then `uv pip install --python .venv typesafe-sdk`, and
-   `git submodule update --init` for Jackdaw.
+4. **Rust**: install with rustup (stable, MSVC), then build (Git Bash, `export PATH="$HOME/.cargo/bin:$PATH"`
+   first if cargo is not on PATH):
+   ```
+   cd native && cargo build --release
+   ```
+   Binaries land in `native/target/release` (`jevbot`, `jevlab`).
 5. **`.env`**: `JEV_API_KEY=...` (a TypeSafe API key; the org needs credits on the API).
-6. **Rust modules (optional, about 8x faster forecasts)**: install Rust with rustup (stable, MSVC),
-   then `uv pip install --python .venv/Scripts/python.exe ./native ./native/sim`. Rebuild after any
-   change under `native/` (add `--reinstall-package jev-sim` or `jev-native`). Without them, or with
-   `JEV_NATIVE=0`, the same code runs in Python with identical results.
-7. **Localization for the simulator**: `python scripts/extract_localization.py` writes `runs/_loc`
-   (card effect text) from the game files.
+6. **Localization for the simulator**: `native/target/release/jevbot extract-loc` copies the game's
+   card text from `Balatro.exe` (and Steamodded's overlay) into `runs/_loc`. The text is the game's,
+   so it is never committed. Options: `--exe`, `--smods`, `--out` (or set `$BALATRO_LOC_DIR`).
 
 ## Running
 
@@ -56,9 +59,11 @@ Already done on this machine; listed here so it can be redone.
    and muted.
 2. Start the control panel and open http://127.0.0.1:8765:
    ```
-   .venv\Scripts\python src\panel.py
+   native\target\release\jevbot panel
    ```
 3. Press **Run** (or Space). It starts paused.
+
+Without the panel: `jevbot play [--seed S] [--runs N]` plays the game from the command line.
 
 ### Control panel
 
@@ -73,92 +78,105 @@ Already done on this machine; listed here so it can be redone.
   decision type, pack take rate, wasted discards, jokers held) and ▲/▼ against the previous
   version, plus the full prompt text with changes highlighted.
 
+`jevbot panel --backend rumbot` runs the panel on the simulator (runs under `runs/sim`), and
+`--code-jev` replaces JEV with CodeJev (the top-ranked option; no key, no tokens). The page is
+[`native/bot/panel.html`](native/bot/panel.html), re-read on every load; the binary carries a copy
+for when the source tree is not there.
+
 ## Tuning prompts
 
-All text JEV reads lives in **[`src/prompts.py`](src/prompts.py)**: game rules, the question per decision
-type, and the option templates. Always-right moves and the context JEV gets live in
-**[`src/strategy.py`](src/strategy.py)**: auto-using planets, keeping xMult jokers rightmost, and tagging
-jokers by role and by synergy with the run's main hands. The version id is a hash of every file
-that shapes a decision (the full list is `PROMPT_VERSION` in [`src/recorder.py`](src/recorder.py): the
-policy modules, the forecasts, and since v24 the Rust sources), so **any edit to one of them
-creates a new version** (v1, v2, …) with its own stats. Update `VERSION_NOTE` to say what changed
-and restart the panel.
+All text JEV reads lives in **[`native/bot/src/prompts.rs`](native/bot/src/prompts.rs)**: game rules, the
+question per decision type, and the option templates. Always-right moves and the context JEV gets
+live in **[`native/bot/src/strategy.rs`](native/bot/src/strategy.rs)**: auto-using planets, keeping xMult
+jokers rightmost, and tagging jokers by role and by synergy with the run's main hands.
+
+The prompt version id is the sha1 of the Rust sources that shape a decision
+(`recorder::bot_version`: `src/**/*.rs` of `native/{bot,simcore,kernel,rumbot,pycompat}`), so **any
+edit there creates a new version** with its own stats. Update `VERSION_NOTE` in `prompts.rs` to say
+what changed and restart the panel.
 
 ### Benchmark
 
 To compare versions cleanly, open the **Benchmark** tab and press **Benchmark current version**.
-The bot plays a fixed seed set ([`src/benchmark.py`](src/benchmark.py), `NAME`; 30 seeds) and stops
-when done, or early after 10 seeds if the version clearly trails the best one. The tab shows a
-summary per version and a seed × version grid of the ante reached. Seeded runs don't trigger
-unlocks. Thirty games only detect differences of about 0.9 ante, so small changes are tested in
-the simulator first (next section).
+The bot plays a fixed seed set ([`native/bot/src/benchmark.rs`](native/bot/src/benchmark.rs), `NAME`;
+30 seeds) and stops when done, or early after 10 seeds if the version clearly trails the best one.
+The tab shows a summary per version and a seed × version grid of the ante reached. Seeded runs
+don't trigger unlocks. Thirty games only detect differences of about 0.9 ante, so small changes are
+tested in the simulator first (next section).
 
 ## Simulator and policy lab
 
-- **Sim games with JEV**: `python scripts/sim_run.py --set sim30-a --jobs 8` plays a seed set in
-  the simulator with the real bot code and real JEV calls. Runs are recorded under `runs/sim/`
-  and never share benchmark cells with real-game runs.
-- **Policy lab (no JEV)**: `python scripts/policy_lab.py --set sim30-a --arms bot-forecast-long`
-  plays the production code path with JEV replaced by the top-ranked option, in parallel and at no
-  token cost. Arms compare policies on the same seeds (paired), with sequential stopping. See
+- **Sim games with JEV**: `jevbot sim --set sim30-a --jobs 8` plays a seed set on rumbot with the
+  production bot and real JEV calls, one game per thread (`--seeds A,B` for chosen seeds,
+  `--code-jev` for no JEV). Runs are recorded under `runs/sim/` (`runs/sim_smoke/` with
+  `--code-jev`) and never share benchmark cells with real-game runs. One JSON line per game, then a
+  summary line.
+- **Policy lab (no JEV)**: `jevlab --set sim30-a --arm E|F --jobs 8 [--limit N] [--name X]` plays the
+  bot with CodeJev standing in for JEV, in parallel and at no token cost: arm E is
+  `bot-forecast-long`, arm F `bot-forecast-items`. Rows go to
+  `runs/_policy_lab/<name>/results.jsonl`. Arms compare policies on the same seeds (paired); see
   [docs/policy-lab.md](docs/policy-lab.md).
-- **Speed**: with the Rust modules, 56 lab games take about 60 s on 12 workers, against 680 s in
-  pure Python.
-- **Current baseline (v27, 2026-10-16)**, code only (no JEV), arm `bot-forecast-items` on `sim60-a`:
-  - mean ante **5.90 ± 0.22**, 4 wins out of 60 (6.7%);
-  - 41 of 60 games end at antes 5-7, the mid-game scaling wall from [docs/loss-audit.md](docs/loss-audit.md);
-  - by half: `sim30-a` alone 5.37 with 0 wins, the other 30 seeds 6.43.
-
-  The last JEV sim benchmark (v23, `sim30-a`, before later sim fixes) reached 6.43. Thirty seeds
-  detect about 0.9 ante, so test changes code-only on 60+ seeds first.
+- **Profiling**: `JEV_PERF=1` prints coarse timers per phase. For a real profile, build with
+  `CARGO_PROFILE_RELEASE_DEBUG=line-tables-only` and run `jevlab` under `perf record -g`.
+- **Baseline (v27, 2026-10-16)**, code only (no JEV), arm F on `sim60-a`: Rust 5.93 ± 0.22 ante,
+  6/60 wins (Python v27: 5.90 ± 0.22, 4/60); 41 of 60 games end at antes 5-7, the mid-game scaling
+  wall from [docs/loss-audit.md](docs/loss-audit.md). The last JEV sim benchmark (v23, `sim30-a`,
+  before later sim fixes) reached 6.43. Thirty seeds detect about 0.9 ante, so test changes
+  code-only on 60+ seeds first.
 
 ## Rust bot
 
-The whole bot is in Rust: `native/bot` (crate `jevbot`) holds JevBot, the decisions, the forecasts, the
-recorder, the TypeSafe client, the panel and the policy lab. The game engine is `native/rumbot`
-(rumbot-sim fork). The port is frozen at Python v27: for the same seeds it gives the same results, and
-Python stays the reference (`jevbot panel --legacy` is Python-only: run `src/panel.py --legacy`).
-Porting history and conventions: [docs/rust-port-guide.md](docs/rust-port-guide.md),
-[docs/rust-port-scope.md](docs/rust-port-scope.md); open items: [docs/port-handoff/followups.md](docs/port-handoff/followups.md).
+`native/` is one Cargo workspace:
 
-Build (Git Bash, `export PATH="$HOME/.cargo/bin:$PATH"` first):
+| Crate | What |
+|---|---|
+| `bot` (`jevbot`) | JevBot, the decisions, the forecasts, the recorder, the TypeSafe client, the panel; binaries `jevbot` (play, panel, sim, extract-loc) and `jevlab` |
+| `kernel` (`jev_kernel`) | the joker-aware hand scorer: classify and score every play subset |
+| `simcore` | the forecast core: state description, rollout policy, `play_horizon` on rumbot |
+| `rumbot` (`rumbot_sim`) | the game engine, our fork of rumbot-sim (changes in [VENDORED.md](native/rumbot/VENDORED.md)) |
+| `pycompat` | CPython-exact float formatting, rounding, `random.Random`, `json.dumps` (keeps prompts and records identical to the Python bot's) |
+| `typesafe` | the TypeSafe API client |
 
 ```
-cd native/bot && cargo build --release --bins
-target/release/jevbot play [--backend balatrobot|rumbot] [--seed S] [--deck RED] [--stake WHITE]     [--model jev-latest] [--runs N] [--code-jev]
-target/release/jevbot panel [--port 8765] [--backend balatrobot|rumbot] [--code-jev]
-target/release/jevlab --set sim30-a --arm E|F --jobs 8 [--limit N] [--name X]
+jevbot play [--backend balatrobot|rumbot] [--seed S] [--deck RED] [--stake WHITE] [--model jev-latest] [--runs N] [--code-jev]
+jevbot panel [--port 8765] [--backend balatrobot|rumbot] [--code-jev]
+jevbot sim (--set NAME | --seeds A,B) [--jobs N] [--code-jev]
+jevbot extract-loc [--exe Balatro.exe] [--smods DIR] [--out DIR]
+jevlab --set sim30-a --arm E|F --jobs 8 [--limit N] [--name X]
 ```
 
 - `play --backend balatrobot` plays the modded game at 127.0.0.1:12346; `rumbot` runs the headless
-  engine and logs under `runs/sim`. `--code-jev` uses CodeJev instead of JEV (no key, no tokens). The
-  JEV key comes from `.env`.
-- `jevlab` is the Rust policy lab, no JEV: arm E (`bot-forecast-long`) or F (`bot-forecast-items`).
-  Rows go to `runs/_policy_lab/<name>/results.jsonl`.
-- `JEV_PERF=1` prints coarse profiling timers. `JEVLAB_TRACE=<dir>` writes each game's calls and
-  prints the first call that differs from the Python trace in `runs/_port/traces`.
-- Sim games need the game's localization in `runs/_loc` (`scripts/extract_localization.py`), as before.
+  engine and logs under `runs/sim`. The JEV key comes from `.env`.
+- `JEVLAB_TRACE=<dir>` writes each lab game's calls and prints the first call that differs from the
+  recorded Python trace in `runs/_port/traces`.
+- Porting history and conventions: [docs/rust-port-guide.md](docs/rust-port-guide.md),
+  [docs/rust-port-scope.md](docs/rust-port-scope.md); open items:
+  [docs/port-handoff/followups.md](docs/port-handoff/followups.md).
 
-Identity (frozen at Python v27):
+**Identity** (frozen at Python v27). Tests: `cd native && cargo test --release`. Most compare against
+fixtures and traces recorded from the Python bot in `runs/_port` (not in git; `$JEV_PORT_DATA`
+overrides the path). They stay valid without the Python code, but can no longer be regenerated.
 
-- Bot replay: 60/60 games identical. Forecasts: shop 2475/2475, packs pass, items 3193/3193. All-Rust
-  forecast replay: 60/60.
+- Bot replay: 60/60 games identical. Forecasts: shop 2475/2475, packs pass, items 3193/3193
+  (`fc_items` is slow, ~2-5 min). All-Rust forecast replay: 60/60.
+- Engine replay (`engine_replay`, `IGNORE="].id"`): 47/60 games identical. The rest are Jackdaw bugs
+  and the Mail-In Rebate rank (followups.md).
 - Live lab, 8 traced seeds: 15/16 calls identical. The one difference (1YJ4DQ2R, arm E) is a Jackdaw
   Standard-pack bug, not the Rust bot.
-- sim60-a, arm F: Rust 5.93 +- 0.22 ante, 6/60 wins; Python v27 5.90 +- 0.22, 4/60 wins; 54/60 games
-  end the same.
-- Engine replay (`engine_replay`, IGNORE="].id"): 47/60 games identical. The rest are Jackdaw bugs and
-  the Mail-In Rebate rank (followups.md).
+- `kernel/tests/matches_reference.rs` checks the allocation-free scorer against its original
+  implementation, bit for bit, on random hands and joker rules.
 
-Speed (8 seeds, summed per-game seconds, arm E / arm F):
+**Speed** (8 seeds, summed per-game seconds, arm E / arm F):
 
 | Path | Arm E | Arm F |
 |---|---:|---:|
 | Pure Python (`JEV_NATIVE=0`) | 887 s | 1030 s |
 | Python + native kernels (v27) | 87 s | 115 s |
-| Rust | 49 s | 58 s |
+| Rust (port) | 49 s | 58 s |
 
-Rust is about 18x faster than pure Python and about 2x faster than v27.
+The profiled speed-up after the port (2026-10-17, 16 seeds, 4 threads, no tracing, same machine):
+arm E 19.4 s → 11.3 s, arm F 23.2 s → 13.5 s wall, with identical games. The allocator had taken
+about a third of the time (now mimalloc), and the scorer kernel no longer allocates per subset.
 
 Live tests (2026-10-17): one real game with CodeJev and one with real JEV, both played through `jevbot play`
 against the modded game.
@@ -177,8 +195,8 @@ There are three versions of "the game" here, and they can differ:
    startup and changes no rules itself), **Steamodded (SMODS)**, which BalatroBot needs, and
    BalatroBot. This is the reference: the simulator must match *this*, and the patched Lua that
    actually runs is dumped to `%APPDATA%\Balatro\Mods\lovely\dump`.
-3. **The simulators**: Jackdaw (Python) plays whole games, and rumbot-sim (Rust, `native/rumbot`)
-   runs the forecasts' rollouts.
+3. **The simulator**: rumbot-sim (`native/rumbot`), which plays whole sim games and the forecasts'
+   rollouts. Until the Python removal, Jackdaw (a Python engine) played the sim games.
 
 **SMODS vs vanilla.** SMODS rewrites some game functions so mods can coexist, and a few
 rewrites change behaviour in edge cases. Ones we hit:
@@ -191,28 +209,21 @@ In normal play these rarely matter, and we model the SMODS behaviour because tha
 faces. BalatroBot also differs from the game: it accepts a few consumable uses the game would
 refuse, for example Judgement with full joker slots.
 
-**Game vs Jackdaw.** Jackdaw had bugs. Each one we confirmed against the Lua dump, or in a live
-test in the real game, is fixed in [`src/sim_patches.py`](src/sim_patches.py) (about 20 patches, each citing
-its source). Checks:
-- *Real-replay parity* (`scripts/diagnostics/sim_parity.py`): 336 recorded real games replayed
-  action by action. 329 replay to the end with every recorded state identical, and 25,304 of
-  25,454 states match exactly. The 7 that diverge are listed in `docs/samples/sim-parity.json`
-  (hand levels, one consumable, one joker order, one scoring case and so on); known gaps are in
-  [docs/sim-backend.md](docs/sim-backend.md).
-- *Live tests* in the real game for mechanics a replay can't settle, for example
-  `scripts/diagnostics/marble_live_test.py`.
+**How it was checked.**
+- *Jackdaw vs the game* (Python era): 336 recorded real games replayed action by action through
+  Jackdaw with its fixes; 329 replayed to the end with every recorded state identical, and 25,304 of
+  25,454 states matched exactly. The 7 that diverge are listed in `docs/samples/sim-parity.json`;
+  known gaps are in [docs/sim-backend.md](docs/sim-backend.md). This check needed Jackdaw and went
+  with the Python code: rumbot has no real-replay parity check of its own yet.
+- *rumbot vs Jackdaw*: the engine replay above (47/60 games identical; the rest are Jackdaw bugs).
+- *Live tests* in the real game for mechanics a replay can't settle.
 - The simulator matches today's real game only with **every item unlocked** (the profile we play
   on). Older recordings were made with 58 items locked.
 
-**Jackdaw vs Rust.** Every speed-only change must give identical results seed by seed
-(`JEV_NATIVE=0` vs native, lab arms on 28 seeds). The differences this found so far were all
-real mechanics bugs. Several were in Jackdaw and are now fixed in `sim_patches`:
-- Smeared Joker in suit checks.
-- Disabled jokers keeping their passive effects (Stuntman's hand size).
-- SMODS' immediate draw.
-
-One was in rumbot-sim: its Crimson Heart followed vanilla instead of SMODS. Fixes to our rumbot
-fork are listed in [native/rumbot/VENDORED.md](native/rumbot/VENDORED.md).
+Mechanics bugs found by comparing engines were real bugs in one of them: Smeared Joker in suit
+checks, disabled jokers keeping their passive effects (Stuntman's hand size) and SMODS' immediate
+draw were Jackdaw's; Crimson Heart following vanilla instead of SMODS was rumbot's. Fixes to our
+rumbot fork are listed in [native/rumbot/VENDORED.md](native/rumbot/VENDORED.md), each citing the Lua.
 
 **What this means for results.** Sim results are a strong guide but not proof: a change that wins
 in the sim should still be confirmed on the real game. Sim and real benchmark numbers are
@@ -223,47 +234,27 @@ recorded separately and never mixed.
 ```
 runs/
   <started>-<seed>/
-    summary.json       # result, ante/round, decisions, tokens, confidence, prompt_version
+    summary.json       # result, ante/round, decisions, tokens, confidence, prompt_version, backend
     decisions.jsonl    # every JEV call: state sent, instructions, options, choice, probabilities,
                        # confidence, latency, tokens; plus actions, errors and run end
+    states.jsonl.gz    # the full game state at every decision
+  sim/, sim_smoke/     # simulator runs (JEV / CodeJev), same layout
+  _policy_lab/         # jevlab results
+  _loc/                # the game's localization (jevbot extract-loc; not in git)
   _prompts/
-    index.json         # version order (v1, v2, …)
+    index.json         # version order
     <version>.json     # snapshot of the prompt text for that version
 ```
 
 ## Layout
 
 ```
-src/                    the bot and control panel (run: python src/panel.py)
-  balatro.py            JSON-RPC client for BalatroBot (127.0.0.1:12346)
-  decisions.py          v6+ handlers: batched typed questions per decision, thresholds in code
-  jokers.py             joker-aware hand scoring and measured shop value, from live joker text (v8+)
-  odds.py               unordered-draw forecasts of the complete next hand (v12+), legacy draw odds
-  build.py              the run's committed build (target hand + flush suit) (v10+)
-  tarots.py             tarot/spectral mechanics: targets for the build, auto-use (v10+)
-  readiness.py          can the deck beat the next blinds? drives shop invest/bank mode (v13+)
-  rollout.py            shop forecast: simulate each joker/planet/voucher buy through the next bosses (v19+)
-  rollout_items.py      the same for packs, shop tarots and spectrals (v21+)
-  native.py             Rust hand-scoring kernel bridge (v24+; Python fallback)
-  sim_bridge*.py        Jackdaw state -> rumbot-sim (Rust) rollouts (v24+; Python fallback)
-  sim_backend.py        Jackdaw wrapped as a BalatroBot-shaped game (JEV_BACKEND=sim)
-  sim_patches.py        fixes to Jackdaw so it matches the game (see "How faithful...")
-  sim_text.py           card effect text for sim states, from runs/_loc
-  hands.py              hand evaluation, score estimates, play and discard candidates
-  prompts.py            everything JEV reads (rules, questions, option templates)
-  strategy.py           code-level policy: auto planets, joker ordering, joker tags, interest
-  jev_bot.py            the game loop: one handler per game state, asks JEV, executes
-  recorder.py           per-run recording and prompt-version snapshots/ids
-  analytics.py          per-run, per-version and benchmark metrics
-  benchmark.py          the fixed seed sets (NAME = the panel's benchmark)
-  panel.py, panel.html  control panel server and single-page UI
-  legacy/               byte-exact rebuild of v1, runnable with `python src/panel.py --legacy v1`
-native/                 Rust: scoring kernel (jev_native), rollouts (sim -> jev_sim), rumbot-sim fork
-third_party/jackdaw/    Jackdaw, the Python Balatro engine (git submodule)
+native/                 the bot, as one Cargo workspace (see "Rust bot")
+  bot/                  jevbot: src/ (bot, decisions, forecasts, recorder, panel), panel.html, tests/
+  kernel/ simcore/ rumbot/ pycompat/ typesafe/
 mods/jev_tweaks/        companion Balatro mod: skips blocking "unlocked" popups
-scripts/                launch_fast.cmd, sim_run.py (sim games), policy_lab.py (no-JEV lab),
-                        audit_*.py (loss/win audits), diagnostics/ (parity and live tests)
-docs/                   experiment write-ups, fidelity audits, sample states
+scripts/launch_fast.cmd starts Balatro in BalatroBot fast mode
+docs/                   experiment write-ups, fidelity audits, sample states (many from the Python era)
 runs/                   recordings (git-ignored except runs/_prompts version snapshots)
 ```
 
@@ -273,7 +264,7 @@ runs/                   recordings (git-ignored except runs/_prompts version sna
   bot pauses with a hint in the feed. Clear it in the game and press Run. Unlock popups are
   handled by `jev_tweaks`.
 - **The bot's own scoring is approximate.** Its hand scorer reads joker text and models most
-  effects, but not Smeared Joker, Four Fingers or Shortcut when it builds hands. The simulators do
+  effects, but not Smeared Joker, Four Fingers or Shortcut when it builds hands. The simulator does
   model them, so forecasts see their value even where the bot won't exploit it.
 - **Consumables** are auto-used with build-aware targets. Some unsupported pack interactions
   still use fallback targets after an API error.

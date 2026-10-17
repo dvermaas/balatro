@@ -19,6 +19,58 @@ fn loc_dir() -> PathBuf {
     }
 }
 
+/// Copy the game's English text out of a Balatro install into `out` (the former
+/// scripts/extract_localization.py; `jevbot extract-loc`). The text is not ours to redistribute, so it is
+/// never committed. Writes, and returns the paths of:
+///   en-us.lua        localization/en-us.lua from the game's love archive (Balatro.exe is a zip)
+///   game-hands.lua   the default poker-hand table from game.lua (BalatroBot reports its `example`s)
+///   smods-en-us.lua  Steamodded's localization/en-us.lua overlay, if `smods` has one
+pub fn extract_localization(exe: &std::path::Path, smods: Option<&std::path::Path>, out: &std::path::Path) -> Result<Vec<PathBuf>, String> {
+    use std::io::Read;
+    let f = std::fs::File::open(exe).map_err(|e| format!("{}: {e}", exe.display()))?;
+    let mut z = zip::ZipArchive::new(f).map_err(|e| format!("{}: not a love archive ({e})", exe.display()))?;
+    let mut read = |name: &str| -> Result<Vec<u8>, String> {
+        let mut b = Vec::new();
+        z.by_name(name).map_err(|e| format!("{name}: {e}"))?.read_to_end(&mut b).map_err(|e| format!("{name}: {e}"))?;
+        Ok(b)
+    };
+    let loc = read("localization/en-us.lua")?;
+    let game = String::from_utf8(read("game.lua")?).map_err(|e| format!("game.lua: {e}"))?;
+    std::fs::create_dir_all(out).map_err(|e| format!("{}: {e}", out.display()))?;
+    let write = |name: &str, bytes: &[u8]| -> Result<PathBuf, String> {
+        let p = out.join(name);
+        std::fs::write(&p, bytes).map_err(|e| format!("{}: {e}", p.display()))?;
+        Ok(p)
+    };
+    let mut wrote = vec![write("en-us.lua", &loc)?];
+    // G.GAME.hands defaults: the `hands = {...}` table inside Game:init_game_object, braces matched
+    let init = game.find("function Game:init_game_object").ok_or("game.lua: no Game:init_game_object")?;
+    let start = init + game[init..].find("hands = {").ok_or("game.lua: no hands table")? + "hands = ".len();
+    let mut depth = 0i32;
+    let mut end = None;
+    for (i, ch) in game[start..].char_indices() {
+        depth += match ch { '{' => 1, '}' => -1, _ => 0 };
+        if depth == 0 {
+            end = Some(start + i);
+            break;
+        }
+    }
+    let end = end.ok_or("game.lua: unbalanced hands table")?;
+    wrote.push(write("game-hands.lua", format!("return {}\n", &game[start..=end]).as_bytes())?);
+    if let Some(dir) = smods {
+        let p = dir.join("localization").join("en-us.lua");
+        if let Ok(b) = std::fs::read(&p) {
+            wrote.push(write("smods-en-us.lua", &b)?);
+        }
+    }
+    Ok(wrote)
+}
+
+/// The directory sim games read the localization from: $BALATRO_LOC_DIR, else runs/_loc.
+pub fn localization_dir() -> PathBuf {
+    loc_dir()
+}
+
 /// Path.read_text(encoding="utf8"): universal newlines.
 fn read_text(p: &std::path::Path) -> String {
     let s = std::fs::read_to_string(p).unwrap_or_else(|e| panic!("{}: {e}", p.display()));

@@ -58,7 +58,7 @@ fn step_and_live() {
               "benchmark", "last_id", "events"] {
         assert!(live.get(k).is_some(), "missing {k}");
     }
-    assert_eq!(live["backend"], "jackdaw");
+    assert_eq!(live["backend"], "rumbot");
     assert_eq!(live["mode"], "paused");
     let ids: Vec<i64> = live["events"].as_array().unwrap().iter().map(|e| e["id"].as_i64().unwrap()).collect();
     assert!(ids.len() >= 5 && ids.windows(2).all(|w| w[0] < w[1]), "{ids:?}");
@@ -76,7 +76,7 @@ fn step_and_live() {
 #[test]
 fn runs_identical_to_python() {
     let fx = Path::new("C:/Users/admin/Documents/Repos/balatro-rust/runs/_port/fixtures/panel.json");
-    let exp: Value = serde_json::from_str(&std::fs::read_to_string(fx).expect("run scripts/port/fixtures/panel.py")).unwrap();
+    let exp: Value = serde_json::from_str(&std::fs::read_to_string(fx).expect("runs/_port fixture panel (recorded from the Python v27 bot; see trace::data_dir)")).unwrap();
     let root = tmp("runs");
     let runs = root.join("runs").join("sim");
     for n in exp["dirs"].as_array().unwrap() {

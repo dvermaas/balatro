@@ -318,6 +318,9 @@ pub struct RunRecorder {
     run: Option<Map<String, Value>>,
     dir: Option<PathBuf>,
     conf_sum: f64,
+    /// write the full gamestate per decision to states.jsonl.gz (on by default; the lab, which reads
+    /// only decisions.jsonl and deletes the run, turns it off)
+    pub raw_states: bool,
 }
 
 /// Python `RunRecorder.list_runs(limit)` on `root`: the summary.json of each run dir, newest first (dir names
@@ -380,6 +383,7 @@ impl RunRecorder {
             run: None,
             dir: None,
             conf_sum: 0.0,
+            raw_states: true,
         }
     }
 
@@ -439,7 +443,7 @@ impl RunRecorder {
 
     /// write_raw(event_id, gs): full gamestate per Jev decision, one gzip member per call.
     pub fn write_raw(&self, event_id: i64, gs: &Value) {
-        let Some(dir) = self.dir.as_ref().filter(|_| self.run.is_some()) else { return };
+        let Some(dir) = self.dir.as_ref().filter(|_| self.run.is_some() && self.raw_states) else { return };
         let line = dumps(&json!({"id": event_id, "gs": gs})) + "\n";
         append_gz(&dir.join("states.jsonl.gz"), &text_out(&line), self.clock.time() as u32);
     }
