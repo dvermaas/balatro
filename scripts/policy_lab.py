@@ -385,7 +385,10 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             # get their expected score x (1 + commit) before ranking; `commit_hands` limits it to those mains
             "bot-commit15-fs": {"items": True, "commit": 0.15, "commit_hands": ("Flush", "Straight")},
             "bot-commit30-fs": {"items": True, "commit": 0.30, "commit_hands": ("Flush", "Straight")},
-            "bot-commit15-all": {"items": True, "commit": 0.15}}
+            "bot-commit15-all": {"items": True, "commit": 0.15},
+            # deck shaping: a suit tarot (Star/Moon/Sun/World) taken from a pack is valued by its measured gain on
+            # deals from the converted deck (as v28's planet_gain) instead of a flat 0.03
+            "bot-suitval": {"items": True, "suit_value": True}}
 SKIP_TAGS = {
     "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
                "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
@@ -393,6 +396,33 @@ SKIP_TAGS = {
 SKIP_TAGS["wide"] = SKIP_TAGS["strong"] | {"Foil Tag", "Charm Tag", "Coupon Tag", "Economy Tag", "Voucher Tag",
                                            "Top-up Tag", "Juggle Tag", "D6 Tag", "Ethereal Tag"}
 _DEFAULTS = {}
+
+
+def _suit_gain(pub, hand, targets, suit, k=24, extra=3):
+    """Mean best-play ratio - 1 when hand cards `targets` change to `suit`, over k deals of hand size + extra
+    from the deck multiset (pack picks: the deck is _cards(pub, 'cards') plus the hand)."""
+    import random
+    import jokers as text_jokers
+    from hands import best_score, card_info
+    d = lambda x: x if isinstance(x, dict) else {}  # noqa: E731
+    rest = [dict(card_info(c), debuff=False) for c in _cards(pub, "cards")]
+    held = [dict(card_info(c), debuff=False) for c in hand]
+    conv = [dict(i, suit=suit) if n in set(targets) else i for n, i in enumerate(held)]
+    key = lambda i: (str(i.get("suit")), str(i.get("rank")), str(i.get("enh")), str(i.get("edition")), str(i.get("seal")))  # noqa: E731
+    before, after = sorted(rest + held, key=key), sorted(rest + conv, key=key)
+    size = min((d(pub.get("hand")).get("limit") or 8) + extra, len(before))
+    js, levels = text_jokers.build(pub), d(pub.get("hands"))
+    sc = text_jokers.Scorer(levels, js, {"hands_left": 2, "discards_left": 1})
+    tot0 = tot1 = 0.0
+    for deck, acc in ((before, 0), (after, 1)):
+        rng = random.Random("SUIT")
+        for _ in range(k):
+            v = best_score(rng.sample(deck, size), sc)
+            if acc:
+                tot1 += v
+            else:
+                tot0 += v
+    return tot1 / tot0 - 1 if tot0 else 0.0
 
 
 def _reopt_gain(pub, lv, k=24, extra=3):
@@ -553,6 +583,27 @@ def _play_bot(seed, arm_name, t0):
     decisions.MAX_REROLLS = opts.get("max_rerolls", _DEFAULTS["rr"][0])
     decisions.INTEREST_BUFFER = opts.get("buffer", _DEFAULTS["rr"][1])
     _DEFAULTS.setdefault("pv", rollout_items.Picker.planet_value)
+    _DEFAULTS.setdefault("cv", rollout_items.Picker.consumable_value)
+    rollout_items.Picker.consumable_value = _DEFAULTS["cv"]
+    if opts.get("suit_value"):
+        import tarots
+
+        def consumable_value(self, c, hand, money, jokers, joker_room, _orig=_DEFAULTS["cv"]):
+            key = c.get("key") or ""
+            spec = tarots.TARGETED.get(key)
+            if not spec or spec[0] != "suit" or not hand:
+                return _orig(self, c, hand, money, jokers, joker_room)
+            p = tarots.plan(key, hand, self.b)
+            if not p:
+                return 0.0, None
+            mk = ("suit", key, tuple(p[0]))
+            if mk not in self.memo:
+                try:
+                    self.memo[mk] = max(_suit_gain(self.pub, hand, p[0], spec[2]), 0.0)
+                except Exception:  # noqa: BLE001
+                    self.memo[mk] = 0.0
+            return max(self.memo[mk], 0.001), p[0]
+        rollout_items.Picker.consumable_value = consumable_value
     if opts.get("planet_pick") == "reopt":
         def planet_value(self, c):
             k = ("p", c.get("key"))
