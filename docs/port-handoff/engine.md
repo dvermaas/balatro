@@ -77,3 +77,8 @@ Remaining (12 games, all genuine engine differences or unclassified):
 Remaining 11 games: 7 draw-pile insertion (Jackdaw), 4 round.chips (2 Jackdaw Marble/Hologram, 2 Jackdaw Swashbuckler-debuff).
 Guard: re-recorded 6 sim30-a games with the rebuilt jev-sim; identical to runs/_port/traces/bot-forecast-items ignoring timing keys, except the final record's prompt_version (hash includes rumbot). Forecasts unchanged.
 
+
+## Text fields (round engine-r5, task text-cards)
+native/bot/src/engine/text.rs ports sim_text.py 349-376 and 612-846 (planet/tarot/spectral/voucher/booster vars, playing-card lines, blind_effect, tag_effect); view.rs calls it for every non-joker `value.effect`, `blinds.*.effect` (boss key from name via tables "blinds") and `blinds.*.tag_effect`. tables.json now also has center `config` (non-jokers, incl. m_* enhancements) and `tag_config` (scripts/port/engine_tables.py).
+Replay now compares all text except `value.effect` of JOKER cards (still "", `_joker_vars` is a later task; engine_replay strips them via strip_joker_text; IGNORE_TEXT=1 restores the old skip-all-text). Result: 49/60 games identical with text compared (15122 of 15133 calls), the same 11 known Jackdaw-bug games, zero text-only mismatches. card_label is not ported (labels come from rumbot names, verified identical).
+Not covered by traces: Hiker perma_bonus text, Oops! All 6s probabilities text, perma_mult/x_mult/h_chips/dollars lines (rumbot cards have no such fields).

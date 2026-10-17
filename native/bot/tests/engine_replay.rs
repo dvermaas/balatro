@@ -36,7 +36,24 @@ fn norm(path: &str) -> String {
 
 fn text_field(p: &str) -> bool {
     let p = norm(p);
-    p.ends_with(".value.effect") || p.ends_with(".tag_effect") || (p.starts_with(".blinds.") && p.ends_with(".effect"))
+    // joker text (sim_text._joker_vars) is a later task; IGNORE_TEXT=1 also skips all other text
+    std::env::var("IGNORE_TEXT").is_ok() && (p.ends_with(".value.effect") || p.ends_with(".tag_effect") || (p.starts_with(".blinds.") && p.ends_with(".effect")))
+}
+
+/// Drops `value.effect` of joker cards (anywhere in the tree).
+fn strip_joker_text(v: &mut Value) {
+    match v {
+        Value::Object(m) => {
+            if m.get("set").and_then(|s| s.as_str()) == Some("JOKER") {
+                if let Some(Value::Object(val)) = m.get_mut("value") {
+                    val.remove("effect");
+                }
+            }
+            m.values_mut().for_each(strip_joker_text);
+        }
+        Value::Array(a) => a.iter_mut().for_each(strip_joker_text),
+        _ => {}
+    }
 }
 
 /// First difference (path, expected, actual), by structure: key order, int vs float, values.
@@ -132,7 +149,12 @@ fn engine_replay() {
                 calls += 1;
                 let desc = format!("{method} {}", params.map_or("".into(), |p| short(p, 60)));
                 let bad: Option<(String, String, String)> = match (r.get("ok"), r.get("err"), &got) {
-                    (Some(exp), _, Ok(v)) => diff("", exp, v, &ignore),
+                    (Some(exp), _, Ok(v)) => {
+                        let (mut e2, mut v2) = (exp.clone(), v.clone());
+                        strip_joker_text(&mut e2);
+                        strip_joker_text(&mut v2);
+                        diff("", &e2, &v2, &ignore)
+                    }
                     (Some(exp), _, Err(e)) => Some(("<action error>".into(), short(exp, 40), format!("{} {} {:?}", e.code, e.message, e.name))),
                     (None, Some(exp), Ok(v)) => Some(("<expected error>".into(), short(exp, 100), short(v, 40))),
                     (None, Some(exp), Err(e)) => {
