@@ -12,6 +12,7 @@ pub mod engine;
 pub mod forecast_jokers;
 pub mod forecast_stats;
 pub mod forecast_state;
+pub mod forecast_apply;
 pub mod hands;
 pub mod jev_bot;
 pub mod jokers;

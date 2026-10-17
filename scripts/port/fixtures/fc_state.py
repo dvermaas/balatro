@@ -2,7 +2,7 @@
 
 Rows {"pub", "desc"}: for forecast oracle lines (rollout.forecast, rollout_items.forecast) in the traces of
 both arms, "pub" is the "ok" of the most recent preceding "call" line (same semantics as fc_stats.py), and
-"desc" = json.loads(sim_bridge.describe(rollout.build_state(pub))) (rng=False) minus "jokers" (task 5).
+"desc" = json.loads(sim_bridge.describe(rollout.build_state(pub))) (rng=False).
 At most ~1500 calls, evenly spaced over all oracle lines.
 
     C:/Users/admin/Documents/Repos/balatro-rust/.venv/Scripts/python.exe <worktree>/scripts/port/fixtures/fc_state.py
@@ -36,11 +36,10 @@ def main():
     for i in idx:
         pub = pubs[i]
         desc = json.loads(sim_bridge.describe(rollout.build_state(pub)))
-        desc.pop("jokers")
         # sort_id comes from Jackdaw's process-wide counter: store it relative to the first deck card
         # (deck cards are created first, then jokers, then consumables)
         base = desc["cards"][0]["sort_id"] if desc["cards"] else None
-        for c in desc["cards"] + desc["consumables"]:
+        for c in desc["cards"] + desc["jokers"] + desc["consumables"]:
             c["sort_id"] -= base
         rows.append({"pub": pub, "desc": desc})
     print(n, "oracle calls;", len(rows), "rows ->", states.write_fixture("fc_state", rows))
