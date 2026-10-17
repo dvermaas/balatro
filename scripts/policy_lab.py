@@ -396,7 +396,11 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-engine-protect": {"items": True, "engine": 0.0},
             # v23 early slot fill (decisions.EARLY_ANTE / EARLY_JOKERS, production 3 / 4)
             "bot-early-off": {"items": True, "early_ante": 0},
-            "bot-early5": {"items": True, "early_jokers": 5}}
+            "bot-early5": {"items": True, "early_jokers": 5},
+            # jokers valued with the best play re-chosen (as v28's planet_gain): pack joker picks, and also the
+            # swap candidates' "weakest" ranking
+            "bot-jreopt-pick": {"items": True, "joker_reopt": ("pick",)},
+            "bot-jreopt-both": {"items": True, "joker_reopt": ("pick", "weak")}}
 ENGINES = [
     {"Pareidolia", "Photograph", "Smiley Face", "Scary Face", "Sock and Buskin", "Midas Mask", "Business Card",
      "Reserved Parking", "Triboulet", "Faceless Joker"},
@@ -414,6 +418,31 @@ SKIP_TAGS = {
 SKIP_TAGS["wide"] = SKIP_TAGS["strong"] | {"Foil Tag", "Charm Tag", "Coupon Tag", "Economy Tag", "Voucher Tag",
                                            "Top-up Tag", "Juggle Tag", "D6 Tag", "Ethereal Tag"}
 _DEFAULTS = {}
+
+
+def _joker_gain(pub, add=None, remove=None, k=24, extra=3):
+    """Mean best-play ratio - 1 after adding joker card `add` / removing owned index `remove`, the best play
+    re-chosen per deal, over k deals of hand size + extra from the deck multiset (paired: same deals)."""
+    import random
+    import jokers as text_jokers
+    from hands import best_score, card_info
+    d = lambda x: x if isinstance(x, dict) else {}  # noqa: E731
+    deck = list(_cards(pub, "cards")) + list(_cards(pub, "hand"))
+    deck.sort(key=lambda c: (str(d(c.get("value")).get("suit")), str(d(c.get("value")).get("rank")), str(d(c.get("modifier")))))
+    infos = [dict(card_info(c), debuff=False) for c in deck]
+    size = min((d(pub.get("hand")).get("limit") or 8) + extra, len(infos))
+    owned = list(_cards(pub, "jokers"))
+    new = [c for n, c in enumerate(owned) if n != remove] + ([add] if add is not None else [])
+    levels, rnd = d(pub.get("hands")), {"hands_left": 2, "discards_left": 1}
+    s0 = text_jokers.Scorer(levels, text_jokers.build(pub, owned), rnd)
+    s1 = text_jokers.Scorer(levels, text_jokers.build(pub, new), rnd)
+    rng = random.Random("JOKER")
+    b = a = 0.0
+    for _ in range(k):
+        h = rng.sample(infos, size)
+        b += best_score(h, s0)
+        a += best_score(h, s1)
+    return a / b - 1 if b else 0.0
 
 
 def _suit_gain(pub, hand, targets, suit, k=24, extra=3):
@@ -599,6 +628,20 @@ def _play_bot(seed, arm_name, t0):
     _DEFAULTS.setdefault("weak", decisions._weakest_jokers.__defaults__)
     _DEFAULTS.setdefault("weak_fn", decisions._weakest_jokers)
     decisions._weakest_jokers = _DEFAULTS["weak_fn"]
+    if "weak" in opts.get("joker_reopt", ()):
+        def weak_reopt(gs, recent, n=decisions.SWAP_SELLS):
+            loss = []
+            for j, c in enumerate(_cards(gs, "jokers")):
+                m = _d(c.get("modifier"))
+                if m.get("eternal") or m.get("edition") == "NEGATIVE":
+                    continue
+                try:
+                    g = _joker_gain(gs, remove=j)
+                except Exception:  # noqa: BLE001
+                    g = 0.0
+                loss.append((-g, _d(c.get("cost")).get("sell", 0), j))
+            return {j for _, _, j in sorted(loss)[:n]}
+        decisions._weakest_jokers = weak_reopt
     _DEFAULTS.setdefault("sure", (decisions.SURE_SE, rollout_items.best.__defaults__))
     decisions.SURE_SE = opts.get("sure_se", _DEFAULTS["sure"][0])
     rollout_items.best.__defaults__ = (opts["sure_se"],) if opts.get("sure_se") else _DEFAULTS["sure"][1]
@@ -607,6 +650,23 @@ def _play_bot(seed, arm_name, t0):
     decisions.INTEREST_BUFFER = opts.get("buffer", _DEFAULTS["rr"][1])
     _DEFAULTS.setdefault("pv", rollout_items.Picker.planet_value)
     _DEFAULTS.setdefault("cv", rollout_items.Picker.consumable_value)
+    _DEFAULTS.setdefault("jv", rollout_items.Picker.joker_value)
+    rollout_items.Picker.joker_value = _DEFAULTS["jv"]
+    if "pick" in opts.get("joker_reopt", ()):
+        import jokers as text_jokers
+
+        def joker_value(self, c, _orig=_DEFAULTS["jv"]):
+            m = _d(c.get("modifier"))
+            if m.get("rental") or m.get("eternal") or text_jokers.entry(c)["rule"] is None:
+                return _orig(self, c)  # same zero / unmodelled handling as production
+            k = ("jr", c.get("key"), str(m.get("edition")))
+            if k not in self.memo:
+                try:
+                    self.memo[k] = max(_joker_gain(self.pub, add=c), 0.0) + 0.01
+                except Exception:  # noqa: BLE001
+                    return _orig(self, c)
+            return self.memo[k]
+        rollout_items.Picker.joker_value = joker_value
     rollout_items.Picker.consumable_value = _DEFAULTS["cv"]
     if opts.get("suit_value"):
         import tarots
