@@ -1,4 +1,4 @@
-"""Record reference traces of the v27 Python bot for the Rust port (docs/rust-port-guide.md).
+"""Record reference traces of the Python bot (v27, then v31) for the Rust port (docs/rust-port-guide.md).
 
 One gzipped JSONL per game: runs/_port/traces/<arm>/<seed>.jsonl.gz. Lines, in call order:
   {"k": "call", "method", "params", "ok": <result>} or {..., "err": {"code", "message", "name"}}
@@ -99,8 +99,8 @@ def _install():
 
     orig_code_jev = policy_lab._code_jev
 
-    def code_jev(bot_ref, items=False):
-        jev = orig_code_jev(bot_ref, items)
+    def code_jev(bot_ref, items=False, opts=None):
+        jev = orig_code_jev(bot_ref, items, opts)
         orig = jev.system_one
 
         def system_one(state, questions):

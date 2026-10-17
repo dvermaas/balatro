@@ -80,6 +80,8 @@ def _pred(pred):
         return 1, _SUIT[pred[1]]
     if kind == "ranks":
         return 2, _mask(pred[1], _RANK)
+    if kind == "card":  # v28: one rank of one suit (The Idol)
+        return 6, _RANK[pred[1]] | (_SUIT[pred[2]] << 8)
     return 0, 0  # all
 
 
@@ -87,7 +89,8 @@ def _eff(e):
     return float(e[0]), float(e[1]), float(e[2])
 
 
-_COND = {"names": 1, "le3": 2, "final": 3, "no_discards": 4, "held_suits": 5, "four_suits": 6, "played_this_round": 7}
+_COND = {"names": 1, "le3": 2, "final": 3, "no_discards": 4, "held_suits": 5, "four_suits": 6, "played_this_round": 7,
+         "seeing_double": 11}
 
 
 def _hand(spec):

@@ -14,7 +14,7 @@ import json
 import sys
 import time
 
-sys.path.insert(0, "C:/Users/admin/Documents/Repos/balatro-rust/scripts/port")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import states  # noqa: E402  (puts the v27 sources on sys.path)
 
 import httpx2  # noqa: E402

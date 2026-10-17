@@ -457,6 +457,43 @@ fn fnum(o: &Value, k: &str, default: f64) -> f64 {
 }
 
 /// decisions.py 616-823 `shop(bot, gs)` (nested `obj` at 647 is a helper inside).
+// decisions.py 865-881
+/// v28: the shop planet for the hand our deck scores most with (readiness.play_mix, levels and jokers
+/// included), else the biggest Celestial pack, while PLANET_FLOOR dollars stay; None otherwise.
+fn planet_rule(gs: &Value, items: &[Item], money: i64) -> Option<usize> {
+    let mix = crate::readiness::play_mix(gs, 24);
+    let mut top: Option<(&String, f64)> = None; // max(mix, key=mix.get): the first of equal shares
+    for (k, v) in _d(&mix) {
+        if top.map_or(true, |(_, b)| num(v) > b) {
+            top = Some((k, num(v)));
+        }
+    }
+    let (shop, packs) = (cards_of(gs, "shop"), cards_of(gs, "packs"));
+    let idx = |k: &str| k.rsplit('_').next().unwrap().parse::<usize>().unwrap();
+    if let Some((top, _)) = top {
+        let needle = format!("Level up {top} ");
+        for (n, it) in items.iter().enumerate() {
+            if it.key.starts_with("buy_card_") && money - it.cost >= super::PLANET_FLOOR {
+                let c = &shop[idx(&it.key)];
+                let eff = g(&g(c, "value"), "effect");
+                if g(c, "set") == json!("PLANET") && eff.as_str().unwrap_or("").contains(&needle) {
+                    return Some(n);
+                }
+            }
+        }
+    }
+    let mut best: Option<usize> = None;
+    for (n, it) in items.iter().enumerate() {
+        if it.key.starts_with("buy_pack_") && money - it.cost >= super::PLANET_FLOOR
+            && g(&packs[idx(&it.key)], "label").as_str().unwrap_or("").contains("Celestial")
+            && best.map_or(true, |b| it.cost > items[b].cost)
+        {
+            best = Some(n);
+        }
+    }
+    best
+}
+
 pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     let key = json!([g(gs, "ante_num"), g(gs, "round_num")]);
     if key != bot._shop_key {
@@ -561,8 +598,9 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         for (i, c) in shop_cards.iter().enumerate() {
             let cost = crate::gs::int(&g(&g(c, "cost"), "buy"));
             let set = g(c, "set");
-            if cost > money || (set == json!("JOKER") && jokers_full)
-                || (matches!(set.as_str(), Some("TAROT" | "PLANET" | "SPECTRAL")) && cons_full) {
+            let neg = g(&g(c, "modifier"), "edition") == json!("NEGATIVE"); // v29: a Negative card brings its own slot
+            if cost > money || (set == json!("JOKER") && jokers_full && !neg)
+                || (matches!(set.as_str(), Some("TAROT" | "PLANET" | "SPECTRAL")) && cons_full && !neg) {
                 continue;
             }
             let kind = if truthy(Some(&set)) { crate::gs::s(&set).to_lowercase() } else { "card".to_string() };
@@ -735,6 +773,14 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
                 "forecast_note": g(&state, "forecast")}));
             return Ok(shop_act(bot, gs, &iaction)?);
         }
+    }
+    if let Some(k) = planet_rule(gs, &items, money) {
+        let it = &items[k];
+        let (ik, idesc, icost, iaction) = (it.key.clone(), it.desc.clone(), it.cost, it.action.clone());
+        bot.emit("auto", json!({"question": "shop", "choice": ik, "action": crate::jev_bot::action_value(&iaction),
+            "desc": format!("${icost} {idesc}"),
+            "reason": format!("planet rule: level our top hand / open Celestial packs while ${} stays", super::PLANET_FLOOR)}));
+        return Ok(shop_act(bot, gs, &iaction)?);
     }
     let sitems: ShopItems = items.iter().map(|it| (it.key.clone(), (it.desc.clone(), it.obj.clone(), it.action.clone()))).collect();
     let (scores, mut meta) = crate::prof::time("s.score_items", || score_items(bot, gs, "shop", &state, &sitems))?;

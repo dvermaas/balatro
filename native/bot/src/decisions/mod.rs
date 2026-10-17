@@ -43,11 +43,12 @@ pub const INVEST_FLOOR: i64 = 5;
 pub const INVEST_REROLL_FLOOR: i64 = 10;
 pub const FORECAST_TIMEOUT: f64 = 10.0;
 pub const SWAP_SELLS: usize = 2;
-pub const SURE_SE: i64 = 2;
+pub const SURE_SE: i64 = 1; // v31 (v20: 2)
 pub const HIDE_SE: i64 = 2;
 pub const REROLL_SE: i64 = 1;
 pub const ITEM_MIN_BUDGET: f64 = 1.0;
 pub const PICK_CLEAR: f64 = 1.25;
+pub const PLANET_FLOOR: i64 = 4; // v28: shop planets for the deck's top hand and Celestial packs are bought while $4 stays
 /// Forecast exceptions are appended to `<JevBot.runs_root>/_forecast_errors.log` (default root "runs").
 pub const FORECAST_ERROR_LOG: &str = "_forecast_errors.log";
 

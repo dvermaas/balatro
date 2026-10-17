@@ -104,10 +104,15 @@ the simulator first (next section).
   [docs/policy-lab.md](docs/policy-lab.md).
 - **Speed**: with the Rust modules, 56 lab games take about 60 s on 12 workers, against 680 s in
   pure Python.
-- **Current baseline (v27, 2026-10-16)**, code only (no JEV), arm `bot-forecast-items` on `sim60-a`:
-  - mean ante **5.90 ± 0.22**, 4 wins out of 60 (6.7%);
-  - 41 of 60 games end at antes 5-7, the mid-game scaling wall from [docs/loss-audit.md](docs/loss-audit.md);
-  - by half: `sim30-a` alone 5.37 with 0 wins, the other 30 seeds 6.43.
+- **Current baseline (v31, 2026-10-17)**, code only (no JEV), arm `bot-forecast-items`:
+  - `sim60-a`: mean ante **6.50**, 10 wins out of 60 (v27: 5.90, 4 wins);
+  - 60 fresh seeds (`--seeds 60`): **6.63**, 10 wins (v27: 6.15, 6 wins);
+  - 200 fresh seeds (`--seeds 200 --seed-offset 60`): **6.68**, 40 wins (20%; v28: 6.46, 27 wins);
+  - v28 planets, v29 Negative jokers, v30 Verdant Leaf, v31 auto-buy bar 1 SE: conclusions in
+    [docs/lab-lessons.md](docs/lab-lessons.md), numbers in [docs/policy-lab.md](docs/policy-lab.md)
+    ("Mid-game scaling experiments" and after), every game in `docs/samples/cloud-lab/`;
+  - about a third of runs reach ante 8, where the finisher bosses (Violet Vessel, Crimson Heart,
+    Amber Acorn) take most of them.
 
   The last JEV sim benchmark (v23, `sim30-a`, before later sim fixes) reached 6.43. Thirty seeds
   detect about 0.9 ante, so test changes code-only on 60+ seeds first.
@@ -116,7 +121,7 @@ the simulator first (next section).
 
 The whole bot is in Rust: `native/bot` (crate `jevbot`) holds JevBot, the decisions, the forecasts, the
 recorder, the TypeSafe client, the panel and the policy lab. The game engine is `native/rumbot`
-(rumbot-sim fork). The port is frozen at Python v27: for the same seeds it gives the same results, and
+(rumbot-sim fork). The port follows Python v31 (v32's hash): for the same seeds it gives the same results, and
 Python stays the reference (`jevbot panel --legacy` is Python-only: run `src/panel.py --legacy`).
 Porting history and conventions: [docs/rust-port-guide.md](docs/rust-port-guide.md),
 [docs/rust-port-scope.md](docs/rust-port-scope.md); open items: [docs/port-handoff/followups.md](docs/port-handoff/followups.md).
@@ -139,7 +144,17 @@ target/release/jevlab --set sim30-a --arm E|F --jobs 8 [--limit N] [--name X]
   prints the first call that differs from the Python trace in `runs/_port/traces`.
 - Sim games need the game's localization in `runs/_loc` (`scripts/extract_localization.py`), as before.
 
-Identity (frozen at Python v27):
+Identity at Python v31 (ported 2026-10-17; references regenerated from v32's Python, see
+[docs/rust-port-guide.md](docs/rust-port-guide.md) "Reference data"):
+
+- Bot replay: 60/60 games identical; CodeJev 2535/2535 requests; every decision fixture identical (jokers,
+  picker, readiness, scorer, hands, odds, dec_shop_a, fc_stats). Forecasts: items 2913/2916, packs
+  2223/2224; all four misses are one Jackdaw bug (an Arcana pack's tarot duplicating one we hold;
+  [followups](docs/port-handoff/followups.md)).
+- sim60-a, arm F: Rust 6.50 +- 0.20 ante, 10/60 wins, the same as Python v31; 60/60 games end the same
+  (ante, round, result).
+
+Identity at Python v27 (before the v28-v31 port):
 
 - Bot replay: 60/60 games identical. Forecasts: shop 2475/2475, packs pass, items 3193/3193. All-Rust
   forecast replay: 60/60.

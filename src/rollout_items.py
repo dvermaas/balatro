@@ -36,10 +36,12 @@ from jackdaw.engine.rng import PseudoRandom  # noqa: E402
 import build  # noqa: E402  (read-only use of the bot's policy modules)
 import jokers as text_jokers  # noqa: E402
 import tarots  # noqa: E402
-from hands import card_info, classify  # noqa: E402
+from hands import best_score, card_info, classify  # noqa: E402
 
 MONEY = 0.01  # value of $1 on the per-hand gain scale
 SYNTH_HANDS = 12
+PLANET_DEALS = 24  # v28: deals for a planet's value (hand size + PLANET_EXTRA cards each)
+PLANET_EXTRA = 3   # roughly what a discard adds, as in readiness.play_mix
 # Flat values (per-hand gain scale) of consumables the bot uses; targeted ones only count with a plan.
 FLAT = {
     "c_high_priestess": 0.08, "c_emperor": 0.04, "c_fool": 0.02, "c_judgement": 0.10, "c_wheel_of_fortune": 0.03,
@@ -69,6 +71,38 @@ def usable(key):
 # ---------------------------------------------------------------------------
 # Pack picks
 # ---------------------------------------------------------------------------
+
+def _deck_infos(pub):
+    """The deck multiset (cards + hand), canonically sorted so the real draw order is never read."""
+    deck = list(_cards(pub, "cards")) + list(_cards(pub, "hand"))
+    deck.sort(key=lambda c: (str(_d(c.get("value")).get("suit")), str(_d(c.get("value")).get("rank")),
+                             str(_d(c.get("modifier")))))
+    return [dict(card_info(c), debuff=False) for c in deck]
+
+
+def planet_gain(pub, lv, k=PLANET_DEALS, extra=PLANET_EXTRA, seed="PLANET"):
+    """v28: mean best-play score ratio - 1 after levelling lv=(hand, chips, mult), with the best play
+    re-chosen in each deal (Rust kernel), over k deals of hand size + `extra` cards from the deck multiset.
+    jokers.gain keeps each sample's play fixed, so a level for a hand we don't play yet was worth 0 and
+    the picks spread over Pair, High Card and ties."""
+    infos = _deck_infos(pub)
+    size = min((_d(pub.get("hand")).get("limit") or 8) + extra, len(infos))
+    if size < 1:
+        return 0.0
+    js, levels = text_jokers.build(pub), _d(pub.get("hands"))
+    h, c, m = lv
+    new = {**levels, h: {**_d(levels.get(h)), "chips": _d(levels.get(h)).get("chips", 0) + c,
+                         "mult": _d(levels.get(h)).get("mult", 1) + m}}
+    rnd = {"hands_left": 2, "discards_left": 1}
+    s0, s1 = text_jokers.Scorer(levels, js, rnd), text_jokers.Scorer(new, js, rnd)
+    rng = random.Random(seed)
+    before = after = 0.0
+    for _ in range(k):
+        hand = rng.sample(infos, size)
+        before += best_score(hand, s0)
+        after += best_score(hand, s1)
+    return after / before - 1 if before else 0.0
+
 
 def synth_plays(pub, k=SYNTH_HANDS, seed="SYNTH"):
     """Recent-play stand-ins: k hands dealt from the deck MULTISET (cards + hand, canonically sorted,
@@ -129,7 +163,10 @@ class Picker:
         k = ("p", c.get("key"))
         if k not in self.memo:
             lv = text_jokers.planet_level(_d(c.get("value")).get("effect"))
-            g = self._gain(level_up=lv) if lv else None
+            try:
+                g = planet_gain(self.pub, lv) if lv else None
+            except Exception:  # noqa: BLE001  unparseable state: no measured gain
+                g = None
             self.memo[k] = max(g or 0.0, 0.0) + 0.001  # a paid-for planet is always taken
         return self.memo[k]
 
@@ -469,8 +506,8 @@ def _forecast(pub, n, bosses, keys, budget_s):
             "errors": {o["key"]: o["error"] for o in opts if o.get("error")}}
 
 
-def best(fc, se=2.0):
-    """The option key that beats skip by more than `se` paired SEs in blinds cleared (largest gain), or None."""
+def best(fc, se=1.0):
+    """v31: se 2 -> 1, as decisions.SURE_SE. The option key that beats skip by more than `se` paired SEs in blinds cleared (largest gain), or None."""
     rows = [(k, r["vs_skip"]["blinds"]) for k, r in fc["options"].items() if k != "skip" and "vs_skip" in r]
     rows = [(k, d) for k, (d, s) in rows if d > se * max(s, 1e-9)]
     return max(rows, key=lambda kv: kv[1])[0] if rows else None

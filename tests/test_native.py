@@ -119,5 +119,56 @@ class NativeMatchesPython(unittest.TestCase):
         self.assertIsNone(jokers.Scorer({"Pair": []}, [], {}).native())
 
 
+def _card(rank, suit, enh=None):
+    return {"rank": rank, "suit": suit, "enh": enh, "edition": None, "seal": None, "debuff": False}
+
+
+class V28Rules(unittest.TestCase):
+    """v28 parser fixes: The Idol, Bloodstone, Driver's License, Seeing Double, Baseball Card."""
+
+    def x(self, effect, played, held=(), name=None, cards=None):
+        infos = list(played) + list(held)
+        combo = list(range(len(played)))
+        name, sc = hands.classify(played) if name is None else (name, list(range(len(played))))
+        lv = {n: {"chips": 10, "mult": 1} for n in strategy.HAND_NAMES}
+        js = jokers.build({}, cards or [{"label": "J", "value": {"effect": effect}, "modifier": {}}])
+        out = []
+        for enabled in (False, True):
+            native.ENABLED = enabled
+            out.append(hands.best_score(infos, jokers.Scorer(lv, js, {}), None) if enabled else
+                       jokers.score(infos, combo, name, sc, lv, js, {}))
+        native.ENABLED = native._rs is not None
+        return out
+
+    def test_idol_needs_rank_and_suit(self):
+        r = jokers.parse("Each played 2 of Spades gives X2 Mult when scored Card changes every round")
+        self.assertEqual(r["card"], [(("card", "2", "S"), 0, 0, 2.0)])
+        self.assertFalse(jokers._pred(("card", "2", "S"), _card("3", "S")))
+        self.assertTrue(jokers._pred(("card", "2", "S"), _card("2", "H", "WILD")))
+
+    def test_bloodstone_expected_factor(self):
+        r = jokers.parse("1 in 2 chance for played cards with Heart suit to give X1.5 Mult when scored")
+        self.assertEqual(r["card"], [(("suit", "H"), 0, 0, 1.25)])
+
+    def test_drivers_license_counts_cards(self):
+        e = "X3 Mult if you have at least 16 Enhanced cards in your full deck (Currently {})"
+        self.assertEqual(jokers.parse(e.format(2))["hand"], ("const", (0, 0, 1)))
+        self.assertEqual(jokers.parse(e.format(16))["hand"], ("const", (0, 0, 3.0)))
+
+    def test_seeing_double(self):
+        e = "X2 Mult if played hand has a scoring Club card and a scoring card of any other suit"
+        base = self.x("+0 Mult", [_card("K", "C"), _card("K", "H")])[0]
+        self.assertEqual(self.x(e, [_card("K", "C"), _card("K", "H")]), [2 * base, 2 * base])
+        self.assertEqual(self.x(e, [_card("K", "C"), _card("K", "C")]), [base, base])
+        self.assertEqual(self.x(e, [_card("K", "H", "WILD"), _card("K", "D", "WILD")]), [2 * base, 2 * base])
+        self.assertEqual(self.x(e, [_card("K", "C"), _card("K", "S", "WILD")]), [2 * base, 2 * base])
+
+    def test_baseball_counts_uncommon_jokers(self):
+        bb = {"key": "j_baseball", "label": "Baseball Card", "value": {"effect": "Uncommon Jokers each give X1.5 Mult"},
+              "modifier": {}}
+        js = jokers.build({}, [bb, {"key": "j_four_fingers", "value": {"effect": "x"}}, {"key": "j_joker", "value": {}}])
+        self.assertEqual(js[0]["rule"]["hand"], ("const", (0, 0, 1.5)))  # Four Fingers is Uncommon, Joker Common
+
+
 if __name__ == "__main__":
     unittest.main()

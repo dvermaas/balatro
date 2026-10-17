@@ -82,12 +82,13 @@ FORECAST_BOSSES = 3      # v20: policy lab, 600 paired seeds: 3 bosses +0.21 +- 
 FORECAST_BUDGET = 4.0    # seconds: stop adding rollouts (every option keeps the same count)
 FORECAST_TIMEOUT = 10.0  # slower than this, or failing: back to the v18 measured-gain path
 SWAP_SELLS = 2           # sell-swaps only consider our 2 weakest jokers (smallest loss on recent hands)
-SURE_SE = 2              # v20: beats skip by > 2 SE in blinds cleared: code buys it, no JEV question
+SURE_SE = 1              # v31 (v20: 2): beats skip by > 1 SE in blinds cleared: code buys it, no JEV question
 HIDE_SE = 2              # worse than skip by > 2 SE: not offered (unless it is an economy item)
 REROLL_SE = 1            # nothing beats skip by 1 SE: reroll from money above the interest floor
 # v21: packs, shop tarots and spectrals get rollout_items.forecast (policy lab arm F, +0.44 +- 0.12 ante over
 # v20's code path on 303 paired seeds) inside the same budget as the joker forecast.
 ITEM_MIN_BUDGET = 1.0    # seconds the item forecast always gets (at least 8 rollouts either way)
+PLANET_FLOOR = 4         # v28: shop planets for the deck's top hand and Celestial packs are bought while $4 stays
 PICK_CLEAR = 1.25        # a pack card whose Picker value is >= 1.25x the runner-up's is taken by code
 FORECAST_ERROR_LOG = "runs/_forecast_errors.log"
 
@@ -332,10 +333,41 @@ def _setup_plays(gs, hand, plays, levels, scorer, allowed, info, margin):
     return candidates
 
 
+LEAF_KEEP = {"Troubadour", "Juggler", "Turtle Bean", "Merry Andy", "Burglar", "Drunkard", "Mr. Bones", "Chicot"}
+
+
+def _leaf_sale(bot, gs, boss, hand):
+    """v30: Verdant Leaf debuffs every card until a joker is sold; sell the joker whose loss on recent
+    hands is smallest (eternal and Negative ones kept) before the first play. False if not applicable."""
+    if boss != "Verdant Leaf" or not any(card_info(c).get("debuff") for c in hand):
+        return False
+    key = (gs.get("seed"), gs.get("ante_num"), gs.get("round_num"))
+    if getattr(bot, "_leaf_failed", None) == key:
+        return False
+    js = cards_of(gs, "jokers")
+    # hand size and hands don't show in measured scores: sell those last (TIXQA7PH sold Troubadour)
+    keep = {j for j, c in enumerate(js) if c.get("label") in LEAF_KEEP}
+    weak = sorted(_weakest_jokers(gs, _recent(bot, gs), n=len(js)) - keep) or sorted(_weakest_jokers(gs, _recent(bot, gs), n=1))
+    if not weak:
+        return False
+    loss = {j: -(jokers.gain(gs, _recent(bot, gs), remove=j) or 0.0) for j in weak}
+    j = min(weak, key=lambda k: (loss[k], _d(js[k].get("cost")).get("sell", 0), k))
+    bot.emit("auto", question="move", choice="sell_joker", desc=f"sell {cards_of(gs, 'jokers')[j].get('label')}",
+             reason="Verdant Leaf: every card stays debuffed until a joker is sold")
+    try:
+        bot.act("sell", {"joker": j})
+    except RPCError:
+        bot._leaf_failed = key  # the API refused: play on with the debuff
+        return False
+    return True
+
+
 def selecting_hand(bot, gs):
     hand = cards_of(gs, "hand")
     info = _round_info(gs)
     boss = info["blind"]
+    if _leaf_sale(bot, gs, boss, hand):
+        return
     rnd, js = _d(gs.get("round")), jokers.build(gs)
     levels = _boss_levels(_d(gs.get("hands")), boss)
     infos = [card_info(c) for c in hand]
@@ -666,8 +698,9 @@ def shop(bot, gs):
     if bot._shop_actions < SHOP_ACTION_CAP:
         for i, c in enumerate(cards_of(gs, "shop")):
             cost = _d(c.get("cost")).get("buy", 0)
-            if cost > money or (c.get("set") == "JOKER" and jokers_full) or (
-                    c.get("set") in ("TAROT", "PLANET", "SPECTRAL") and cons_full):
+            neg = _d(c.get("modifier")).get("edition") == "NEGATIVE"  # v29: a Negative card brings its own slot
+            if cost > money or (c.get("set") == "JOKER" and jokers_full and not neg) or (
+                    c.get("set") in ("TAROT", "PLANET", "SPECTRAL") and cons_full and not neg):
                 continue
             o = obj(c, cost, c.get("set", "card").lower(), key=f"buy_card_{i}")
             n = tarots.note(c, b, money - cost, cards_of(gs, "jokers"))
@@ -767,6 +800,12 @@ def shop(bot, gs):
                      forecast_note=state.get("forecast"))
             _shop_act(bot, gs, items[k][2])
             return
+    k = _planet_rule(gs, items, money)
+    if k:
+        bot.emit("auto", question="shop", choice=k, action=list(items[k][2]), desc=f"${items[k][3]} {items[k][0]}",
+                 reason=f"planet rule: level our top hand / open Celestial packs while ${PLANET_FLOOR} stays")
+        _shop_act(bot, gs, items[k][2])
+        return
     scores, meta = _score_items(bot, gs, "shop", state, {k: v[:3] for k, v in items.items()})
     if fc:
         meta["forecast_seconds"], meta["forecast_rollouts"] = fc["seconds"], fc["rollouts"]
@@ -821,6 +860,25 @@ def shop(bot, gs):
     bot.record_decision("shop", gs, choice, action, options, {k: v / 4 for k, v in scores.items()},
                         s / 4, meta, display="score")
     _shop_act(bot, gs, action)
+
+
+def _planet_rule(gs, items, money):
+    """v28: the shop planet for the hand our deck scores most with (readiness.play_mix, levels and jokers
+    included), else the biggest Celestial pack, while PLANET_FLOOR dollars stay; None otherwise.
+    Policy lab, code only, 120 paired seeds: about +0.19 +- 0.12 ante over v27 (levels by ante 6:
+    total 2.8 -> 8.8). Small permanent gains rarely clear the forecast's 2 SE bar on their own."""
+    mix = readiness.play_mix(gs)
+    top = max(mix, key=mix.get) if mix else None
+    shop, packs = cards_of(gs, "shop"), cards_of(gs, "packs")
+    if top:
+        for k, v in items.items():
+            if k.startswith("buy_card_") and money - v[3] >= PLANET_FLOOR:
+                c = shop[int(k.split("_")[-1])]
+                if c.get("set") == "PLANET" and f"Level up {top} " in (_d(c.get("value")).get("effect") or ""):
+                    return k
+    cel = [k for k, v in items.items() if k.startswith("buy_pack_") and money - v[3] >= PLANET_FLOOR
+           and "Celestial" in (packs[int(k.split("_")[-1])].get("label") or "")]
+    return max(cel, key=lambda k: items[k][3]) if cel else None
 
 
 def _shop_act(bot, gs, action):

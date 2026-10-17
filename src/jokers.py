@@ -37,6 +37,9 @@ def _card_pred(subject):
 
     v24: a data tuple instead of a lambda, so the native kernel evaluates the same rule (_pred)."""
     s = subject
+    m = re.search(r"\b(Ace|King|Queen|Jack|10|[2-9]) of (Diamond|Heart|Club|Spade)s?\b", s)
+    if m:  # v28: The Idol's one card ("2 of Spades"), not every card of the suit
+        return ("card", WORD_RANK[m.group(1)], WORD_SUIT[m.group(2)])
     suit = next((v for k, v in WORD_SUIT.items() if k in s), None)
     if suit:
         return ("suit", suit)
@@ -60,6 +63,8 @@ def _pred(pred, i):
         return i["suit"] == pred[1] or i["enh"] == "WILD"
     if kind == "ranks":
         return i["rank"] in pred[1]
+    if kind == "card":
+        return i["rank"] == pred[1] and (i["suit"] == pred[2] or i["enh"] == "WILD")
     return True
 
 
@@ -67,6 +72,12 @@ def parse(effect):
     """Rule dict for one joker, or None when its text has no scoring effect we can read."""
     e = effect or ""
     rule = {"card": [], "retrigger": [], "held": [], "hand": None}
+    # v28: Bloodstone. A chance-based xMult per scoring card counts at its expected factor
+    m = re.match(r"(\d+) in (\d+) chance for played cards with (\w+?) suit to give X" + NUM + r" Mult when scored", e)
+    if m and m.group(3) in WORD_SUIT:
+        p, x = min(1.0, int(m.group(1)) / int(m.group(2))), float(m.group(4))
+        rule["card"].append((("suit", WORD_SUIT[m.group(3)]), 0, 0, 1 + p * (x - 1)))
+        return rule
     if re.search(r"1 in \d+ chance", e) and not re.match(r"[+X]\d", e):
         return None  # chance-based side effects (money, tarots, destruction)
 
@@ -105,6 +116,17 @@ def parse(effect):
         return rule
     if e.startswith("Adds double the rank of lowest ranked card held in hand"):
         rule["hand"] = ("lowest_held",)
+        return rule
+
+    # v28: Driver's License ("(Currently 2)" is a card count, not +2 Mult)
+    m = re.match(r"X" + NUM + r" Mult if you have at least (\d+) Enhanced cards in your full deck \(Currently (\d+)\)", e)
+    if m:
+        rule["hand"] = ("const", (0, 0, float(m.group(1)) if int(m.group(3)) >= int(m.group(2)) else 1))
+        return rule
+    # v28: Seeing Double
+    m = re.match(r"X" + NUM + r" Mult if played hand has a scoring Club card and a scoring card of any other suit", e)
+    if m:
+        rule["hand"] = ("cond", "seeing_double", None, (0, 0, float(m.group(1))), (0, 0, 1))
         return rule
 
     cur = re.search(r"\(Currently ([+X]?)\$?" + NUM + r"(?: (Mult|Chips))?\)", e)
@@ -205,7 +227,14 @@ def entry(c):
 
 def build(gs, cards=None):
     """Parse the run's jokers once per decision: [{label, rule or None, edition, scoring}]."""
-    out = [entry(c) for c in (_d(gs.get("jokers")).get("cards") or [] if cards is None else cards)]
+    cards = _d(gs.get("jokers")).get("cards") or [] if cards is None else cards
+    out = [entry(c) for c in cards]
+    # v28: Baseball Card gives X1.5 per Uncommon joker; rarity isn't in the gamestate, so look it up by key
+    for j, c in zip(out, cards):
+        m = re.match(r"Uncommon Jokers each give X" + NUM + r" Mult", _d(c.get("value")).get("effect") or "")
+        if m:
+            n = sum(_rarity(o.get("key")) == 2 for o in cards if o is not c)
+            j["rule"] = {"card": [], "retrigger": [], "held": [], "hand": ("const", (0, 0, float(m.group(1)) ** n))}
     # Blueprint copies the joker to its right, Brainstorm the leftmost.
     for n, j in enumerate(out):
         if j["label"] in ("Blueprint", "Brainstorm"):
@@ -213,6 +242,25 @@ def build(gs, cards=None):
             if src and src["label"] not in ("Blueprint", "Brainstorm"):
                 j["rule"], j["scoring"] = src["rule"], src["scoring"]
     return out
+
+
+_RARITY = None
+
+
+def _rarity(key):
+    """Joker rarity (1 common .. 4 legendary) from Jackdaw's copy of the game's centers, None if unknown."""
+    global _RARITY
+    if _RARITY is None:
+        import json
+        from pathlib import Path
+        f = Path(__file__).resolve().parent.parent / "third_party" / "jackdaw" / "jackdaw" / "engine" / "data" / "centers.json"
+        try:
+            with open(f, encoding="utf-8") as fh:
+                data = json.load(fh)
+            _RARITY = {k: v.get("rarity") for k, v in data.items() if isinstance(v, dict) and k.startswith("j_")}
+        except (OSError, ValueError):
+            _RARITY = {}
+    return _RARITY.get(key)
 
 
 def unmodelled(jokers):
@@ -361,6 +409,9 @@ def _hand(spec, ctx):
             ok = all(i["suit"] in arg for i in ctx["held"])
         elif cond == "four_suits":
             ok = len(ctx["scoring_suits"]) + ctx["wild"] >= 4
+        elif cond == "seeing_double":  # Wild cards fill Clubs first, then the other suits (joker_main)
+            c, o, w = "C" in ctx["scoring_suits"], bool(ctx["scoring_suits"] - {"C"}), ctx["wild"]
+            ok = (c or w > 0) and (o or (c and w > 0) or w >= 2)
         else:  # played_this_round
             ok = ctx["played_this_round"]
         return yes if ok else no

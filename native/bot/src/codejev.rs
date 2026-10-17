@@ -103,7 +103,7 @@ impl CodeJev {
         keys.sort();
         let fc = self.oracle.borrow_mut().items_forecast(&g, FORECAST_N, 3, &keys, None);
         self.stats.item_forecasts += 1;
-        // rollout_items.best(fc): the option beating skip by more than 2 paired SEs in blinds cleared
+        // rollout_items.best(fc): the option beating skip by more than 1 paired SE (v31; was 2) in blinds cleared
         // (largest gain, first on ties).
         let options = gs::get(&fc, "options");
         let mut best: Option<(&String, f64)> = None;
@@ -114,7 +114,7 @@ impl CodeJev {
             let Some(vs) = r.get("vs_skip") else { continue };
             let pair = gs::list(gs::get(vs, "blinds"));
             let (d, s) = (gs::num(&pair[0]), gs::num(&pair[1]));
-            if d > 2.0 * s.max(1e-9) && best.map_or(true, |(_, bd)| d > bd) {
+            if d > 1.0 * s.max(1e-9) && best.map_or(true, |(_, bd)| d > bd) {
                 best = Some((k, d));
             }
         }

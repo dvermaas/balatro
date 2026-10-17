@@ -530,6 +530,25 @@ def debuffed_jokers_lose_passives():
     Blind.drawn_to_hand = drawn_to_hand
 
 
+@patch
+def verdant_leaf_lifts_on_joker_sale():
+    """Verdant Leaf ("All cards debuffed until 1 Joker sold", localization bl_final_leaf) is disabled the
+    moment a joker is sold during its round. Jackdaw only implemented the debuff, so selling did nothing;
+    rumbot-sim has the rule (native/rumbot/src/game.rs, debuff_until_sale). Found by the v29 loss audit:
+    13 of 200 v28 lab games died to Verdant Leaf at ante 8 without selling. Not yet checked against the
+    Lua dump from the cloud box (blind.lua / card.lua sell_card)."""
+    orig = _game._handle_sell_card
+
+    def sell(gs, area, idx):
+        out = orig(gs, area, idx)
+        b = gs.get("blind")
+        if (area == "jokers" and b is not None and getattr(b, "name", "") == "Verdant Leaf"
+                and not getattr(b, "disabled", False) and gs.get("phase") == GamePhase.SELECTING_HAND):
+            _game._disable_active_blind(gs)
+        return out
+    _game._handle_sell_card = sell
+
+
 def apply():
     for fn in PATCHES:
         fn()

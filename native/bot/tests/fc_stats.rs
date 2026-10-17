@@ -82,6 +82,9 @@ fn options_and_filtered_keys_from_traces() {
                     .collect();
                 let errors: Vec<String> = f["ret"]["errors"].as_array().unwrap().iter().map(|e| e.as_str().unwrap().to_string()).collect();
                 kept.retain(|k| !errors.contains(k));
+                if let Some(no_runs) = f["ret"]["no_runs"].as_array() {
+                    kept.retain(|k| !no_runs.iter().any(|e| e == k));
+                }
                 t_filt.check(&label, &json!(kept), &f["ret"]["recorded"]);
             }
         }
@@ -108,7 +111,9 @@ fn summarize_paired_and_assembly_from_recorded_runs() {
                 for (key, rs) in runs {
                     let rs = fs::runs_list(rs);
                     let label = format!("summarize {key}");
-                    t_stats.check(&label, &fs::summarize(&rs, bosses), &r["ret"]["summarize"][key]);
+                    // Python: summarize(rs) if rs else None (an option whose rollouts all failed)
+                    let got = if rs.is_empty() { Value::Null } else { fs::summarize(&rs, bosses) };
+                    t_stats.check(&label, &got, &r["ret"]["summarize"][key]);
                     let v = &r["ret"]["vs_skip"][key];
                     let pr = |(m, s): (f64, f64)| json!([m, s]);
                     t_stats.check(&format!("{label} next_boss"), &pr(fs::paired(&rs, &base, fs::m_next_boss)), &v["next_boss"]);
@@ -131,7 +136,7 @@ fn summarize_paired_and_assembly_from_recorded_runs() {
                 t_asm.check("assemble", &got, &r["ret"]);
             }
             "best" => {
-                let got = fs::best(&r["args"]["fc"], 2.0);
+                let got = fs::best(&r["args"]["fc"], 1.0); // v31: rollout_items.best(fc, se=1.0)
                 t_items.check("best", &json!(got), &r["ret"]);
             }
             "option_jokers" => {

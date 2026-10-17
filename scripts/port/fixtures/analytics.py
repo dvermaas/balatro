@@ -9,7 +9,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, "C:/Users/admin/Documents/Repos/balatro-rust/scripts/port")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import states  # noqa: E402  (puts the frozen v27 src/ of the main port worktree on sys.path)
 import analytics  # noqa: E402
 import benchmark  # noqa: E402

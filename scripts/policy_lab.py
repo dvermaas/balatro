@@ -334,10 +334,187 @@ def _death(blind, final, hands, jokers):
 BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot-planner": {"planner": True},
             "bot-mid": {"n": 48, "bosses": 4, "synth": 36}, "bot-heavy": {"n": 128, "bosses": 5, "synth": 96},
             # shopping rollouts (src/rollout_shop.py): both shop forecasts buy jokers/planets in later shops
-            "bot-forecast-shop": {"shop": True}}
+            "bot-forecast-shop": {"shop": True},
+            # planet experiments (lab only): planets for the hand our deck scores most with (play_mix), and/or
+            # Celestial packs bought outright while `celestial` dollars stay after the buy
+            "bot-pl-mix": {"items": True, "planet_hand": "mix"},
+            "bot-pl-cel10": {"items": True, "celestial": 10},
+            "bot-pl-mix-cel10": {"items": True, "planet_hand": "mix", "celestial": 10},
+            "bot-pl-mix-cel4": {"items": True, "planet_hand": "mix", "celestial": 4},
+            # reroll experiments (lab only): decisions.MAX_REROLLS / INTEREST_BUFFER (in the lab the buffer only
+            # gates rerolls: CodeJev's buys score >= BUY_SCORE, and v18 strong vouchers are off)
+            "bot-rr4": {"items": True, "max_rerolls": 4},
+            "bot-rr4-b15": {"items": True, "max_rerolls": 4, "buffer": 15},
+            "bot-rr6-b10": {"items": True, "max_rerolls": 6, "buffer": 10},
+            # pack planet picks valued with the best play re-chosen after the level-up, on deals of hand size + 3
+            "bot-pl-reopt-cel4": {"items": True, "planet_hand": "mix", "celestial": 4, "planet_pick": "reopt"},
+            # xMult probe: add `xm_bonus` blinds to the forecast gain of xMult joker buys/swaps (does the frozen-
+            # build forecast undervalue them?)
+            "bot-xm-03": {"items": True, "xm_bonus": 0.3},
+            "bot-xm-06": {"items": True, "xm_bonus": 0.6},
+            # late spending (lab only): from ante `late`, keep only `late_buffer` dollars and allow `late_rerolls`
+            "bot-late5": {"items": True, "late": 5, "late_buffer": 5, "late_rerolls": 6},
+            "bot-late6": {"items": True, "late": 6, "late_buffer": 5, "late_rerolls": 6},
+            # scaling probe: winners held 2-3x more scaling jokers from ante 3; credit their growth past the
+            # forecast horizon with `bonus` blinds through ante `bonus_ante`
+            "bot-scale-03": {"items": True, "bonus_kind": "scaling", "bonus": 0.3, "bonus_ante": 4},
+            "bot-scale-06": {"items": True, "bonus_kind": "scaling", "bonus": 0.6, "bonus_ante": 4},
+            # swaps: forecast selling any of our `swap_sells` weakest jokers (production: 2, by measured loss on
+            # recent hands, which ranks unparsed or situational jokers as free to sell)
+            "bot-swap3": {"items": True, "swap_sells": 3},
+            "bot-swap5": {"items": True, "swap_sells": 5},
+            # arm F (v28) with shopping rollouts in both forecasts (Python only, slow)
+            "bot-items-shop": {"items": True, "shop": True},
+            # skip small/big blinds for strong tags when readiness says the blind we then face is safe
+            "bot-skip-strong": {"items": True, "skip_tags": "strong", "skip_ratio": 1.3},
+            "bot-skip-wide": {"items": True, "skip_tags": "wide", "skip_ratio": 1.5},
+            # the forecast's auto-buy bar (decisions.SURE_SE, production 2) and the item forecast's (best(se=2))
+            "bot-se15": {"items": True, "sure_se": 1.5},
+            "bot-se1": {"items": True, "sure_se": 1.0},
+            "bot-se05": {"items": True, "sure_se": 0.5},
+            # more rollouts per option for both forecasts (production 24 with a 4 s budget; the lab 16, no budget)
+            "bot-n32": {"items": True, "n": 32},
+            "bot-n48": {"items": True, "n": 48},
+            # forecast horizon (production FORECAST_BOSSES = 3)
+            "bot-b2": {"items": True, "bosses": 2},
+            "bot-b4": {"items": True, "bosses": 4},
+            # interest guard: a buy that lowers our interest by L dollars a round needs `guard` x L more SEs
+            "bot-guard02": {"items": True, "guard": 0.2},
+            "bot-guard04": {"items": True, "guard": 0.4},
+            # build commitment: from ante 3, discard plans that chase the deck's main hand (readiness.play_mix)
+            # get their expected score x (1 + commit) before ranking; `commit_hands` limits it to those mains
+            "bot-commit15-fs": {"items": True, "commit": 0.15, "commit_hands": ("Flush", "Straight")},
+            "bot-commit30-fs": {"items": True, "commit": 0.30, "commit_hands": ("Flush", "Straight")},
+            "bot-commit15-all": {"items": True, "commit": 0.15},
+            # deck shaping: a suit tarot (Star/Moon/Sun/World) taken from a pack is valued by its measured gain on
+            # deals from the converted deck (as v28's planet_gain) instead of a flat 0.03
+            "bot-suitval": {"items": True, "suit_value": True},
+            # engines (combos from the coaching guides): pieces of an engine we hold 2+ of are never swapped out;
+            # a shop joker that adds a piece to an engine we hold 1+ of gets `engine` blinds of forecast credit
+            "bot-engine03": {"items": True, "engine": 0.3},
+            "bot-engine06": {"items": True, "engine": 0.6},
+            "bot-engine-protect": {"items": True, "engine": 0.0},
+            # v23 early slot fill (decisions.EARLY_ANTE / EARLY_JOKERS, production 3 / 4)
+            "bot-early-off": {"items": True, "early_ante": 0},
+            "bot-early5": {"items": True, "early_jokers": 5},
+            # jokers valued with the best play re-chosen (as v28's planet_gain): pack joker picks, and also the
+            # swap candidates' "weakest" ranking
+            "bot-jreopt-pick": {"items": True, "joker_reopt": ("pick",)},
+            "bot-jreopt-both": {"items": True, "joker_reopt": ("pick", "weak")},
+            # The Mouth: the first play may only be a hand type the deck makes again in >= `mouth` of sampled hands
+            "bot-mouth60": {"items": True, "mouth": 0.6},
+            "bot-mouth80": {"items": True, "mouth": 0.8},
+            # vouchers whose value only shows in later shops (the forecast's rollouts never shop): bought by code
+            # while `vfloor` dollars stay, before the forecast's own picks
+            "bot-vouch10": {"items": True, "vouch": "future", "vfloor": 10},
+            "bot-vouch25": {"items": True, "vouch": "future", "vfloor": 25},
+            # planets on plain hand-size deals (no +3 cards): what the deck really plays, not what discards could build
+            "bot-plx0": {"items": True, "planet_extra": 0},
+            # planets for Pair / Two Pair weighted x`pair_bias` (the 5k-game teacher levels Pair in 77% of its wins)
+            "bot-pairbias": {"items": True, "pair_bias": 1.5}}
+FUTURE_VOUCHERS = ["Antimatter", "Blank", "Overstock", "Overstock Plus", "Telescope", "Observatory", "Clearance Sale",
+                   "Liquidation", "Crystal Ball", "Reroll Surplus", "Reroll Glut", "Seed Money", "Money Tree"]
+ENGINES = [
+    {"Pareidolia", "Photograph", "Smiley Face", "Scary Face", "Sock and Buskin", "Midas Mask", "Business Card",
+     "Reserved Parking", "Triboulet", "Faceless Joker"},
+    {"Hologram", "DNA", "Certificate", "Marble Joker"},
+    {"Swashbuckler", "Egg", "Gift Card", "Ceremonial Dagger"},
+    {"Baron", "Mime", "Shoot the Moon"},
+    {"Lucky Cat", "Oops! All 6s", "Bloodstone"},
+    {"Burglar", "Mystic Summit", "Ramen"},
+    {"Burnt Joker", "Stuntman"},
+]
+SKIP_TAGS = {
+    "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
+               "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
+}
+SKIP_TAGS["wide"] = SKIP_TAGS["strong"] | {"Foil Tag", "Charm Tag", "Coupon Tag", "Economy Tag", "Voucher Tag",
+                                           "Top-up Tag", "Juggle Tag", "D6 Tag", "Ethereal Tag"}
+_DEFAULTS = {}
 
 
-def _code_jev(bot_ref, items=False):
+def _joker_gain(pub, add=None, remove=None, k=24, extra=3):
+    """Mean best-play ratio - 1 after adding joker card `add` / removing owned index `remove`, the best play
+    re-chosen per deal, over k deals of hand size + extra from the deck multiset (paired: same deals)."""
+    import random
+    import jokers as text_jokers
+    from hands import best_score, card_info
+    d = lambda x: x if isinstance(x, dict) else {}  # noqa: E731
+    deck = list(_cards(pub, "cards")) + list(_cards(pub, "hand"))
+    deck.sort(key=lambda c: (str(d(c.get("value")).get("suit")), str(d(c.get("value")).get("rank")), str(d(c.get("modifier")))))
+    infos = [dict(card_info(c), debuff=False) for c in deck]
+    size = min((d(pub.get("hand")).get("limit") or 8) + extra, len(infos))
+    owned = list(_cards(pub, "jokers"))
+    new = [c for n, c in enumerate(owned) if n != remove] + ([add] if add is not None else [])
+    levels, rnd = d(pub.get("hands")), {"hands_left": 2, "discards_left": 1}
+    s0 = text_jokers.Scorer(levels, text_jokers.build(pub, owned), rnd)
+    s1 = text_jokers.Scorer(levels, text_jokers.build(pub, new), rnd)
+    rng = random.Random("JOKER")
+    b = a = 0.0
+    for _ in range(k):
+        h = rng.sample(infos, size)
+        b += best_score(h, s0)
+        a += best_score(h, s1)
+    return a / b - 1 if b else 0.0
+
+
+def _suit_gain(pub, hand, targets, suit, k=24, extra=3):
+    """Mean best-play ratio - 1 when hand cards `targets` change to `suit`, over k deals of hand size + extra
+    from the deck multiset (pack picks: the deck is _cards(pub, 'cards') plus the hand)."""
+    import random
+    import jokers as text_jokers
+    from hands import best_score, card_info
+    d = lambda x: x if isinstance(x, dict) else {}  # noqa: E731
+    rest = [dict(card_info(c), debuff=False) for c in _cards(pub, "cards")]
+    held = [dict(card_info(c), debuff=False) for c in hand]
+    conv = [dict(i, suit=suit) if n in set(targets) else i for n, i in enumerate(held)]
+    key = lambda i: (str(i.get("suit")), str(i.get("rank")), str(i.get("enh")), str(i.get("edition")), str(i.get("seal")))  # noqa: E731
+    before, after = sorted(rest + held, key=key), sorted(rest + conv, key=key)
+    size = min((d(pub.get("hand")).get("limit") or 8) + extra, len(before))
+    js, levels = text_jokers.build(pub), d(pub.get("hands"))
+    sc = text_jokers.Scorer(levels, js, {"hands_left": 2, "discards_left": 1})
+    tot0 = tot1 = 0.0
+    for deck, acc in ((before, 0), (after, 1)):
+        rng = random.Random("SUIT")
+        for _ in range(k):
+            v = best_score(rng.sample(deck, size), sc)
+            if acc:
+                tot1 += v
+            else:
+                tot0 += v
+    return tot1 / tot0 - 1 if tot0 else 0.0
+
+
+def _reopt_gain(pub, lv, k=24, extra=3):
+    """Mean best-play score ratio - 1 after levelling lv=(hand, chips, mult), the best play re-chosen per
+    deal, over k deals of hand size + `extra` cards (roughly what a discard adds) from the deck multiset."""
+    import random
+    import jokers as text_jokers
+    from hands import best_score, card_info
+    d = lambda x: x if isinstance(x, dict) else {}  # noqa: E731
+    deck = list(_cards(pub, "cards")) + list(_cards(pub, "hand"))
+    deck.sort(key=lambda c: (str(d(c.get("value")).get("suit")), str(d(c.get("value")).get("rank")),
+                             str(d(c.get("modifier")))))
+    infos = [dict(card_info(c), debuff=False) for c in deck]
+    size = min((d(pub.get("hand")).get("limit") or 8) + extra, len(infos))
+    if size < 1:
+        return 0.0
+    js, levels = text_jokers.build(pub), d(pub.get("hands"))
+    h, c, m = lv
+    new = {**levels, h: {**d(levels.get(h)), "chips": d(levels.get(h)).get("chips", 0) + c,
+                         "mult": d(levels.get(h)).get("mult", 1) + m}}
+    rnd = {"hands_left": 2, "discards_left": 1}
+    s0, s1 = text_jokers.Scorer(levels, js, rnd), text_jokers.Scorer(new, js, rnd)
+    rng = random.Random("REOPT")
+    before = after = 0.0
+    for _ in range(k):
+        hand = rng.sample(infos, size)
+        before += best_score(hand, s0)
+        after += best_score(hand, s1)
+    return after / before - 1 if before else 0.0
+
+
+def _code_jev(bot_ref, items=False, opts=None):
     """JEV replaced by 'take the top-ranked option': Choice -> the first option (the bot lists its best
     measured option first; cash tarot steps -> continue shopping), play_now -> play when the strongest
     play clears or beats the best measured discard, item scores -> 0 except the shared planet rule
@@ -362,6 +539,17 @@ def _code_jev(bot_ref, items=False):
             import rollout_items
             gs = bot_ref[0].last_state or {}
             st = gs.get("state")
+            floor = (opts or {}).get("celestial")
+            if floor is not None and st == "SHOP":
+                money = gs.get("money") or 0
+                cel = [(int(q.split("_")[-1]), q) for q in questions if q.startswith("buy_pack_")]
+                cel = [(_cards(gs, "packs")[i], q) for i, q in cel]
+                cel = [(c, q) for c, q in cel if "Celestial" in (c.get("label") or "")
+                       and money - _d(c.get("cost")).get("buy", 0) >= floor]
+                if cel:  # the biggest pack first (Mega > Jumbo > normal, by price)
+                    c, q = max(cel, key=lambda cq: _d(cq[0].get("cost")).get("buy", 0))
+                    self.stats["item_buys"].append([gs.get("ante_num"), c.get("label"), "celestial rule"])
+                    return {q: 3.0}
             if st == "SMODS_BOOSTER_OPENED" and any(q.startswith("take_") for q in questions):
                 p = rollout_items.Picker(gs).pick_pub(gs)
                 if p:
@@ -421,6 +609,12 @@ def _code_jev(bot_ref, items=False):
             hands = _d(gs.get("hands"))
             top = max(hands.items(), key=lambda kv: (_d(kv[1]).get("played") or 0, _d(kv[1]).get("level") or 0),
                       default=(None, {}))
+            if (opts or {}).get("planet_hand") == "mix" and item.get("kind") == "planet":
+                import readiness
+                mix = readiness.play_mix(gs)
+                if mix:
+                    h = max(mix, key=mix.get)
+                    top = (h, {**_d(hands.get(h)), "played": 1})
             if item.get("kind") == "planet" and top[0] and (_d(top[1]).get("played") or 0) > 0                     and f"Level up {top[0]} " in (item.get("what") or "") and (item.get("money_after") or 0) >= 4:
                 return 4.0
             return 0.0
@@ -440,23 +634,301 @@ def _play_bot(seed, arm_name, t0):
     # worker process plays games of several arms
     decisions.FORECAST_N, decisions.FORECAST_BUDGET = opts.get("n", FORECAST_N), None
     decisions.FORECAST_BOSSES = opts.get("bosses", 3)
+    _DEFAULTS.setdefault("rr", (decisions.MAX_REROLLS, decisions.INTEREST_BUFFER))
+    _DEFAULTS.setdefault("early", (decisions.EARLY_ANTE, decisions.EARLY_JOKERS))
+    decisions.EARLY_ANTE = opts.get("early_ante", _DEFAULTS["early"][0])
+    decisions.EARLY_JOKERS = opts.get("early_jokers", _DEFAULTS["early"][1])
+    _DEFAULTS.setdefault("weak", decisions._weakest_jokers.__defaults__)
+    _DEFAULTS.setdefault("weak_fn", decisions._weakest_jokers)
+    decisions._weakest_jokers = _DEFAULTS["weak_fn"]
+    if "weak" in opts.get("joker_reopt", ()):
+        def weak_reopt(gs, recent, n=decisions.SWAP_SELLS):
+            loss = []
+            for j, c in enumerate(_cards(gs, "jokers")):
+                m = _d(c.get("modifier"))
+                if m.get("eternal") or m.get("edition") == "NEGATIVE":
+                    continue
+                try:
+                    g = _joker_gain(gs, remove=j)
+                except Exception:  # noqa: BLE001
+                    g = 0.0
+                loss.append((-g, _d(c.get("cost")).get("sell", 0), j))
+            return {j for _, _, j in sorted(loss)[:n]}
+        decisions._weakest_jokers = weak_reopt
+    _DEFAULTS.setdefault("sure", (decisions.SURE_SE, rollout_items.best.__defaults__))
+    decisions.SURE_SE = opts.get("sure_se", _DEFAULTS["sure"][0])
+    rollout_items.best.__defaults__ = (opts["sure_se"],) if opts.get("sure_se") else _DEFAULTS["sure"][1]
+    decisions._weakest_jokers.__defaults__ = (opts["swap_sells"],) if opts.get("swap_sells") else _DEFAULTS["weak"]
+    decisions.MAX_REROLLS = opts.get("max_rerolls", _DEFAULTS["rr"][0])
+    decisions.INTEREST_BUFFER = opts.get("buffer", _DEFAULTS["rr"][1])
+    _DEFAULTS.setdefault("pv", rollout_items.Picker.planet_value)
+    import readiness as _rd
+    _DEFAULTS.setdefault("mix", (_rd.MIX_EXTRA, rollout_items.planet_gain.__defaults__))
+    _DEFAULTS.setdefault("pmix", _rd.play_mix)
+    _rd.play_mix = _DEFAULTS["pmix"]
+    _rd.MIX_EXTRA = opts.get("planet_extra", _DEFAULTS["mix"][0])
+    _rd._MIX_CACHE.clear()  # keyed by seed/round, not by these settings
+    d = list(_DEFAULTS["mix"][1])
+    if "planet_extra" in opts:
+        d[1] = opts["planet_extra"]
+    rollout_items.planet_gain.__defaults__ = tuple(d)
+    _DEFAULTS.setdefault("cv", rollout_items.Picker.consumable_value)
+    _DEFAULTS.setdefault("jv", rollout_items.Picker.joker_value)
+    rollout_items.Picker.joker_value = _DEFAULTS["jv"]
+    if "pick" in opts.get("joker_reopt", ()):
+        import jokers as text_jokers
+
+        def joker_value(self, c, _orig=_DEFAULTS["jv"]):
+            m = _d(c.get("modifier"))
+            if m.get("rental") or m.get("eternal") or text_jokers.entry(c)["rule"] is None:
+                return _orig(self, c)  # same zero / unmodelled handling as production
+            k = ("jr", c.get("key"), str(m.get("edition")))
+            if k not in self.memo:
+                try:
+                    self.memo[k] = max(_joker_gain(self.pub, add=c), 0.0) + 0.01
+                except Exception:  # noqa: BLE001
+                    return _orig(self, c)
+            return self.memo[k]
+        rollout_items.Picker.joker_value = joker_value
+    rollout_items.Picker.consumable_value = _DEFAULTS["cv"]
+    if opts.get("suit_value"):
+        import tarots
+
+        def consumable_value(self, c, hand, money, jokers, joker_room, _orig=_DEFAULTS["cv"]):
+            key = c.get("key") or ""
+            spec = tarots.TARGETED.get(key)
+            if not spec or spec[0] != "suit" or not hand:
+                return _orig(self, c, hand, money, jokers, joker_room)
+            p = tarots.plan(key, hand, self.b)
+            if not p:
+                return 0.0, None
+            mk = ("suit", key, tuple(p[0]))
+            if mk not in self.memo:
+                try:
+                    self.memo[mk] = max(_suit_gain(self.pub, hand, p[0], spec[2]), 0.0)
+                except Exception:  # noqa: BLE001
+                    self.memo[mk] = 0.0
+            return max(self.memo[mk], 0.001), p[0]
+        rollout_items.Picker.consumable_value = consumable_value
+    if opts.get("planet_pick") == "reopt":
+        def planet_value(self, c):
+            k = ("p", c.get("key"))
+            if k not in self.memo:
+                import jokers as text_jokers
+                lv = text_jokers.planet_level(_d(c.get("value")).get("effect"))
+                self.memo[k] = max(_reopt_gain(self.pub, lv) if lv else 0.0, 0.0) + 0.001
+            return self.memo[k]
+        rollout_items.Picker.planet_value = planet_value
+    else:
+        rollout_items.Picker.planet_value = _DEFAULTS["pv"]
     rollout_items.synth_plays.__defaults__ = (opts.get("synth", rollout_items.SYNTH_HANDS), "SYNTH")
     decisions.VOUCHERS = {k: (v[0], False) for k, v in decisions.VOUCHERS.items()}  # no v18 strong-voucher rule
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
+    _DEFAULTS.setdefault("shop", decisions.shop)
+    _DEFAULTS.setdefault("prule", decisions._planet_rule)
+    decisions._planet_rule = _DEFAULTS["prule"]
+    _DEFAULTS.setdefault("ba", (decisions.BossAllow.__call__, decisions.BossAllow.native_spec))
+    decisions.BossAllow.__call__, decisions.BossAllow.native_spec = _DEFAULTS["ba"]
+    import odds
+    _DEFAULTS.setdefault("odds", odds.forecast)
+    odds.forecast = _DEFAULTS["odds"]
+    _DEFAULTS.setdefault("blind", decisions.blind_select)
+    decisions.blind_select = _DEFAULTS["blind"]
+    if opts.get("skip_tags"):
+        import readiness
+        from jev_bot import current_blind
+
+        def skip_select(bot, gs, _orig=_DEFAULTS["blind"]):
+            b = current_blind(gs)
+            if b.get("type") != "BOSS" and b.get("tag_name") in SKIP_TAGS[opts["skip_tags"]]:
+                r = readiness.assess(gs)
+                # rows: this blind, then the one we would face next if we skip it
+                if r and len(r["blinds"]) > 1 and r["blinds"][1]["ratio"] >= opts["skip_ratio"]:
+                    bot.emit("auto", question="blind", choice="skip", desc=f"skip for {b.get('tag_name')}",
+                             reason=f"next blind readiness {r['blinds'][1]['ratio']} >= {opts['skip_ratio']}")
+                    bot.act("skip")
+                    return
+            return _orig(bot, gs)
+        decisions.blind_select = skip_select
+    decisions.shop = _DEFAULTS["shop"]
+    if opts.get("late"):
+        def late_shop(bot, gs, _orig=_DEFAULTS["shop"]):
+            late = (gs.get("ante_num") or 1) >= opts["late"]
+            decisions.INTEREST_BUFFER = opts["late_buffer"] if late else _DEFAULTS["rr"][1]
+            decisions.MAX_REROLLS = opts["late_rerolls"] if late else _DEFAULTS["rr"][0]
+            return _orig(bot, gs)
+        decisions.shop = late_shop
+    _DEFAULTS.setdefault("ff", decisions._forecast_fields)
+    decisions._forecast_fields = _DEFAULTS["ff"]
     import rollout_shop
     shop_patch = rollout_shop.Patched() if opts.get("shop") else None
     if shop_patch:
         shop_patch.__enter__()
     try:
         ref = [None]
-        jev = _code_jev(ref, items=opts.get("items", False))
+        jev = _code_jev(ref, items=opts.get("items", False), opts=opts)
         pstats = {"evals": 0, "plans": 0, "seconds": 0.0, "plays": 0, "discards": 0, "errors": 0}
         if opts.get("planner"):
             import round_planner
             decisions.selecting_hand = round_planner.wrap(orig_selecting_hand, pstats)
         bot = JevBot(deck="RED", stake="WHITE", game=SimBalatro(), jev=jev, log_dir=Path(tmp))
         ref[0] = bot
+        if opts.get("commit"):
+            import odds
+            import readiness
+            import build as build_mod
+            orig_fc, bonus, only = _DEFAULTS["odds"], opts["commit"], opts.get("commit_hands")
+
+            def committed(discards, *a, **kw):
+                out = orig_fc(discards, *a, **kw)
+                gs = bot.last_state or {}
+                if (gs.get("ante_num") or 1) < 3:
+                    return out
+                mix = readiness.play_mix(gs)
+                main = max(mix, key=mix.get) if mix else None
+                if not main or (only and main not in only):
+                    return out
+                suit = build_mod.decide(gs).get("suit")
+                want = "flush" if main in build_mod.FLUSH_FAMILY else "straight" if main == "Straight" else \
+                    "sets" if main in build_mod.PAIR_FAMILY else "high"
+                for d in discards:
+                    kind, arg = d.get("goal") or (None, None)
+                    if kind == want and (want != "flush" or not suit or arg == suit) and d.get("expected_score"):
+                        d["expected_score"] = int(d["expected_score"] * (1 + bonus))
+                return out
+            odds.forecast = committed
+        if "engine" in opts:
+            orig_ff, bonus = _DEFAULTS["ff"], opts["engine"]
+            orig_weak = decisions._weakest_jokers
+
+            def held(gs):
+                return [j.get("label") for j in _cards(gs, "jokers")]
+
+            def ff(fc, key):
+                out = orig_ff(fc, key)
+                gs = bot.last_state or {}
+                if bonus and key.startswith(("buy_card_", "replace_")):
+                    c = _cards(gs, "shop")[int(key.split("_")[-1])]
+                    have = held(gs)
+                    if key.startswith("replace_"):
+                        have = [h for n, h in enumerate(have) if n != int(key.split("_")[1])]
+                    lab = c.get("label")
+                    if c.get("set") == "JOKER" and lab not in have and any(lab in e and set(have) & e for e in ENGINES):
+                        out["_fc_delta"] += bonus
+                return out
+
+            def weak(gs, recent, n=decisions.SWAP_SELLS):
+                have = held(gs)
+                keep = {i for i, h in enumerate(have) if any(h in e and len(set(have) & e) >= 2 for e in ENGINES)}
+                ranked = sorted(orig_weak(gs, recent, n=len(have)) - keep,
+                                key=lambda j: (-(jokers_mod.gain(gs, recent, remove=j) or 0.0), j))
+                return set(ranked[:n])
+            import jokers as jokers_mod
+            decisions._forecast_fields, decisions._weakest_jokers = ff, weak
+        if opts.get("vouch"):
+            orig_rule = _DEFAULTS["prule"]
+
+            def rule(gs, items, money):
+                vs = _cards(gs, "vouchers")
+                best = None
+                for k, v in items.items():
+                    if k.startswith("buy_voucher_") and money - v[3] >= opts["vfloor"]:
+                        lab = vs[int(k.split("_")[-1])].get("label")
+                        if lab in FUTURE_VOUCHERS and (best is None or FUTURE_VOUCHERS.index(lab) < best[0]):
+                            best = (FUTURE_VOUCHERS.index(lab), k)
+                return best[1] if best else orig_rule(gs, items, money)
+            decisions._planet_rule = rule
+        if opts.get("pair_bias"):
+            import readiness as _rd2
+            orig_pv, bias = rollout_items.Picker.planet_value, opts["pair_bias"]
+
+            def planet_value(self, c):
+                v = orig_pv(self, c)
+                import re
+                eff = _d(c.get("value")).get("effect") or ""
+                return v * bias if re.search(r"Level up (Pair|Two Pair) ", eff) else v
+            rollout_items.Picker.planet_value = planet_value
+            orig_mix = _rd2.play_mix
+
+            def mix(gs, samples=24):
+                m = dict(orig_mix(gs, samples))
+                for h in ("Pair", "Two Pair"):
+                    if h in m:
+                        m[h] *= bias
+                return m
+            _rd2.play_mix = mix
+            decisions.readiness.play_mix = mix
+        if opts.get("mouth"):
+            import random
+            import jokers as jk
+            import strategy as strat
+            from hands import best_play, card_info
+            orig_call, orig_spec = _DEFAULTS["ba"]
+            cache = {}
+
+            def repeatable(gs):
+                key = (gs.get("seed"), gs.get("ante_num"), gs.get("round_num"))
+                if key not in cache:
+                    deck = [dict(card_info(c), debuff=False) for c in _cards(gs, "cards") + _cards(gs, "hand")]
+                    deck.sort(key=lambda i: (str(i["suit"]), str(i["rank"]), str(i["enh"])))
+                    size = min(_d(gs.get("hand")).get("limit") or 8, len(deck))
+                    levels = _d(gs.get("hands"))
+                    sc = jk.Scorer(levels, jk.build(gs), {"hands_left": 2, "discards_left": 0})
+                    rng, made = random.Random("MOUTH"), {}
+                    for _ in range(24):
+                        n = best_play(rng.sample(deck, size), levels, sc)[1]
+                        for t in strat.HAND_NAMES:
+                            if n == t or n in strat.CONTAINED_IN.get(t, ()):
+                                made[t] = made.get(t, 0) + 1
+                    ok = {t for t, c in made.items() if c / 24 >= opts["mouth"]} | {"High Card"}
+                    cache.clear()
+                    cache[key] = ok
+                return cache[key]
+
+            def first_mouth(self):
+                return self.boss == "The Mouth" and not any(_d(h).get("played_this_round") for h in self.levels.values())
+
+            def call(self, combo, name):
+                if first_mouth(self):
+                    return name in repeatable(bot.last_state or {})
+                return orig_call(self, combo, name)
+
+            def spec(self):
+                return None if first_mouth(self) else orig_spec(self)  # Python path for the first Mouth play
+            decisions.BossAllow.__call__, decisions.BossAllow.native_spec = call, spec
+        if opts.get("guard"):
+            import strategy
+            orig_ff, k = _DEFAULTS["ff"], opts["guard"]
+
+            def ff(fc, key):
+                out = orig_ff(fc, key)
+                gs = bot.last_state or {}
+                money, idx = gs.get("money") or 0, int(key.split("_")[-1])
+                area = {"buy_card": "shop", "buy_voucher": "vouchers", "buy_pack": "packs", "replace": "shop"}
+                kind = next((a for a in area if key.startswith(a)), None)
+                if kind:
+                    cost = _d(_cards(gs, area[kind])[idx].get("cost")).get("buy", 0)
+                    if kind == "replace":
+                        cost -= _d(_cards(gs, "jokers")[int(key.split("_")[1])].get("cost")).get("sell", 0)
+                    lost = strategy.interest(money) - strategy.interest(money - cost)
+                    out["_fc_delta"] -= k * max(lost, 0) * max(out["_fc_se"], 1e-9)
+                return out
+            decisions._forecast_fields = ff
+        if opts.get("xm_bonus") or opts.get("bonus_kind"):
+            import strategy
+            orig_ff = _DEFAULTS["ff"]
+            bonus, kind = opts.get("xm_bonus") or opts["bonus"], opts.get("bonus_kind", "xmult")
+
+            def ff(fc, key):
+                out = orig_ff(fc, key)
+                gs = bot.last_state or {}
+                if key.startswith(("buy_card_", "replace_")) and (gs.get("ante_num") or 1) <= opts.get("bonus_ante", 99):
+                    c = _cards(gs, "shop")[int(key.split("_")[-1])]
+                    if c.get("set") == "JOKER" and strategy.joker_kind(_d(c.get("value")).get("effect")) == kind:
+                        out["_fc_delta"] += bonus
+                return out
+            decisions._forecast_fields = ff
         bot.model = jev.model
         bot.act("start", {"seed": seed, "deck": "RED", "stake": "WHITE"})
         engine_won = False
@@ -508,9 +980,26 @@ def _play_bot(seed, arm_name, t0):
                     "planner_plays": pstats["plays"], "planner_discards": pstats["discards"],
                     "planner_errors": pstats["errors"]} if opts.get("planner") else {})}
     finally:
+        decisions._forecast_fields = _DEFAULTS["ff"]
+        decisions._weakest_jokers = _DEFAULTS["weak_fn"]
+        decisions.shop = _DEFAULTS["shop"]
+        import readiness as _rd3
+        _rd3.play_mix = _DEFAULTS["pmix"]
+        decisions._planet_rule = _DEFAULTS["prule"]
+        decisions.BossAllow.__call__, decisions.BossAllow.native_spec = _DEFAULTS["ba"]
+        import odds
+        odds.forecast = _DEFAULTS["odds"]
+        decisions.blind_select = _DEFAULTS["blind"]
         decisions.selecting_hand = orig_selecting_hand  # workers play many games: never leak the wrapper
         if shop_patch:
             shop_patch.__exit__(None, None, None)
+        keep = os.environ.get("PLAB_KEEP_LOGS")  # a dir: keep each game's decisions.jsonl for diagnostics
+        if keep:
+            for f in Path(tmp).rglob("decisions.jsonl"):
+                Path(keep).mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(f, Path(keep) / f"{seed}-{arm_name}.jsonl")
+            for f in Path(tmp).rglob("states.jsonl.gz"):  # full gamestates per decision, keyed by event id
+                shutil.copyfile(f, Path(keep) / f"{seed}-{arm_name}.states.jsonl.gz")
         shutil.rmtree(tmp, ignore_errors=True)
 
 
