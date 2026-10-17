@@ -40,3 +40,8 @@
 - analytics (Python too): run_metrics "progress" never adds the final-blind share (last_move only holds
   discards_left, so target is 0): progress == rounds_won. Ported as-is; fix in both if the share was intended.
 - panel/jev_bot: `--legacy` (v1 bot) and error tracebacks not ported.
+- forecast_items (fc-items4): more Jackdaw-mirroring for v27 identity, forecast only: Cryptid copies don't grow
+  Hologram (Jackdaw game.py:2606-2625 skips playing_card_added), `pack_ignores_played` now also makes rumbot
+  `add_random_joker` ignore seen centers (Jackdaw never fills used_jokers); not yet noted in native/rumbot/VENDORED.md.
+  Deck/draw pile are re-sorted by uid after a pick (Jackdaw sort_id order). Drop with the other flags once
+  Jackdaw is not the reference. fc_packs' describe_lite still skips deck cards, hand levels, joker counters.
