@@ -15,6 +15,7 @@ Errors: JEV failure (a panic "JEV call failed: ..." from `JevBot::query`) -> "Je
 connect errors -> Python's Balatro hints; then the bot pauses. Tests: `cargo test --test panel` (needs
 `scripts/port/fixtures/panel.py` run once).
 
-Not ported: POST /api/benchmark answers 500 (JevBot's benchmark queue / start_benchmark is parked); `--legacy`; the traceback
+Not ported: POST /api/benchmark answers 500 (JevBot's benchmark queue / start_benchmark is parked); `--legacy` (the v1 bot
+is Python-only: `jevbot panel --legacy` prints "the v1 bot is Python-only: run src/panel.py --legacy" and exits 2); the traceback
 in error events; `current_run` is read from the run's summary.json (recorder.run is private); version id is "rust" (no
 prompt hash), so Python-recorded runs don't count in `version.runs`; abandon errors surface as error events, not HTTP 500.

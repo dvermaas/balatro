@@ -227,7 +227,7 @@ pub fn shop_forecast(bot: &mut JevBot, gs: &Value, recent: &[Value], jokers_full
         Err((t, m)) => {
             let msg = format!("Forecast unavailable ({t}: {}); using measured gains", trunc120(&m));
             bot.emit("info", json!({"msg": msg}));
-            log_forecast_error(bot, gs, "joker forecast");
+            log_forecast_error(bot, gs, "joker forecast", &format!("{t}: {m}"));
             (Value::Null, Value::Null)
         }
     };
@@ -235,24 +235,38 @@ pub fn shop_forecast(bot: &mut JevBot, gs: &Value, recent: &[Value], jokers_full
     nonnull(f)
 }
 
-// decisions.py 529-545. Appends to runs/_forecast_errors.log under the repo root (Python's `src/..`).
-// Differences from Python: no traceback (Rust has none to print), a unix-seconds stamp instead of
-// strftime, and run= is empty (the recorder keeps its run dir private).
-pub fn log_forecast_error(_bot: &mut JevBot, gs: &Value, what: &str) {
+// decisions.py 529-545. Appends to <bot.runs_root>/_forecast_errors.log (a relative runs_root resolves under the
+// repo root, Python's `src/..`). Python writes the exception's traceback; here `err` is the error message and
+// the location is the caller's file:line:col (`#[track_caller]`, no backtrace). run= is the current run dir name
+// (empty before the first `ensure`, like Python's getattr default).
+#[track_caller]
+pub fn log_forecast_error(bot: &mut JevBot, gs: &Value, what: &str, err: &str) {
+    let loc = std::panic::Location::caller();
     let shop: Map<String, Value> = ["shop", "packs", "vouchers", "consumables", "jokers"]
         .iter()
         .map(|a| (a.to_string(), Value::Array(cards_of(gs, a).iter().map(|c| g(c, "key")).collect())))
         .collect();
-    let root: PathBuf = trace::data_dir().parent().and_then(Path::parent).unwrap_or(Path::new(".")).to_path_buf();
-    let path = root.join(FORECAST_ERROR_LOG);
+    let run = bot.recorder.dir().and_then(Path::file_name).map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+    let path = if bot.runs_root.is_absolute() {
+        bot.runs_root.join(FORECAST_ERROR_LOG)
+    } else {
+        let repo: PathBuf = trace::data_dir().parent().and_then(Path::parent).unwrap_or(Path::new(".")).to_path_buf();
+        repo.join(&bot.runs_root).join(FORECAST_ERROR_LOG)
+    };
     let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
     let line = format!(
-        "--- {stamp} {what} run= seed={} ante={} round={} money={} {}\n(no traceback: Rust port)\n",
+        "--- {stamp} {what} run={run} seed={} ante={} round={} money={} {}
+{err}
+  at {}:{}:{}
+",
         pystr(&g(gs, "seed")),
         pystr(&g(gs, "ante_num")),
         pystr(&g(gs, "round_num")),
         pystr(&g(gs, "money")),
-        dumps(&Value::Object(shop))
+        dumps(&Value::Object(shop)),
+        loc.file(),
+        loc.line(),
+        loc.column(),
     );
     // Logging must never break the shop: ignore I/O errors, as Python does.
     let _ = (|| -> std::io::Result<()> {
@@ -320,7 +334,7 @@ pub fn item_forecast(bot: &mut JevBot, gs: &Value, fc: &Value) -> Option<Value> 
         Err((t, m)) => {
             let msg = format!("Item forecast unavailable ({t}: {})", trunc120(&m));
             bot.emit("info", json!({"msg": msg}));
-            log_forecast_error(bot, gs, "item forecast");
+            log_forecast_error(bot, gs, "item forecast", &format!("{t}: {m}"));
             bot._item_forecast_cache = Some((Value::Null, Value::Null));
             None
         }

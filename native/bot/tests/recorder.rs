@@ -147,3 +147,24 @@ fn recorder_matches_python_byte_for_byte() {
     println!("{identical}/{} identical", rows.len());
     assert!(mismatches.is_empty(), "{} rows differ", mismatches.len());
 }
+
+/// Python `RunRecorder.list_runs` (scripts/port/fixtures/recorder_list.py): the same 3 valid run dirs, a broken
+/// summary and a dir without summary.json, in a temp root; compact JSON must match byte for byte (key order too).
+#[test]
+fn list_runs_matches_python() {
+    let fx: Value = serde_json::from_str(&fs::read_to_string(trace::fixtures_dir().join("recorder_list.json")).unwrap()).unwrap();
+    let root = std::env::temp_dir().join(format!("jevlistruns-{}", std::process::id()));
+    let _ = fs::remove_dir_all(&root);
+    fs::create_dir_all(&root).unwrap();
+    for (name, text) in fx["dirs"].as_object().unwrap() {
+        fs::create_dir_all(root.join(name)).unwrap();
+        if let Some(t) = text.as_str() {
+            fs::write(root.join(name).join("summary.json"), t).unwrap();
+        }
+    }
+    for (key, limit) in [("all", 50), ("two", 2), ("unlimited", 0)] {
+        let got = Value::Array(recorder::list_runs(&root, limit)).to_string();
+        assert_eq!(got, fx[key].as_str().unwrap(), "list_runs limit {limit}");
+    }
+    let _ = fs::remove_dir_all(&root);
+}

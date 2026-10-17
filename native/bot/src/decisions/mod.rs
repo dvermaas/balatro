@@ -48,7 +48,8 @@ pub const HIDE_SE: i64 = 2;
 pub const REROLL_SE: i64 = 1;
 pub const ITEM_MIN_BUDGET: f64 = 1.0;
 pub const PICK_CLEAR: f64 = 1.25;
-pub const FORECAST_ERROR_LOG: &str = "runs/_forecast_errors.log";
+/// Forecast exceptions are appended to `<JevBot.runs_root>/_forecast_errors.log` (default root "runs").
+pub const FORECAST_ERROR_LOG: &str = "_forecast_errors.log";
 
 /// The module constants the lab overrides (policy_lab.py `_play_bot`): read them from `bot.dec`, never
 /// from a const. `production()` = the Python defaults; `lab()` = what `_play_bot` sets for the arms the

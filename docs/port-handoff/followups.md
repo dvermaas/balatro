@@ -2,7 +2,9 @@
 
 - recorder: `states.jsonl.gz` deflate bytes differ from CPython zlib (header and content identical). Fine
   unless something hashes the raw .gz bytes.
-- recorder: `list_runs` not ported (the panel has its own listing). Prompt version = `recorder::bot_version` (sha1 of
+- recorder: `list_runs` ported (`recorder::list_runs(root, limit)`, `RunRecorder::list_runs`; fixture test
+  `list_runs_matches_python`). The panel's /api/runs still uses analytics::all_runs, as Python's panel does (no limit,
+  with metrics). Prompt version = `recorder::bot_version` (sha1 of
   native/{bot,simcore,kernel,rumbot,pycompat} `src/**/*.rs`, sorted); `behaviour_sources` lists them. Needs the
   `native/` dir at runtime (compile-time path, or JEV_NATIVE_DIR); a deployed binary without sources hashes nothing.
 - readiness: `play_mix` keeps Python's process-wide `_MIX_CACHE` (cleared past 256 entries). In Rust keep
@@ -26,8 +28,10 @@
 - engine text: Hiker perma_bonus, Oops! All 6s probability text, and perma_mult/x_mult/h_chips/dollars card
   lines are never emitted because rumbot cards lack those fields. Check how rumbot tracks Hiker's per-card
   chip bonus (does Hiker work in rumbot at all?) and add the fields if needed.
-- decisions: `log_forecast_error` has no traceback, empty run=, and writes runs/_forecast_errors.log under a fixed
-  repo path: make the root configurable on JevBot.
+- decisions: `log_forecast_error` now takes the error message and writes `<JevBot.runs_root>/_forecast_errors.log`
+  (default "runs", relative to the repo root), with run= set to the current run dir. Python's traceback is replaced
+  by the caller's file:line:col (`#[track_caller]`). Python's jev_bot.py step errors log no traceback (only the
+  message); panel.py's worker adds `trace=` (format_exc limit 3) to unexpected errors. Rust does not add a trace.
 - engine: Mail-In Rebate round rank differs on 4R5NYC8E@56 (Python/Jackdaw rank 10, rumbot 7): find which
   engine draws the round card like the game (Lua: reset_mail_rank) and fix that one.
 - engine text mirrors two Jackdaw display quirks for identity: Satellite text always shows $0, and Hologram
@@ -39,7 +43,8 @@
   (`fool_always_usable`, `pack_ignores_played`) for v27 identity; drop them once Jackdaw is not the reference.
 - analytics (Python too): run_metrics "progress" never adds the final-blind share (last_move only holds
   discards_left, so target is 0): progress == rounds_won. Ported as-is; fix in both if the share was intended.
-- panel/jev_bot: `--legacy` (v1 bot) and error tracebacks not ported.
+- panel: `--legacy` (v1 bot) is not ported: `jevbot panel --legacy` prints "the v1 bot is Python-only: run
+  src/panel.py --legacy" to stderr and exits 2. Error-event tracebacks not ported (see decisions above).
 - forecast_items (fc-items4): more Jackdaw-mirroring for v27 identity, forecast only: Cryptid copies don't grow
   Hologram (Jackdaw game.py:2606-2625 skips playing_card_added), `pack_ignores_played` now also makes rumbot
   `add_random_joker` ignore seen centers (Jackdaw never fills used_jokers); not yet noted in native/rumbot/VENDORED.md.
