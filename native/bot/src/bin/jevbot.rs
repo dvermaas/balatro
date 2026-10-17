@@ -41,7 +41,8 @@ struct Args {
 fn usage() -> ! {
     eprintln!(
         "usage: jevbot play [--backend balatrobot|rumbot] [--seed S] [--deck RED] [--stake WHITE] \
-         [--model jev-latest] [--runs N] [--code-jev] [--env PATH] [--root DIR]"
+         [--model jev-latest] [--runs N] [--code-jev] [--env PATH] [--root DIR]
+       jevbot panel [--port 8765] [--backend balatrobot|rumbot] [--code-jev] [--model M] [--root DIR] [--env PATH]"
     );
     std::process::exit(2)
 }
@@ -93,6 +94,9 @@ fn parse(a: &[String]) -> Args {
 
 fn main() {
     let argv: Vec<String> = std::env::args().skip(1).collect();
+    if argv.first().map(String::as_str) == Some("panel") {
+        run_panel(&argv[1..]);
+    }
     let a = parse(&argv);
     if let Err(e) = load_env(&a.env) {
         eprintln!("cannot read {}: {e}", a.env.display());
@@ -145,4 +149,43 @@ fn main() {
     };
     println!("{:?}", bot.stats);
     std::process::exit(code);
+}
+
+/// `jevbot panel [--port 8765] [--backend balatrobot|rumbot] [--code-jev] [--model M] [--root DIR] [--env PATH]`
+fn run_panel(a: &[String]) -> ! {
+    let mut cfg = jevbot::panel::PanelConfig::new(jevbot::panel::repo_root());
+    let (mut port, mut env): (u16, Option<PathBuf>) = (8765, None);
+    let mut i = 0;
+    while i < a.len() {
+        if a[i] == "--code-jev" {
+            cfg.code_jev = true;
+            i += 1;
+            continue;
+        }
+        let v = a.get(i + 1).cloned().unwrap_or_else(|| usage());
+        match a[i].as_str() {
+            "--port" => port = v.parse().unwrap_or_else(|_| usage()),
+            "--backend" => cfg.backend = v,
+            "--model" => cfg.model = v,
+            "--root" => cfg.root = PathBuf::from(v),
+            "--env" => env = Some(PathBuf::from(v)),
+            _ => usage(),
+        }
+        i += 2;
+    }
+    if !matches!(cfg.backend.as_str(), "balatrobot" | "rumbot") {
+        usage();
+    }
+    if !cfg.code_jev {
+        let _ = load_env(&env.unwrap_or_else(|| cfg.root.join(".env")));
+    }
+    let l = std::net::TcpListener::bind(("127.0.0.1", port)).unwrap_or_else(|e| {
+        eprintln!("cannot bind 127.0.0.1:{port}: {e}");
+        std::process::exit(1)
+    });
+    println!("JEV Balatro control panel: http://127.0.0.1:{port}  (bot starts paused)");
+    jevbot::panel::start(cfg, l);
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(3600));
+    }
 }
