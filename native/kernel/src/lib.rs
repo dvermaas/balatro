@@ -300,8 +300,10 @@ impl Scorer {
 
         let ctx = Ctx { name, cards, combo, times_played, played_this_round, scoring_suits: 0, wild: 0 };
         let held_reps = 1 + self.held_retrigger;
+        // without held rules only a held Steel card changes anything
+        let only_steel = self.held.is_empty();
         for c in ctx.held() {
-            if c.debuff {
+            if c.debuff || (only_steel && c.enh != STEEL) {
                 continue;
             }
             for _ in 0..(held_reps + c.red as i64).max(0) {
