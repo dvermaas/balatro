@@ -10,6 +10,7 @@ use serde_json::{json, Value};
 use std::collections::HashMap;
 
 pub mod actions;
+pub mod text;
 pub mod view;
 
 pub const BACKEND_NAME: &str = "rumbot";

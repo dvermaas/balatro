@@ -110,7 +110,7 @@ fn card_json(
 }
 
 // sim_backend.serialize_card, playing cards
-fn playing_card(c: &CardRef, area: &str, live: bool) -> Value {
+fn playing_card(g: &GameState, c: &CardRef, area: &str, live: bool) -> Value {
     let c = c.borrow();
     let (ckey, enh) = enh_key(c.enhancement);
     let set = if c.enhancement != Enhancement::None { "ENHANCED" } else { "DEFAULT" };
@@ -118,7 +118,7 @@ fn playing_card(c: &CardRef, area: &str, live: bool) -> Value {
     let mut value = Map::new();
     value.insert("suit".into(), json!(c.suit.as_str()));
     value.insert("rank".into(), json!(c.rank.short()));
-    value.insert("effect".into(), json!(PLACEHOLDER));
+    value.insert("effect".into(), json!(super::text::playing_effect(g, &c, ckey, c.debuffed && live)));
     let mut m = Map::new();
     if let Some(s) = seal_str(c.seal) {
         m.insert("seal".into(), json!(s));
@@ -133,9 +133,9 @@ fn playing_card(c: &CardRef, area: &str, live: bool) -> Value {
     card_json(c.uid, &key, set, &label, value, m, c.debuffed && live, c.face_down || area == "cards", 0, 0)
 }
 
-fn effect_value() -> Map<String, Value> {
+fn effect_value(text: String) -> Map<String, Value> {
     let mut value = Map::new();
-    value.insert("effect".into(), json!(PLACEHOLDER));
+    value.insert("effect".into(), json!(text));
     value
 }
 
@@ -165,7 +165,7 @@ fn joker_json(g: &GameState, j: &JokerRef) -> Value {
     let (debuff, hidden, uid) = (jb.debuffed, jb.face_down, jb.uid);
     drop(jb);
     let sell = g.sell_value(j);
-    card_json(uid, key, "JOKER", name, effect_value(), m, debuff, hidden, sell as i64, buy as i64)
+    card_json(uid, key, "JOKER", name, effect_value(PLACEHOLDER.into()), m, debuff, hidden, sell as i64, buy as i64)
 }
 
 fn consumable_set(k: ConsumableKind) -> &'static str {
@@ -177,6 +177,7 @@ fn consumable_set(k: ConsumableKind) -> &'static str {
 }
 
 fn consumable_spec_json(
+    g: &GameState,
     spec: &rumbot_sim::consumables::ConsumableSpec,
     id: u64,
     edition: Edition,
@@ -193,7 +194,7 @@ fn consumable_spec_json(
             m.insert("enhancement".into(), json!(eff.replace(" Card", "").to_uppercase()));
         }
     }
-    card_json(id, key, consumable_set(spec.kind), spec.name, effect_value(), m, false, false, sell, buy)
+    card_json(id, key, consumable_set(spec.kind), spec.name, effect_value(super::text::center_effect(g, key)), m, false, false, sell, buy)
 }
 
 fn consumable_json(g: &GameState, c: &ConsumableRef) -> Value {
@@ -202,7 +203,7 @@ fn consumable_json(g: &GameState, c: &ConsumableRef) -> Value {
     let buy = if cb.spec.kind == ConsumableKind::Planet && astronomer { 0 } else { g.card_cost(cb.spec.cost, cb.edition) };
     let (spec, uid, ed) = (cb.spec, cb.uid, cb.edition);
     drop(cb);
-    consumable_spec_json(spec, uid, ed, g.consumable_sell_value(c) as i64, buy as i64)
+    consumable_spec_json(g, spec, uid, ed, g.consumable_sell_value(c) as i64, buy as i64)
 }
 
 fn area(cards: Vec<Value>, limit: i64, highlighted_limit: i64) -> Value {
@@ -210,7 +211,7 @@ fn area(cards: Vec<Value>, limit: i64, highlighted_limit: i64) -> Value {
 }
 
 // sim_backend._hands: Jackdaw's HandType order and `order` numbers
-const HANDS: [(&str, HandType); 12] = [
+pub(super) const HANDS: [(&str, HandType); 12] = [
     ("Flush Five", HandType::FlushFive),
     ("Flush House", HandType::FlushHouse),
     ("Five of a Kind", HandType::FiveOfAKind),
@@ -298,10 +299,10 @@ fn blinds(g: &GameState) -> Value {
                 "type": typ,
                 "status": status,
                 "name": name,
-                "effect": super::view::PLACEHOLDER,
+                "effect": super::text::blind_effect(if *kind == BlindKind::Boss { super::text::blind_key(&name) } else { "" }),
                 "score": blind.target,
                 "tag_name": tag_name(tag_key),
-                "tag_effect": super::view::PLACEHOLDER,
+                "tag_effect": super::text::tag_effect(g, tag_key.map_or("", |s| s.as_str())),
             }),
         );
     }
@@ -350,10 +351,10 @@ fn shop_slot_json(g: &GameState, slot: &rumbot_sim::shop::ShopSlot) -> Value {
     }
     if let Some(spec) = slot.consumable {
         let (s, b) = price_card(g, spec.cost, Edition::None, 0, buy);
-        return consumable_spec_json(spec, slot.sort_id, Edition::None, s, b);
+        return consumable_spec_json(g, spec, slot.sort_id, Edition::None, s, b);
     }
     let card = slot.card.as_ref().expect("a shop slot holds a joker, a consumable or a card");
-    let mut v = playing_card(card, "shop", true);
+    let mut v = playing_card(g, card, "shop", true);
     let (s, b) = price_card(g, 0, Edition::None, 0, buy);
     v["cost"] = json!({"sell": s, "buy": b});
     v
@@ -362,22 +363,23 @@ fn shop_slot_json(g: &GameState, slot: &rumbot_sim::shop::ShopSlot) -> Value {
 fn voucher_json(g: &GameState, v: &rumbot_sim::shop::Voucher) -> Value {
     let buy = g.price(v.cost) as i64;
     // no per-voucher card ids in rumbot
-    card_json(0, v.key, "VOUCHER", v.name, effect_value(), Map::new(), false, false, (buy / 2).max(1), buy)
+    card_json(0, v.key, "VOUCHER", v.name, effect_value(super::text::center_effect(g, v.key)), Map::new(), false, false, (buy / 2).max(1), buy)
 }
 
 fn pack_json(g: &GameState, p: &rumbot_sim::shop::PackSpec, first_shop: bool) -> Value {
     let buy = g.pack_price(p) as i64;
-    card_json(0, if first_shop && p.key == "p_buffoon_normal_2" { "p_buffoon_normal_1" } else { p.key }, "BOOSTER", &p.name(), effect_value(), Map::new(), false, false, (buy / 2).max(1), buy)
+    let key = if first_shop && p.key == "p_buffoon_normal_2" { "p_buffoon_normal_1" } else { p.key };
+    card_json(0, key, "BOOSTER", &p.name(), effect_value(super::text::center_effect(g, key)), Map::new(), false, false, (buy / 2).max(1), buy)
 }
 
 fn pack_choice_json(g: &GameState, c: &PackChoice) -> Value {
     match c {
         PackChoice::Joker(j) => joker_json(g, j),
-        PackChoice::Card(c) => playing_card(c, "pack", true),
+        PackChoice::Card(c) => playing_card(g, c, "pack", true),
         // no per-card id in rumbot for a pack's consumables: id 0
         PackChoice::Consumable(spec) => {
             let buy = g.card_cost(spec.cost, Edition::None) as i64;
-            consumable_spec_json(spec, 0, Edition::None, (buy / 2).max(1), buy)
+            consumable_spec_json(g, spec, 0, Edition::None, (buy / 2).max(1), buy)
         }
     }
 }
@@ -403,7 +405,7 @@ pub fn serialize(eng: &mut RumbotGame) -> Value {
     for v in &g.vouchers {
         used.insert(v.key.to_string(), json!(""));
     }
-    let deck: Vec<Value> = g.draw_pile.iter().map(|c| playing_card(c, "cards", live)).collect();
+    let deck: Vec<Value> = g.draw_pile.iter().map(|c| playing_card(g, c, "cards", live)).collect();
     let mut out = Map::new();
     out.insert("state".into(), json!(state_name(g)));
     out.insert("round_num".into(), json!(g.round_number));
@@ -438,7 +440,7 @@ pub fn serialize(eng: &mut RumbotGame) -> Value {
     out.insert("cards".into(), area(deck, eng.deck_limit as i64, 5));
     out.insert(
         "hand".into(),
-        area(g.hand.iter().map(|c| playing_card(c, "hand", live)).collect(), g.hand_size() as i64, 5),
+        area(g.hand.iter().map(|c| playing_card(g, c, "hand", live)).collect(), g.hand_size() as i64, 5),
     );
     if in_shop {
         let empty = rumbot_sim::shop::Shop::default();
