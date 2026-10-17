@@ -460,8 +460,8 @@ impl JevBot {
             self.emit("forced", json!({"question": qid, "choice": k, "desc": desc}));
             return Ok(action.clone());
         }
-        let state = self.build_state(gs_);
-        self.recorder.write_raw(self._event_id + 1, gs_); // id the decision event below will get
+        let state = crate::prof::time("bot.build_state", || self.build_state(gs_));
+        crate::prof::time("bot.write_raw", || self.recorder.write_raw(self._event_id + 1, gs_)); // id the decision event below will get
         let t0 = self.clock.perf();
         let mut questions = Map::new();
         questions.insert(qid.to_string(), choice_q(instructions, options));
@@ -541,7 +541,7 @@ impl JevBot {
 
     fn step_handler(&mut self, gs_: &Value, st: Option<&str>, handler: &str) -> Result<(), Stop> {
         let auto: Option<(String, Value, String)> = if self.auto_actions {
-            strategy::auto_action(gs_).or_else(|| tarots::auto_use(gs_).map(|(m, p, r)| (m.to_string(), p, r)))
+            crate::prof::time("bot.auto_action", || strategy::auto_action(gs_).or_else(|| tarots::auto_use(gs_).map(|(m, p, r)| (m.to_string(), p, r))))
         } else {
             None
         };
@@ -557,10 +557,10 @@ impl JevBot {
             }
         }
         match handler {
-            "blind_select" => Ok(crate::decisions::blind_select(self, gs_)?),
-            "selecting_hand" => Ok(crate::decisions::selecting_hand(self, gs_)?),
-            "shop" => Ok(crate::decisions::shop(self, gs_)?),
-            "smods_booster_opened" => Ok(crate::decisions::booster(self, gs_)?),
+            "blind_select" => Ok(crate::prof::time("h.blind_select", || crate::decisions::blind_select(self, gs_))?),
+            "selecting_hand" => Ok(crate::prof::time("h.selecting_hand", || crate::decisions::selecting_hand(self, gs_))?),
+            "shop" => Ok(crate::prof::time("h.shop", || crate::decisions::shop(self, gs_))?),
+            "smods_booster_opened" => Ok(crate::prof::time("h.booster", || crate::decisions::booster(self, gs_))?),
             "menu" => self.on_menu(gs_),
             "game_over" => self.on_game_over(gs_),
             "round_eval" => self.on_round_eval(gs_),

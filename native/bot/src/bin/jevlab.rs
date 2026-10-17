@@ -40,10 +40,15 @@ fn r1(x: f64) -> f64 {
 struct RecGame {
     inner: Box<dyn jevbot::iface::Game>,
     log: Rc<RefCell<Vec<Value>>>,
+    /// record the calls (only needed for JEVLAB_TRACE)
+    rec: bool,
 }
 impl jevbot::iface::Game for RecGame {
     fn call(&mut self, method: &str, params: Option<&Value>) -> Result<Value, jevbot::iface::RpcError> {
-        let r = self.inner.call(method, params);
+        let r = jevbot::prof::time(if method == "gamestate" { "game.gamestate" } else { "game.act" }, || self.inner.call(method, params));
+        if !self.rec {
+            return r;
+        }
         let mut rec = json!({"k": "call", "method": method, "params": params.cloned().unwrap_or(Value::Null)});
         match &r {
             Ok(v) => rec["ok"] = v.clone(),
@@ -114,7 +119,7 @@ fn play(seed: &str) -> Result<Value, String> {
     let want_trace = std::env::var_os("JEVLAB_TRACE").is_some();
     let jev = CodeJev::new(ARM_F.load(Ordering::SeqCst), oracle.clone());
     let mut bot = JevBot::new(
-        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(RumbotGame::new()), log: calls.clone() }), Box::new(jev), oracle,
+        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(RumbotGame::new()), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
     bot.dec = jevbot::decisions::DecisionCfg::lab();
@@ -233,12 +238,13 @@ fn main() {
             s.spawn(|| loop {
                 let i = next.fetch_add(1, Ordering::SeqCst);
                 let Some(seed) = seeds.get(i) else { break };
-                let r = std::panic::catch_unwind(|| play(seed)).unwrap_or_else(|p| Err(jevbot::replay::panic_msg(&*p)));
+                let r = std::panic::catch_unwind(|| jevbot::prof::time("GAME", || play(seed))).unwrap_or_else(|p| Err(jevbot::replay::panic_msg(&*p)));
                 let row = r.unwrap_or_else(|e| json!({"seed": seed, "arm": arm(), "error": e}));
                 eprintln!("{seed}: ante {} won {} {}s", row["ante"], row["won"], row["seconds"]);
                 writeln!(file.lock().unwrap(), "{row}").unwrap();
             });
         }
     });
+    jevbot::prof::dump();
     println!("{} games, {jobs} threads, {:.1}s wall, {:.2}s/game wall -> {}", seeds.len(), t0.elapsed().as_secs_f64(), t0.elapsed().as_secs_f64() / seeds.len() as f64, out.display());
 }

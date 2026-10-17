@@ -36,22 +36,56 @@ fn cards(v: &Value, area: &str) -> Vec<Value> {
 }
 
 /// build_state(pub) + option (`buy_card_i` / `buy_pack_i`) at rollout seed `seed`.
+/// Per-forecast cache of the option-applied base games that do not depend on the rollout seed (the build of the pub state is
+/// the same for every rollout; only `g.rng` differs, and it is replaced right after).
+#[derive(Default)]
+pub struct ItemCache {
+    base: std::collections::HashMap<String, GameState>,
+    pack_base: std::collections::HashMap<usize, GameState>,
+}
+
 pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker) -> Result<Applied, String> {
+    apply_item_option_c(p, opt, seed, picker, &mut ItemCache::default())
+}
+
+pub fn apply_item_option_c(p: &Value, opt: &Value, seed: &str, picker: &mut Picker, cache: &mut ItemCache) -> Result<Applied, String> {
     let acts = opt["actions"].as_array().ok_or("actions")?;
     let pack_i = acts.iter().find(|a| a[0] == "pack").map(|a| a[1].as_u64().unwrap_or(0) as usize);
     let Some(pi) = pack_i else {
-        return Ok(Applied { g: apply_option(p, opt, seed)?, pack: vec![], taken: vec![], view0: Value::Null });
+        let key = opt["actions"].to_string();
+        if let Some(b) = cache.base.get(&key) {
+            let mut g = b.deep_clone();
+            g.rng = RunRng::new(seed);
+            return Ok(Applied { g, pack: vec![], taken: vec![], view0: Value::Null });
+        }
+        let (d, pools) = crate::forecast_apply::apply_option_json(p, opt, seed)?;
+        let desc: StateDesc = serde_json::from_value(d).map_err(|e| format!("desc: {e}"))?;
+        let mut g = simcore::build(&desc)?;
+        g.rng = RunRng::new(seed);
+        match pools {
+            Some(pl) => g.rng.pools = pl,
+            None => {
+                cache.base.insert(key, g.deep_clone());
+            }
+        }
+        return Ok(Applied { g, pack: vec![], taken: vec![], view0: Value::Null });
     };
     let packs = gs::cards_of(p, "packs");
     let src = packs.get(pi).ok_or_else(|| format!("Invalid booster index {pi}"))?;
     let cost = gs::int(gs::get(gs::get(src, "cost"), "buy"));
-    let mut d = state_json_from_pub(p)?;
-    if cost > d["money"].as_i64().unwrap_or(0) {
-        return Err("Cannot afford booster".into());
-    }
-    d["money"] = json!(d["money"].as_i64().unwrap_or(0) - cost);
-    let desc: StateDesc = serde_json::from_value(d).map_err(|e| format!("desc: {e}"))?;
-    let mut g = simcore::build(&desc)?;
+    let mut g = if let Some(b) = cache.pack_base.get(&pi) {
+        b.deep_clone()
+    } else {
+        let mut d = state_json_from_pub(p)?;
+        if cost > d["money"].as_i64().unwrap_or(0) {
+            return Err("Cannot afford booster".into());
+        }
+        d["money"] = json!(d["money"].as_i64().unwrap_or(0) - cost);
+        let desc: StateDesc = serde_json::from_value(d).map_err(|e| format!("desc: {e}"))?;
+        let g = simcore::build(&desc)?;
+        cache.pack_base.insert(pi, g.deep_clone());
+        g
+    };
     g.rng = RunRng::new(seed);
     // Jackdaw polls the rental pool (packssjr) on every stake; rumbot only from stake 8 unless all stickers are on.
     let rules = g.sticker_rules();
@@ -67,7 +101,7 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
     let buffoon = matches!(spec.kind, rumbot_sim::shop::PackKind::Buffoon);
     let (keep, hide): (Vec<_>, Vec<_>) = owned.iter().cloned().enumerate().partition(|(_, j)| !buffoon || j.borrow().spec.on_pack_open.is_some());
     g.jokers = keep.iter().map(|(_, j)| j.clone()).collect();
-    g._open_pack(spec, false);
+    crate::prof::time("pk.open_pack", || g._open_pack(spec, false));
     g.all_stickers = false;
     for c in &g.pack_options {
         if let rumbot_sim::game::PackChoice::Joker(j) = c {
@@ -90,7 +124,7 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
         if eng.g.as_ref().unwrap().phase != rumbot_sim::game::Phase::Pack {
             break;
         }
-        let st = eng.state().map_err(|e| e.message)?;
+        let st = crate::prof::time("pk.state", || eng.pack_view());
         let pack = cards(&st, "pack");
         if pack0.is_none() {
             view0 = json!({"pack": pack, "money": gs::get(&st, "money"), "jokers": cards(&st, "jokers"), "lim": gs::get(gs::get(&st, "jokers"), "limit")});
@@ -99,11 +133,11 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
         let m = gs::get(&st, "money");
         let lim = gs::get(gs::get(&st, "jokers"), "limit");
         let zero = json!(0);
-        let choice = picker.pick(&pack, &cards(&st, "hand"), if gs::truthy(m) { m } else { &zero }, &cards(&st, "jokers"),
-                                 if gs::truthy(lim) { gs::int(lim) } else { 5 });
+        let choice = crate::prof::time("pk.pick", || picker.pick(&pack, &cards(&st, "hand"), if gs::truthy(m) { m } else { &zero }, &cards(&st, "jokers"),
+                                 if gs::truthy(lim) { gs::int(lim) } else { 5 }));
         match choice {
             None => {
-                eng.call("pack", Some(&json!({"skip": true}))).map_err(|e| e.message)?;
+                eng.act_only("pack", &json!({"skip": true})).map_err(|e| e.message)?;
                 break;
             }
             Some((idx, targets)) => {
@@ -113,8 +147,8 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
                 let holo: Vec<f64> = if gs::get(&pack[idx], "key") == "c_cryptid" {
                     eng.g.as_ref().unwrap().jokers.iter().filter(|j| j.borrow().name() == "Hologram").map(|j| j.borrow().counter).collect()
                 } else { vec![] };
-                match eng.call("pack", Some(&params)) {
-                    Ok(_) => {
+                match crate::prof::time("pk.call", || eng.act_only("pack", &params)) {
+                    Ok(()) => {
                         if !holo.is_empty() {
                             let mut it = holo.into_iter();
                             for j in eng.g.as_ref().unwrap().jokers.iter().filter(|j| j.borrow().name() == "Hologram") {
@@ -124,7 +158,7 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
                         taken.push(gs::get(&pack[idx], "key").clone());
                     }
                     Err(_) => {
-                        eng.call("pack", Some(&json!({"skip": true}))).map_err(|e| e.message)?;
+                        eng.act_only("pack", &json!({"skip": true})).map_err(|e| e.message)?;
                         break;
                     }
                 }
@@ -205,9 +239,10 @@ pub fn items_forecast(pub_: &Value, n: usize, bosses: i64, keys: Option<&[String
 }
 
 pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[String]>, budget_s: Option<f64>, clock: &dyn Fn() -> f64) -> Value {
-    let all = crate::forecast_stats::items_options(pub_);
-    let mut picker = Picker::new(pub_);
-    let b = crate::build::decide(pub_);
+    let all = crate::prof::time("fi.items_options", || crate::forecast_stats::items_options(pub_));
+    let mut picker = crate::prof::time("fi.Picker::new", || Picker::new(pub_));
+    let mut icache = ItemCache::default();
+    let b = crate::prof::time("fi.build_decide", || crate::build::decide(pub_));
     let items = items_desc(gs::get(&b, "suit").as_str());
     let opts: Vec<&Value> = all
         .iter()
@@ -227,7 +262,7 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                 continue;
             }
             let sd = crate::forecast::seed(k);
-            let applied = match apply_item_option(pub_, o, &sd, &mut picker) {
+            let applied = match crate::prof::time(if o["actions"].as_array().map_or(false, |a| a.iter().any(|x| x[0] == "pack")) { "fi.apply_PACK" } else { "fi.apply_nopack" }, || apply_item_option_c(pub_, o, &sd, &mut picker, &mut icache)) {
                 Ok(a) => a,
                 Err(e) => {
                     errors[oi] = Some(e);
@@ -238,11 +273,14 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
             let pack_sigs: Vec<Value> = applied.pack.clone();
             let (mut g, pol) = {
                 let sig: Vec<String> = applied.g.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect();
-                let (g, p) = {
-                    policy_of_game(applied.g)
-                };
-                let p = pols.entry(sig).or_insert(p).clone();
-                (g, p)
+                match pols.get(&sig) {
+                    Some(p) => (applied.g, p.clone()),
+                    None => {
+                        let (g, p) = crate::prof::time("fi.policy_of_game", || policy_of_game(applied.g));
+                        pols.insert(sig, p.clone());
+                        (g, p)
+                    }
+                }
             };
             // Python's policy is built for Jackdaw's joker order, but the rollout's game comes from describe -> build, which
             // orders the jokers by sort_id (a pack joker created before a later shop joker lands before it); the policy stays
@@ -275,7 +313,7 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
             }
             if std::env::var("FC_ROWS").is_ok() { eprintln!("START {} {} $={} jokers={:?} deck={} draw={}", gs::s(gs::get(o, "key")), k, g.money, g.jokers.iter().map(|j| format!("{}#{}", j.borrow().spec.name, j.borrow().uid)).collect::<Vec<_>>(), g.full_deck.len(), g.draw_pile.len()); }
             let mut tr0: Vec<String> = Vec::new();
-            let r0 = simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, if std::env::var("FC_TRACE").is_ok() { Some(&mut tr0) } else { None }, Some(&items), None);
+            let r0 = crate::prof::time("fi.play_horizon", || simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, if std::env::var("FC_TRACE").is_ok() { Some(&mut tr0) } else { None }, Some(&items), None));
             for l in &tr0 { eprintln!("TR0 {} {} {}", gs::s(gs::get(o, "key")), k, l); }
             let rows = match r0 {
                 Ok(r) => r,
@@ -289,7 +327,7 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                     for sig in &pack_sigs { let k = gs::s(&sig[0]).to_string(); if let Some(p) = g.jackdaw_unmarked_jokers.iter().position(|x| *x == k) { g.jackdaw_unmarked_jokers.remove(p); } }
                     if std::env::var("FC_ROWS").is_ok() { eprintln!("UNMARKED {} {} {:?}", gs::s(gs::get(o, "key")), k, g.jackdaw_unmarked_jokers); }
                     let mut tr: Vec<String> = Vec::new();
-                    let r = simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, if std::env::var("FC_TRACE").is_ok() { Some(&mut tr) } else { None }, Some(&items), Some(&mut rebuild)).expect("items rollout");
+                    let r = crate::prof::time("fi.play_horizon_abort", || simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, if std::env::var("FC_TRACE").is_ok() { Some(&mut tr) } else { None }, Some(&items), Some(&mut rebuild))).expect("items rollout");
                     for l in &tr { eprintln!("TR {} {} {}", gs::s(gs::get(o, "key")), k, l); }
                     r
                 }
@@ -317,7 +355,7 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
         with_supported.push(o2);
         rmap.insert(key, Value::Array(std::mem::take(&mut runs[oi])));
     }
-    let mut out = crate::forecast_stats::assemble(&with_supported, None, &rmap, bosses, k as i64);
+    let mut out = crate::prof::time("fi.assemble", || crate::forecast_stats::assemble(&with_supported, None, &rmap, bosses, k as i64));
     let mut m = serde_json::Map::new();
     for key in ["options", "rollouts", "bosses"] {
         m.insert(key.into(), out[key].clone());

@@ -4,6 +4,7 @@
 pub mod gs;
 pub mod iface;
 pub mod trace;
+pub mod prof;
 
 pub mod analytics;
 pub mod balatro;
