@@ -182,3 +182,12 @@ Hole roll (common_events.lua:2088-2100). NOT done: the lite comparison is not ye
 - Debug aids added: FC_ROWS prints `START <opt> <k> $= jokers=[name#uid] deck draw`; FC_TRACE=1 prints per-decision traces (`TR0` strict attempt, `TR` abort
   replay, with jokers); FC_CMP=<desc.json> FC_CMPK=<k> FC_CMPO=<opt> writes `<json>.py.txt/.rs.txt` ({:#?} of the Python-described state built by simcore vs the
   applied state). fc_items prints up to 50 mismatches per class.
+
+### Task fc-items6 status
+- Full fc_items **3193/3193**, fc_packs ok (no rumbot change, engine_replay untouched).
+- MZ5KZ3JH#2366/#2367 buy_pack_1 cause: `jackdaw_unmarked_jokers` was every owned joker, but a pack marks all its contents when it opens and the skip/close
+  releases unpicked ones only if no other copy is in play (Jackdaw `_release_used_key`, game.py:1160-1175), so an owned joker that was in the pack stays marked
+  (here Supernova in a full-slot Jumbo Buffoon pack that was skipped). Rust let a later Judgement roll the owned Supernova; Jackdaw rolled Odd Todd.
+  Fix in forecast_items.rs: drop the pack-content keys from the unmarked list on the abort restart.
+- py_rows.py was unfaithful because it ran only the one option: Python's `_forecast` runs every option per k, sharing the Picker and policy cache. py_rows3
+  (scratchpad, not in repo) runs all options like `_forecast`, prints UJ (used_jokers at run_strict), PRE/POST/PACK/TAKEN; k=0 now matches. FC_ROWS also prints `UNMARKED`.
