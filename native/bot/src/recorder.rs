@@ -320,6 +320,28 @@ pub struct RunRecorder {
     conf_sum: f64,
 }
 
+/// Python `RunRecorder.list_runs(limit)` on `root`: the summary.json of each run dir, newest first (dir names
+/// start with the start time). Like Python's `sorted(glob("*/summary.json"), reverse=True)[:limit or None]`,
+/// the limit applies before unreadable summaries are skipped; `limit` 0 means no limit. Windows paths
+/// compare case-insensitively, so names are lowercased for the sort.
+pub fn list_runs(root: &Path, limit: usize) -> Vec<Value> {
+    let mut dirs: Vec<PathBuf> = match fs::read_dir(root) {
+        Ok(rd) => rd.filter_map(|e| e.ok().map(|e| e.path())).filter(|p| p.join("summary.json").is_file()).collect(),
+        Err(_) => return vec![],
+    };
+    dirs.sort_by_key(|p| p.file_name().map(|n| n.to_string_lossy().to_lowercase()).unwrap_or_default());
+    dirs.reverse();
+    if limit > 0 {
+        dirs.truncate(limit);
+    }
+    dirs.iter()
+        .filter_map(|d| {
+            let text = fs::read_to_string(d.join("summary.json")).ok()?;
+            serde_json::from_str::<Value>(&text).ok()
+        })
+        .collect()
+}
+
 impl RunRecorder {
     /// The runs root this recorder writes under.
     pub fn root(&self) -> &Path {
@@ -329,6 +351,11 @@ impl RunRecorder {
     /// The prompt version it stamps on runs.
     pub fn version(&self) -> &str {
         &self.version
+    }
+
+    /// `RunRecorder.list_runs(limit)` for this recorder's root (see the free `list_runs`).
+    pub fn list_runs(&self, limit: usize) -> Vec<Value> {
+        list_runs(&self.root, limit)
     }
 
     /// The current run directory (None before the first `ensure`).

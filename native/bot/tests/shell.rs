@@ -2,6 +2,7 @@
 //! scripts/port/fixtures/clearly_worse.py), JEV errors as `Stop::Jev`, local-time stamps, Rust prompt version.
 
 use jevbot::codejev::CodeJev;
+use jevbot::decisions;
 use jevbot::engine::RumbotGame;
 use jevbot::iface::{Jev, JevResponse, SharedOracle};
 use jevbot::jev_bot::{JevBot, RealClock, Stop};
@@ -129,4 +130,35 @@ fn rust_version_and_snapshots() {
     assert_eq!(vs[1]["created"], 2.0);
     assert!(vs[1]["rules"].as_str().unwrap().starts_with("Balatro:"));
     assert!(vs[1]["instructions"]["blind"].is_string() && vs[1]["options"]["blind_play"].is_string());
+}
+
+/// decisions.py `_log_forecast_error`: the file goes under bot.runs_root, run= is the current run dir (empty
+/// before the first ensure), and the error line carries the message and the caller's file:line.
+#[test]
+fn forecast_error_log_has_run_and_location() {
+    let root = tmp("ferr");
+    let gs = json!({"seed": "TESTSEED", "state": "SHOP", "ante_num": 2, "round_num": 3, "money": 7});
+    let (deck, stake) = (json!("Red Deck"), json!("White Stake"));
+    let errs = root.join("errs");
+
+    let mut bot = bot_with(&root.join("runs"), "v", None);
+    bot.runs_root = errs.clone();
+    decisions::shop::log_forecast_error(&mut bot, &gs, "item forecast", "Item forecast unavailable (KeyError: 'x')");
+    let text = std::fs::read_to_string(errs.join("_forecast_errors.log")).unwrap();
+    assert!(text.contains(" item forecast run= seed=TESTSEED ante=2 round=3 money=7 "), "{text}");
+    assert!(text.contains("Item forecast unavailable (KeyError: 'x')"), "{text}");
+    assert!(text.contains("shell.rs:"), "no location in {text}");
+
+    bot.recorder.ensure(&gs, &deck, &stake, "m", &Value::Null);
+    let run = bot.recorder.dir().unwrap().file_name().unwrap().to_string_lossy().into_owned();
+    decisions::shop::log_forecast_error(&mut bot, &gs, "joker forecast", "boom");
+    let text = std::fs::read_to_string(errs.join("_forecast_errors.log")).unwrap();
+    assert!(text.contains(&format!(" joker forecast run={run} seed=TESTSEED ")), "{text}");
+}
+
+#[test]
+fn panel_legacy_is_python_only() {
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_jevbot")).args(["panel", "--legacy"]).output().unwrap();
+    assert_eq!(out.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("the v1 bot is Python-only: run src/panel.py --legacy"));
 }

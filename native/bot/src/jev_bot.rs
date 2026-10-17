@@ -282,6 +282,9 @@ pub struct JevBot {
     pub bench_name: String,
     /// Where the prompt-version snapshots live (`runs/_prompts`, recorder.PROMPTS_DIR).
     pub prompts_dir: PathBuf,
+    /// Runs root for `_forecast_errors.log` (decisions.py FORECAST_ERROR_LOG). Relative paths resolve under the
+    /// repo root; tests point it at a temp dir.
+    pub runs_root: PathBuf,
     pub _auto_failed: HashSet<String>,
     /// Python None (Null) or the blind dict.
     pub _round_blind: Value,
@@ -333,7 +336,7 @@ impl JevBot {
             deck: deck.into(), stake: stake.into(), model: model.into(), recorder,
             auto_new_run: true, events: VecDeque::new(), _event_id: 0, _last_pack_cost: json!(0),
             bench_queue: vec![], bench_current: Value::Null, bench_done_pending: false,
-            bench_name: String::new(), prompts_dir, _auto_failed: HashSet::new(), _round_blind: Value::Null,
+            bench_name: String::new(), prompts_dir, runs_root: PathBuf::from("runs"), _auto_failed: HashSet::new(), _round_blind: Value::Null,
             _round_had_bones: false, _error_streak: 0, _finished_seed: Value::Null,
             stats: Stats::default(), last_state: None,
             _shop_key: Value::Null, _shop_actions: 0, _failed: HashSet::new(), _rerolls: 0,

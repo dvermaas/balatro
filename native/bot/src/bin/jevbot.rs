@@ -160,6 +160,11 @@ fn main() {
 
 /// `jevbot panel [--port 8765] [--backend balatrobot|rumbot] [--code-jev] [--model M] [--root DIR] [--env PATH]`
 fn run_panel(a: &[String]) -> ! {
+    // The v1 bot (`src/panel.py --legacy`) is not ported; say where it lives instead of ignoring the flag.
+    if a.iter().any(|x| x == "--legacy") {
+        eprintln!("the v1 bot is Python-only: run src/panel.py --legacy");
+        std::process::exit(2);
+    }
     let mut cfg = jevbot::panel::PanelConfig::new(jevbot::panel::repo_root());
     let (mut port, mut env): (u16, Option<PathBuf>) = (8765, None);
     let mut i = 0;
