@@ -129,3 +129,9 @@ Planet X/Ceres/Eris and owned centres are not filtered and the Soul/Black Hole r
 with no last card draws from `Tarot_Planet`+`fool`). Rumbot bug fixed: a Spectral Soul hit no longer skips the Black
 Hole roll (common_events.lua:2088-2100). NOT done: the lite comparison is not yet the full
 `sim_bridge.describe(gs, rng=True)`; that needs a GameState -> StateDesc inverse (none exists in simcore).
+
+### Task fc-items2 status
+- `RustOracle::items_forecast` now calls `forecast_items::items_forecast`; `CheckedOracle` checks it against the recording (rollout count taken from the recording when a time budget was used). `JEV_REPLAY_ARM=E|F` selects one arm in `bot_replay`.
+- Arm F computed-oracle replay (`JEV_REPLAY_ORACLE=rust JEV_REPLAY_ARM=F`, ~3.6 min): 18/30 identical; the 12 others stop at an items_forecast rollout-level mismatch (the known 10 classes). Arm E not rerun (no items forecast in E).
+- Debug aids: `FC_ONLY=<idx>` (fc_items: one call, prints first differing option), `FC_ROWS=1` (forecast_items prints per-rollout rows on stderr).
+- Finding for MZ5KZ3JH idx 2391 (`skip`, k=3, Brainstorm/Banner/Bootstraps/Supernova/Drunkard): Python's row is Jackdaw's, not rumbot's. Rust aborts (`refresh_policy`, Brainstorm in policy, Amber Acorn reshuffle at ante 8 boss), so `run_strict` returns None and Python replays the WHOLE horizon on Jackdaw. Rust (rumbot semantics) and Jackdaw agree through ante 7 Big (65752) but differ on the first hand of the ante 7 boss (18473 Jackdaw vs 19227 rumbot, Pair of Aces); Jackdaw shows money $55 at that hand vs $52 at the shop before it, so suspect a money/Bootstraps (or reward) difference between engines. Rollouts where Python's Rust path aborts are Jackdaw results; to match them exactly the Rust side needs the Jackdaw behaviour for that case (or an engine fix verified in the Lua dump). Not yet fixed. The Arcana/Spectral/Celestial classes were not examined.

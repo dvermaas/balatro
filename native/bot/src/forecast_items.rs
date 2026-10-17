@@ -229,7 +229,11 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                 p
             };
             let rows = simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, None, Some(&items), Some(&mut rebuild)).expect("items rollout");
-            runs[oi].push(Value::Array(rows.iter().map(crate::forecast::row_json).collect()));
+            let rj = Value::Array(rows.iter().map(crate::forecast::row_json).collect());
+            if std::env::var("FC_ROWS").is_ok() {
+                eprintln!("ROWS {} {} {}", gs::s(gs::get(o, "key")), k, rj);
+            }
+            runs[oi].push(rj);
         }
         k += 1;
         if let Some(bd) = budget_s.filter(|b| *b != 0.0) {

@@ -17,8 +17,11 @@ fn bot_replay() {
     let mut skipped: std::collections::BTreeMap<String, usize> = Default::default();
     // JEV_REPLAY_GAMES=<n>: only the first n games (arm E's, then arm F's)
     let limit: usize = std::env::var("JEV_REPLAY_GAMES").ok().and_then(|v| v.parse().ok()).unwrap_or(usize::MAX);
+    // JEV_REPLAY_ARM=E|F: only that arm
+    let arm = std::env::var("JEV_REPLAY_ARM").unwrap_or_default();
     let games = [("bot-forecast-long", false), ("bot-forecast-items", true)]
         .into_iter()
+        .filter(|(_, items)| arm.is_empty() || (arm == "F") == *items)
         .flat_map(|(arm, items)| trace::trace_files(arm).into_iter().map(move |p| (p, items)))
         .take(limit);
     for (p, items) in games {
