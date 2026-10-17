@@ -3,7 +3,7 @@
 //! Helpers are `pub` (not pub(crate)) so tests/dec_shop_a.rs can check them against the Python fixture.
 
 use super::{instr, FORECAST_ERROR_LOG, FORECAST_TIMEOUT, ITEM_MIN_BUDGET, SWAP_SELLS};
-use crate::forecast_state::py_repr;
+use pycompat::json::pyrepr;
 use crate::forecast_stats::{items_options, options, pystr};
 use crate::gs::cards_of;
 use crate::hands::_d;
@@ -270,7 +270,7 @@ fn item_forecast_run(bot: &mut JevBot, gs: &Value, fc: &Value, keys: &[String]) 
     let (n, bosses) = (bot.dec.forecast_n, bot.dec.forecast_bosses);
     let f = bot.oracle.borrow_mut().items_forecast(gs, n, bosses, keys, budget);
     if truthy(Some(&g(&f, "errors"))) {
-        let msg = format!("Item forecast option errors: {}", py_repr(&g(&f, "errors")));
+        let msg = format!("Item forecast option errors: {}", pyrepr(&g(&f, "errors")));
         bot.emit("info", json!({"msg": msg}));
     }
     if !_d(&g(&f, "options")).contains_key("skip") {

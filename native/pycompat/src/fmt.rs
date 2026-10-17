@@ -130,3 +130,27 @@ pub fn pyround(x: f64, ndigits: i32) -> f64 {
 pub fn pyround_int(x: f64) -> i64 {
     x.round_ties_even() as i64
 }
+
+/// C printf "%.{prec}g".
+pub fn fmt_g(x: f64, prec: usize) -> String {
+    if x.is_nan() {
+        return "nan".into();
+    }
+    if x.is_infinite() {
+        return (if x > 0.0 { "inf" } else { "-inf" }).into();
+    }
+    if x == 0.0 {
+        return (if x.is_sign_negative() { "-0" } else { "0" }).into();
+    }
+    let e = format!("{:.*e}", prec - 1, x);
+    let (mant, exp) = e.split_once('e').unwrap();
+    let exp: i32 = exp.parse().unwrap();
+    let strip = |s: &str| -> String {
+        if s.contains('.') { s.trim_end_matches('0').trim_end_matches('.').to_string() } else { s.to_string() }
+    };
+    if exp < -4 || exp >= prec as i32 {
+        format!("{}e{}{:02}", strip(mant), if exp < 0 { '-' } else { '+' }, exp.abs())
+    } else {
+        strip(&fixed(x, (prec as i32 - 1 - exp) as usize))
+    }
+}

@@ -4,7 +4,8 @@
 use crate::hands::{card_info, classify, rank_index, Info};
 use crate::jokers::{self, Rnd};
 use crate::{build, gs, tarots};
-use pycompat::{pyfloat, Random};
+use pycompat::json::pyrepr;
+use pycompat::Random;
 use regex::Regex;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -40,113 +41,26 @@ fn pmax(a: f64, b: f64) -> f64 {
     if b > a { b } else { a }
 }
 
-// SHARED? Python repr() of a JSON value, for `str(modifier)` sort keys.
-fn py_repr(v: &Value) -> String {
-    match v {
-        Value::Null => "None".into(),
-        Value::Bool(b) => (if *b { "True" } else { "False" }).into(),
-        Value::Number(n) => if n.is_i64() || n.is_u64() { n.to_string() } else { pyfloat(n.as_f64().unwrap()) },
-        Value::String(s) => {
-            let q = if s.contains('\'') && !s.contains('"') { '"' } else { '\'' };
-            let mut o = String::new();
-            o.push(q);
-            for c in s.chars() {
-                match c {
-                    '\\' => o.push_str("\\\\"),
-                    '\n' => o.push_str("\\n"),
-                    '\t' => o.push_str("\\t"),
-                    '\r' => o.push_str("\\r"),
-                    c if c == q => { o.push('\\'); o.push(c) }
-                    c => o.push(c),
-                }
-            }
-            o.push(q);
-            o
-        }
-        Value::Array(a) => format!("[{}]", a.iter().map(py_repr).collect::<Vec<_>>().join(", ")),
-        Value::Object(m) => format!(
-            "{{{}}}",
-            m.iter().map(|(k, v)| format!("{}: {}", py_repr(&Value::String(k.clone())), py_repr(v))).collect::<Vec<_>>().join(", ")
-        ),
-    }
-}
 fn py_str(v: &Value) -> String {
-    match v { Value::String(s) => s.clone(), o => py_repr(o) }
+    match v { Value::String(s) => s.clone(), o => pyrepr(o) }
 }
 
-// SHARED? rollout.py 367-413 (_rv, _straight, candidates): structural play candidates.
-fn rv(i: &Info) -> i64 {
-    match i.rank_truthy() {
-        Some(r) if !i.enh_is("STONE") => rank_index(r) as i64,
-        _ => -1,
-    }
-}
-fn straight(infos: &[Info], live: &[usize]) -> Option<Vec<usize>> {
-    let order: Vec<char> = "A23456789TJQKA".chars().collect();
-    let mut by: HashMap<String, usize> = HashMap::new();
-    for &p in live {
-        if let Some(r) = infos[p].rank_truthy() {
-            if !infos[p].enh_is("STONE") {
-                by.entry(r.to_string()).or_insert(p);
-            }
-        }
-    }
-    for top in (4..order.len()).rev() {
-        let run = &order[top - 4..=top];
-        if run.iter().all(|r| by.contains_key(&r.to_string())) {
-            return Some(run.iter().map(|r| by[&r.to_string()]).collect());
-        }
-    }
-    None
-}
+/// rollout.candidates on the bot's hand infos (structural play candidates, same logic as simcore).
 fn candidates(infos: &[Info]) -> Vec<Vec<usize>> {
-    let n = infos.len();
-    let ranked: Vec<usize> = (0..n).filter(|&p| infos[p].rank_truthy().is_some() && !infos[p].enh_is("STONE")).collect();
-    let mut groups: Vec<(String, Vec<usize>)> = Vec::new();
-    for &p in &ranked {
-        let r = infos[p].rank.clone().unwrap();
-        match groups.iter_mut().find(|g| g.0 == r) {
-            Some(g) => g.1.push(p),
-            None => groups.push((r, vec![p])),
-        }
+    let cards: Vec<jev_kernel::Card> = infos.iter().map(kernel_card).collect();
+    simcore::candidates(&cards)
+}
+/// hands.card_info as the kernel's card: rank 0 for none or Stone, suit 1-4 (H, D, C, S).
+fn kernel_card(i: &Info) -> jev_kernel::Card {
+    let stone = i.enh_is("STONE");
+    jev_kernel::Card {
+        rank: if stone { 0 } else { i.rank_truthy().map_or(0, |r| rank_index(r) as u8 + 2) },
+        suit: match i.suit.as_deref() { Some("H") => 1, Some("D") => 2, Some("C") => 3, Some("S") => 4, _ => 0 },
+        enh: if stone { jev_kernel::STONE } else if i.enh_is("WILD") { jev_kernel::WILD } else { 0 },
+        edition: 0,
+        red: false,
+        debuff: i.debuff,
     }
-    let mut gl: Vec<Vec<usize>> = groups.into_iter().map(|g| g.1).collect();
-    gl.sort_by(|a, b| (b.len(), rv(&infos[b[0]])).cmp(&(a.len(), rv(&infos[a[0]]))));
-    let mut out: Vec<Vec<usize>> = Vec::new();
-    let multi: Vec<&Vec<usize>> = gl.iter().filter(|g| g.len() >= 2).collect();
-    for g in multi.iter().take(3) {
-        out.push(g[..g.len().min(5)].to_vec());
-    }
-    if multi.len() >= 2 {
-        let (a, b) = (multi[0], multi[1]);
-        if a.len() >= 3 {
-            out.push([&a[..3], &b[..2]].concat());
-        } else {
-            out.push([&a[..2], &b[..2]].concat());
-        }
-    }
-    for s in ["H", "D", "C", "S"] {
-        let mut cards: Vec<usize> = ranked.iter().copied().filter(|&p| infos[p].suit_is(s) || infos[p].enh_is("WILD")).collect();
-        if cards.len() >= 5 {
-            cards.sort_by_key(|&p| -rv(&infos[p]));
-            out.push(cards[..5].to_vec());
-        }
-    }
-    if let Some(st) = straight(infos, &ranked) {
-        out.push(st);
-    }
-    if !ranked.is_empty() {
-        let mut best = ranked[0];
-        for &p in &ranked[1..] {
-            if rv(&infos[p]) > rv(&infos[best]) {
-                best = p;
-            }
-        }
-        out.push(vec![best]);
-    } else if n > 0 {
-        out.push(vec![0]);
-    }
-    out
 }
 
 /// Recent-play stand-ins: `{"infos", "combo", "rnd"}` dicts (jokers::sample_plays input).
@@ -155,7 +69,7 @@ pub fn synth_plays(pub_: &Value, k: usize, seed: &str) -> Vec<Value> {
     deck.extend(gs::cards_of(pub_, "hand").iter().cloned());
     let key = |c: &Value| {
         let v = gs::get(c, "value");
-        (py_str(gs::get(v, "suit")), py_str(gs::get(v, "rank")), py_repr(&Value::Object(gs::d(gs::get(c, "modifier")).clone())))
+        (py_str(gs::get(v, "suit")), py_str(gs::get(v, "rank")), pyrepr(&Value::Object(gs::d(gs::get(c, "modifier")).clone())))
     };
     deck.sort_by_key(key);
     let infos: Vec<Info> = deck.iter().map(|c| { let mut i = card_info(c); i.debuff = false; i }).collect();
