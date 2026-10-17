@@ -70,7 +70,7 @@ fn fc_packs_identical() {
             n[i] += 1;
             match x {
                 Ok(()) => ok[i] += 1,
-                Err(m) => if firsts.len() < 8 { firsts.push(format!("[part {i}] {m}")) },
+                Err(m) => if firsts.len() < 8 {
             }
         }
     }

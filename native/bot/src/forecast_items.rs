@@ -56,6 +56,8 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
     // Jackdaw polls the rental pool (packssjr) on every stake; rumbot only from stake 8 unless all stickers are on.
     let rules = g.sticker_rules();
     g.all_stickers = true;
+    g.fool_always_usable = true;
+    g.pack_ignores_played = true;
     let spec = rumbot_sim::shop::pack_from_key(gs::s(gs::get(src, "key")));
     // build_state never fills Jackdaw's used_jokers, so a Buffoon pack may roll a joker the player owns: hide the
     // owned jokers from rumbot's pool while the pack fills (those with an open-pack hook, Hallucination, stay).
@@ -64,6 +66,7 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
     g.jokers = keep.iter().map(|(_, j)| j.clone()).collect();
     g._open_pack(spec, false);
     g.all_stickers = false;
+    g.pack_ignores_played = false;
     for c in &g.pack_options {
         if let rumbot_sim::game::PackChoice::Joker(j) = c {
             let mut j = j.borrow_mut();

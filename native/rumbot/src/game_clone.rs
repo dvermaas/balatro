@@ -241,6 +241,8 @@ impl GameState {
             pack_dealt_hand: self.pack_dealt_hand,
             shop_free: self.shop_free,
             last_tarot_planet: self.last_tarot_planet.clone(),
+            fool_always_usable: self.fool_always_usable,
+            pack_ignores_played: self.pack_ignores_played,
             ecto_minus: self.ecto_minus,
             ante_boss: self.ante_boss.clone(),
             forced_card: memo.card_opt(&self.forced_card),
