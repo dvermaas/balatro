@@ -15,3 +15,6 @@
 - typesafe: Retry-After HTTP dates not parsed; connection-error text from ureq; timeouts untested offline.
 - engine: card ids differ (Jackdaw sort_id vs rumbot uid); replay ignores `].id`. Decide whether the bot
   or anything recorded depends on ids (the bot addresses cards by index).
+- engine view: slot 0 of the first shop shows `p_buffoon_normal_1` until bought, to match Jackdaw
+  (shop.py:180 always deals _1; the game and rumbot roll 1-2). Remove once Jackdaw is no longer the
+  reference (identical in play).
