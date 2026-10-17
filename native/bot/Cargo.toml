@@ -21,6 +21,7 @@ regex = "1"
 fancy-regex = "0.14"
 ureq = { version = "2", default-features = false, features = ["tls"] }
 typesafe = { path = "../typesafe" }
+mimalloc = { version = "0.1", default-features = false }
 
 [profile.release]
 lto = true
