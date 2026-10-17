@@ -1,0 +1,20 @@
+[package]
+name = "typesafe"
+version = "0.1.0"
+edition = "2021"
+description = "Rust client for the TypeSafe API (system_one), equivalent to typesafe-sdk 0.7.4 as the bot uses it"
+license = "MIT"
+
+[workspace]
+
+[lib]
+name = "typesafe"
+path = "src/lib.rs"
+
+[dependencies]
+ureq = { version = "2", default-features = false, features = ["tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
+
+[dev-dependencies]
+flate2 = "1"
