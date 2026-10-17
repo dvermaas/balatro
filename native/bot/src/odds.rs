@@ -27,7 +27,7 @@ fn card_key(c: &Info) -> [String; 6] {
 }
 
 fn sort_by_card_key(cards: &mut [Info]) {
-    cards.sort_by(|a, b| card_key(a).cmp(&card_key(b)));
+    cards.sort_by_cached_key(card_key);
 }
 
 /// Python int / int (true division). Exact for both operands below 2^53, which covers every
@@ -104,7 +104,7 @@ pub fn forecast(
             let mut future = kept.clone();
             future.extend(draw.iter().map(|&i| deck[i].clone()));
             // The live bot uses rank-sorted hands. Stable modifier ties also avoid pile-order leaks.
-            future.sort_by(|a, b| future_key(a).cmp(&future_key(b)));
+            future.sort_by_cached_key(future_key);
             scores.push(hands::best_score(&future, ScorerArg::Jokers(&scorer), allowed));
         }
         scores.sort();

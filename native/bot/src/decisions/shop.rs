@@ -475,17 +475,17 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     let (mains, mut state) = super::run_context(gs);
     let boss = _d(&g(gs, "blinds")).values().find(|b| g(b, "type") == json!("BOSS")).cloned().unwrap_or_else(|| json!({}));
     state["upcoming_boss"] = json!({"name": g(&boss, "name"), "effect": g(&boss, "effect"), "chip_target": g(&boss, "score")});
-    let b = crate::build::decide(gs);
+    let b = crate::prof::time("s.build", || crate::build::decide(gs));
     state["our_build"] = json!(crate::build::describe(&b));
 
-    let recent = super::recent(bot, gs);
+    let recent = crate::prof::time("s.recent", || super::recent(bot, gs));
     let under_cap = bot._shop_actions < crate::jev_bot::SHOP_ACTION_CAP;
-    let fc: Option<Value> = if under_cap { shop_forecast(bot, gs, &recent, jokers_full) } else { None };
-    let fci: Option<Value> = if under_cap { item_forecast(bot, gs, fc.as_ref().unwrap_or(&Value::Null)) } else { None };
+    let fc: Option<Value> = if under_cap { crate::prof::time("s.shop_forecast", || shop_forecast(bot, gs, &recent, jokers_full)) } else { None };
+    let fci: Option<Value> = if under_cap { crate::prof::time("s.item_forecast", || item_forecast(bot, gs, fc.as_ref().unwrap_or(&Value::Null))) } else { None };
     if let Some(f) = &fc {
         state["forecast"] = json!(forecast_note(gs, f));
     }
-    let ready = crate::readiness::assess(gs, None, 24);
+    let ready = crate::prof::time("s.readiness", || crate::readiness::assess(gs, None, 24));
     let worst: Option<f64> = ready.as_ref().map(|r| num(&g(r, "worst_ratio")));
     let worst_v: Value = ready.as_ref().map(|r| g(r, "worst_ratio")).unwrap_or(Value::Null);
     let mode = match worst {
@@ -546,7 +546,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
                 return o;
             }
         }
-        upd(&mut o, &super::booster::gain(gs, &recent, c, remove));
+        upd(&mut o, &crate::prof::time("s.gain", || super::booster::gain(gs, &recent, c, remove)));
         if let Some(w) = worst {
             let gn = g(&o, "_gain");
             if truthy(Some(&gn)) && matches!(kind, "joker" | "joker swap" | "planet") {
@@ -737,7 +737,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
     }
     let sitems: ShopItems = items.iter().map(|it| (it.key.clone(), (it.desc.clone(), it.obj.clone(), it.action.clone()))).collect();
-    let (scores, mut meta) = score_items(bot, gs, "shop", &state, &sitems)?;
+    let (scores, mut meta) = crate::prof::time("s.score_items", || score_items(bot, gs, "shop", &state, &sitems))?;
     if let Some(f) = &fc {
         meta["forecast_seconds"] = g(f, "seconds");
         meta["forecast_rollouts"] = g(f, "rollouts");
