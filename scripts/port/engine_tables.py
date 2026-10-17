@@ -16,7 +16,7 @@ sim_text.center("c_base")
 for k, v in sim_text._CENTERS.items():
     if k[:2] in ("j_", "c_", "v_", "p_", "m_"):
         centers[k] = {"name": v.get("name"), "effect": v.get("effect"), "set": v.get("set")}
-        if k[:2] != "j_" and isinstance(v.get("config"), dict):
+        if isinstance(v.get("config"), dict):
             centers[k]["config"] = v["config"]
 out = {
     "hand_examples": {k: (v or {}).get("example") or [] for k, v in sim_text.game_hands().items()},
