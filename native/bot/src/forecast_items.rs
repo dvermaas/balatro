@@ -62,11 +62,13 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
     // build_state never fills Jackdaw's used_jokers, so a Buffoon pack may roll a joker the player owns: hide the
     // owned jokers from rumbot's pool while the pack fills (those with an open-pack hook, Hallucination, stay).
     let owned = std::mem::take(&mut g.jokers);
-    let (keep, hide): (Vec<_>, Vec<_>) = owned.iter().cloned().enumerate().partition(|(_, j)| j.borrow().spec.on_pack_open.is_some());
+    // Only a Buffoon pack rolls jokers; hiding jokers for the other kinds would change the hand an Arcana/Spectral pack deals
+    // (Juggler, Merry Andy...).
+    let buffoon = matches!(spec.kind, rumbot_sim::shop::PackKind::Buffoon);
+    let (keep, hide): (Vec<_>, Vec<_>) = owned.iter().cloned().enumerate().partition(|(_, j)| !buffoon || j.borrow().spec.on_pack_open.is_some());
     g.jokers = keep.iter().map(|(_, j)| j.clone()).collect();
     g._open_pack(spec, false);
     g.all_stickers = false;
-    g.pack_ignores_played = false;
     for c in &g.pack_options {
         if let rumbot_sim::game::PackChoice::Joker(j) = c {
             let mut j = j.borrow_mut();
@@ -106,8 +108,21 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
             }
             Some((idx, targets)) => {
                 let params = json!({"card": idx, "targets": targets});
+                // Jackdaw's use_consumeable appends Cryptid's copies to the deck without firing playing_card_added
+                // (game.py:2606-2625), so Hologram does not grow; the modded game does (card.lua), rumbot follows it.
+                let holo: Vec<f64> = if gs::get(&pack[idx], "key") == "c_cryptid" {
+                    eng.g.as_ref().unwrap().jokers.iter().filter(|j| j.borrow().name() == "Hologram").map(|j| j.borrow().counter).collect()
+                } else { vec![] };
                 match eng.call("pack", Some(&params)) {
-                    Ok(_) => taken.push(gs::get(&pack[idx], "key").clone()),
+                    Ok(_) => {
+                        if !holo.is_empty() {
+                            let mut it = holo.into_iter();
+                            for j in eng.g.as_ref().unwrap().jokers.iter().filter(|j| j.borrow().name() == "Hologram") {
+                                j.borrow_mut().counter = it.next().unwrap();
+                            }
+                        }
+                        taken.push(gs::get(&pack[idx], "key").clone());
+                    }
                     Err(_) => {
                         eng.call("pack", Some(&json!({"skip": true}))).map_err(|e| e.message)?;
                         break;
@@ -116,7 +131,13 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
             }
         }
     }
-    Ok(Applied { g: eng.g.take().unwrap(), pack: pack0.unwrap_or_default(), taken, view0 })
+    let mut g = eng.g.take().unwrap();
+    g.pack_ignores_played = false;
+    // Python hands the post-pick state to the rollout through describe -> build, which orders the deck by sort_id;
+    // rumbot puts cards a pack creates (Cryptid, Familiar...) at the front. uids grow in creation order, like sort_id.
+    g.full_deck.sort_by_key(|c| c.borrow().uid);
+    g.draw_pile.sort_by_key(|c| c.borrow().uid);
+    Ok(Applied { g: g, pack: pack0.unwrap_or_default(), taken, view0 })
 }
 
 /// The part of `sim_bridge.describe(gs, rng=True)` the pack comparison covers.
