@@ -32,3 +32,8 @@ Local changes to this copy are listed here, newest last:
   `Tarot_Planet` pool (interleaved by `order`) + `random_consumables_set`; The Fool with nothing to copy draws from it
   (Jackdaw patch). GameState flags `fool_always_usable`, `pack_ignores_played` (default false) mirror Jackdaw's pack
   path in item forecasts.
+
+## fc-items3: forecast-only Jackdaw mirror
+`GameState.jackdaw_card_pay_unseen` (default false; set only by the Rust items forecast when Python would have fallen back to Jackdaw): Bootstraps and Bull
+do not count the hand's Gold Seal/Lucky pay. The game counts it (card.lua:1400-1403 dollar_buffer, read at card.lua:4297 and 4407); Jackdaw does not. No
+change to rumbot's own behaviour.

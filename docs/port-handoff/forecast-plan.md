@@ -135,3 +135,21 @@ Hole roll (common_events.lua:2088-2100). NOT done: the lite comparison is not ye
 - Arm F computed-oracle replay (`JEV_REPLAY_ORACLE=rust JEV_REPLAY_ARM=F`, ~3.6 min): 18/30 identical; the 12 others stop at an items_forecast rollout-level mismatch (the known 10 classes). Arm E not rerun (no items forecast in E).
 - Debug aids: `FC_ONLY=<idx>` (fc_items: one call, prints first differing option), `FC_ROWS=1` (forecast_items prints per-rollout rows on stderr).
 - Finding for MZ5KZ3JH idx 2391 (`skip`, k=3, Brainstorm/Banner/Bootstraps/Supernova/Drunkard): Python's row is Jackdaw's, not rumbot's. Rust aborts (`refresh_policy`, Brainstorm in policy, Amber Acorn reshuffle at ante 8 boss), so `run_strict` returns None and Python replays the WHOLE horizon on Jackdaw. Rust (rumbot semantics) and Jackdaw agree through ante 7 Big (65752) but differ on the first hand of the ante 7 boss (18473 Jackdaw vs 19227 rumbot, Pair of Aces); Jackdaw shows money $55 at that hand vs $52 at the shop before it, so suspect a money/Bootstraps (or reward) difference between engines. Rollouts where Python's Rust path aborts are Jackdaw results; to match them exactly the Rust side needs the Jackdaw behaviour for that case (or an engine fix verified in the Lua dump). Not yet fixed. The Arcana/Spectral/Celestial classes were not examined.
+
+### Task fc-items3 status
+- idx 2391 root cause: **Jackdaw is wrong, rumbot is right.** At the ante 7 boss (The Club) the first hand pays $3 (Gold Seal) as the card scores;
+  the modded game's `Card:get_p_dollars` adds it to `G.GAME.dollar_buffer` (card.lua:1400-1403) and Bootstraps/Bull read `dollars + dollar_buffer`
+  (card.lua:4407-4410, 4297-4300), so the game counts it. Jackdaw's `_bootstraps` uses `ctx.game.money` only (jackdaw/engine/jokers.py:1181) and the
+  money lands after the hand: 18473 (Jackdaw) vs 19227 (rumbot, matches the game; the same rule was already pinned by recording 10 in effects.rs).
+  Jackdaw-reference bug, Python untouched.
+- Forecast-only mirror: `GameState.jackdaw_card_pay_unseen` (rumbot effects.rs `ScoreContext.card_pay/hide_card_pay`: Gold Seal and Lucky pay are hidden
+  from Bootstraps/Bull money). `forecast_items` runs a rollout strict first; on STRICT_ABORT (Python's `run_strict` -> None, Python replays the whole
+  horizon on Jackdaw) it restarts from the applied state with the flag and the policy rebuilds. Only this one Jackdaw quirk is mirrored; other Jackdaw
+  differences in fallback rollouts would still show up.
+- Sampled fc_items (FC_STRIDE=10): 310 -> 313/320. The 7 left are all `buy_pack_*` rollouts with NO abort in the differing option, so they are not the
+  fallback effect. Example idx 71 buy_pack_0 k=11: Python run_strict is ok (rumbot), the first blind of the horizon already differs
+  (15988 vs 11459 at ante 5 Small), i.e. the handoff state after the pack pick differs (hand/deck/levels, not money/jokers/RNG pools which fc_packs
+  checks). Others: idx 91 (blinds[2] p_clear), 451 (p_survive), 611 (median_margin), 681 (blinds[1] p_clear). Next: dump post-pick deck/levels for
+  idx 71 k=11 from both sides (full `describe` comparison, the missing GameState -> StateDesc inverse).
+- Debug: `FC_ROWS=1` also prints `ABORT <opt> <k>`; fc_items mismatch lines now carry `#idx`.
+- Checks after the change: engine_replay (IGNORE="].id") 47/60, fc_packs passing.

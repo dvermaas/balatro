@@ -228,7 +228,20 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                 pols_ref.borrow_mut().insert(sig, p.clone());
                 p
             };
-            let rows = simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, None, Some(&items), Some(&mut rebuild)).expect("items rollout");
+            // Python's run_strict (Rust) gives up on a joker added mid-horizon; Python then replays the WHOLE horizon
+            // on Jackdaw. Mirror that: restart from the applied state with Jackdaw's scoring quirk (Bootstraps/Bull
+            // do not see the hand's card pay) and the policy rebuilds Python's loop does.
+            let g0 = g.deep_clone();
+            let rows = match simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, None, Some(&items), None) {
+                Ok(r) => r,
+                Err(e) if e == simcore::STRICT_ABORT => {
+                    g = g0;
+                    if std::env::var("FC_ROWS").is_ok() { eprintln!("ABORT {} {}", gs::s(gs::get(o, "key")), k); }
+                    g.jackdaw_card_pay_unseen = true;
+                    simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, None, Some(&items), Some(&mut rebuild)).expect("items rollout")
+                }
+                Err(e) => panic!("items rollout: {e}"),
+            };
             let rj = Value::Array(rows.iter().map(crate::forecast::row_json).collect());
             if std::env::var("FC_ROWS").is_ok() {
                 eprintln!("ROWS {} {} {}", gs::s(gs::get(o, "key")), k, rj);

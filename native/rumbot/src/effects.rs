@@ -35,6 +35,10 @@ pub struct ScoreContext {
     pub chips: f64,
     pub mult: f64,
     pub money_gained: i32,
+    /// Part of `money_gained` paid by the scored cards themselves (Gold Seal, Lucky). Jackdaw's
+    /// Bootstraps/Bull do not see it (`hide_card_pay`), the game does (dollar_buffer, card.lua:1402).
+    pub card_pay: i32,
+    pub hide_card_pay: bool,
     /// Lucky card triggers this hand, hit or miss. See `preview_outcome`.
     pub lucky_rolls: i32,
     /// The money a play earns in expectation rather than as rolled: what each
@@ -73,6 +77,8 @@ impl ScoreContext {
             chips: 0.0,
             mult: 0.0,
             money_gained: 0,
+            card_pay: 0,
+            hide_card_pay: false,
             lucky_rolls: 0,
             chance_paid: 0,
             chance_expected: 0.0,
@@ -99,7 +105,7 @@ impl ScoreContext {
     /// dollar held" and read $27 instead of $33 -- 54 chips against 66, and 5427
     /// against the game's 5913 on a hand that decided the blind.
     pub fn money(&self) -> i32 {
-        (self.base_money + self.money_gained).max(0)
+        (self.base_money + self.money_gained - if self.hide_card_pay { self.card_pay } else { 0 }).max(0)
     }
 
     pub fn add_chips(&mut self, amount: f64, source: &str) {
