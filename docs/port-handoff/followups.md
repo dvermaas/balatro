@@ -38,3 +38,4 @@
 - engine text mirrors two Jackdaw display quirks for identity: Satellite text always shows $0, and Hologram
   stays X1 after Marble Joker adds a Stone card (the Jackdaw Marble/Hologram bug). Revisit once Jackdaw is
   no longer the reference (the real game shows the live values).
+- decisions: booster.rs has a private pack-only copy of `score_items` (`// SHARED?`); switch to shop.rs's.
