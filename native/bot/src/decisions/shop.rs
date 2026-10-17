@@ -8,7 +8,7 @@ use crate::forecast_stats::{items_options, options, pystr};
 use crate::gs::cards_of;
 use crate::hands::_d;
 use crate::iface::RpcError;
-use crate::jev_bot::{choice_q_map, score_q, Action, JevBot};
+use crate::jev_bot::{choice_q_map, score_q, Action, JevBot, Stop};
 use crate::jokers;
 use crate::prompts::{CASH_ITEM_QUESTION, CASH_STEP_QUESTION, ITEM_VALUE_LEVELS};
 use crate::trace;
@@ -102,7 +102,7 @@ pub fn discard_obj(d: &Value) -> Value {
 }
 
 // decisions.py 468-484: (scores {key: score}, meta)
-pub fn score_items(bot: &mut JevBot, gs: &Value, qname: &str, state: &Value, items: &ShopItems) -> (Map<String, Value>, Value) {
+pub fn score_items(bot: &mut JevBot, gs: &Value, qname: &str, state: &Value, items: &ShopItems) -> Result<(Map<String, Value>, Value), Stop> {
     let mut questions = Map::new();
     for (k, (_, obj, _)) in items {
         let question = if _d(obj).contains_key("cash_outcome") { CASH_ITEM_QUESTION } else { instr("item_value") };
@@ -122,7 +122,7 @@ pub fn score_items(bot: &mut JevBot, gs: &Value, qname: &str, state: &Value, ite
         options.insert("continue_shopping".into(), json!({"action": "Pass these cash transactions and consider the other shop actions"}));
         questions.insert("cash_step".into(), choice_q_map(CASH_STEP_QUESTION, options));
     }
-    let (answers, mut meta) = bot.query(gs, state, &questions);
+    let (answers, mut meta) = bot.query(gs, state, &questions)?;
     if has_cash {
         let probs = _d(&answers.get("cash_step").map(|a| g(a, "probabilities")).unwrap_or(Value::Null)).clone();
         // Python max(probabilities, key=probabilities.get): first maximal key in dict order.
@@ -141,7 +141,7 @@ pub fn score_items(bot: &mut JevBot, gs: &Value, qname: &str, state: &Value, ite
         .iter()
         .map(|(k, _)| (k.clone(), answers.get(k).map(|a| g(a, "score")).unwrap_or(Value::Null)))
         .collect();
-    (scores, meta)
+    Ok((scores, meta))
 }
 
 // decisions.py 487-496: indices of the n weakest jokers (set; used for membership only)
@@ -443,7 +443,7 @@ fn fnum(o: &Value, k: &str, default: f64) -> f64 {
 }
 
 /// decisions.py 616-823 `shop(bot, gs)` (nested `obj` at 647 is a helper inside).
-pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), RpcError> {
+pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     let key = json!([g(gs, "ante_num"), g(gs, "round_num")]);
     if key != bot._shop_key {
         bot._shop_key = key;
@@ -663,7 +663,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), RpcError> {
     let fallback: (&str, Action) = if can_reroll { ("reroll", ("reroll".into(), None)) } else { ("leave", ("next_round".into(), None)) };
     if items.is_empty() {
         bot.emit("forced", json!({"question": "shop", "choice": fallback.0, "desc": "nothing affordable to rate"}));
-        return shop_act(bot, gs, &fallback.1);
+        return Ok(shop_act(bot, gs, &fallback.1)?);
     }
 
     let ante = { let a = g(gs, "ante_num"); if truthy(Some(&a)) { crate::gs::int(&a) } else { 1 } };
@@ -719,11 +719,11 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), RpcError> {
                 "desc": format!("${icost} {idesc}"), "reason": reason, "msg": msg, "forecast": Value::Object(numbers),
                 "forecast_seconds": g(src_fc, "seconds"), "forecast_rollouts": g(src_fc, "rollouts"),
                 "forecast_note": g(&state, "forecast")}));
-            return shop_act(bot, gs, &iaction);
+            return Ok(shop_act(bot, gs, &iaction)?);
         }
     }
     let sitems: ShopItems = items.iter().map(|it| (it.key.clone(), (it.desc.clone(), it.obj.clone(), it.action.clone()))).collect();
-    let (scores, mut meta) = score_items(bot, gs, "shop", &state, &sitems);
+    let (scores, mut meta) = score_items(bot, gs, "shop", &state, &sitems)?;
     if let Some(f) = &fc {
         meta["forecast_seconds"] = g(f, "seconds");
         meta["forecast_rollouts"] = g(f, "rollouts");
@@ -751,7 +751,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), RpcError> {
             let conf = g(&probabilities, crate::gs::s(&cash_pick));
             bot.record_decision("shop", gs, &cash_pick, &crate::jev_bot::action_value(&action), &Value::Object(options),
                                 &probabilities, &conf, &meta, "prob");
-            return shop_act(bot, gs, &action);
+            return Ok(shop_act(bot, gs, &action)?);
         }
     }
     // A JEV decision to continue shopping passes the explicit cash transactions.
@@ -830,7 +830,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), RpcError> {
     }
     bot.record_decision("shop", gs, &json!(choice), &crate::jev_bot::action_value(&action), &Value::Object(options),
                         &Value::Object(probs), &json!(s / 4.0), &meta, "score");
-    shop_act(bot, gs, &action)
+    Ok(shop_act(bot, gs, &action)?)
 }
 
 // decisions.py 826-848: runs the action; on RPCError adds json.dumps(action) to bot._failed and returns Err

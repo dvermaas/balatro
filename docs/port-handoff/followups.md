@@ -1,11 +1,10 @@
 # Port follow-ups (small gaps found while merging)
 
-- recorder: `SystemClock` is UTC; Python names run dirs and stamps in local time. Use local time before
-  the Rust bot writes real runs (Windows `GetLocalTime` or a small tz dependency).
 - recorder: `states.jsonl.gz` deflate bytes differ from CPython zlib (header and content identical). Fine
   unless something hashes the raw .gz bytes.
-- recorder: `snapshot_prompts`, `prompt_versions`, `list_runs` not ported (shell wave: panel/analytics).
-  `version_hash` takes its file list as a parameter: decide which Rust sources define a prompt version.
+- recorder: `list_runs` not ported (the panel has its own listing). Prompt version = `recorder::bot_version` (sha1 of
+  native/{bot,simcore,kernel,rumbot,pycompat} `src/**/*.rs`, sorted); `behaviour_sources` lists them. Needs the
+  `native/` dir at runtime (compile-time path, or JEV_NATIVE_DIR); a deployed binary without sources hashes nothing.
 - readiness: `play_mix` keeps Python's process-wide `_MIX_CACHE` (cleared past 256 entries). In Rust keep
   one cache per game; check in the full-game replay that no recorded game hit a mid-game clear.
 - odds: only 9 of 1545 fixture plans took the exact-enumeration path; the decisions replay covers the
@@ -45,6 +44,4 @@
   (`fool_always_usable`, `pack_ignores_played`) for v27 identity; drop them once Jackdaw is not the reference.
 - analytics (Python too): run_metrics "progress" never adds the final-blind share (last_move only holds
   discards_left, so target is 0): progress == rounds_won. Ported as-is; fix in both if the share was intended.
-- panel/jev_bot: benchmark queue not ported (JevBot on_menu benchmark path is todo!; POST /api/benchmark
-  answers 500); `--legacy` (v1 bot) and error tracebacks not ported. JEV API errors surface as a panic in
-  JevBot::query caught by the panel: turn into a Result like Python's TypeSafeError.
+- panel/jev_bot: `--legacy` (v1 bot) and error tracebacks not ported.

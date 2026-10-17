@@ -11,7 +11,7 @@ use crate::forecast_stats::pystr;
 use crate::gs::{self, area, cards_of};
 use crate::hands::{self, card_info};
 use crate::iface::RpcError;
-use crate::jev_bot::{current_blind, item_desc, opt, JevBot};
+use crate::jev_bot::{current_blind, item_desc, opt, JevBot, Stop};
 use crate::prompts::{GAME_RULES, INSTRUCTIONS, OPTIONS};
 use crate::strategy;
 use pycompat::fmt::pyround_int;
@@ -235,7 +235,7 @@ pub(crate) fn run_context(gs_: &Value) -> (Vec<String>, Value) {
 // ---- blind ------------------------------------------------------------------
 
 // decisions.py 143-155
-pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), RpcError> {
+pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let b = current_blind(gs_);
     if gs::get(&b, "type").as_str() == Some("BOSS") {
         bot.act("select", None)?;
@@ -252,7 +252,7 @@ pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), RpcError> {
         opt("play", fmt(option_tpl("blind_play")), "select", None),
         opt("skip", fmt(option_tpl("blind_skip")), "skip", None),
     ];
-    let (m, p) = bot.ask("blind", gs_, instr("blind"), &opts);
+    let (m, p) = bot.ask("blind", gs_, instr("blind"), &opts)?;
     bot.act(&m, p.as_ref())?;
     Ok(())
 }

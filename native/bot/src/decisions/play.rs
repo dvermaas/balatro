@@ -11,8 +11,7 @@ use crate::gs::{self, area, cards_of};
 use crate::hands::{
     card_info, classify, describe, discard_candidates, play_candidates, Allowed, Info, Levels, ScorerArg,
 };
-use crate::iface::RpcError;
-use crate::jev_bot::{choice_q_map, item_desc, noul_q, JevBot};
+use crate::jev_bot::{choice_q_map, item_desc, noul_q, JevBot, Stop};
 use crate::jokers::{self, Rnd, Scorer};
 use crate::odds::{self, DrawCount};
 use crate::prompts::{GAME_RULES, PLAY_NOW_CRITERIA};
@@ -253,7 +252,7 @@ fn probs_of(a: &Value) -> Vec<(String, f64)> {
 }
 
 /// decisions.py 335-452 `selecting_hand(bot, gs)`.
-pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), RpcError> {
+pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let hand = cards_of(gs_, "hand");
     let info = super::round_info(gs_);
     let boss = gs::get(&info, "blind").as_str().unwrap_or("").to_string();
@@ -379,7 +378,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), RpcError> {
         return Ok(());
     }
 
-    let (answers, meta) = bot.query(gs_, &state, &questions);
+    let (answers, meta) = bot.query(gs_, &state, &questions)?;
     let p_play = answers.get("play_now").map_or(1.0, |a| gs::num(gs::get(a, "noul")));
     let pp: Vec<(String, f64)> = match answers.get("best_play") {
         Some(a) => probs_of(a),
