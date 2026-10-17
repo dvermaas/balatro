@@ -289,7 +289,13 @@ pub fn replay_game(path: &Path, items: bool, log_dir: &Path) -> Outcome {
     let skip = std::env::var("JEV_REPLAY_SKIP").map_or(false, |v| v == "1");
     let mut skipped: BTreeMap<String, usize> = BTreeMap::new();
     let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-        let oracle: SharedOracle = Rc::new(RefCell::new(TraceOracle { r: replay.clone() }));
+        let rec = TraceOracle { r: replay.clone() };
+        // JEV_REPLAY_ORACLE=rust: compute the forecasts in Rust and check them against the recorded ones
+        let oracle: SharedOracle = if std::env::var("JEV_REPLAY_ORACLE").map_or(false, |v| v == "rust") {
+            Rc::new(RefCell::new(crate::oracle::CheckedOracle { rec: Box::new(rec), checked: 0 }))
+        } else {
+            Rc::new(RefCell::new(rec))
+        };
         let code = CodeJev::new(items, oracle.clone());
         let jev = TraceJev { r: replay.clone(), code: Some(Box::new(code)) };
         let mut bot = JevBot::new(
