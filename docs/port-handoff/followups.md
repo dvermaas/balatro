@@ -21,3 +21,6 @@
 - forecast_stats: `usable()` copies tarots.py's TARGETED/SAFE_UNTARGETED keys (`// SHARED?`); point it at
   tarots.rs once that is merged. Items-forecast assembly (rollout_items._forecast's result dict) still to port
   (forecast task 9).
+- duplicated helpers to consolidate: Python-style `repr` of a JSON value (forecast_state.rs `py_repr`, picker.rs)
+  -> pycompat; rollout.py `candidates`/`_rv`/`_straight` copy in picker.rs -> the rollout port; tarots
+  MEASURABLE copy in picker.rs -> tarots.rs; simtext `fmt_g` (%.Ng) -> pycompat.
