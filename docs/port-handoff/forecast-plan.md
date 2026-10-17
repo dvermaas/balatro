@@ -117,3 +117,15 @@ Fixtures: small Python dump scripts in `scripts/port/`, files under `native/bot/
     `jev_sim` on the bot path.
 
 Haiku: 2 and 10 (mechanical, tight fixtures). Sonnet: the rest (RNG/float parity judgement).
+
+### Task 8 status (fc-packs)
+
+`forecast_items.rs` (buy_pack/buy_card, ported Picker over the engine views) is identical to Python on
+`fc_packs.py`: 2552/2552 pack contents, 2552/2552 picks, 2552/2552 lite post-option states (money, joker and
+consumable names, card count, slots, all RNG pool values). Jackdaw quirks mirrored via GameState flags set only
+by `apply_item_option`: `pack_ignores_played` (OpenBooster reads an unsynced `played_hand_types`/`used_jokers`, so
+Planet X/Ceres/Eris and owned centres are not filtered and the Soul/Black Hole rolls never skip),
+`fool_always_usable` (PickPackCard skips can_use: Emperor/High Priestess/Fool with no room create nothing; The Fool
+with no last card draws from `Tarot_Planet`+`fool`). Rumbot bug fixed: a Spectral Soul hit no longer skips the Black
+Hole roll (common_events.lua:2088-2100). NOT done: the lite comparison is not yet the full
+`sim_bridge.describe(gs, rng=True)`; that needs a GameState -> StateDesc inverse (none exists in simcore).

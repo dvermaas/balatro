@@ -655,6 +655,10 @@ pub struct GameState {
     pub shop_free: bool,
     /// G.GAME.last_tarot_planet -- the key The Fool copies.
     pub last_tarot_planet: String,
+    /// Jackdaw's rule: The Fool is usable with nothing to copy (it draws a random Tarot/Planet)
+    pub fool_always_usable: bool,
+    /// Jackdaw's OpenBooster reads gs["played_hand_types"] unsynced (empty in a rollout snapshot): packs ignore played hands
+    pub pack_ignores_played: bool,
     /// G.GAME.ecto_minus. Ectoplasm's hand-size cost is not a flat one: it starts
     /// at one and rises by one with every Ectoplasm used in the run.
     pub ecto_minus: i32,
@@ -804,6 +808,8 @@ impl GameState {
             pack_dealt_hand: false,
             shop_free: false,
             last_tarot_planet: String::new(),
+            fool_always_usable: false,
+            pack_ignores_played: false,
             ecto_minus: 1,
             ante_boss: String::new(),
             forced_card: None,
@@ -2880,7 +2886,7 @@ impl GameState {
             .hand_levels
             .plays
             .iter()
-            .filter(|(_, n)| **n > 0)
+            .filter(|(_, n)| **n > 0 && !self.pack_ignores_played)
             .map(|(h, _)| h.label().to_string())
             .collect();
         let owned: Vec<String> = self
@@ -2889,7 +2895,7 @@ impl GameState {
             .map(|c| format!("m_{}", crate::cards::enhancement_of(c).as_str()))
             .collect();
         let seen = self.seen_centers();
-        let seen_vec: Vec<String> = seen.iter().cloned().collect();
+        let seen_vec: Vec<String> = if self.pack_ignores_played { Vec::new() } else { seen.iter().cloned().collect() };
         let showman = self
             .active_jokers()
             .iter()
@@ -2904,8 +2910,8 @@ impl GameState {
         let telescope = self.vouchers.iter().any(|v| v.key == "v_telescope");
         let omen_globe = self.vouchers.iter().any(|v| v.key == "v_omen_globe");
         let most_played_planet = self._most_played_planet();
-        let soul_used = seen.contains("c_soul");
-        let black_hole_used = seen.contains("c_black_hole");
+        let soul_used = !self.pack_ignores_played && seen.contains("c_soul");
+        let black_hole_used = !self.pack_ignores_played && seen.contains("c_black_hole");
         let edition_rate = self.edition_rate();
         let ante = self.ante;
         let contents = crate::shop_pool::pack_contents(
@@ -3596,11 +3602,16 @@ impl GameState {
                     .consumables
                     .iter()
                     .any(|c| std::ptr::eq(c.borrow().spec, spec));
+            if self.fool_always_usable {
+                // Jackdaw's PickPackCard applies the card without Card:can_use_consumeable: with no room the
+                // Emperor / High Priestess / Fool just create nothing
+                return true;
+            }
             if spec.name != "The Fool" {
                 return room;
             }
             return room
-                && !self.last_tarot_planet.is_empty()
+                && (self.fool_always_usable || !self.last_tarot_planet.is_empty())
                 && self.last_tarot_planet != "c_fool";
         }
         if crate::game::PLAIN_JOKER_NEEDED.contains(&spec.name) {

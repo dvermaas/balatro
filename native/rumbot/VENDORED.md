@@ -27,3 +27,8 @@ Local changes to this copy are listed here, newest last:
 - Swashbuckler checked, no rumbot change (KGA553W7@375): card.lua:4609-4617 sums `sell_cost` of every other
   joker in G.jokers with no debuff test; rumbot matches. Jackdaw (jokers.py `_swashbuckler`) skips debuffed
   jokers (`and not j.debuff`), so under Crimson Heart it scores less (Mult 8 vs 11: 102 vs 111 x 122).
+
+- shop_pool.rs `soulable`: a Spectral Soul hit still makes the Black Hole roll (common_events.lua:2088-2100).
+  `Tarot_Planet` pool (interleaved by `order`) + `random_consumables_set`; The Fool with nothing to copy draws from it
+  (Jackdaw patch). GameState flags `fool_always_usable`, `pack_ignores_played` (default false) mirror Jackdaw's pack
+  path in item forecasts.
