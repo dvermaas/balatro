@@ -553,7 +553,15 @@ impl JevBot {
             if !self._auto_failed.contains(&key) {
                 self.emit("auto", json!({"msg": reason}));
                 if let Err(e) = self.act(method, Some(params)) {
-                    self._auto_failed.insert(key);
+                    // Python gives up on the first failure. The Rust bot can be fast enough to act while the
+                    // game is still animating (e.g. using a planet 8 ms after a pack closes: NOT_ALLOWED), so
+                    // retry once after the error backoff. Live-only: the simulators never refuse here.
+                    let retry_key = format!("retry:{key}");
+                    if !self._auto_failed.contains(&retry_key) {
+                        self._auto_failed.insert(retry_key);
+                    } else {
+                        self._auto_failed.insert(key);
+                    }
                     return Err(e.into());
                 }
                 return Ok(());
