@@ -667,8 +667,9 @@ def shop(bot, gs):
     if bot._shop_actions < SHOP_ACTION_CAP:
         for i, c in enumerate(cards_of(gs, "shop")):
             cost = _d(c.get("cost")).get("buy", 0)
-            if cost > money or (c.get("set") == "JOKER" and jokers_full) or (
-                    c.get("set") in ("TAROT", "PLANET", "SPECTRAL") and cons_full):
+            neg = _d(c.get("modifier")).get("edition") == "NEGATIVE"  # v29: a Negative card brings its own slot
+            if cost > money or (c.get("set") == "JOKER" and jokers_full and not neg) or (
+                    c.get("set") in ("TAROT", "PLANET", "SPECTRAL") and cons_full and not neg):
                 continue
             o = obj(c, cost, c.get("set", "card").lower(), key=f"buy_card_{i}")
             n = tarots.note(c, b, money - cost, cards_of(gs, "jokers"))

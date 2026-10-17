@@ -6,6 +6,8 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v29: the shop offers Negative jokers and consumables with full slots (a Negative card brings its "
+    "own slot; rollout.options already allowed it, decisions.shop's filter dropped it). Based on: "
     "v28: planets and joker text. (1) The shop buys the planet for the hand our deck scores most with "
     "(readiness.play_mix) and the biggest Celestial pack while $4 stays (decisions._planet_rule); a "
     "pack's planet is picked by rollout_items.planet_gain, which re-chooses the best play after the "

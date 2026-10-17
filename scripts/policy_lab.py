@@ -364,7 +364,16 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-swap3": {"items": True, "swap_sells": 3},
             "bot-swap5": {"items": True, "swap_sells": 5},
             # arm F (v28) with shopping rollouts in both forecasts (Python only, slow)
-            "bot-items-shop": {"items": True, "shop": True}}
+            "bot-items-shop": {"items": True, "shop": True},
+            # skip small/big blinds for strong tags when readiness says the blind we then face is safe
+            "bot-skip-strong": {"items": True, "skip_tags": "strong", "skip_ratio": 1.3},
+            "bot-skip-wide": {"items": True, "skip_tags": "wide", "skip_ratio": 1.5}}
+SKIP_TAGS = {
+    "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
+               "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
+}
+SKIP_TAGS["wide"] = SKIP_TAGS["strong"] | {"Foil Tag", "Charm Tag", "Coupon Tag", "Economy Tag", "Voucher Tag",
+                                           "Top-up Tag", "Juggle Tag", "D6 Tag", "Ethereal Tag"}
 _DEFAULTS = {}
 
 
@@ -539,6 +548,24 @@ def _play_bot(seed, arm_name, t0):
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
     _DEFAULTS.setdefault("shop", decisions.shop)
+    _DEFAULTS.setdefault("blind", decisions.blind_select)
+    decisions.blind_select = _DEFAULTS["blind"]
+    if opts.get("skip_tags"):
+        import readiness
+        from jev_bot import current_blind
+
+        def skip_select(bot, gs, _orig=_DEFAULTS["blind"]):
+            b = current_blind(gs)
+            if b.get("type") != "BOSS" and b.get("tag_name") in SKIP_TAGS[opts["skip_tags"]]:
+                r = readiness.assess(gs)
+                # rows: this blind, then the one we would face next if we skip it
+                if r and len(r["blinds"]) > 1 and r["blinds"][1]["ratio"] >= opts["skip_ratio"]:
+                    bot.emit("auto", question="blind", choice="skip", desc=f"skip for {b.get('tag_name')}",
+                             reason=f"next blind readiness {r['blinds'][1]['ratio']} >= {opts['skip_ratio']}")
+                    bot.act("skip")
+                    return
+            return _orig(bot, gs)
+        decisions.blind_select = skip_select
     decisions.shop = _DEFAULTS["shop"]
     if opts.get("late"):
         def late_shop(bot, gs, _orig=_DEFAULTS["shop"]):
@@ -629,6 +656,7 @@ def _play_bot(seed, arm_name, t0):
     finally:
         decisions._forecast_fields = _DEFAULTS["ff"]
         decisions.shop = _DEFAULTS["shop"]
+        decisions.blind_select = _DEFAULTS["blind"]
         decisions.selecting_hand = orig_selecting_hand  # workers play many games: never leak the wrapper
         if shop_patch:
             shop_patch.__exit__(None, None, None)
