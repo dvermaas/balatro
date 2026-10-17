@@ -491,8 +491,13 @@ impl GameState {
     /// given the Wheel of Fortune.
     pub fn seen_centers(&self) -> HashSet<String> {
         let mut keys = HashSet::new();
+        let mut unmarked = self.jackdaw_unmarked_jokers.clone();
         for joker in &self.jokers {
             if let Some(row) = crate::joker_data::joker_row(joker.borrow().name()) {
+                if let Some(p) = unmarked.iter().position(|k| k == row.key) {
+                    unmarked.remove(p);
+                    continue;
+                }
                 keys.insert(row.key.to_string());
             }
         }

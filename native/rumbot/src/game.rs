@@ -659,6 +659,9 @@ pub struct GameState {
     pub fool_always_usable: bool,
     /// Forecast-only Jackdaw mirror: Bootstraps/Bull do not count the hand's card pay (Gold Seal, Lucky).
     pub jackdaw_card_pay_unseen: bool,
+    /// Forecast-only Jackdaw mirror: joker keys the player owned when the state was built. Jackdaw's build_state never
+    /// fills used_jokers, so these stay rollable from the shop and packs (until a copy is bought mid-rollout).
+    pub jackdaw_unmarked_jokers: Vec<String>,
     /// Jackdaw's OpenBooster reads gs["played_hand_types"] unsynced (empty in a rollout snapshot): packs ignore played hands
     pub pack_ignores_played: bool,
     /// G.GAME.ecto_minus. Ectoplasm's hand-size cost is not a flat one: it starts
@@ -812,6 +815,7 @@ impl GameState {
             last_tarot_planet: String::new(),
             fool_always_usable: false,
             jackdaw_card_pay_unseen: false,
+            jackdaw_unmarked_jokers: Vec::new(),
             pack_ignores_played: false,
             ecto_minus: 1,
             ante_boss: String::new(),

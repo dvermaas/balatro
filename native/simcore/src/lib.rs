@@ -913,8 +913,8 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                 if let Some(t) = trace.as_mut() {
                     let hand: Vec<String> = g.hand.iter().map(card_str).collect();
                     let counters: Vec<String> = g.jokers.iter().map(|j| format!("{:?}", j.borrow().counter)).collect();
-                    t.push(format!("{} {:?} hand={} chips={} hl={} dl={} counters=[{}]", if is_discard { "discard" } else { "play" }, idx,
-                                   hand.join(","), g.chips_scored, g.hands_left, g.discards_left, counters.join(",")));
+                    t.push(format!("{} {:?} hand={} chips={} hl={} dl={} counters=[{}] jk={}", if is_discard { "discard" } else { "play" }, idx,
+                                   hand.join(","), g.chips_scored, g.hands_left, g.discards_left, counters.join(","), g.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect::<Vec<_>>().join("|")));
                 }
                 let t = if is_discard { ActionType::Discard } else { ActionType::Play };
                 let mut idx = idx;

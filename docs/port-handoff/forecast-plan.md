@@ -167,3 +167,18 @@ Hole roll (common_events.lua:2088-2100). NOT done: the lite comparison is not ye
 - Method (no py_rows.py exists in the repo): dump Python `sim_bridge.describe(gs, rng=True)` after `ri.apply_option`, build it with `simcore::build`, and
   `{:#?}` diff against the `apply_item_option` GameState (strip uid/rng); per-rollout rows from Python by spying `rollout.summarize` in `ri._forecast`.
 - Not done: describe_lite still omits deck cards, hand levels and joker counters (the fields that differed here).
+
+### Task fc-items5 status
+- Full fc_items 3183 -> 3191/3193 (fc_packs ok, engine_replay 47). Causes fixed (all Jackdaw-reference quirks mirrored forecast-only, the game/rumbot are right):
+  1. 4R5NYC8E#255/#1569, KGA553W7#548/#2150, MZ5KZ3JH#2364-2366 skip: on a STRICT_ABORT restart (Python replays on Jackdaw) Jackdaw's shop/pack can roll a joker
+     the player already owns (build_state leaves used_jokers empty). `GameState.jackdaw_unmarked_jokers` (pub jokers) mirrors it (VENDORED.md).
+     4R5NYC8E#255 was NOT the Mail-In Rebate rank issue (followups.md still open; the Wily duplicate was the cause).
+  2. R8ZXJN6L#730/#2475 (buy_pack): the rollout game comes from describe -> build, which orders jokers by sort_id (pack joker created before a later shop
+     joker lands before it) while Python's policy stays positional in Jackdaw order. Mirrored in forecast_items (policy from the unsorted order, game
+     sorted by uid, abort replay keeps Jackdaw order); build also drops live Lua rng state and sets g.seed = rollout seed (resetting hands_at_create to 0 broke 57 other calls: do not).
+- Regression found: MZ5KZ3JH#2366/#2367 buy_pack_1 blinds[6].median_margin 0.31 vs 0.33 (was passing). Not caused by the seed/live/hands_at_create/sort
+  changes; caused by the unmarked-jokers flag in rollouts that abort (all 5 jokers owned, Brainstorm). py_rows.py also shows k=0 DIFF at ante 7 (strict path in
+  both engines, flag-independent), so py_rows is not a faithful replay for that call; investigate with the START/TR0/TR debug aids.
+- Debug aids added: FC_ROWS prints `START <opt> <k> $= jokers=[name#uid] deck draw`; FC_TRACE=1 prints per-decision traces (`TR0` strict attempt, `TR` abort
+  replay, with jokers); FC_CMP=<desc.json> FC_CMPK=<k> FC_CMPO=<opt> writes `<json>.py.txt/.rs.txt` ({:#?} of the Python-described state built by simcore vs the
+  applied state). fc_items prints up to 50 mismatches per class.

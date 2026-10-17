@@ -243,6 +243,7 @@ impl GameState {
             last_tarot_planet: self.last_tarot_planet.clone(),
             fool_always_usable: self.fool_always_usable,
             jackdaw_card_pay_unseen: self.jackdaw_card_pay_unseen,
+            jackdaw_unmarked_jokers: self.jackdaw_unmarked_jokers.clone(),
             pack_ignores_played: self.pack_ignores_played,
             ecto_minus: self.ecto_minus,
             ante_boss: self.ante_boss.clone(),
