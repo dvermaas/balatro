@@ -9,6 +9,7 @@ pub mod build;
 pub mod codejev;
 pub mod decisions;
 pub mod engine;
+pub mod forecast_stats;
 pub mod hands;
 pub mod jev_bot;
 pub mod jokers;
