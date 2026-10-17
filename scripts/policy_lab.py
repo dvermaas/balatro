@@ -403,7 +403,13 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-jreopt-both": {"items": True, "joker_reopt": ("pick", "weak")},
             # The Mouth: the first play may only be a hand type the deck makes again in >= `mouth` of sampled hands
             "bot-mouth60": {"items": True, "mouth": 0.6},
-            "bot-mouth80": {"items": True, "mouth": 0.8}}
+            "bot-mouth80": {"items": True, "mouth": 0.8},
+            # vouchers whose value only shows in later shops (the forecast's rollouts never shop): bought by code
+            # while `vfloor` dollars stay, before the forecast's own picks
+            "bot-vouch10": {"items": True, "vouch": "future", "vfloor": 10},
+            "bot-vouch25": {"items": True, "vouch": "future", "vfloor": 25}}
+FUTURE_VOUCHERS = ["Antimatter", "Blank", "Overstock", "Overstock Plus", "Telescope", "Observatory", "Clearance Sale",
+                   "Liquidation", "Crystal Ball", "Reroll Surplus", "Reroll Glut", "Seed Money", "Money Tree"]
 ENGINES = [
     {"Pareidolia", "Photograph", "Smiley Face", "Scary Face", "Sock and Buskin", "Midas Mask", "Business Card",
      "Reserved Parking", "Triboulet", "Faceless Joker"},
@@ -706,6 +712,8 @@ def _play_bot(seed, arm_name, t0):
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
     _DEFAULTS.setdefault("shop", decisions.shop)
+    _DEFAULTS.setdefault("prule", decisions._planet_rule)
+    decisions._planet_rule = _DEFAULTS["prule"]
     _DEFAULTS.setdefault("ba", (decisions.BossAllow.__call__, decisions.BossAllow.native_spec))
     decisions.BossAllow.__call__, decisions.BossAllow.native_spec = _DEFAULTS["ba"]
     import odds
@@ -804,6 +812,19 @@ def _play_bot(seed, arm_name, t0):
                 return set(ranked[:n])
             import jokers as jokers_mod
             decisions._forecast_fields, decisions._weakest_jokers = ff, weak
+        if opts.get("vouch"):
+            orig_rule = _DEFAULTS["prule"]
+
+            def rule(gs, items, money):
+                vs = _cards(gs, "vouchers")
+                best = None
+                for k, v in items.items():
+                    if k.startswith("buy_voucher_") and money - v[3] >= opts["vfloor"]:
+                        lab = vs[int(k.split("_")[-1])].get("label")
+                        if lab in FUTURE_VOUCHERS and (best is None or FUTURE_VOUCHERS.index(lab) < best[0]):
+                            best = (FUTURE_VOUCHERS.index(lab), k)
+                return best[1] if best else orig_rule(gs, items, money)
+            decisions._planet_rule = rule
         if opts.get("mouth"):
             import random
             import jokers as jk
@@ -928,6 +949,7 @@ def _play_bot(seed, arm_name, t0):
         decisions._forecast_fields = _DEFAULTS["ff"]
         decisions._weakest_jokers = _DEFAULTS["weak_fn"]
         decisions.shop = _DEFAULTS["shop"]
+        decisions._planet_rule = _DEFAULTS["prule"]
         decisions.BossAllow.__call__, decisions.BossAllow.native_spec = _DEFAULTS["ba"]
         import odds
         odds.forecast = _DEFAULTS["odds"]
