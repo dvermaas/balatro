@@ -352,20 +352,9 @@ pub fn assemble(
     Value::Object(out)
 }
 
-// SHARED? tarots.TARGETED / tarots.SAFE_UNTARGETED (tarots.py 14-33): the keys only, for usable().
-const TARGETED: &[&str] = &[
-    "c_magician", "c_empress", "c_heirophant", "c_lovers", "c_chariot", "c_justice", "c_devil", "c_tower",
-    "c_strength", "c_hanged_man", "c_death", "c_star", "c_moon", "c_sun", "c_world", "c_aura", "c_deja_vu",
-    "c_talisman", "c_medium", "c_trance", "c_cryptid",
-];
-const SAFE_UNTARGETED: &[&str] = &[
-    "c_hermit", "c_temperance", "c_high_priestess", "c_emperor", "c_judgement", "c_wheel_of_fortune", "c_fool",
-    "c_black_hole",
-];
-
 /// rollout_items.py 64-70: consumables the bot ever uses. None (a missing key) is False.
 pub fn usable(key: Option<&str>) -> bool {
-    key.map_or(false, |k| TARGETED.contains(&k) || SAFE_UNTARGETED.contains(&k))
+    key.map_or(false, |k| crate::tarots::targeted(k).is_some() || crate::tarots::safe_untargeted(k))
 }
 
 /// rollout_items.py 472-482: the option that beats skip by more than `se` paired SEs in blinds
