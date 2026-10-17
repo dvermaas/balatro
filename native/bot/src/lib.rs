@@ -18,3 +18,4 @@ pub mod readiness;
 pub mod recorder;
 pub mod strategy;
 pub mod tarots;
+pub mod simtext;
