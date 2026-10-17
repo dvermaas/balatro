@@ -212,7 +212,9 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
             };
             let (mut g, pol) = {
                 let sig: Vec<String> = applied.g.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect();
-                let (g, p) = policy_of_game(applied.g);
+                let (g, p) = {
+                    policy_of_game(applied.g)
+                };
                 let p = pols.entry(sig).or_insert(p).clone();
                 (g, p)
             };

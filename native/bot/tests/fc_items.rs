@@ -78,6 +78,7 @@ fn fc_items_identical() {
 PY   {}", strip(&got), strip(&l["ret"]));
                         panic!("dump");
                     }
+                    if std::env::var("FC_JK").is_ok() { let ok = d.split('.').nth(2).unwrap_or("").to_string(); println!("JK {} {} {} {}", f.file_name().unwrap().to_string_lossy(), idx, ok, got["options"][&ok]["desc"]); }
                     let cls = d
                         .split(['.', '['])
                         .find(|p| p.starts_with("buy_") || p.starts_with("replace") || *p == "skip")
@@ -102,4 +103,8 @@ PY   {}", strip(&got), strip(&l["ret"]));
         }
     }
     assert_eq!(ok, total);
+}
+
+fn gs_jokers(p: &Value) -> Vec<String> {
+    p["jokers"]["cards"].as_array().map(|a| a.iter().map(|c| format!("{}", c["key"])).collect()).unwrap_or_default()
 }
