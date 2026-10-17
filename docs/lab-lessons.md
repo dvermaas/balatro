@@ -44,6 +44,11 @@ measured the wrong thing or was never asked:
   Money is not the bottleneck; v31 spends hard early and that is fine.
 - **A learned value of shop states**: from ~700 games, summary features explain 6-17% of the outcome
   within an ante and joker identities overfit. At this data size the future is mostly luck.
+- **The 5k-games dataset as training data** (money, jokers and hand levels at each ante's first shop):
+  a win model trained on its 5k teacher games ranks our games about as well as one trained on our 712
+  (AUC 0.57-0.63 vs 0.53-0.65 at antes 3-7); training on both is no better. Our own model does improve
+  with more of our games (ante 4-6 AUC: 142 games 0.55, 284 games 0.60, 569 games 0.63), so more of our own
+  games would help a little per doubling; the teacher's games add nothing on top.
 
 ## What the stronger bot does differently
 
