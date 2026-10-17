@@ -374,7 +374,10 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-se05": {"items": True, "sure_se": 0.5},
             # more rollouts per option for both forecasts (production 24 with a 4 s budget; the lab 16, no budget)
             "bot-n32": {"items": True, "n": 32},
-            "bot-n48": {"items": True, "n": 48}}
+            "bot-n48": {"items": True, "n": 48},
+            # forecast horizon (production FORECAST_BOSSES = 3)
+            "bot-b2": {"items": True, "bosses": 2},
+            "bot-b4": {"items": True, "bosses": 4}}
 SKIP_TAGS = {
     "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
                "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
