@@ -195,12 +195,18 @@ impl RunRng {
 
     /// Advance `key`'s pool and return a seed for math.random.
     pub fn pseudoseed(&mut self, key: &str) -> f64 {
-        let state = match self.pools.get(key) {
-            Some(&state) => state,
-            None => pseudohash(&format!("{}{}", key, self.seed)),
+        let advance = |state: f64| round13(py_mod(2.134453429141 + state * 1.72431234, 1.0)).abs();
+        let state = match self.pools.get_mut(key) {
+            Some(state) => {
+                *state = advance(*state);
+                *state
+            }
+            None => {
+                let state = advance(pseudohash(&format!("{}{}", key, self.seed)));
+                self.pools.insert(key.to_string(), state);
+                state
+            }
         };
-        let state = round13(py_mod(2.134453429141 + state * 1.72431234, 1.0)).abs();
-        self.pools.insert(key.to_string(), state);
         (state + self.hashed_seed) / 2.0
     }
 

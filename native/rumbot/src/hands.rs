@@ -1,7 +1,6 @@
 //! Poker hand detection and hand-level bookkeeping.
 
 use crate::cards::{is_stone, rank_of, uid_of, CardRef, Enhancement, Rank, Suit};
-use std::collections::HashMap;
 
 /// The twelve poker hands, weakest first, as the game numbers them.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -236,8 +235,31 @@ pub fn planet_for_hand(hand: HandType) -> &'static str {
 /// Per-run level and play-count for every poker hand.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct HandLevels {
-    pub levels: HashMap<HandType, i32>,
-    pub plays: HashMap<HandType, i32>,
+    pub levels: HandMap<i32>,
+    pub plays: HandMap<i32>,
+}
+
+/// One value per poker hand, indexed by `HandType` (it was a `HashMap` keyed by hand: this is the
+/// same table without hashing, and it iterates in `HandType::ALL` order, weakest first).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct HandMap<V>([V; 12]);
+
+impl<V: Copy> HandMap<V> {
+    pub fn filled(v: V) -> Self {
+        HandMap([v; 12])
+    }
+    pub fn get(&self, hand: &HandType) -> Option<&V> {
+        Some(&self.0[*hand as usize])
+    }
+    pub fn get_mut(&mut self, hand: &HandType) -> &mut V {
+        &mut self.0[*hand as usize]
+    }
+    pub fn insert(&mut self, hand: HandType, v: V) {
+        self.0[hand as usize] = v;
+    }
+    pub fn iter(&self) -> impl Iterator<Item = (&'static HandType, &V)> + '_ {
+        HandType::ALL.iter().zip(self.0.iter())
+    }
 }
 
 impl Default for HandLevels {
@@ -249,13 +271,13 @@ impl Default for HandLevels {
 impl HandLevels {
     pub fn new() -> Self {
         HandLevels {
-            levels: HandType::ALL.iter().map(|h| (*h, 1)).collect(),
-            plays: HandType::ALL.iter().map(|h| (*h, 0)).collect(),
+            levels: HandMap::filled(1),
+            plays: HandMap::filled(0),
         }
     }
 
     pub fn level_up(&mut self, hand: HandType, times: i32) {
-        *self.levels.entry(hand).or_insert(1) += times;
+        *self.levels.get_mut(&hand) += times;
     }
 
     pub fn level(&self, hand: HandType) -> i32 {

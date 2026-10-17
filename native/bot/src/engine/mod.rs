@@ -4,7 +4,7 @@
 //! Card effect text (`sim_text.py`) is phase 2: see docs/port-handoff/engine.md.
 
 use crate::iface::{Game, RpcError};
-use rumbot_sim::game::{GameState, Phase};
+use rumbot_sim::game::GameState;
 use rumbot_sim::hands::HandType;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -49,7 +49,6 @@ pub struct RumbotGame {
     /// `_bb_shop_frozen`: (count, limit) of shop, vouchers, packs as of the last shop view.
     pub(crate) shop_frozen: Option<[(usize, usize); 3]>,
     pub(crate) deck_limit: usize,
-    pub(crate) last_phase: Option<Phase>,
 }
 
 impl RumbotGame {
@@ -68,7 +67,6 @@ impl RumbotGame {
             pack_from_shop: false,
             shop_frozen: None,
             deck_limit: 52,
-            last_phase: None,
         }
     }
 

@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 fn run(f: &str, a: &Value, all: &[Value]) -> Value {
     let gs = |a: &Value| &all[a["gs"].as_u64().expect("gs index") as usize];
     match f {
-        "prompts.VERSION_NOTE" => json!(prompts::VERSION_NOTE),
+        "prompts.VERSION_NOTE" => json!(prompts::PY_NOTE),
         "prompts.GAME_RULES" => json!(prompts::GAME_RULES),
         "prompts.CASH_ITEM_QUESTION" => json!(prompts::CASH_ITEM_QUESTION),
         "prompts.CASH_STEP_QUESTION" => json!(prompts::CASH_STEP_QUESTION),

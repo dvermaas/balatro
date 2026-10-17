@@ -7,7 +7,7 @@ use pycompat::statistics::{self, PyNum};
 use pycompat::{pyround, Random};
 use serde_json::{json, Map, Value};
 use std::collections::HashMap;
-use std::sync::{Mutex, OnceLock};
+use std::cell::RefCell;
 
 // readiness.py 17
 const BASE: [i64; 8] = [300, 800, 2000, 5000, 11000, 20000, 35000, 50000];
@@ -192,10 +192,17 @@ pub fn assess(g: &Value, hands_per_round: Option<i64>, samples: usize) -> Option
                 "blinds": rows, "worst_ratio": worst, "wall": wall}))
 }
 
-// readiness.py 99-100: the process-wide cache (cleared past 256 entries)
-fn mix_cache() -> &'static Mutex<HashMap<String, Value>> {
-    static CACHE: OnceLock<Mutex<HashMap<String, Value>>> = OnceLock::new();
-    CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+// readiness.py 99-100: the mix cache (cleared past 256 entries). Python's was process-wide; here it is
+// per game (thread-local, reset by `reset_mix_cache` at each `start`), so a game's mixes never depend on
+// which games ran before it or alongside it on other threads. Its key leaves out the deck, so when the
+// cache clears decides whether a stale mix is reused.
+thread_local! {
+    static MIX_CACHE: RefCell<HashMap<String, Value>> = RefCell::new(HashMap::new());
+}
+
+/// Forget every cached play mix (a new game starts).
+pub fn reset_mix_cache() {
+    MIX_CACHE.with(|c| c.borrow_mut().clear());
 }
 
 // readiness.py 103-150: {hand name: share of sampled best-play score}
@@ -214,8 +221,8 @@ pub fn play_mix(g: &Value, samples: usize) -> Value {
         lv.iter().map(|(k, v)| json!([k, gs::get(v, "level")])).collect::<Vec<Value>>(),
     ]))
     .expect("sig");
-    if let Some(v) = mix_cache().lock().expect("mix cache").get(&sig) {
-        return v.clone();
+    if let Some(v) = MIX_CACHE.with(|c| c.borrow().get(&sig).cloned()) {
+        return v;
     }
     let deck = sorted_deck(g);
     let size = hand_size(g) + MIX_EXTRA;
@@ -245,11 +252,13 @@ pub fn play_mix(g: &Value, samples: usize) -> Value {
         mix.insert(k.clone(), json!(pyround(*v as f64 / norm, 3)));
     }
     let mix = Value::Object(mix);
-    let mut cache = mix_cache().lock().expect("mix cache");
-    if cache.len() > 256 {
-        cache.clear();
-    }
-    cache.insert(sig, mix.clone());
+    MIX_CACHE.with(|c| {
+        let mut cache = c.borrow_mut();
+        if cache.len() > 256 {
+            cache.clear();
+        }
+        cache.insert(sig, mix.clone());
+    });
     mix
 }
 

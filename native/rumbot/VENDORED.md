@@ -46,3 +46,14 @@ change to rumbot's own behaviour.
 `GameState.jackdaw_unmarked_jokers` (default empty; set only by the Rust items forecast on a Jackdaw-replay restart): joker keys owned when the state was built.
 `seen_centers` skips one occurrence of each, so shops and packs may roll a joker the player owns. The game excludes it (G.GAME.used_jokers is set at
 creation, card.lua:349-354); Jackdaw's build_state leaves used_jokers empty. No change to rumbot's own behaviour.
+
+## Speed only (no behaviour change)
+Checked game by game on the lab arms (call logs and every recorded decision identical):
+- `HandLevels.levels` / `plays` (hands.rs) are a `HandMap<i32>`, a 12-slot array indexed by `HandType`, instead of a
+  `HashMap<HandType, i32>`. The two `.plays.iter()` callers (planet pools) only build sets from it, so the order
+  (now weakest hand first instead of the hash order) does not matter.
+- `GameState::active_jokers_iter` (game.rs): the row of non-debuffed jokers without copying it; the read-only scans
+  (`has_pareidolia`, `boss`, hand and discard counts, ...) use it. `active_jokers` / `calculating_jokers` still copy,
+  for the loops that change jokers while they walk the row.
+- `RunRng::pseudoseed` (rng.rs) advances an existing pool in place instead of allocating its key again.
+- `build_consumable_pool` (shop_pool.rs) matches `c_<key>` without a `format!` per row.

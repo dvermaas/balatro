@@ -175,8 +175,7 @@ impl GameState {
         let seen_vec: Vec<String> = if self.pack_ignores_played { Vec::new() } else { seen.into_iter().collect() };
         let flags: Vec<String> = self.pool_flags.iter().cloned().collect();
         let showman = self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .any(|j| j.borrow().spec.allows_duplicates);
         // A forced rarity skips the rarity roll entirely, which is how Wraith is
         // always rare and never legendary; `legendary` names the pool key
@@ -548,8 +547,7 @@ impl GameState {
     /// How far into debt the run may go. Credit Card lowers the floor.
     pub fn bankrupt_at(&self) -> i32 {
         -self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .map(|j| j.borrow().spec.debt_limit)
             .sum::<i32>()
     }
@@ -689,8 +687,7 @@ impl GameState {
     pub fn consumable_sell_value(&self, held: &ConsumableRef) -> i32 {
         let h = held.borrow();
         let astronomer = self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .any(|j| j.borrow().spec.free_planets);
         let cost = if h.spec.kind == ConsumableKind::Planet && astronomer {
             0

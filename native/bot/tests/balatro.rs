@@ -54,7 +54,7 @@ fn canon(text: &str) -> String {
 #[test]
 fn matches_python_client_on_fixture() {
     let rows = read_jsonl(&fixtures_dir().join("balatro.jsonl.gz"));
-    assert!(!rows.is_empty(), "fixture rows missing: run scripts/port/fixtures/balatro.py");
+    assert!(!rows.is_empty(), "fixture rows missing: runs/_port/fixtures/balatro.jsonl.gz (recorded from the Python v27 bot; see trace::data_dir)");
     let (mut n, mut same, mut bad) = (0usize, 0usize, Vec::new());
     for row in &rows {
         let case = row["case"].as_str().unwrap();

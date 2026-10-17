@@ -310,8 +310,7 @@ impl GameState {
             .map(|(hand, _)| hand.label())
             .collect();
         let showman = self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .any(|j| j.borrow().spec.allows_duplicates);
         // The game tests for a free slot *before* it creates the card, so a
         // full row of consumables costs nothing at all. Drawing and then

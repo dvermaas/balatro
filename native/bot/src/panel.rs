@@ -1,10 +1,10 @@
-//! Port of src/panel.py: the local control panel server (std::net, hand-written HTTP/1.1) and the
-//! bot controller thread. `JevBot` is not `Send` (Rc oracle), so the worker thread builds the bot
-//! itself and publishes a snapshot (events, last state, stats, current run) after every step; HTTP
-//! threads only read the snapshot and the runs directory, and queue commands for the worker.
+//! The local control panel (a port of the former src/panel.py): the server (std::net, hand-written
+//! HTTP/1.1) and the bot controller thread. `JevBot` is not `Send` (Rc oracle), so the worker thread
+//! builds the bot itself and publishes a snapshot (events, last state, stats, current run) after every
+//! step; HTTP threads only read the snapshot and the runs directory, and queue commands for the worker.
 //!
-//! Not ported: benchmark play (`POST /api/benchmark` answers 500, the JevBot queue is parked),
-//! `--legacy`, the Python traceback in error events (`trace` is omitted).
+//! Python had two things this does not: the v1 bot (`--legacy`, removed with the Python code) and a
+//! traceback in error events (`trace` is omitted).
 
 use crate::analytics;
 use crate::iface::{Game, Jev, SharedOracle};
@@ -56,8 +56,10 @@ impl PanelConfig {
     fn prompts_dir(&self) -> PathBuf {
         self.root.join("runs").join("_prompts")
     }
+    /// The `summary.backend` of the runs this panel plays, which the Prompts and Benchmark tabs filter on.
+    /// Sim runs are rumbot's ("jackdaw" was the Python sim's, a different simulator and baseline).
     fn backend_name(&self) -> &'static str {
-        if self.sim() { "jackdaw" } else { "balatrobot" }
+        if self.sim() { "rumbot" } else { "balatrobot" }
     }
 }
 
@@ -361,6 +363,13 @@ fn query_get(q: &str, key: &str) -> Option<String> {
     q.split('&').filter_map(|kv| kv.split_once('=')).find(|(k, _)| *k == key).map(|(_, v)| pct_decode(v))
 }
 
+/// The page: native/bot/panel.html, re-read per request so an edit shows on reload; the copy built into
+/// the binary when the source tree is not there.
+fn panel_html() -> Vec<u8> {
+    std::fs::read(Path::new(env!("CARGO_MANIFEST_DIR")).join("panel.html"))
+        .unwrap_or_else(|_| include_bytes!("../panel.html").to_vec())
+}
+
 /// (status, content type, body)
 fn route_get(cfg: &PanelConfig, sh: &Sh, target: &str) -> (u16, &'static str, Vec<u8>) {
     let (path, query) = target.split_once('?').unwrap_or((target, ""));
@@ -368,10 +377,7 @@ fn route_get(cfg: &PanelConfig, sh: &Sh, target: &str) -> (u16, &'static str, Ve
     let runs = cfg.runs_dir();
     let backend = cfg.backend_name();
     match path {
-        "/" => match std::fs::read(cfg.root.join("src").join("panel.html")) {
-            Ok(b) => (200, "text/html; charset=utf-8", b),
-            Err(e) => json_resp(500, json!({"error": e.to_string()})),
-        },
+        "/" => (200, "text/html; charset=utf-8", panel_html()),
         "/api/live" => {
             let since = query_get(query, "since").and_then(|s| s.parse().ok()).unwrap_or(0);
             json_resp(200, live(cfg, sh, since))

@@ -157,8 +157,9 @@ fn forecast_error_log_has_run_and_location() {
 }
 
 #[test]
-fn panel_legacy_is_python_only() {
+fn panel_legacy_is_gone() {
+    // the v1 bot was Python-only and went with the Python code: --legacy is an unknown flag
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_jevbot")).args(["panel", "--legacy"]).output().unwrap();
     assert_eq!(out.status.code(), Some(2));
-    assert!(String::from_utf8_lossy(&out.stderr).contains("the v1 bot is Python-only: run src/panel.py --legacy"));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("usage: jevbot"));
 }

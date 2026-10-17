@@ -13,7 +13,3 @@ jev_kernel = { path = "../kernel" }
 rumbot_sim = { path = "../rumbot" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
-
-[profile.release]
-lto = true
-codegen-units = 1

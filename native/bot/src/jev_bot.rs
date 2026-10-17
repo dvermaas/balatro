@@ -375,6 +375,9 @@ impl JevBot {
     /// `act(method, params)`: emits "action", calls the game, emits "outcome", updates `last_state`.
     pub fn act(&mut self, method: &str, params: Option<&Value>) -> Result<Value, RpcError> {
         self.emit("action", json!({"method": method, "params": params.cloned().unwrap_or(Value::Null)}));
+        if method == "start" {
+            crate::readiness::reset_mix_cache();
+        }
         let before = self.last_state.clone().unwrap_or_else(|| json!({}));
         let result = self.game.call(method, params)?;
         if result.is_object() && result.get("state").is_some() {
