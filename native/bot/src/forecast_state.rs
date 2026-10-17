@@ -160,7 +160,7 @@ fn extra_chips_re() -> &'static Regex {
 }
 
 /// `sim_bridge._playing(rollout.playing_card(src))`, sort_id supplied by the caller.
-fn playing(src: &Value, sort_id: usize) -> Result<Value, String> {
+pub(crate) fn playing(src: &Value, sort_id: usize) -> Result<Value, String> {
     let v = gs::get(src, "value");
     let m = gs::get(src, "modifier");
     let rank = rank_code(gs::s(gs::get(v, "rank")))?;
@@ -182,7 +182,7 @@ fn playing(src: &Value, sort_id: usize) -> Result<Value, String> {
 }
 
 /// `sim_bridge._name(key)` for a consumable key.
-fn consumable_name(key: &str) -> Result<&'static str, String> {
+pub(crate) fn consumable_name(key: &str) -> Result<&'static str, String> {
     CONSUMABLE_DATA
         .iter()
         .find(|r| r.key == key)
@@ -336,7 +336,7 @@ pub fn state_json_from_pub(p: &Value) -> Result<Value, String> {
     for src in jokers_src {
         joker_ctx(gs::s(gs::get(src, "key")), gs::s(gs::get(gs::get(src, "value"), "effect")), &mut ctx);
     }
-    let jokers: Vec<Value> = Vec::new();
+    let jokers: Vec<Value> = crate::forecast_jokers::joker_values_from_pub(p, cards.len() as u64);
     let mut next_id = cards.len() + jokers_src.len();
 
     let mut consumables = Vec::new();

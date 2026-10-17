@@ -1,6 +1,6 @@
 //! Identity check for src/forecast_state.rs against scripts/port/fixtures/fc_state.py
 //! (runs/_port/fixtures/fc_state.jsonl.gz): the Rust description of each pub equals Python's
-//! `sim_bridge.describe(rollout.build_state(pub))` (jokers removed) field by field.
+//! `sim_bridge.describe(rollout.build_state(pub))` field by field.
 
 use jevbot::forecast_state::{state_desc_from_pub, state_json_from_pub};
 use jevbot::trace::{fixtures_dir, read_jsonl};
@@ -40,19 +40,17 @@ fn fc_state_identical() {
     let rows = read_jsonl(&fixtures_dir().join("fc_state.jsonl.gz"));
     let mut bad = Vec::new();
     for (i, r) in rows.iter().enumerate() {
-        let mut got = match state_json_from_pub(&r["pub"]) {
+        let got = match state_json_from_pub(&r["pub"]) {
             Ok(v) => v,
             Err(e) => {
                 bad.push(format!("row {i}: error {e}"));
                 continue;
             }
         };
-        let jokers = got.as_object_mut().unwrap().remove("jokers");
-        assert_eq!(jokers, Some(Value::Array(vec![])));
         if let Some(d) = diff(&got, &r["desc"], "") {
             bad.push(format!("row {i}: {d}"));
         }
-        // the full desc must also deserialize (jokers still empty)
+        // the full desc must also deserialize 
         state_desc_from_pub(&r["pub"]).expect("StateDesc");
     }
     println!("fc_state: {}/{} identical", rows.len() - bad.len(), rows.len());
