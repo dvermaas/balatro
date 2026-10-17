@@ -475,3 +475,26 @@ at the first shop of each ante, winners against games that died later:
 The shopping rollouts lose about half an ante over 120 seeds (-0.48 +- 0.18; 24 seeds better, 50
 worse), so porting `rollout_shop` to Rust is not worth it. Note: the lab's per-arm `mean_swaps` counts
 "replace" in a buy description, which reads "sell X for Y"; count "sell " instead.
+
+**v29, v30 and tag skipping (2026-10-17).**
+- Early game (antes 1-3, 200 v28 games): winners are stronger from the first shop (a typical hand x 4
+  is 6.2x the ante-1 boss target against 3.6x) with the same joker count and buys, which looks like
+  luck of the early shops. Edition jokers in ante 1-3 shops were taken 0 of 20 times, mostly because
+  slots were full.
+- **v29** (`a0adcc12`): `decisions.shop` dropped every joker when slots were full, Negative ones too
+  (`rollout.options` and the game allow them). sim60-a +0.05 +- 0.04, fresh 60 +0.00 (rare).
+- Where v28 runs end (200 games): 69 reach ante 8 and 27 win. The ante-8 finisher kills most of the
+  rest: Verdant Leaf 13, Violet Vessel 8 (8 of 8 met), Crimson Heart 6, Amber Acorn 5, Cerulean Bell 4.
+- **v30** (`9ecfe423`): under Verdant Leaf the bot never sold a joker, and Jackdaw never lifted the
+  boss on a sale (rumbot-sim did). `decisions._leaf_sale` sells the weakest joker first;
+  `sim_patches.verdant_leaf_lifts_on_joker_sale` lifts it. On the 200 seeds: wins 27 -> 29, Verdant
+  Leaf deaths 13 -> 10 (4 of the 13 now win; one v28 win, TIXQA7PH, now sells Troubadour and falls 2%
+  short: the sale should skip hand-size jokers). sim60-a and fresh 60: identical antes. **To check on
+  the real game:** that BalatroBot allows `sell` during a round (the bot falls back to playing if
+  not), and the sim patch against the Lua dump plus `sim_parity.py`.
+- Skipping small/big blinds for tags when readiness for the next blind is >= 1.3 / 1.5
+  (`bot-skip-strong`: Negative, Polychrome, Rare, Holographic, Investment, Orbital, Meteor, Buffoon,
+  Uncommon, Double; `bot-skip-wide` adds 9 more): strong -0.03 +- 0.19 / +0.02 +- 0.16, wide
+  -0.22 +- 0.21 / -0.38 +- 0.19 (sim60-a / fresh 60). A lost shop visit costs more than the tag.
+- Director's Cut / Retcon would reroll Violet Vessel, but neither Jackdaw nor BalatroBot (as used
+  here) has a boss-reroll action.
