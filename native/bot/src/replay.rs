@@ -238,6 +238,7 @@ pub fn replay_game(path: &Path, items: bool, log_dir: &Path) -> Outcome {
             Box::new(FixedClock),
         );
         bot.model = "code-top-option".into();
+        bot.dec = crate::decisions::DecisionCfg::lab(); // the traces are lab arms E and F
         bot.event_hook = Some(event_hook(replay.clone()));
         bot.act("start", Some(&start)).expect("start");
         for _ in 0..20000 {
