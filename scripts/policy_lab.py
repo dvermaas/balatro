@@ -393,7 +393,10 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             # a shop joker that adds a piece to an engine we hold 1+ of gets `engine` blinds of forecast credit
             "bot-engine03": {"items": True, "engine": 0.3},
             "bot-engine06": {"items": True, "engine": 0.6},
-            "bot-engine-protect": {"items": True, "engine": 0.0}}
+            "bot-engine-protect": {"items": True, "engine": 0.0},
+            # v23 early slot fill (decisions.EARLY_ANTE / EARLY_JOKERS, production 3 / 4)
+            "bot-early-off": {"items": True, "early_ante": 0},
+            "bot-early5": {"items": True, "early_jokers": 5}}
 ENGINES = [
     {"Pareidolia", "Photograph", "Smiley Face", "Scary Face", "Sock and Buskin", "Midas Mask", "Business Card",
      "Reserved Parking", "Triboulet", "Faceless Joker"},
@@ -590,6 +593,9 @@ def _play_bot(seed, arm_name, t0):
     decisions.FORECAST_N, decisions.FORECAST_BUDGET = opts.get("n", FORECAST_N), None
     decisions.FORECAST_BOSSES = opts.get("bosses", 3)
     _DEFAULTS.setdefault("rr", (decisions.MAX_REROLLS, decisions.INTEREST_BUFFER))
+    _DEFAULTS.setdefault("early", (decisions.EARLY_ANTE, decisions.EARLY_JOKERS))
+    decisions.EARLY_ANTE = opts.get("early_ante", _DEFAULTS["early"][0])
+    decisions.EARLY_JOKERS = opts.get("early_jokers", _DEFAULTS["early"][1])
     _DEFAULTS.setdefault("weak", decisions._weakest_jokers.__defaults__)
     _DEFAULTS.setdefault("weak_fn", decisions._weakest_jokers)
     decisions._weakest_jokers = _DEFAULTS["weak_fn"]
