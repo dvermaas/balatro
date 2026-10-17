@@ -506,8 +506,8 @@ def _forecast(pub, n, bosses, keys, budget_s):
             "errors": {o["key"]: o["error"] for o in opts if o.get("error")}}
 
 
-def best(fc, se=2.0):
-    """The option key that beats skip by more than `se` paired SEs in blinds cleared (largest gain), or None."""
+def best(fc, se=1.0):
+    """v31: se 2 -> 1, as decisions.SURE_SE. The option key that beats skip by more than `se` paired SEs in blinds cleared (largest gain), or None."""
     rows = [(k, r["vs_skip"]["blinds"]) for k, r in fc["options"].items() if k != "skip" and "vs_skip" in r]
     rows = [(k, d) for k, (d, s) in rows if d > se * max(s, 1e-9)]
     return max(rows, key=lambda kv: kv[1])[0] if rows else None

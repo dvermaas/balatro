@@ -6,6 +6,11 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v31: the forecasts' auto-buy bar drops from 2 to 1 paired SE over buying nothing (decisions.SURE_SE, "
+    "rollout_items.best). Small sure gains (packs, swaps, planets) rarely cleared 2 SE at 16-24 rollouts. "
+    "Lab, code only, pooled 320 paired seeds: +0.23 +- 0.10 ante, wins 60 vs 50 (1.5 SE: +0.09; 0.5 SE: "
+    "+0.14 on 200). Verdant Leaf sales skip hand-size and life-saving jokers (Troubadour, Juggler, ...). "
+    "Based on: "
     "v30: Verdant Leaf. The bot sells its weakest joker (smallest loss on recent hands) before playing "
     "when Verdant Leaf debuffs the hand (decisions._leaf_sale), and the sim lifts Verdant Leaf when a "
     "joker is sold (sim_patches.verdant_leaf_lifts_on_joker_sale; rumbot-sim already did). New sim "

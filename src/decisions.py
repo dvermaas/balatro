@@ -82,7 +82,7 @@ FORECAST_BOSSES = 3      # v20: policy lab, 600 paired seeds: 3 bosses +0.21 +- 
 FORECAST_BUDGET = 4.0    # seconds: stop adding rollouts (every option keeps the same count)
 FORECAST_TIMEOUT = 10.0  # slower than this, or failing: back to the v18 measured-gain path
 SWAP_SELLS = 2           # sell-swaps only consider our 2 weakest jokers (smallest loss on recent hands)
-SURE_SE = 2              # v20: beats skip by > 2 SE in blinds cleared: code buys it, no JEV question
+SURE_SE = 1              # v31 (v20: 2): beats skip by > 1 SE in blinds cleared: code buys it, no JEV question
 HIDE_SE = 2              # worse than skip by > 2 SE: not offered (unless it is an economy item)
 REROLL_SE = 1            # nothing beats skip by 1 SE: reroll from money above the interest floor
 # v21: packs, shop tarots and spectrals get rollout_items.forecast (policy lab arm F, +0.44 +- 0.12 ante over
@@ -333,6 +333,9 @@ def _setup_plays(gs, hand, plays, levels, scorer, allowed, info, margin):
     return candidates
 
 
+LEAF_KEEP = {"Troubadour", "Juggler", "Turtle Bean", "Merry Andy", "Burglar", "Drunkard", "Mr. Bones", "Chicot"}
+
+
 def _leaf_sale(bot, gs, boss, hand):
     """v30: Verdant Leaf debuffs every card until a joker is sold; sell the joker whose loss on recent
     hands is smallest (eternal and Negative ones kept) before the first play. False if not applicable."""
@@ -341,10 +344,14 @@ def _leaf_sale(bot, gs, boss, hand):
     key = (gs.get("seed"), gs.get("ante_num"), gs.get("round_num"))
     if getattr(bot, "_leaf_failed", None) == key:
         return False
-    weak = sorted(_weakest_jokers(gs, _recent(bot, gs), n=1))
+    js = cards_of(gs, "jokers")
+    # hand size and hands don't show in measured scores: sell those last (TIXQA7PH sold Troubadour)
+    keep = {j for j, c in enumerate(js) if c.get("label") in LEAF_KEEP}
+    weak = sorted(_weakest_jokers(gs, _recent(bot, gs), n=len(js)) - keep) or sorted(_weakest_jokers(gs, _recent(bot, gs), n=1))
     if not weak:
         return False
-    j = weak[0]
+    loss = {j: -(jokers.gain(gs, _recent(bot, gs), remove=j) or 0.0) for j in weak}
+    j = min(weak, key=lambda k: (loss[k], _d(js[k].get("cost")).get("sell", 0), k))
     bot.emit("auto", question="move", choice="sell_joker", desc=f"sell {cards_of(gs, 'jokers')[j].get('label')}",
              reason="Verdant Leaf: every card stays debuffed until a joker is sold")
     try:
