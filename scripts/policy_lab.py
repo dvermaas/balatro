@@ -388,7 +388,22 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-commit15-all": {"items": True, "commit": 0.15},
             # deck shaping: a suit tarot (Star/Moon/Sun/World) taken from a pack is valued by its measured gain on
             # deals from the converted deck (as v28's planet_gain) instead of a flat 0.03
-            "bot-suitval": {"items": True, "suit_value": True}}
+            "bot-suitval": {"items": True, "suit_value": True},
+            # engines (combos from the coaching guides): pieces of an engine we hold 2+ of are never swapped out;
+            # a shop joker that adds a piece to an engine we hold 1+ of gets `engine` blinds of forecast credit
+            "bot-engine03": {"items": True, "engine": 0.3},
+            "bot-engine06": {"items": True, "engine": 0.6},
+            "bot-engine-protect": {"items": True, "engine": 0.0}}
+ENGINES = [
+    {"Pareidolia", "Photograph", "Smiley Face", "Scary Face", "Sock and Buskin", "Midas Mask", "Business Card",
+     "Reserved Parking", "Triboulet", "Faceless Joker"},
+    {"Hologram", "DNA", "Certificate", "Marble Joker"},
+    {"Swashbuckler", "Egg", "Gift Card", "Ceremonial Dagger"},
+    {"Baron", "Mime", "Shoot the Moon"},
+    {"Lucky Cat", "Oops! All 6s", "Bloodstone"},
+    {"Burglar", "Mystic Summit", "Ramen"},
+    {"Burnt Joker", "Stuntman"},
+]
 SKIP_TAGS = {
     "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
                "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
@@ -576,6 +591,8 @@ def _play_bot(seed, arm_name, t0):
     decisions.FORECAST_BOSSES = opts.get("bosses", 3)
     _DEFAULTS.setdefault("rr", (decisions.MAX_REROLLS, decisions.INTEREST_BUFFER))
     _DEFAULTS.setdefault("weak", decisions._weakest_jokers.__defaults__)
+    _DEFAULTS.setdefault("weak_fn", decisions._weakest_jokers)
+    decisions._weakest_jokers = _DEFAULTS["weak_fn"]
     _DEFAULTS.setdefault("sure", (decisions.SURE_SE, rollout_items.best.__defaults__))
     decisions.SURE_SE = opts.get("sure_se", _DEFAULTS["sure"][0])
     rollout_items.best.__defaults__ = (opts["sure_se"],) if opts.get("sure_se") else _DEFAULTS["sure"][1]
@@ -688,6 +705,34 @@ def _play_bot(seed, arm_name, t0):
                         d["expected_score"] = int(d["expected_score"] * (1 + bonus))
                 return out
             odds.forecast = committed
+        if "engine" in opts:
+            orig_ff, bonus = _DEFAULTS["ff"], opts["engine"]
+            orig_weak = decisions._weakest_jokers
+
+            def held(gs):
+                return [j.get("label") for j in _cards(gs, "jokers")]
+
+            def ff(fc, key):
+                out = orig_ff(fc, key)
+                gs = bot.last_state or {}
+                if bonus and key.startswith(("buy_card_", "replace_")):
+                    c = _cards(gs, "shop")[int(key.split("_")[-1])]
+                    have = held(gs)
+                    if key.startswith("replace_"):
+                        have = [h for n, h in enumerate(have) if n != int(key.split("_")[1])]
+                    lab = c.get("label")
+                    if c.get("set") == "JOKER" and lab not in have and any(lab in e and set(have) & e for e in ENGINES):
+                        out["_fc_delta"] += bonus
+                return out
+
+            def weak(gs, recent, n=decisions.SWAP_SELLS):
+                have = held(gs)
+                keep = {i for i, h in enumerate(have) if any(h in e and len(set(have) & e) >= 2 for e in ENGINES)}
+                ranked = sorted(orig_weak(gs, recent, n=len(have)) - keep,
+                                key=lambda j: (-(jokers_mod.gain(gs, recent, remove=j) or 0.0), j))
+                return set(ranked[:n])
+            import jokers as jokers_mod
+            decisions._forecast_fields, decisions._weakest_jokers = ff, weak
         if opts.get("guard"):
             import strategy
             orig_ff, k = _DEFAULTS["ff"], opts["guard"]
@@ -772,6 +817,7 @@ def _play_bot(seed, arm_name, t0):
                     "planner_errors": pstats["errors"]} if opts.get("planner") else {})}
     finally:
         decisions._forecast_fields = _DEFAULTS["ff"]
+        decisions._weakest_jokers = _DEFAULTS["weak_fn"]
         decisions.shop = _DEFAULTS["shop"]
         import odds
         odds.forecast = _DEFAULTS["odds"]
