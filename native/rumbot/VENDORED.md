@@ -63,3 +63,5 @@ Checked game by game on the lab arms (call logs and every recorded decision iden
 - `ScoreContext.events` counts chips/mult changes; `held_card_once` (scoring.rs) compares it instead of
   the length of `ScoreContext.log`, which is now filled only when `keep_log` is set.
 - `RunRng::pseudoseed` hashes a new stream's key and seed without joining them first (`pseudohash2`).
+- `GameState.hands_played_this_round` is a `HandSet` (the existing 12-bit mask) instead of a `HashSet<HandType>`;
+  nothing iterates it.
