@@ -12,11 +12,22 @@ scripts/port/engine_tables.py (makes tables.json from Jackdaw data: hand example
 - View: serialize/serialize_card/_area/_hands/_blinds ported with the same key order; shop-frozen areas; pack area. Compiles.
 - Replay harness: `cargo test --test engine_replay -- --nocapture` (env ARMS, LIMIT, IGNORE=comma path substrings with [] for indices, STRICT=1).
 
-## Replay results so far
-0/60 games identical; 0 calls matched: every game diverges at call 0 (start): `.round.hands_left` python=0 rust=4
-(Python reports 0 hands/discards outside a round; rumbot keeps allowance at 4/3). Fix: in view, report hands_left/discards_left/discards_used = 0
-unless phase is Playing/GameOver (check what Python shows in ROUND_EVAL/SHOP). Then iterate with the harness (use IGNORE to peel classes).
-Not yet seen beyond call 0.
+## Replay results (round engine-r1)
+Run with `IGNORE="].id"` (card ids are Jackdaw sort_ids vs rumbot uids: arbitrary labels, never used as handles by the traces; allow-listed via IGNORE, not in code).
+Calls matched before first divergence, per game over the 60 recorded games (30 seeds x 2 arms):
+- before: min 0 / median 0 / max 0 (all diverged at call 0 on `.round.hands_left`)
+- after:  min 6 / median 22 / max 60 (1476 calls total; 0/60 games identical yet)
+Fixes this round (all view/action mapping):
+1. round.hands_left/discards_left/discards_used and round.chips: Python reports 0 until the first blind is selected, then keeps the last round's values through ROUND_EVAL/SHOP/BLIND_SELECT; rumbot resets them (eng.round_started/last_round/last_chips snapshot in actions.rs).
+2. boss blind name: `ante_boss` holds a key, use `GameState::_pick_boss()`.
+3. discard: rumbot's `is_legal` wants ascending card indices; sort for discards (play keeps scoring order).
+4. consumable cards (shop/pack/area) carry `modifier.enhancement` from the center effect ("HAND UPGRADE", "SUIT CONVERSION", ...), like jokers.
+Remaining first-divergence classes (60 games):
+- 28 `.packs.cards[].key`: Jackdaw `p_buffoon_normal_1` vs rumbot `_2` (variant number; likely rumbot lacks variant info -> view bug or derive from slot/RNG; check shop pack variants in Jackdaw).
+- 23 `.blinds.small.tag_name` + 2 `.blinds.big.tag_name`: different tags (e.g. seed 11BLBC1T call 60: python "Top-up Tag" rust "Economy Tag"; 61QF3Z7R call 42: "Orbital Tag" vs "Investment Tag"; AEQ18EUN call 40 big: "Uncommon Tag" vs "Skip Tag"). Probably engine difference in tag RNG/roll timing (not fixed, per task); verify whether rumbot rolls tags at a different point.
+- 3 `.pack.limit`: python=2 rust=4 (seed 665WDGX8 call 28 `buy {"pack":1}`): pack choose/limit mapping for a Mega/other pack size, view bug probably.
+- 2 `.hand.cards[].key` (68RZS4XR call 22 after `use {"consumable":0,...}`: python S_A, rust C_5): tarot effect/hand order, probably engine difference.
+- 2 `.shop.cards[].label`: "Riff-raff" vs "Riff-Raff" (cosmetic naming; map via joker name table or allow-list `.label` case).
 
 ## Expected divergence classes (unverified guesses, check)
 - card ids: Jackdaw sort_id vs rumbot uid (counter start/offset); shop vouchers, packs and pack consumables have NO id in rumbot (emitted as 0).
@@ -32,6 +43,6 @@ Not yet seen beyond call 0.
 - Card/consumable/voucher/pack labels use rumbot names (not sim_text); verify in replay.
 
 ## Next steps
-1. Fix hands_left/discards zeros, rerun, peel divergences one class at a time; classify view bug vs engine difference.
+1. Fix pack key variant (28), pack.limit, Riff-raff label; then investigate tag_name (engine?) and the S_A/C_5 tarot case; keep peeling.
 2. Verify error behaviour against Jackdaw directly (small Python script), since traces have no errors.
 3. Phase 2: port sim_text.

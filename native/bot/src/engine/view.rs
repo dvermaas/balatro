@@ -6,7 +6,7 @@
 //! (`sim_text.tag_effect`). They are emitted as `""` (`PLACEHOLDER`).
 
 use super::RumbotGame;
-use rumbot_sim::blinds::{boss_by_name, make_blind, BlindKind};
+use rumbot_sim::blinds::{make_blind, BlindKind};
 use rumbot_sim::cards::{CardRef, Edition, Enhancement, Seal};
 use rumbot_sim::consumable_data::consumable_row;
 use rumbot_sim::consumables::{ConsumableKind, ConsumableRef};
@@ -184,6 +184,11 @@ fn consumable_spec_json(
     if let Some(e) = edition_str(edition) {
         m.insert("edition".into(), json!(e));
     }
+    if let Some(eff) = center_effect(key) {
+        if eff != "Base" {
+            m.insert("enhancement".into(), json!(eff.replace(" Card", "").to_uppercase()));
+        }
+    }
     card_json(id, key, consumable_set(spec.kind), spec.name, effect_value(), m, false, false, sell, buy)
 }
 
@@ -243,7 +248,7 @@ fn tag_name(key: Option<&String>) -> String {
 // sim_backend._blinds
 fn blinds(g: &GameState) -> Value {
     let cur = g.blind_index.clamp(0, 2) as usize;
-    let boss = boss_by_name(&g.ante_boss).or_else(|| g.blind.as_ref().and_then(|b| b.boss));
+    let boss = g._pick_boss().or_else(|| g.blind.as_ref().and_then(|b| b.boss));
     let ante_scaling = g.deck_config().ante_scaling;
     let mut out = Map::new();
     for (i, (typ, kind)) in [("SMALL", BlindKind::Small), ("BIG", BlindKind::Big), ("BOSS", BlindKind::Boss)]
@@ -366,6 +371,7 @@ fn pack_choice_json(g: &GameState, c: &PackChoice) -> Value {
 pub fn serialize(eng: &mut RumbotGame) -> Value {
     let g = eng.g.as_ref().expect("serialize needs a run");
     let phase = g.phase;
+    let (lr_h, lr_d, lr_u) = if phase == Phase::Playing { (g.hands_left, g.discards_left, g.discards_used) } else if eng.round_started { eng.last_round } else { (0, 0, 0) };
     let in_shop = phase == Phase::Shop || (phase == Phase::Pack && eng.pack_from_shop);
     let reroll_cost = match &g.shop {
         Some(s) => s.reroll_cost(g.vouchers.iter().map(|v| v.reroll_discount).sum()) as i64,
@@ -390,12 +396,12 @@ pub fn serialize(eng: &mut RumbotGame) -> Value {
     out.insert(
         "round".into(),
         json!({
-            "hands_left": g.hands_left,
+            "hands_left": lr_h,
             "hands_played": eng.round_hands_played,
-            "discards_left": g.discards_left,
-            "discards_used": g.discards_used,
+            "discards_left": lr_d,
+            "discards_used": lr_u,
             "reroll_cost": reroll_cost,
-            "chips": g.chips_scored,
+            "chips": if phase == Phase::Playing { g.chips_scored } else { eng.last_chips },
         }),
     );
     out.insert("blinds".into(), blinds(g));
