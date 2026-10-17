@@ -282,6 +282,7 @@ pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), Rpc
                 g.step(&a);
             } else if let Some(i) = params.get("pack") {
                 let i = i.as_i64().ok_or_else(|| bad("buy: bad pack index"))?;
+                if i == 0 && eng.first_shop == 1 { eng.first_pack_gone = true; }
                 phase_check(g, &[Phase::Shop])?;
                 let n = g.shop.as_ref().map_or(0, |s| s.packs.len()) as i64;
                 if i < 0 || i >= n {

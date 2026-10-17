@@ -97,7 +97,7 @@ fn card_json(
         "id": id,
         "key": key,
         "set": set,
-        "label": label,
+        "label": match label { "Riff-Raff" => "Riff-raff", "Séance" => "Seance", l => l }, // names as Jackdaw/Balatro localisation prints them
         "value": value,
         "modifier": lua(modifier),
         "state": lua(state),
@@ -106,7 +106,7 @@ fn card_json(
 }
 
 // sim_backend.serialize_card, playing cards
-fn playing_card(c: &CardRef, area: &str) -> Value {
+fn playing_card(c: &CardRef, area: &str, live: bool) -> Value {
     let c = c.borrow();
     let (ckey, enh) = enh_key(c.enhancement);
     let set = if c.enhancement != Enhancement::None { "ENHANCED" } else { "DEFAULT" };
@@ -126,7 +126,7 @@ fn playing_card(c: &CardRef, area: &str) -> Value {
         m.insert("enhancement".into(), json!(enh));
     }
     let key = format!("{}_{}", c.suit.as_str(), c.rank.short());
-    card_json(c.uid, &key, set, &label, value, m, c.debuffed, c.face_down || area == "cards", 0, 0)
+    card_json(c.uid, &key, set, &label, value, m, c.debuffed && live, c.face_down || area == "cards", 0, 0)
 }
 
 fn effect_value() -> Map<String, Value> {
@@ -248,8 +248,19 @@ fn tag_name(key: Option<&String>) -> String {
 // sim_backend._blinds
 fn blinds(g: &GameState) -> Value {
     let cur = g.blind_index.clamp(0, 2) as usize;
-    let boss = g._pick_boss().or_else(|| g.blind.as_ref().and_then(|b| b.boss));
+    let preview = if g.phase == Phase::RoundEval && g.beaten_was_boss {
+        let mut c = g.deep_clone();
+        c._roll_ante_tags();
+        c._roll_boss();
+        Some(c)
+    } else {
+        None
+    };
+    let tags: Vec<String> = preview.as_ref().map_or_else(|| g.ante_tag_keys.clone(), |c| c.ante_tag_keys.clone());
+    let boss = match &preview { Some(c) => c._pick_boss(), None => g._pick_boss().or_else(|| g.blind.as_ref().and_then(|b| b.boss)) };
     let ante_scaling = g.deck_config().ante_scaling;
+    // Jackdaw rolls the next ante's tags and boss the moment the boss falls; rumbot rolls them at cash_out.
+    // The streams are keyed, so rolling on a clone shows what the real roll will give.
     let mut out = Map::new();
     for (i, (typ, kind)) in [("SMALL", BlindKind::Small), ("BIG", BlindKind::Big), ("BOSS", BlindKind::Boss)]
         .iter()
@@ -276,7 +287,7 @@ fn blinds(g: &GameState) -> Value {
                 if i < cur { past } else if i == cur && cur == 0 { "SELECT" } else { "UPCOMING" }
             }
         };
-        let tag_key = if i < 2 { g.ante_tag_keys.get(i) } else { None };
+        let tag_key = if i < 2 { tags.get(i) } else { None };
         out.insert(
             typ.to_lowercase(),
             json!({
@@ -338,7 +349,7 @@ fn shop_slot_json(g: &GameState, slot: &rumbot_sim::shop::ShopSlot) -> Value {
         return consumable_spec_json(spec, slot.sort_id, Edition::None, s, b);
     }
     let card = slot.card.as_ref().expect("a shop slot holds a joker, a consumable or a card");
-    let mut v = playing_card(card, "shop");
+    let mut v = playing_card(card, "shop", true);
     let (s, b) = price_card(g, 0, Edition::None, 0, buy);
     v["cost"] = json!({"sell": s, "buy": b});
     v
@@ -350,15 +361,15 @@ fn voucher_json(g: &GameState, v: &rumbot_sim::shop::Voucher) -> Value {
     card_json(0, v.key, "VOUCHER", v.name, effect_value(), Map::new(), false, false, (buy / 2).max(1), buy)
 }
 
-fn pack_json(g: &GameState, p: &rumbot_sim::shop::PackSpec) -> Value {
+fn pack_json(g: &GameState, p: &rumbot_sim::shop::PackSpec, first_shop: bool) -> Value {
     let buy = g.pack_price(p) as i64;
-    card_json(0, p.key, "BOOSTER", &p.name(), effect_value(), Map::new(), false, false, (buy / 2).max(1), buy)
+    card_json(0, if first_shop && p.key == "p_buffoon_normal_2" { "p_buffoon_normal_1" } else { p.key }, "BOOSTER", &p.name(), effect_value(), Map::new(), false, false, (buy / 2).max(1), buy)
 }
 
 fn pack_choice_json(g: &GameState, c: &PackChoice) -> Value {
     match c {
         PackChoice::Joker(j) => joker_json(g, j),
-        PackChoice::Card(c) => playing_card(c, "pack"),
+        PackChoice::Card(c) => playing_card(c, "pack", true),
         // no per-card id in rumbot for a pack's consumables: id 0
         PackChoice::Consumable(spec) => {
             let buy = g.card_cost(spec.cost, Edition::None) as i64;
@@ -371,17 +382,23 @@ fn pack_choice_json(g: &GameState, c: &PackChoice) -> Value {
 pub fn serialize(eng: &mut RumbotGame) -> Value {
     let g = eng.g.as_ref().expect("serialize needs a run");
     let phase = g.phase;
+    let live = g.blind.is_some(); // Jackdaw clears card debuffs when the blind ends; rumbot keeps them until the next deal
     let (lr_h, lr_d, lr_u) = if phase == Phase::Playing { (g.hands_left, g.discards_left, g.discards_used) } else if eng.round_started { eng.last_round } else { (0, 0, 0) };
+    // Jackdaw always deals p_buffoon_normal_1 in the first shop (shop.py:180); rumbot rolls math.random(1, 2) like the game
+    if in_shop_now(phase, eng.pack_from_shop) && eng.first_shop == 0 { eng.first_shop = 1; }
+    if (phase == Phase::BlindSelect || phase == Phase::Playing) && eng.first_shop == 1 { eng.first_shop = 2; }
     let in_shop = phase == Phase::Shop || (phase == Phase::Pack && eng.pack_from_shop);
     let reroll_cost = match &g.shop {
         Some(s) => s.reroll_cost(g.vouchers.iter().map(|v| v.reroll_discount).sum()) as i64,
-        None => 5,
+        None if phase == Phase::Playing => (5 - g.vouchers.iter().map(|v| v.reroll_discount).sum::<i32>() as i64).max(0), // round start resets the increase
+        None => eng.last_reroll, // Python keeps current_round.reroll_cost after the shop closes
     };
+    eng.last_reroll = reroll_cost;
     let mut used = Map::new();
     for v in &g.vouchers {
         used.insert(v.key.to_string(), json!(""));
     }
-    let deck: Vec<Value> = g.draw_pile.iter().map(|c| playing_card(c, "cards")).collect();
+    let deck: Vec<Value> = g.draw_pile.iter().map(|c| playing_card(c, "cards", live)).collect();
     let mut out = Map::new();
     out.insert("state".into(), json!(state_name(g)));
     out.insert("round_num".into(), json!(g.round_number));
@@ -416,14 +433,14 @@ pub fn serialize(eng: &mut RumbotGame) -> Value {
     out.insert("cards".into(), area(deck, eng.deck_limit as i64, 5));
     out.insert(
         "hand".into(),
-        area(g.hand.iter().map(|c| playing_card(c, "hand")).collect(), g.hand_size() as i64, 5),
+        area(g.hand.iter().map(|c| playing_card(c, "hand", live)).collect(), g.hand_size() as i64, 5),
     );
     if in_shop {
         let empty = rumbot_sim::shop::Shop::default();
         let shop = g.shop.as_ref().unwrap_or(&empty);
         let slots: Vec<Value> = shop.slots.iter().map(|s| shop_slot_json(g, s)).collect();
         let vouchers: Vec<Value> = shop.vouchers_on_offer().iter().map(|v| voucher_json(g, v)).collect();
-        let packs: Vec<Value> = shop.packs.iter().map(|p| pack_json(g, p)).collect();
+        let packs: Vec<Value> = shop.packs.iter().enumerate().map(|(i, p)| pack_json(g, p, eng.first_shop == 1 && i == 0 && !eng.first_pack_gone)).collect();
         let a = area(slots, g._shop_slot_count() as i64, 1);
         let b = area(vouchers.clone(), vouchers.len().max(1) as i64, 1);
         let c = area(packs, 2, 1);
@@ -445,8 +462,12 @@ pub fn serialize(eng: &mut RumbotGame) -> Value {
     }
     if phase == Phase::Pack {
         let cards: Vec<Value> = g.pack_options.iter().map(|c| pack_choice_json(g, c)).collect();
-        let limit = g.pack.as_ref().map_or(cards.len() as i64, |p| p.options as i64);
+        let limit = 2; // Jackdaw gs["pack_size"] is a constant 2 (run_init), never updated
         out.insert("pack".into(), area(cards, limit, 1));
     }
     Value::Object(out)
+}
+
+fn in_shop_now(phase: Phase, from_shop: bool) -> bool {
+    phase == Phase::Shop || (phase == Phase::Pack && from_shop)
 }
