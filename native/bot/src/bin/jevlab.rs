@@ -1,4 +1,4 @@
-//! Rust `scripts/policy_lab.py` for arm E (`bot-forecast-long`): the real bot (JevBot + decisions)
+//! Rust `scripts/policy_lab.py` for arms E (`bot-forecast-long`) and F (`bot-forecast-items`, `--arm F`): the real bot (JevBot + decisions)
 //! with CodeJev standing in for JEV, on rumbot, RED deck / WHITE stake. One game per worker thread.
 //!
 //!   jevlab --set sim30-a [--limit 8] --jobs 8 [--name rust-E] [--out runs/_policy_lab]
@@ -18,7 +18,12 @@ use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
 
-const ARM: &str = "bot-forecast-long";
+static ARM_F: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// The lab arm name (policy_lab.BOT_ARMS key).
+fn arm() -> &'static str {
+    if ARM_F.load(Ordering::SeqCst) { "bot-forecast-items" } else { "bot-forecast-long" }
+}
 
 fn seed_set(name: &str) -> Option<Vec<String>> {
     jevbot::benchmark::set(name).map(|s| s.iter().map(|x| x.to_string()).collect())
@@ -84,7 +89,7 @@ fn first_diff(a: &Value, b: &Value, path: &str) -> Option<String> {
 
 /// First differing call between the live log and the Python trace of `seed`.
 fn diff_trace(seed: &str, log: &[Value]) -> String {
-    let p = jevbot::trace::trace_files("bot-forecast-long").into_iter().find(|p| p.to_string_lossy().contains(seed));
+    let p = jevbot::trace::trace_files(arm()).into_iter().find(|p| p.to_string_lossy().contains(seed));
     let Some(p) = p else { return "no python trace".into() };
     let py: Vec<Value> = jevbot::trace::load_trace(&p).into_iter().filter(|r| r["k"] == "call").collect();
     for (i, r) in log.iter().enumerate() {
@@ -107,7 +112,7 @@ fn play(seed: &str) -> Result<Value, String> {
     let oracle: SharedOracle = Rc::new(RefCell::new(RustOracle));
     let calls: Rc<RefCell<Vec<Value>>> = Rc::new(RefCell::new(Vec::new()));
     let want_trace = std::env::var_os("JEVLAB_TRACE").is_some();
-    let jev = CodeJev::new(false, oracle.clone());
+    let jev = CodeJev::new(ARM_F.load(Ordering::SeqCst), oracle.clone());
     let mut bot = JevBot::new(
         "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(RumbotGame::new()), log: calls.clone() }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
@@ -169,7 +174,7 @@ fn play(seed: &str) -> Result<Value, String> {
     let mut row = Map::new();
     let mut put = |k: &str, v: Value| { row.insert(k.into(), v); };
     put("seed", json!(seed));
-    put("arm", json!(ARM));
+    put("arm", json!(arm()));
     put("won", json!(won));
     put("ante", if won { json!(8) } else { summ["ante"].clone() });
     put("blinds", json!(blinds));
@@ -207,13 +212,17 @@ fn main() {
     let mut seeds: Vec<String> = match (opt("--seeds"), opt("--set")) {
         (Some(s), _) => s.split(',').map(String::from).collect(),
         (None, Some(n)) => seed_set(&n).unwrap_or_else(|| panic!("unknown seed set {n} (sim30-a, sim60-a, gap4-a)")),
-        _ => panic!("usage: jevlab --set NAME | --seeds A,B  [--limit N] [--jobs N] [--name NAME] [--out DIR]"),
+        _ => panic!("usage: jevlab --set NAME | --seeds A,B  [--arm E|F] [--limit N] [--jobs N] [--name NAME] [--out DIR]"),
     };
     if let Some(l) = opt("--limit").and_then(|l| l.parse::<usize>().ok()) {
         seeds.truncate(l);
     }
+    if let Some(x) = opt("--arm") {
+        assert!(x == "E" || x == "F", "--arm E | F");
+        ARM_F.store(x == "F", Ordering::SeqCst);
+    }
     let jobs: usize = opt("--jobs").and_then(|j| j.parse().ok()).unwrap_or(1).min(8).max(1);
-    let name = opt("--name").unwrap_or_else(|| "rust-bot-forecast-long".into());
+    let name = opt("--name").unwrap_or_else(|| format!("rust-{}", arm()));
     let out = std::path::PathBuf::from(opt("--out").unwrap_or_else(|| "runs/_policy_lab".into())).join(&name);
     std::fs::create_dir_all(&out).expect("create out dir");
     let file = Mutex::new(std::fs::OpenOptions::new().create(true).append(true).open(out.join("results.jsonl")).expect("open results.jsonl"));
@@ -225,7 +234,7 @@ fn main() {
                 let i = next.fetch_add(1, Ordering::SeqCst);
                 let Some(seed) = seeds.get(i) else { break };
                 let r = std::panic::catch_unwind(|| play(seed)).unwrap_or_else(|p| Err(jevbot::replay::panic_msg(&*p)));
-                let row = r.unwrap_or_else(|e| json!({"seed": seed, "arm": ARM, "error": e}));
+                let row = r.unwrap_or_else(|e| json!({"seed": seed, "arm": arm(), "error": e}));
                 eprintln!("{seed}: ante {} won {} {}s", row["ante"], row["won"], row["seconds"]);
                 writeln!(file.lock().unwrap(), "{row}").unwrap();
             });
