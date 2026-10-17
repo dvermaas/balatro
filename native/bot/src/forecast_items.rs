@@ -235,6 +235,7 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                 }
             };
             let from_pack = !applied.pack.is_empty();
+            let pack_sigs: Vec<Value> = applied.pack.clone();
             let (mut g, pol) = {
                 let sig: Vec<String> = applied.g.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect();
                 let (g, p) = {
@@ -283,6 +284,10 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                     if std::env::var("FC_ROWS").is_ok() { eprintln!("ABORT {} {}", gs::s(gs::get(o, "key")), k); }
                     g.jackdaw_card_pay_unseen = true;
                     g.jackdaw_unmarked_jokers = gs::cards_of(pub_, "jokers").iter().map(|c| gs::s(gs::get(c, "key")).to_string()).collect(); // jokers owned before the option (pick/buy marks its own)
+                    // A pack marks all its contents when it opens; the unpicked ones are released on skip/close unless another copy is still in
+                    // play (Jackdaw _release_used_key, game.py:1160-1175), so an owned joker that was in the pack stays marked.
+                    for sig in &pack_sigs { let k = gs::s(&sig[0]).to_string(); if let Some(p) = g.jackdaw_unmarked_jokers.iter().position(|x| *x == k) { g.jackdaw_unmarked_jokers.remove(p); } }
+                    if std::env::var("FC_ROWS").is_ok() { eprintln!("UNMARKED {} {} {:?}", gs::s(gs::get(o, "key")), k, g.jackdaw_unmarked_jokers); }
                     let mut tr: Vec<String> = Vec::new();
                     let r = simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, if std::env::var("FC_TRACE").is_ok() { Some(&mut tr) } else { None }, Some(&items), Some(&mut rebuild)).expect("items rollout");
                     for l in &tr { eprintln!("TR {} {} {}", gs::s(gs::get(o, "key")), k, l); }
