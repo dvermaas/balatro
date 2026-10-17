@@ -560,3 +560,17 @@ The early slot fill is redundant since v31 (the 1 SE bar buys those jokers anywa
 | same at 80% (`bot-mouth80`) | -0.08 +- 0.05 | 40 |
 
 (The Mouth's later off-type plays are deliberate card cycling when no hand of the locked type is held.)
+
+**Vouchers and the 5k-game comparison (2026-10-17).**
+- Vouchers that only pay off in later shops (Blank/Antimatter, Overstock, Telescope, Clearance Sale,
+  Crystal Ball, Reroll Surplus, Seed Money, ...) were almost never bought (0-1% of offers). Bought by code
+  while $10 / $25 stay (`bot-vouch10/25`): -0.14 +- 0.06 / -0.07 +- 0.05 ante (36 / 37 wins vs 40) and
+  about 40% slower (Overstock adds forecast options). Antimatter arrived only 6 times in 200 games.
+- The [5k-balatro-games](https://huggingface.co/datasets/makemake/5k-balatro-games) dataset (V68
+  heuristic in Pylatro, Blue Deck, with a score/RNG oracle and search shops, 74.6% wins), decoded per
+  ante from its tokens: its winners level Pair (highest level at ante 6: Pair 77%, mean Pair level 4.4;
+  its losers 3.4) and hold Card Sharp, Supernova, Green Joker, Half Joker; v31's highest level at ante 6
+  is spread (Straight 24%, Full House 22%, Two Pair 22%, Pair 15%; Pair level 2.1). It also holds more
+  xMult at antes 7-8 (1.3-1.6 vs 0.9-1.15) and more scaling jokers (0.6 vs 0.3).
+- Planets valued on plain hand-size deals (`bot-plx0`, readiness.MIX_EXTRA and planet_gain extra 0):
+  -0.03 +- 0.10, 42 wins vs 40. Pair/Two Pair planets x1.5 (`bot-pairbias`): -0.01 +- 0.04, 40 vs 40.
