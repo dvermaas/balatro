@@ -75,6 +75,36 @@
   "died_ante_8": 12
  },
  {
+  "seed_set": "sim60-a",
+  "version": "v32",
+  "version_id": "9c705be2",
+  "change": "Merge of main's Rust bot; no behaviour change (60/60 games identical to v31)",
+  "games": 60,
+  "mean_ante": 6.5,
+  "se": 0.204,
+  "wins": 10,
+  "win_rate": 0.1667,
+  "mean_round": 20.62,
+  "died_ante_1_4": 4,
+  "died_ante_5_7": 34,
+  "died_ante_8": 12
+ },
+ {
+  "seed_set": "sim60-a",
+  "version": "v32 Rust",
+  "version_id": "rust",
+  "change": "Rust bot with v28-v31 ported (60/60 games end as Python v31)",
+  "games": 60,
+  "mean_ante": 6.5,
+  "se": 0.204,
+  "wins": 10,
+  "win_rate": 0.1667,
+  "mean_round": 20.62,
+  "died_ante_1_4": 4,
+  "died_ante_5_7": 34,
+  "died_ante_8": 12
+ },
+ {
   "seed_set": "fresh 60",
   "version": "v27",
   "version_id": "79a88610",
