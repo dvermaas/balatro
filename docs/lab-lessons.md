@@ -49,6 +49,13 @@ measured the wrong thing or was never asked:
   (AUC 0.57-0.63 vs 0.53-0.65 at antes 3-7); training on both is no better. Our own model does improve
   with more of our games (ante 4-6 AUC: 142 games 0.55, 284 games 0.60, 569 games 0.63), so more of our own
   games would help a little per doubling; the teacher's games add nothing on top.
+- **1,000 fresh Rust-lab games** (v32 Rust, arm F, `JEVLAB_SNAPS=1`; 16.1% wins, mean ante 6.39;
+  `samples/cloud-lab/v1000-snaps.jsonl.gz`, script `samples/cloud-lab/vcurve.py`). Held-out AUC of P(win)
+  from the first shop of an ante, by training games (~100 / 190 / 380 / 760): ante 5 0.51 / 0.53 / 0.61 /
+  0.66, ante 7 (rich features) 0.55 / 0.57 / 0.62 / 0.68; antes 3-7 end at 0.57-0.68. Still climbing about
+  +0.05 per doubling, so a 4,000-game run would likely reach ~0.70-0.75. Rich features (every hand's level
+  and play count, deck, enhancements, hand size) add ~0.02-0.03 at antes 4, 6 and 7. Open: whether such a
+  model separates shop options from the same position, which is what a decision needs.
 
 ## What the stronger bot does differently
 
