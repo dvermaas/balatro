@@ -29,6 +29,17 @@ Remaining first-divergence classes (60 games):
 - 2 `.hand.cards[].key` (68RZS4XR call 22 after `use {"consumable":0,...}`: python S_A, rust C_5): tarot effect/hand order, probably engine difference.
 - 2 `.shop.cards[].label`: "Riff-raff" vs "Riff-Raff" (cosmetic naming; map via joker name table or allow-list `.label` case).
 
+## Replay results (round engine-r2)
+Calls matched before first divergence per game (60 games, IGNORE="].id"): before min 6 / median 22 / max 60 (1476 calls); after min 14 / median 230 / max 429 (12632 calls); 38/60 games identical.
+Fixes (all view/action, no engine change):
+1. tags/boss: Jackdaw rolls the next ante's tags and boss when the boss falls (state ROUND_EVAL); rumbot rolls at cash_out. view.rs blinds() rolls on a `deep_clone` to preview them (keyed streams, so identical to the real roll; proved by 0 tag/boss diffs afterwards). Not an engine difference.
+2. pack.limit: Jackdaw gs["pack_size"] is a constant 2 (run_init), view now emits 2.
+3. debuff: Jackdaw clears card debuffs when the blind ends; view emits debuff only while a blind is active.
+4. round.reroll_cost: Python keeps the shop's last cost after leaving the shop and resets to 5-discounts at round start (phase Playing); `eng.last_reroll`.
+5. first-shop Buffoon pack: Jackdaw shop.py:180 always deals p_buffoon_normal_1 in the first shop's first slot (rumbot rolls math.random(1,2) like the game). REAL ENGINE DIFFERENCE (Jackdaw simplification, harmless: _1/_2 identical packs); view maps slot 0 of the first shop to _1 until it is bought (`eng.first_shop`, `first_pack_gone`).
+6. labels: "Riff-Raff" -> "Riff-raff", "Séance" -> "Seance" (card_json).
+Remaining classes (22 games): 6 `.round.discards_left` (python +1 after buying a joker in the shop, e.g. 1SHJTVG7@56 buy card 0: py 4 rust 3; Python updates round snapshot on joker buy, likely Drunkard); 6 `.cards.cards[].key` + 5 `.hand.cards[].key` (card identity after tarot use/pack pick, e.g. 68RZS4XR@22 use consumable 0 cards [7,6,5]: py S_A rust C_5; 6CLKMFPY@88 pack card 0: py H_K rust H_7: likely engine/RNG difference in tarot effect or pick, not yet classified); 2 `.round.chips` (KGA553W7@375 py 12444 rust 13542); 2 reroll_cost (UDBU5JA1@143 select: py 0 rust 5, free reroll/Chaos Clown); 1 action error (11BLBC1T@121 pack card 3 targets [3,0]: rust refuses).
+
 ## Expected divergence classes (unverified guesses, check)
 - card ids: Jackdaw sort_id vs rumbot uid (counter start/offset); shop vouchers, packs and pack consumables have NO id in rumbot (emitted as 0).
 - blind status in ROUND_EVAL/SHOP/pack (rule derived from trace stats; depends on when rumbot advances blind_index/ante); boss name via ante_boss (name vs key?).

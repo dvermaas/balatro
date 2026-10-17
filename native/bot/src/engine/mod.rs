@@ -37,6 +37,10 @@ pub struct RumbotGame {
     pub(crate) last_round: (i32, i32, i32),
     /// `chips` as the last play left it (Python keeps it through ROUND_EVAL/SHOP until the next blind starts).
     pub(crate) last_chips: i64,
+    pub(crate) last_reroll: i64,
+    /// 0 = first shop not reached, 1 = inside it, 2 = left it (view only: Jackdaw's first-shop Buffoon pack is always _1)
+    pub(crate) first_shop: u8,
+    pub(crate) first_pack_gone: bool,
     /// `hands[..].played_this_round` (rumbot keeps only a set).
     pub(crate) played_this_round: HashMap<HandType, i32>,
     /// The pack was bought in the shop (not opened by a tag): the shop areas stay in the view.
@@ -56,6 +60,9 @@ impl RumbotGame {
             round_started: false,
             last_round: (0, 0, 0),
             last_chips: 0,
+            last_reroll: 5,
+            first_shop: 0,
+            first_pack_gone: false,
             played_this_round: HashMap::new(),
             pack_from_shop: false,
             shop_frozen: None,
