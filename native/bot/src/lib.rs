@@ -23,6 +23,7 @@ pub mod jev_bot;
 pub mod jev_client;
 pub mod jokers;
 pub mod odds;
+pub mod panel;
 pub mod oracle;
 pub mod picker;
 pub mod prompts;
