@@ -5,12 +5,9 @@ pub mod gs;
 pub mod iface;
 pub mod trace;
 
-<<<<<<< HEAD
-pub mod balatro;
-=======
 pub mod analytics;
+pub mod balatro;
 pub mod benchmark;
->>>>>>> port/analytics
 pub mod build;
 pub mod codejev;
 pub mod decisions;
