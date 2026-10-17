@@ -10,44 +10,103 @@ use crate::recorder::Clock;
 use crate::trace;
 use serde_json::{json, Map, Value};
 use std::cell::RefCell;
-use std::collections::VecDeque;
+use std::collections::BTreeMap;
 use std::path::Path;
 use std::rc::Rc;
 
-/// The recorded streams of one game, consumed in order per kind.
+/// Record kinds, in `Replay::kinds` order.
+pub const CALL: usize = 0;
+pub const JEV: usize = 1;
+pub const ORACLE: usize = 2;
+pub const EVENT: usize = 3;
+
+/// The recorded records of one game, consumed in order per kind. `all` keeps trace order so an
+/// abandoned step can be fast-forwarded from its first record (see `skip_step`).
 pub struct Replay {
-    calls: VecDeque<Value>,
-    jevs: VecDeque<Value>,
-    oracles: VecDeque<Value>,
-    events: VecDeque<Value>,
+    all: Vec<Value>,
+    /// Indices into `all` per kind (`CALL`, `JEV`, `ORACLE`, `EVENT`).
+    kinds: [Vec<usize>; 4],
+    cur: [usize; 4],
+    /// Largest index into `all` consumed so far.
+    last_gidx: Option<usize>,
     /// Records consumed and found identical so far.
     pub matched: usize,
 }
 
 pub type Shared = Rc<RefCell<Replay>>;
 
+/// Cursor state to rewind to when a step is abandoned.
+#[derive(Clone, Copy)]
+pub struct Mark {
+    cur: [usize; 4],
+    last_gidx: Option<usize>,
+    matched: usize,
+}
+
+fn kind_of(rec: &Value) -> Option<usize> {
+    match rec.get("k").and_then(Value::as_str) {
+        Some("call") => Some(CALL),
+        Some("jev") => Some(JEV),
+        Some("oracle") => Some(ORACLE),
+        Some("event") => Some(EVENT),
+        _ => None,
+    }
+}
+
 impl Replay {
     pub fn new(records: Vec<Value>) -> Self {
-        let mut r = Replay {
-            calls: VecDeque::new(),
-            jevs: VecDeque::new(),
-            oracles: VecDeque::new(),
-            events: VecDeque::new(),
-            matched: 0,
-        };
-        for rec in records {
-            match rec.get("k").and_then(Value::as_str) {
-                Some("call") => r.calls.push_back(rec),
-                Some("jev") => r.jevs.push_back(rec),
-                Some("oracle") => r.oracles.push_back(rec),
-                Some("event") => r.events.push_back(rec),
-                _ => {}
+        let mut kinds: [Vec<usize>; 4] = Default::default();
+        for (i, rec) in records.iter().enumerate() {
+            if let Some(k) = kind_of(rec) {
+                kinds[k].push(i);
             }
         }
-        r
+        Replay { all: records, kinds, cur: [0; 4], last_gidx: None, matched: 0 }
+    }
+    /// Consume the next record of kind `k`.
+    pub fn pop(&mut self, k: usize) -> Option<Value> {
+        let g = *self.kinds[k].get(self.cur[k])?;
+        self.cur[k] += 1;
+        self.last_gidx = Some(self.last_gidx.map_or(g, |l| l.max(g)));
+        Some(self.all[g].clone())
     }
     pub fn remaining(&self) -> usize {
-        self.calls.len() + self.jevs.len() + self.oracles.len() + self.events.len()
+        (0..4).map(|k| self.kinds[k].len() - self.cur[k]).sum()
+    }
+    pub fn mark(&self) -> Mark {
+        Mark { cur: self.cur, last_gidx: self.last_gidx, matched: self.matched }
+    }
+    pub fn rewind(&mut self, m: &Mark) {
+        self.cur = m.cur;
+        self.last_gidx = m.last_gidx;
+        self.matched = m.matched;
+    }
+    /// Fast-forward through the records of one abandoned step: from the first record after the
+    /// last consumed one (the step's `gamestate` call) up to, not including, the next `gamestate`
+    /// call. Returns the last call result in that span.
+    pub fn skip_step(&mut self) -> Option<Value> {
+        let start = self.last_gidx.map_or(0, |g| g + 1);
+        let mut last_ok = None;
+        let mut g = start;
+        while g < self.all.len() {
+            let rec = &self.all[g];
+            let is_call = rec["k"] == "call";
+            if g > start && is_call && rec["method"] == "gamestate" {
+                break;
+            }
+            if let Some(k) = kind_of(rec) {
+                assert_eq!(self.kinds[k].get(self.cur[k]), Some(&g), "skip_step: records out of order");
+                self.cur[k] += 1;
+            }
+            if is_call {
+                if let Some(ok) = rec.get("ok") {
+                    last_ok = Some(ok.clone());
+                }
+            }
+            self.last_gidx = Some(g);
+            g += 1;
+        }
+        last_ok
     }
 }
 
@@ -82,7 +141,7 @@ pub struct TraceGame {
 impl Game for TraceGame {
     fn call(&mut self, method: &str, params: Option<&Value>) -> Result<Value, RpcError> {
         let mut r = self.r.borrow_mut();
-        let rec = r.calls.pop_front().unwrap_or_else(|| panic!("trace exhausted: bot called {method}"));
+        let rec = r.pop(CALL).unwrap_or_else(|| panic!("trace exhausted: bot called {method}"));
         check("call method", &json!(method), &rec["method"]);
         check(&format!("call {method} params"), &params.cloned().unwrap_or(Value::Null), &rec["params"]);
         r.matched += 1;
@@ -120,7 +179,7 @@ impl Jev for TraceJev {
             None => None,
         };
         let mut r = self.r.borrow_mut();
-        let rec = r.jevs.pop_front().unwrap_or_else(|| panic!("trace exhausted: bot asked JEV"));
+        let rec = r.pop(JEV).unwrap_or_else(|| panic!("trace exhausted: bot asked JEV"));
         check("jev state", state, &rec["state"]);
         check("jev questions", &Value::Object(questions.clone()), &rec["questions"]);
         let want = rec["answers"].as_object().cloned().unwrap_or_default();
@@ -144,7 +203,7 @@ pub struct TraceOracle {
 impl TraceOracle {
     fn next(&self, f: &str, args: &Value) -> Value {
         let mut r = self.r.borrow_mut();
-        let rec = r.oracles.pop_front().unwrap_or_else(|| panic!("trace exhausted: oracle {f}"));
+        let rec = r.pop(ORACLE).unwrap_or_else(|| panic!("trace exhausted: oracle {f}"));
         check("oracle fn", &json!(f), &rec["fn"]);
         let want = &rec["args"];
         // compare only the args the Python call recorded (an unset budget_s is not recorded)
@@ -177,7 +236,7 @@ impl Oracle for TraceOracle {
 pub fn event_hook(r: Shared) -> EventHook {
     Box::new(move |kind, data| {
         let mut r = r.borrow_mut();
-        let rec = r.events.pop_front().unwrap_or_else(|| panic!("trace exhausted: bot emitted {kind}"));
+        let rec = r.pop(EVENT).unwrap_or_else(|| panic!("trace exhausted: bot emitted {kind}"));
         check("event kind", &json!(kind), &rec["kind"]);
         check(&format!("event {kind} data"), &strip_timing(data), &strip_timing(&rec["data"]));
         r.matched += 1;
@@ -202,6 +261,13 @@ pub struct Outcome {
     pub identical: bool,
     /// Panic message and location, or the stop reason.
     pub error: Option<String>,
+    /// Steps fast-forwarded past an unported handler (JEV_REPLAY_SKIP=1), counted per handler.
+    pub skipped: BTreeMap<String, usize>,
+}
+
+/// Panic payload as text.
+pub fn panic_msg(p: &(dyn std::any::Any + Send)) -> String {
+    p.downcast_ref::<String>().cloned().or_else(|| p.downcast_ref::<&str>().map(|s| s.to_string())).unwrap_or_default()
 }
 
 pub static LAST_PANIC: std::sync::Mutex<String> = std::sync::Mutex::new(String::new());
@@ -219,6 +285,9 @@ pub fn replay_game(path: &Path, items: bool, log_dir: &Path) -> Outcome {
     let start = records.iter().find(|r| r["k"] == "call").expect("trace has no calls")["params"].clone();
     let replay: Shared = Rc::new(RefCell::new(Replay::new(records)));
     let total = replay.borrow().remaining();
+    // JEV_REPLAY_SKIP=1: a todo!() handler panic skips that step's recorded records instead of stopping
+    let skip = std::env::var("JEV_REPLAY_SKIP").map_or(false, |v| v == "1");
+    let mut skipped: BTreeMap<String, usize> = BTreeMap::new();
     let res = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let oracle: SharedOracle = Rc::new(RefCell::new(TraceOracle { r: replay.clone() }));
         let code = CodeJev::new(items, oracle.clone());
@@ -242,7 +311,26 @@ pub fn replay_game(path: &Path, items: bool, log_dir: &Path) -> Outcome {
         bot.event_hook = Some(event_hook(replay.clone()));
         bot.act("start", Some(&start)).expect("start");
         for _ in 0..20000 {
-            match bot.step() {
+            let mark = replay.borrow().mark();
+            let step = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| bot.step())) {
+                Ok(s) => s,
+                Err(p) if skip && panic_msg(&*p).starts_with("not yet implemented") => {
+                    // the handler is a todo!(): rewind to the step's gamestate and skip its records
+                    let handler = bot.last_state.as_ref().and_then(|g| g["state"].as_str()).unwrap_or("?").to_lowercase();
+                    let mut r = replay.borrow_mut();
+                    r.rewind(&mark);
+                    if let Some(ok) = r.skip_step() {
+                        bot.last_state = Some(ok);
+                    }
+                    *skipped.entry(handler).or_default() += 1;
+                    if r.remaining() == 0 {
+                        break;
+                    }
+                    continue;
+                }
+                Err(p) => std::panic::resume_unwind(p),
+            };
+            match step {
                 Ok(_) => {}
                 Err(Stop::BenchmarkComplete) => break,
                 Err(Stop::Runtime(m)) if m.contains("Victory reported") => break,
@@ -260,14 +348,10 @@ pub fn replay_game(path: &Path, items: bool, log_dir: &Path) -> Outcome {
         Ok(None) => (false, Some(format!("game ended with {} unconsumed records", r.remaining()))),
         Ok(Some(e)) => (false, Some(format!("stopped: {e}"))),
         Err(p) => {
-            let msg = p
-                .downcast_ref::<String>()
-                .cloned()
-                .or_else(|| p.downcast_ref::<&str>().map(|s| s.to_string()))
-                .unwrap_or_default();
+            let msg = panic_msg(&*p);
             let loc = LAST_PANIC.lock().unwrap().clone();
             (false, Some(format!("panic at {loc}: {}", msg.lines().take(3).collect::<Vec<_>>().join(" | "))))
         }
     };
-    Outcome { matched: r.matched, total, identical, error }
+    Outcome { matched: r.matched, total, identical, error, skipped }
 }

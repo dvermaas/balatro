@@ -694,27 +694,42 @@ false
 "j_8_ball": {
 "name": "8 Ball",
 "effect": "Spawn Tarot",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4
+}
 },
 "j_abstract": {
 "name": "Abstract Joker",
 "effect": "Joker Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_acrobat": {
 "name": "Acrobat",
 "effect": "Shop size",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_ancient": {
 "name": "Ancient Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1.5
+}
 },
 "j_arrowhead": {
 "name": "Arrowhead",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 50
+}
 },
 "j_astronomer": {
 "name": "Astronomer",
@@ -724,32 +739,53 @@ false
 "j_banner": {
 "name": "Banner",
 "effect": "Discard Chips",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 30
+}
 },
 "j_baron": {
 "name": "Baron",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1.5
+}
 },
 "j_baseball": {
 "name": "Baseball Card",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1.5
+}
 },
 "j_blackboard": {
 "name": "Blackboard",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_bloodstone": {
 "name": "Bloodstone",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"Xmult": 1.5,
+"odds": 2
+}
+}
 },
 "j_blue_joker": {
 "name": "Blue Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_blueprint": {
 "name": "Blueprint",
@@ -759,7 +795,13 @@ false
 "j_bootstraps": {
 "name": "Bootstraps",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 5,
+"mult": 2
+}
+}
 },
 "j_brainstorm": {
 "name": "Brainstorm",
@@ -769,37 +811,61 @@ false
 "j_bull": {
 "name": "Bull",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_burglar": {
 "name": "Burglar",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_burnt": {
 "name": "Burnt Joker",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4,
+"h_size": 0
+}
 },
 "j_business": {
 "name": "Business Card",
 "effect": "Face Card dollar Chance",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_caino": {
 "name": "Caino",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_campfire": {
 "name": "Campfire",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 0.25
+}
 },
 "j_card_sharp": {
 "name": "Card Sharp",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"Xmult": 3
+}
+}
 },
 "j_cartomancer": {
 "name": "Cartomancer",
@@ -809,17 +875,32 @@ false
 "j_castle": {
 "name": "Castle",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 3,
+"chips": 0
+}
+}
 },
 "j_cavendish": {
 "name": "Cavendish",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"Xmult": 3,
+"odds": 1000
+}
+}
 },
 "j_ceremonial": {
 "name": "Ceremonial Dagger",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"mult": 0
+}
 },
 "j_certificate": {
 "name": "Certificate",
@@ -829,7 +910,10 @@ false
 "j_chaos": {
 "name": "Chaos the Clown",
 "effect": "Bonus Rerolls",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_chicot": {
 "name": "Chicot",
@@ -839,42 +923,71 @@ false
 "j_clever": {
 "name": "Clever Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_chips": 80,
+"type": "Two Pair"
+}
 },
 "j_cloud_9": {
 "name": "Cloud 9",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_constellation": {
 "name": "Constellation",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.1
+}
 },
 "j_crafty": {
 "name": "Crafty Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_chips": 80,
+"type": "Flush"
+}
 },
 "j_crazy": {
 "name": "Crazy Joker",
 "effect": "Type Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_mult": 12,
+"type": "Straight"
+}
 },
 "j_credit_card": {
 "name": "Credit Card",
 "effect": "Credit",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 20
+}
 },
 "j_delayed_grat": {
 "name": "Delayed Gratification",
 "effect": "Discard dollars",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_devious": {
 "name": "Devious Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_chips": 100,
+"type": "Straight"
+}
 },
 "j_diet_cola": {
 "name": "Diet Cola",
@@ -889,72 +1002,121 @@ false
 "j_drivers_license": {
 "name": "Driver's License",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_droll": {
 "name": "Droll Joker",
 "effect": "Type Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_mult": 10,
+"type": "Flush"
+}
 },
 "j_drunkard": {
 "name": "Drunkard",
 "effect": "Discard Size",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"d_size": 1
+}
 },
 "j_duo": {
 "name": "The Duo",
 "effect": "X1.5 Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 2,
+"type": "Pair"
+}
 },
 "j_dusk": {
 "name": "Dusk",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_egg": {
 "name": "Egg",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_erosion": {
 "name": "Erosion",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4
+}
 },
 "j_even_steven": {
 "name": "Even Steven",
 "effect": "Even Card Buff",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4
+}
 },
 "j_faceless": {
 "name": "Faceless Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 5,
+"faces": 3
+}
+}
 },
 "j_family": {
 "name": "The Family",
 "effect": "X3 Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 4,
+"type": "Four of a Kind"
+}
 },
 "j_fibonacci": {
 "name": "Fibonacci",
 "effect": "Card Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 8
+}
 },
 "j_flash": {
 "name": "Flash Card",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2,
+"mult": 0
+}
 },
 "j_flower_pot": {
 "name": "Flower Pot",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_fortune_teller": {
 "name": "Fortune Teller",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_four_fingers": {
 "name": "Four Fingers",
@@ -964,107 +1126,195 @@ false
 "j_gift": {
 "name": "Gift Card",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_glass": {
 "name": "Glass Joker",
 "effect": "Glass Card",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.75
+}
 },
 "j_gluttenous_joker": {
 "name": "Gluttonous Joker",
 "effect": "Suit Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"s_mult": 3,
+"suit": "Clubs"
+}
+}
 },
 "j_golden": {
 "name": "Golden Joker",
 "effect": "Bonus dollars",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4
+}
 },
 "j_greedy_joker": {
 "name": "Greedy Joker",
 "effect": "Suit Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"s_mult": 3,
+"suit": "Diamonds"
+}
+}
 },
 "j_green_joker": {
 "name": "Green Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"discard_sub": 1,
+"hand_add": 1
+}
+}
 },
 "j_gros_michel": {
 "name": "Gros Michel",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"mult": 15,
+"odds": 6
+}
+}
 },
 "j_hack": {
 "name": "Hack",
 "effect": "Low Card double",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_half": {
 "name": "Half Joker",
 "effect": "Hand Size Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"mult": 20,
+"size": 3
+}
+}
 },
 "j_hallucination": {
 "name": "Hallucination",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_hanging_chad": {
 "name": "Hanging Chad",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_hiker": {
 "name": "Hiker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 5
+}
 },
 "j_hit_the_road": {
 "name": "Hit the Road",
 "effect": "Jack Discard Effect",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 0.5
+}
 },
 "j_hologram": {
 "name": "Hologram",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.25
+}
 },
 "j_ice_cream": {
 "name": "Ice Cream",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 5,
+"chips": 100
+}
+}
 },
 "j_idol": {
 "name": "The Idol",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_invisible": {
 "name": "Invisible Joker",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_joker": {
 "name": "Joker",
 "effect": "Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"mult": 4
+}
 },
 "j_jolly": {
 "name": "Jolly Joker",
 "effect": "Type Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_mult": 8,
+"type": "Pair"
+}
 },
 "j_juggler": {
 "name": "Juggler",
 "effect": "Hand Size",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"h_size": 1
+}
 },
 "j_loyalty_card": {
 "name": "Loyalty Card",
 "effect": "1 in 10 mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"Xmult": 4,
+"every": 5,
+"remaining": "5 remaining"
+}
+}
 },
 "j_luchador": {
 "name": "Luchador",
@@ -1074,42 +1324,72 @@ false
 "j_lucky_cat": {
 "name": "Lucky Cat",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.25
+}
 },
 "j_lusty_joker": {
 "name": "Lusty Joker",
 "effect": "Suit Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"s_mult": 3,
+"suit": "Hearts"
+}
+}
 },
 "j_mad": {
 "name": "Mad Joker",
 "effect": "Type Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_mult": 10,
+"type": "Two Pair"
+}
 },
 "j_madness": {
 "name": "Madness",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 0.5
+}
 },
 "j_mail": {
 "name": "Mail-In Rebate",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 5
+}
 },
 "j_marble": {
 "name": "Marble Joker",
 "effect": "Stone card hands",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_matador": {
 "name": "Matador",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 8
+}
 },
 "j_merry_andy": {
 "name": "Merry Andy",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"d_size": 3,
+"h_size": -1
+}
 },
 "j_midas_mask": {
 "name": "Midas Mask",
@@ -1119,12 +1399,21 @@ false
 "j_mime": {
 "name": "Mime",
 "effect": "Hand card double",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_misprint": {
 "name": "Misprint",
 "effect": "Random Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"max": 23,
+"min": 0
+}
+}
 },
 "j_mr_bones": {
 "name": "Mr. Bones",
@@ -1134,22 +1423,38 @@ false
 "j_mystic_summit": {
 "name": "Mystic Summit",
 "effect": "No Discard Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"d_remaining": 0,
+"mult": 15
+}
+}
 },
 "j_obelisk": {
 "name": "Obelisk",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.2
+}
 },
 "j_odd_todd": {
 "name": "Odd Todd",
 "effect": "Odd Card Buff",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 31
+}
 },
 "j_onyx_agate": {
 "name": "Onyx Agate",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 7
+}
 },
 "j_oops": {
 "name": "Oops! All 6s",
@@ -1159,7 +1464,11 @@ false
 "j_order": {
 "name": "The Order",
 "effect": "X3 Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 3,
+"type": "Straight"
+}
 },
 "j_pareidolia": {
 "name": "Pareidolia",
@@ -1174,12 +1483,19 @@ false
 "j_photograph": {
 "name": "Photograph",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_popcorn": {
 "name": "Popcorn",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4,
+"mult": 20
+}
 },
 "j_raised_fist": {
 "name": "Raised Fist",
@@ -1189,27 +1505,46 @@ false
 "j_ramen": {
 "name": "Ramen",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 2,
+"extra": 0.01
+}
 },
 "j_red_card": {
 "name": "Red Card",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_reserved_parking": {
 "name": "Reserved Parking",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 1,
+"odds": 2
+}
+}
 },
 "j_ride_the_bus": {
 "name": "Ride the Bus",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_riff_raff": {
 "name": "Riff-raff",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_ring_master": {
 "name": "Showman",
@@ -1219,52 +1554,93 @@ false
 "j_rocket": {
 "name": "Rocket",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 1,
+"increase": 2
+}
+}
 },
 "j_rough_gem": {
 "name": "Rough Gem",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_runner": {
 "name": "Runner",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 15,
+"chips": 0
+}
+}
 },
 "j_satellite": {
 "name": "Satellite",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_scary_face": {
 "name": "Scary Face",
 "effect": "Scary Face Cards",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 30
+}
 },
 "j_scholar": {
 "name": "Scholar",
 "effect": "Ace Buff",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"chips": 20,
+"mult": 4
+}
+}
 },
 "j_seance": {
 "name": "Seance",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"poker_hand": "Straight Flush"
+}
+}
 },
 "j_seeing_double": {
 "name": "Seeing Double",
 "effect": "X1.5 Mult club 7",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_selzer": {
 "name": "Seltzer",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 10
+}
 },
 "j_shoot_the_moon": {
 "name": "Shoot the Moon",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 13
+}
 },
 "j_shortcut": {
 "name": "Shortcut",
@@ -1279,7 +1655,11 @@ false
 "j_sly": {
 "name": "Sly Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_chips": 50,
+"type": "Pair"
+}
 },
 "j_smeared": {
 "name": "Smeared Joker",
@@ -1289,17 +1669,26 @@ false
 "j_smiley": {
 "name": "Smiley Face",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 5
+}
 },
 "j_sock_and_buskin": {
 "name": "Sock and Buskin",
 "effect": "Face card double",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_space": {
 "name": "Space Joker",
 "effect": "Upgrade Hand chance",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4
+}
 },
 "j_splash": {
 "name": "Splash",
@@ -1309,12 +1698,21 @@ false
 "j_square": {
 "name": "Square Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 4,
+"chips": 0
+}
+}
 },
 "j_steel_joker": {
 "name": "Steel Joker",
 "effect": "Steel Card Buff",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 0.2
+}
 },
 "j_stencil": {
 "name": "Joker Stencil",
@@ -1324,17 +1722,29 @@ false
 "j_stone": {
 "name": "Stone Joker",
 "effect": "Stone Card Buff",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 25
+}
 },
 "j_stuntman": {
 "name": "Stuntman",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 250,
+"h_size": 2
+}
+}
 },
 "j_supernova": {
 "name": "Supernova",
 "effect": "Hand played mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_superposition": {
 "name": "Superposition",
@@ -1344,102 +1754,188 @@ false
 "j_swashbuckler": {
 "name": "Swashbuckler",
 "effect": "Set Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"mult": 1
+}
 },
 "j_throwback": {
 "name": "Throwback",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 0.25
+}
 },
 "j_ticket": {
 "name": "Golden Ticket",
 "effect": "dollars for Gold cards",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4
+}
 },
 "j_to_the_moon": {
 "name": "To the Moon",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 1
+}
 },
 "j_todo_list": {
 "name": "To Do List",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 4,
+"poker_hand": "High Card"
+}
+}
 },
 "j_trading": {
 "name": "Trading Card",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 3
+}
 },
 "j_tribe": {
 "name": "The Tribe",
 "effect": "X3 Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 2,
+"type": "Flush"
+}
 },
 "j_triboulet": {
 "name": "Triboulet",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_trio": {
 "name": "The Trio",
 "effect": "X2 Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 3,
+"type": "Three of a Kind"
+}
 },
 "j_troubadour": {
 "name": "Troubadour",
 "effect": "Hand Size, Plays",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"h_plays": -1,
+"h_size": 2
+}
+}
 },
 "j_trousers": {
 "name": "Spare Trousers",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 2
+}
 },
 "j_turtle_bean": {
 "name": "Turtle Bean",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"h_mod": 1,
+"h_size": 5
+}
+}
 },
 "j_vagabond": {
 "name": "Vagabond",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": 4
+}
 },
 "j_vampire": {
 "name": "Vampire",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.1
+}
 },
 "j_walkie_talkie": {
 "name": "Walkie Talkie",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"chips": 10,
+"mult": 4
+}
+}
 },
 "j_wee": {
 "name": "Wee Joker",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 8,
+"chips": 0
+}
+}
 },
 "j_wily": {
 "name": "Wily Joker",
 "effect": null,
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_chips": 100,
+"type": "Three of a Kind"
+}
 },
 "j_wrathful_joker": {
 "name": "Wrathful Joker",
 "effect": "Suit Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"s_mult": 3,
+"suit": "Spades"
+}
+}
 },
 "j_yorick": {
 "name": "Yorick",
 "effect": "",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"extra": {
+"discards": 23,
+"xmult": 1
+}
+}
 },
 "j_zany": {
 "name": "Zany Joker",
 "effect": "Type Mult",
-"set": "Joker"
+"set": "Joker",
+"config": {
+"t_mult": 12,
+"type": "Three of a Kind"
+}
 },
 "m_bonus": {
 "name": "Bonus",

@@ -36,7 +36,7 @@ fn norm(path: &str) -> String {
 
 fn text_field(p: &str) -> bool {
     let p = norm(p);
-    // joker text (sim_text._joker_vars) is a later task; IGNORE_TEXT=1 also skips all other text
+    // IGNORE_TEXT=1 also skips all other text
     std::env::var("IGNORE_TEXT").is_ok() && (p.ends_with(".value.effect") || p.ends_with(".tag_effect") || (p.starts_with(".blinds.") && p.ends_with(".effect")))
 }
 
@@ -151,8 +151,8 @@ fn engine_replay() {
                 let bad: Option<(String, String, String)> = match (r.get("ok"), r.get("err"), &got) {
                     (Some(exp), _, Ok(v)) => {
                         let (mut e2, mut v2) = (exp.clone(), v.clone());
-                        strip_joker_text(&mut e2);
-                        strip_joker_text(&mut v2);
+                        if std::env::var("STRIP_JOKER_TEXT").is_ok() { strip_joker_text(&mut e2); }
+                        if std::env::var("STRIP_JOKER_TEXT").is_ok() { strip_joker_text(&mut v2); }
                         diff("", &e2, &v2, &ignore)
                     }
                     (Some(exp), _, Err(e)) => Some(("<action error>".into(), short(exp, 40), format!("{} {} {:?}", e.code, e.message, e.name))),

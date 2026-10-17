@@ -64,6 +64,7 @@ Shapes match the traces ("type", "instructions", "criteria").
 `cargo test --test bot_replay -- --nocapture` (about 15 s): replays 60 games and prints
 `bot replay: N/60 games identical; records matched min/median/max a/b/c` plus where each stopped.
 `JEV_REPLAY_ASSERT=1` makes it fail unless 60/60. Records = game calls + JEV requests + oracle calls + events.
+`JEV_REPLAY_SKIP=1`: a step whose handler panics with todo!() is rewound and its recorded records skipped (counted per handler in the summary); `JEV_REPLAY_GAMES=<n>` replays only the first n games.
 Other tests: `build_state_matches_asks` (693/693 ask states), `codejev_matches_answers` (2593/2593, arm E;
 arm F is exercised by the full replay because its oracle calls interleave with decisions').
 Current state: all 60 stop at `decisions::blind_select todo!()` after 4 matched records (start + first gamestate).
