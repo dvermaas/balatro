@@ -229,7 +229,9 @@ fn main() {
         assert!(x == "E" || x == "F", "--arm E | F");
         ARM_F.store(x == "F", Ordering::SeqCst);
     }
-    let jobs: usize = opt("--jobs").and_then(|j| j.parse().ok()).unwrap_or(1).min(8).max(1);
+    // games are independent (every cache is per game), so any number of threads gives the same rows
+    let cores = std::thread::available_parallelism().map_or(1, |n| n.get());
+    let jobs: usize = opt("--jobs").and_then(|j| j.parse().ok()).unwrap_or(1).clamp(1, cores);
     let name = opt("--name").unwrap_or_else(|| format!("rust-{}", arm()));
     let out = std::path::PathBuf::from(opt("--out").unwrap_or_else(|| "runs/_policy_lab".into())).join(&name);
     std::fs::create_dir_all(&out).expect("create out dir");

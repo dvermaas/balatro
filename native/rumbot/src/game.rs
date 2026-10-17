@@ -401,7 +401,7 @@ use crate::blinds::{Blind, BossEffect};
 use crate::cards::{CardRef, Edition, Rank, Suit};
 use crate::consumables::ConsumableRef;
 use crate::deck_data::deck_config;
-use crate::hands::{HandLevels, HandType};
+use crate::hands::{HandLevels, HandSet, HandType};
 use crate::jokers::JokerRef;
 use crate::rng::RunRng;
 use crate::shop::{PackSpec, Shop, Voucher};
@@ -634,7 +634,7 @@ pub struct GameState {
     pub chips_scored: i64,
     pub hands_left: i32,
     pub discards_left: i32,
-    pub hands_played_this_round: HashSet<HandType>,
+    pub hands_played_this_round: HandSet,
     /// Blind.only_hand: The Mouth's hand for the round, which is the type of the
     /// first hand it let through and nothing else.
     pub mouth_only_hand: Option<HandType>,
@@ -805,7 +805,7 @@ impl GameState {
             chips_scored: 0,
             hands_left: 0,
             discards_left: 0,
-            hands_played_this_round: HashSet::new(),
+            hands_played_this_round: HandSet::new(),
             mouth_only_hand: None,
             phase: Phase::BlindSelect,
             shop: None,
@@ -2472,7 +2472,7 @@ impl GameState {
         if boss.min_cards_played > 0 && (cards.len() as i32) < boss.min_cards_played {
             return true;
         }
-        if boss.no_repeat_hand && self.hands_played_this_round.contains(&hand) {
+        if boss.no_repeat_hand && self.hands_played_this_round.contains(hand) {
             return true;
         }
         if boss.lock_first_hand_type

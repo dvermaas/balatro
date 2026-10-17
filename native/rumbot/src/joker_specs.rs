@@ -634,7 +634,7 @@ fn blackboard(j: &JokerRef, ctx: &mut ScoreContext, game: &mut GameState) {
 }
 
 fn card_sharp(j: &JokerRef, ctx: &mut ScoreContext, game: &mut GameState) {
-    if game.hands_played_this_round.contains(&ctx.hand) {
+    if game.hands_played_this_round.contains(ctx.hand) {
         ctx.times_mult(3.0, j.borrow().spec.name);
     }
 }
