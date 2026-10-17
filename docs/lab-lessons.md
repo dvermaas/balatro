@@ -52,8 +52,17 @@ with an RNG oracle and search shops, Blue Deck, 74.6% wins) builds much like us 
 commits to **Pair**: its highest-level hand at ante 6 is Pair in 77% of its wins (ours: spread over
 Straight, Full House, Two Pair, Pair), with Pair-repeat jokers (Card Sharp, Supernova, Green Joker,
 Half Joker) and more xMult late. Our own data agrees: Pair decks win ~30%, Flush decks ~11% and drift
-into other hands after ante 5. Simple planet nudges toward Pair did not change outcomes; a real
-commitment (planets, jokers and play together) is still open.
+into other hands after ante 5. Simple planet nudges toward Pair did not change outcomes, and neither
+did a full commitment (below).
+
+**Pair commitment (Rust lab, v32 Rust, sim60-a, `JEVLAB_EXP` in `native/bot/src/experiment.rs`).** Every
+shop planet and pack pick goes to Pair (Mercury buys 0.17 -> 0.85 a game); Pair jokers (Jolly, Sly, The Duo,
+Half Joker, Supernova, Card Sharp, Spare Trousers, Mad, Clever) clear the auto-buy bar 1 SE earlier and are
+never sold (0.5 -> 1.7 held at death); a Pair within 85% of the best play is played. Baseline 6.50 (10 wins):
+planets -0.08 +- 0.13 (8 wins), + jokers -0.23 +- 0.14 (8), + plays -0.08 +- 0.15 (8). Not confirmed on 200
+seeds: no arm was ahead. The commitment happens and does not pay. Probable reasons (not tested): the
+teacher's Pair wins come from its oracle and shop search finding the right Pair jokers, and our Pair decks
+win more because good seeds deal pairs, not because Pair is the better plan. Rows: `samples/cloud-lab/pair-sim60.jsonl.gz`.
 
 ## How to experiment (method lessons)
 
@@ -64,11 +73,13 @@ commitment (planets, jokers and play together) is still open.
   (levels by ante, a boss it never beat, items it never bought), not by tuning knobs.
 - Prototype new rules as `BOT_ARMS` in `scripts/policy_lab.py` (Python, monkeypatched, no version
   change); port to production and to the Rust bot once they win.
+- In the Rust lab, add a flag to `native/bot/src/experiment.rs` (`JEVLAB_EXP`, unset = production) and run
+  `jevlab --jobs 1` in separate processes on a fixed seed split: threads share `readiness::play_mix`'s cache,
+  so `--jobs N` games can differ between identical runs. ~17 CPU-s a game; screen on 60 seeds, confirm the
+  arms that lead on 200 more.
 
 ## Open ideas
 
-- A real Pair commitment: steer planets, joker buys (Card Sharp, Supernova, Half Joker, The Duo) and
-  play toward Pair together, and measure it as a unit.
 - A learned value at the forecast horizon, trained on far more games (hundreds of thousands, which the
   Rust lab makes feasible) and checked out of sample before use.
 - A JEV benchmark of v31 on the real game, to see whether the lab gains carry over.

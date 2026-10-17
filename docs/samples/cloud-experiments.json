@@ -460,5 +460,38 @@
   "wins": 40,
   "baseline_wins": 40,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Pair commitment: planets (Rust lab)",
+  "theme": "Builds",
+  "baseline": "v32 Rust",
+  "games": 60,
+  "delta_ante": -0.083,
+  "se": 0.129,
+  "wins": 8,
+  "baseline_wins": 10,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Pair commitment: planets + Pair jokers bought/kept (Rust lab)",
+  "theme": "Builds",
+  "baseline": "v32 Rust",
+  "games": 60,
+  "delta_ante": -0.233,
+  "se": 0.139,
+  "wins": 8,
+  "baseline_wins": 10,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Pair commitment: planets + jokers + Pair plays (Rust lab)",
+  "theme": "Builds",
+  "baseline": "v32 Rust",
+  "games": 60,
+  "delta_ante": -0.083,
+  "se": 0.153,
+  "wins": 8,
+  "baseline_wins": 10,
+  "outcome": "dropped"
  }
 ]
