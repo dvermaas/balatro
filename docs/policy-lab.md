@@ -498,3 +498,18 @@ worse), so porting `rollout_shop` to Rust is not worth it. Note: the lab's per-a
   -0.22 +- 0.21 / -0.38 +- 0.19 (sim60-a / fresh 60). A lost shop visit costs more than the tag.
 - Director's Cut / Retcon would reroll Violet Vessel, but neither Jackdaw nor BalatroBot (as used
   here) has a boss-reroll action.
+
+**v31: the auto-buy bar (2026-10-17).** Both forecasts buy an option outright when it beats buying
+nothing by more than `SURE_SE` paired SEs in blinds cleared. At 16-24 rollouts the SE of a swap or pack
+against skip is often 0.2-0.5 blinds, so real gains of +0.3 to +0.9 missed the 2 SE bar (the planet
+problem again). Lab arms `bot-se15/se1/se05` against v30, paired:
+
+| bar | sim60-a | fresh 60 | 200 seeds | pooled |
+|---|---:|---:|---:|---:|
+| 1.5 SE | +0.15 +- 0.24 | +0.02 +- 0.18 | | |
+| **1 SE** | +0.28 +- 0.27 | +0.13 +- 0.18 | +0.23 +- 0.12 (40 wins vs 29) | **+0.23 +- 0.10, wins 60 vs 50 (320)** |
+| 0.5 SE | | | +0.14 +- 0.12 (37 vs 29) | |
+
+At 1 SE the bot buys about 3 more packs, 1.3 more jokers and 1.6 more swaps a game and rerolls less
+(10 -> 7). Shipped as v31 with a Verdant Leaf refinement: hand-size and life-saving jokers are sold
+last.
