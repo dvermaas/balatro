@@ -153,6 +153,9 @@ pub fn weakest_jokers(gs: &Value, recent: &[Value], n: usize) -> HashSet<usize> 
         if truthy(m.get("eternal")) || m.get("edition") == Some(&json!("NEGATIVE")) {
             continue;
         }
+        if crate::experiment::get().pair_keep && crate::experiment::is_pair_joker(g(c, "label").as_str()) {
+            continue; // lab: Pair commitment keeps its Pair jokers
+        }
         let gain = jokers::gain(gs, recent, None, Some(j), None).unwrap_or(0.0);
         let cost = g(c, "cost");
         let sell = _d(&cost).get("sell").map(num).unwrap_or(0.0);
@@ -470,7 +473,9 @@ fn planet_rule(gs: &Value, items: &[Item], money: i64) -> Option<usize> {
     }
     let (shop, packs) = (cards_of(gs, "shop"), cards_of(gs, "packs"));
     let idx = |k: &str| k.rsplit('_').next().unwrap().parse::<usize>().unwrap();
-    if let Some((top, _)) = top {
+    // lab: JEVLAB_EXP=pair-planets commits every shop planet to Pair
+    let top: Option<String> = if crate::experiment::get().pair_planets { Some("Pair".into()) } else { top.map(|(k, _)| k.clone()) };
+    if let Some(top) = top {
         let needle = format!("Level up {top} ");
         for (n, it) in items.iter().enumerate() {
             if it.key.starts_with("buy_card_") && money - it.cost >= super::PLANET_FLOOR {
@@ -720,10 +725,23 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
 
     let ante = { let a = g(gs, "ante_num"); if truthy(Some(&a)) { crate::gs::int(&a) } else { 1 } };
     if fc.is_some() || fci.is_some() {
+        // lab: JEVLAB_EXP=pair-jokers moves Pair jokers PAIR_SE paired SEs up (bar and ranking)
+        let eff = |i: usize| -> f64 {
+            let o = &items[i].obj;
+            let d = fnum(o, "_fc_delta", 0.0);
+            let k = &items[i].key;
+            if crate::experiment::get().pair_jokers && (k.starts_with("buy_card_") || k.starts_with("replace_"))
+                && crate::experiment::is_pair_joker(g(&shop_cards[k.rsplit('_').next().unwrap().parse::<usize>().unwrap()], "label").as_str())
+            {
+                d + crate::experiment::PAIR_SE * fnum(o, "_fc_se", 0.0).max(1e-9)
+            } else {
+                d
+            }
+        };
         // v20: a clear forecast winner is bought by code (policy lab arm C); JEV gets the close calls
         let mut auto: Vec<usize> = (0..items.len()).filter(|&i| {
             let o = &items[i].obj;
-            _d(o).contains_key("_fc_delta") && fnum(o, "_fc_delta", 0.0) > (super::SURE_SE as f64) * fnum(o, "_fc_se", 0.0).max(1e-9)
+            _d(o).contains_key("_fc_delta") && eff(i) > (super::SURE_SE as f64) * fnum(o, "_fc_se", 0.0).max(1e-9)
         }).collect();
         // v21: jokers/vouchers/planets first (arm F's order), then packs, tarots and spectrals
         let non_item: Vec<usize> = auto.iter().cloned().filter(|&i| !flag(&items[i].obj, "_fc_item")).collect();
@@ -737,14 +755,14 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             // option = buy nothing) died with empty slots on seeds where JEV filled them and went deep.
             auto = (0..items.len()).filter(|&i| {
                 let it = &items[i];
-                it.key.starts_with("buy_card") && crate::gs::s(&g(&it.obj, "kind")).contains("joker") && fnum(&it.obj, "_fc_delta", 0.0) > 0.0
+                it.key.starts_with("buy_card") && crate::gs::s(&g(&it.obj, "kind")).contains("joker") && eff(i) > 0.0
             }).collect();
             why = "early slot fill";
         }
         if !auto.is_empty() {
             let mut k = auto[0];
             for &i in &auto[1..] {
-                if fnum(&items[i].obj, "_fc_delta", 0.0) > fnum(&items[k].obj, "_fc_delta", 0.0) {
+                if eff(i) > eff(k) {
                     k = i;
                 }
             }

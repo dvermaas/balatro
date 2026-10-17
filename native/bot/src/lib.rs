@@ -13,6 +13,7 @@ pub mod build;
 pub mod codejev;
 pub mod decisions;
 pub mod engine;
+pub mod experiment;
 pub mod forecast_jokers;
 pub mod forecast_stats;
 pub mod forecast_state;

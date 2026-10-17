@@ -207,7 +207,9 @@ impl<'a> Picker<'a> {
             let g = lv.as_ref().map(|(h, a, b)| planet_gain(self.pub_, (h.as_str(), *a, *b), PLANET_DEALS, PLANET_EXTRA, "PLANET"));
             let g = g.unwrap_or(0.0); // `g or 0.0`
             let g = if g == 0.0 { 0.0 } else { g };
-            self.memo.insert(k.clone(), pmax(g, 0.0) + 0.001);
+            // lab: JEVLAB_EXP=pair-planets takes Mercury over other planets
+            let bonus = if crate::experiment::get().pair_planets && lv.as_ref().is_some_and(|l| l.0 == "Pair") { crate::experiment::PAIR_PLANET } else { 0.0 };
+            self.memo.insert(k.clone(), pmax(g, 0.0) + 0.001 + bonus);
         }
         self.memo[&k]
     }

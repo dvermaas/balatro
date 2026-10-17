@@ -321,6 +321,16 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             v
         }).collect();
     }
+    if crate::experiment::get().pair_play && !plays.is_empty() {
+        // lab: JEVLAB_EXP=pair-play plays a Pair scoring within PAIR_PLAY of the best play
+        let top = gs::num(gs::get(&plays[0], "estimate"));
+        if let Some(i) = plays.iter().position(|p| gs::get(p, "hand").as_str() == Some("Pair")
+            && gs::num(gs::get(p, "estimate")) >= crate::experiment::PAIR_PLAY * top)
+        {
+            let p = plays.remove(i);
+            plays.insert(0, p);
+        }
+    }
     let margin = if !js.is_empty() { CLEAR_MARGIN } else { 1.0 };
     if let Some(c) = plays.iter().find(|p| clears(p, &info, margin)) {
         let desc = format!("{} ({}) clears the blind", gs::s(gs::get(c, "hand")), gs::int(gs::get(c, "estimate")));
