@@ -18,3 +18,6 @@
 - engine view: slot 0 of the first shop shows `p_buffoon_normal_1` until bought, to match Jackdaw
   (shop.py:180 always deals _1; the game and rumbot roll 1-2). Remove once Jackdaw is no longer the
   reference (identical in play).
+- forecast_stats: `usable()` copies tarots.py's TARGETED/SAFE_UNTARGETED keys (`// SHARED?`); point it at
+  tarots.rs once that is merged. Items-forecast assembly (rollout_items._forecast's result dict) still to port
+  (forecast task 9).
