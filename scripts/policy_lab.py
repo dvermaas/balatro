@@ -371,7 +371,10 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             # the forecast's auto-buy bar (decisions.SURE_SE, production 2) and the item forecast's (best(se=2))
             "bot-se15": {"items": True, "sure_se": 1.5},
             "bot-se1": {"items": True, "sure_se": 1.0},
-            "bot-se05": {"items": True, "sure_se": 0.5}}
+            "bot-se05": {"items": True, "sure_se": 0.5},
+            # more rollouts per option for both forecasts (production 24 with a 4 s budget; the lab 16, no budget)
+            "bot-n32": {"items": True, "n": 32},
+            "bot-n48": {"items": True, "n": 48}}
 SKIP_TAGS = {
     "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
                "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
