@@ -513,3 +513,25 @@ problem again). Lab arms `bot-se15/se1/se05` against v30, paired:
 At 1 SE the bot buys about 3 more packs, 1.3 more jokers and 1.6 more swaps a game and rerolls less
 (10 -> 7). Shipped as v31 with a Verdant Leaf refinement: hand-size and life-saving jokers are sold
 last.
+
+**After v31: forecast settings and build ideas (2026-10-17), none shipped.** All paired against v31 on
+the 200 fresh seeds (`--seeds 200 --seed-offset 60`, `--stop-at-se 0`), code only.
+
+| arm | ante | wins (v31: 40) | note |
+|---|---:|---:|---|
+| 32 rollouts per option (`bot-n32`) | +0.00 +- 0.11 | 49 | sim60-a -0.07, fresh 60 -0.38; pooled 320: -0.08 +- 0.08, win pairs 33 vs 27 |
+| 48 rollouts (`bot-n48`) | -0.20 +- 0.12 | 40 | |
+| 2-boss horizon (`bot-b2`, 101 seeds) | -0.25 +- 0.15 | | |
+| 4-boss horizon (`bot-b4`) | +0.02 +- 0.06 | 46 | win pairs 16 vs 10, z 1.2 |
+| interest guard 0.2 / 0.4 SE per $ of lost interest | -0.06 / -0.11 | 38 / 39 | v31 spends harder early (median $7 at ante 3, v28 $13) and that is fine |
+| discard commitment to a Flush/Straight main hand +15% / +30% | -0.01 / -0.03 | 37 / 39 | |
+| discard commitment, every main hand +15% | -0.17 +- 0.08 | 31 | |
+| suit tarots from packs by measured gain (`bot-suitval`) | -0.12 +- 0.07 | 33 | the noisy measure took fewer suit tarots (13 of 62 picks; v31 35 of 98) |
+| engine pieces protected from swaps | -0.02 +- 0.02 | 42 | |
+| + 0.3 / 0.6 blinds credit for joining a started engine | -0.07 / -0.08 | 40 / 38 | losses holding an engine at death 12 -> 45 of ~160: engines form but don't score |
+
+Build analysis behind the last four (400 logged v28/v31 games): Pair decks win most (30% of runs whose
+deck's main hand at ante 4 was Pair, mean ante 7.32) because they keep playing Pair (43 of 52); Flush and
+Straight decks drift into other hands after ante 5 (Flush: 4 of 35 won, 0 of 21 at ante 6). Engines from
+the guides formed in about 5% (face cards) and 1% (others) of runs. Nudging discards, suit tarots or
+engine pieces did not convert that into wins: the forecast's frozen-build judgement beat each heuristic.
