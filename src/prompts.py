@@ -6,6 +6,10 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v30: Verdant Leaf. The bot sells its weakest joker (smallest loss on recent hands) before playing "
+    "when Verdant Leaf debuffs the hand (decisions._leaf_sale), and the sim lifts Verdant Leaf when a "
+    "joker is sold (sim_patches.verdant_leaf_lifts_on_joker_sale; rumbot-sim already did). New sim "
+    "baseline. v28 lab: 13 of 200 games died to Verdant Leaf at ante 8. Based on: "
     "v29: the shop offers Negative jokers and consumables with full slots (a Negative card brings its "
     "own slot; rollout.options already allowed it, decisions.shop's filter dropped it). Based on: "
     "v28: planets and joker text. (1) The shop buys the planet for the hand our deck scores most with "

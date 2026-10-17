@@ -333,10 +333,34 @@ def _setup_plays(gs, hand, plays, levels, scorer, allowed, info, margin):
     return candidates
 
 
+def _leaf_sale(bot, gs, boss, hand):
+    """v30: Verdant Leaf debuffs every card until a joker is sold; sell the joker whose loss on recent
+    hands is smallest (eternal and Negative ones kept) before the first play. False if not applicable."""
+    if boss != "Verdant Leaf" or not any(card_info(c).get("debuff") for c in hand):
+        return False
+    key = (gs.get("seed"), gs.get("ante_num"), gs.get("round_num"))
+    if getattr(bot, "_leaf_failed", None) == key:
+        return False
+    weak = sorted(_weakest_jokers(gs, _recent(bot, gs), n=1))
+    if not weak:
+        return False
+    j = weak[0]
+    bot.emit("auto", question="move", choice="sell_joker", desc=f"sell {cards_of(gs, 'jokers')[j].get('label')}",
+             reason="Verdant Leaf: every card stays debuffed until a joker is sold")
+    try:
+        bot.act("sell", {"joker": j})
+    except RPCError:
+        bot._leaf_failed = key  # the API refused: play on with the debuff
+        return False
+    return True
+
+
 def selecting_hand(bot, gs):
     hand = cards_of(gs, "hand")
     info = _round_info(gs)
     boss = info["blind"]
+    if _leaf_sale(bot, gs, boss, hand):
+        return
     rnd, js = _d(gs.get("round")), jokers.build(gs)
     levels = _boss_levels(_d(gs.get("hands")), boss)
     infos = [card_info(c) for c in hand]
