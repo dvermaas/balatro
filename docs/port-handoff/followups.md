@@ -30,3 +30,6 @@
 - engine text: Hiker perma_bonus, Oops! All 6s probability text, and perma_mult/x_mult/h_chips/dollars card
   lines are never emitted because rumbot cards lack those fields. Check how rumbot tracks Hiker's per-card
   chip bonus (does Hiker work in rumbot at all?) and add the fields if needed.
+- decisions: `discard_obj` exists twice (shop.rs real, play.rs private `// SHARED?` copy): drop the copy.
+  `log_forecast_error` has no traceback, empty run=, and writes runs/_forecast_errors.log under a fixed
+  repo path: make the root configurable on JevBot.
