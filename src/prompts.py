@@ -6,6 +6,9 @@ in the questions instead of the state, structured option fields, and code combin
 """
 
 VERSION_NOTE = (
+    "v32: no behaviour change. Merge of main's full Rust bot (native/bot, frozen at v27) into v31: "
+    "native/sim now builds on native/simcore, which changes the version hash. sim60-a code-only lab: "
+    "60/60 games identical to v31. Based on: "
     "v31: the forecasts' auto-buy bar drops from 2 to 1 paired SE over buying nothing (decisions.SURE_SE, "
     "rollout_items.best). Small sure gains (packs, swaps, planets) rarely cleared 2 SE at 16-24 rollouts. "
     "Lab, code only, pooled 320 paired seeds: +0.23 +- 0.10 ante, wins 60 vs 50 (1.5 SE: +0.09; 0.5 SE: "
