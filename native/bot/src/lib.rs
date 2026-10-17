@@ -17,6 +17,7 @@ pub mod odds;
 pub mod prompts;
 pub mod readiness;
 pub mod recorder;
+pub mod replay;
 pub mod strategy;
 pub mod tarots;
 pub mod simtext;
