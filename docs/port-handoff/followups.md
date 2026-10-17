@@ -39,3 +39,7 @@
   stays X1 after Marble Joker adds a Stone card (the Jackdaw Marble/Hologram bug). Revisit once Jackdaw is
   no longer the reference (the real game shows the live values).
 - decisions: booster.rs has a private pack-only copy of `score_items` (`// SHARED?`); switch to shop.rs's.
+- fc_packs: part 3 compares `describe_lite` (money, names, counts, slots, RNG pools), not the full post-pack
+  description; its num_eq treats ints and floats alike. The items end-to-end forecast test covers it.
+- forecast_items sets two rumbot flags that mirror Jackdaw's OpenBooster/PickPackCard shortcuts
+  (`fool_always_usable`, `pack_ignores_played`) for v27 identity; drop them once Jackdaw is not the reference.
