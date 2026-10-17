@@ -81,3 +81,48 @@ fn write_str(s: &str, out: &mut String) {
     }
     out.push('"');
 }
+
+/// Python `str` quoting for repr().
+fn py_str_repr(s: &str) -> String {
+    let q = if s.contains('\'') && !s.contains('"') { '"' } else { '\'' };
+    let mut o = String::new();
+    o.push(q);
+    for ch in s.chars() {
+        match ch {
+            '\\' => o.push_str("\\\\"),
+            '\n' => o.push_str("\\n"),
+            '\r' => o.push_str("\\r"),
+            '\t' => o.push_str("\\t"),
+            c if c == q => {
+                o.push('\\');
+                o.push(c);
+            }
+            c if (c as u32) < 0x20 || c as u32 == 0x7f => o.push_str(&format!("\\x{:02x}", c as u32)),
+            c => o.push(c),
+        }
+    }
+    o.push(q);
+    o
+}
+
+/// `repr(x)` of a value parsed from JSON (dict, list, str, int, float, bool, None).
+pub fn pyrepr(v: &Value) -> String {
+    match v {
+        Value::Null => "None".into(),
+        Value::Bool(true) => "True".into(),
+        Value::Bool(false) => "False".into(),
+        Value::Number(n) => {
+            if n.is_f64() {
+                pyfloat(n.as_f64().unwrap())
+            } else {
+                n.to_string()
+            }
+        }
+        Value::String(s) => py_str_repr(s),
+        Value::Array(a) => format!("[{}]", a.iter().map(pyrepr).collect::<Vec<_>>().join(", ")),
+        Value::Object(m) => format!(
+            "{{{}}}",
+            m.iter().map(|(k, x)| format!("{}: {}", py_str_repr(k), pyrepr(x))).collect::<Vec<_>>().join(", ")
+        ),
+    }
+}

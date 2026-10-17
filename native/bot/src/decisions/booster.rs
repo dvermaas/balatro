@@ -1,14 +1,13 @@
 //! Port of src/decisions.py lines 851-987: booster, _gain. See docs/port-handoff/decisions.md.
 
-use super::shop::ShopItems;
-use super::{instr, recent, run_context, PACK_SCORE, PICK_CLEAR};
+use super::shop::{score_items, ShopItems};
+use super::{recent, run_context, PACK_SCORE, PICK_CLEAR};
 use crate::build;
 use crate::gs::{self, area, cards_of};
 use crate::hands;
 use crate::iface::RpcError;
-use crate::jev_bot::{item_desc, score_q, JevBot};
+use crate::jev_bot::{item_desc, JevBot};
 use crate::jokers;
-use crate::prompts::{CASH_ITEM_QUESTION, ITEM_VALUE_LEVELS};
 use crate::strategy;
 use crate::tarots;
 use pycompat::fmt::{fixed, pyfloat, pyround_int};
@@ -44,27 +43,6 @@ fn argmax(vals: &[f64]) -> usize {
         }
     }
     b
-}
-
-// SHARED? decisions.py 468-484 `_score_items`, for the pack only (shop.rs `score_items` is still todo!).
-// qname is always "pack" here, so the cash-step branch (shop only) never runs.
-fn score_items(bot: &mut JevBot, gs_: &Value, state: &Value, items: &ShopItems) -> (Vec<f64>, Value) {
-    let mut questions = Map::new();
-    for (k, (_, obj, _)) in items {
-        let item: Map<String, Value> = gs::d(obj)
-            .iter()
-            .filter(|(f, _)| !f.starts_with('_'))
-            .map(|(f, v)| (f.clone(), v.clone()))
-            .collect();
-        let question = if gs::d(obj).contains_key("cash_outcome") { CASH_ITEM_QUESTION } else { instr("item_value") };
-        questions.insert(k.clone(), score_q(json!({"question": question, "item": item}), json!(ITEM_VALUE_LEVELS)));
-    }
-    let (answers, meta) = bot.query(gs_, state, &questions);
-    let scores = items
-        .iter()
-        .map(|(k, _)| gs::num(gs::get(answers.get(k).unwrap_or(&Value::Null), "score")))
-        .collect();
-    (scores, meta)
 }
 
 /// decisions.py 851-947 `booster(bot, gs)`.
@@ -187,7 +165,8 @@ pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), RpcError> {
             Err(e) => bot.emit("info", json!({"msg": format!("Pack pick failed ({e}); asking JEV")})),
         }
     }
-    let (scores, meta) = score_items(bot, gs_, &state, &items);
+    let (score_map, meta) = score_items(bot, gs_, "pack", &state, &items);
+    let scores: Vec<f64> = items.iter().map(|(k, _)| gs::num(score_map.get(k).unwrap_or(&Value::Null))).collect();
     let bi = argmax(&scores);
     let best = items[bi].0.clone();
     let best_score = scores[bi];

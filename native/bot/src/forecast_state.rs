@@ -11,7 +11,8 @@
 
 use crate::gs;
 use fancy_regex::Regex as FRegex;
-use pycompat::fmt::{pyfloat, pyround_int};
+use pycompat::fmt::pyround_int;
+use pycompat::json::pyrepr;
 use regex::Regex;
 use rumbot_sim::consumable_data::CONSUMABLE_DATA;
 use serde_json::{json, Map, Value};
@@ -69,59 +70,11 @@ fn stake_num(s: &str) -> i64 {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Python repr of a JSON value (the canonical deck sort key is `str(modifier)`, risk 4)
-// ---------------------------------------------------------------------------
-
-fn py_str_repr(s: &str) -> String {
-    let q = if s.contains('\'') && !s.contains('"') { '"' } else { '\'' };
-    let mut o = String::new();
-    o.push(q);
-    for ch in s.chars() {
-        match ch {
-            '\\' => o.push_str("\\\\"),
-            '\n' => o.push_str("\\n"),
-            '\r' => o.push_str("\\r"),
-            '\t' => o.push_str("\\t"),
-            c if c == q => {
-                o.push('\\');
-                o.push(c);
-            }
-            c if (c as u32) < 0x20 || c as u32 == 0x7f => o.push_str(&format!("\\x{:02x}", c as u32)),
-            c => o.push(c),
-        }
-    }
-    o.push(q);
-    o
-}
-
-/// `repr(x)` of a value parsed from JSON (dict, list, str, int, float, bool, None).
-pub fn py_repr(v: &Value) -> String {
-    match v {
-        Value::Null => "None".into(),
-        Value::Bool(true) => "True".into(),
-        Value::Bool(false) => "False".into(),
-        Value::Number(n) => {
-            if n.is_f64() {
-                pyfloat(n.as_f64().unwrap())
-            } else {
-                n.to_string()
-            }
-        }
-        Value::String(s) => py_str_repr(s),
-        Value::Array(a) => format!("[{}]", a.iter().map(py_repr).collect::<Vec<_>>().join(", ")),
-        Value::Object(m) => format!(
-            "{{{}}}",
-            m.iter().map(|(k, x)| format!("{}: {}", py_str_repr(k), py_repr(x))).collect::<Vec<_>>().join(", ")
-        ),
-    }
-}
-
 /// `str(x)`: strings as they are, everything else as its repr (`str(None)` = "None").
 fn py_str(v: &Value) -> String {
     match v {
         Value::String(s) => s.clone(),
-        o => py_repr(o),
+        o => pyrepr(o),
     }
 }
 
@@ -324,7 +277,7 @@ pub fn state_json_from_pub(p: &Value) -> Result<Value, String> {
         .map(|c| {
             let v = gs::get(c, "value");
             (// key uses _d(modifier): an empty Lua table arrives as [] and sorts as "{}"
-            (py_str(gs::get(v, "suit")), py_str(gs::get(v, "rank")), py_repr(&Value::Object(gs::d(gs::get(c, "modifier")).clone()))), *c)
+            (py_str(gs::get(v, "suit")), py_str(gs::get(v, "rank")), pyrepr(&Value::Object(gs::d(gs::get(c, "modifier")).clone()))), *c)
         })
         .collect();
     keyed.sort_by(|a, b| a.0.cmp(&b.0)); // stable, like list.sort

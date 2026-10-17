@@ -465,7 +465,7 @@ fn rearrange(eng: &mut RumbotGame, params: &Value) -> Result<(), RpcError> {
     for v in &perm {
         let i = match v.as_i64() {
             Some(i) if i >= 0 && (i as usize) < len => i as usize,
-            _ => return Err(bad(format!("Index out of range for {k}: {}", pyrepr(v)))),
+            _ => return Err(bad(format!("Index out of range for {k}: {}", pycompat::json::pyrepr(v)))),
         };
         if !seen.insert(i) {
             return Err(bad(format!("Duplicate index in {k}: {i}")));
@@ -478,13 +478,4 @@ fn rearrange(eng: &mut RumbotGame, params: &Value) -> Result<(), RpcError> {
         _ => g.consumables = p.iter().map(|&i| g.consumables[i].clone()).collect(),
     }
     Ok(())
-}
-
-fn pyrepr(v: &Value) -> String {
-    match v {
-        Value::String(s) => format!("'{s}'"),
-        Value::Bool(b) => (if *b { "True" } else { "False" }).into(),
-        Value::Null => "None".into(),
-        o => o.to_string(),
-    }
 }
