@@ -27,6 +27,7 @@ dependencies = [
  "rumbot_sim",
  "serde",
  "serde_json",
+ "simcore",
 ]
 
 [[package]]
@@ -173,6 +174,16 @@ dependencies = [
  "serde",
  "serde_core",
  "zmij",
+]
+
+[[package]]
+name = "simcore"
+version = "0.1.0"
+dependencies = [
+ "jev_kernel",
+ "rumbot_sim",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
