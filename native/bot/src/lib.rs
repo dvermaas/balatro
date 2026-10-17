@@ -15,5 +15,6 @@ pub mod jokers;
 pub mod odds;
 pub mod prompts;
 pub mod readiness;
+pub mod recorder;
 pub mod strategy;
 pub mod tarots;
