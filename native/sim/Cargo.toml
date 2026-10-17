@@ -12,6 +12,7 @@ crate-type = ["cdylib"]
 [dependencies]
 jev_kernel = { path = "../kernel" }
 rumbot_sim = { path = "../rumbot" }
+simcore = { path = "../simcore" }
 pyo3 = { version = "0.30", features = ["extension-module", "abi3-py312"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }  # exact floats: joker xMults must arrive bit for bit
