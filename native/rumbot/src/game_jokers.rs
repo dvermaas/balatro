@@ -172,7 +172,7 @@ impl GameState {
             .map(|c| format!("m_{}", c.borrow().enhancement.as_str()))
             .collect();
         let seen = self.seen_centers();
-        let seen_vec: Vec<String> = seen.into_iter().collect();
+        let seen_vec: Vec<String> = if self.pack_ignores_played { Vec::new() } else { seen.into_iter().collect() };
         let flags: Vec<String> = self.pool_flags.iter().cloned().collect();
         let showman = self
             .active_jokers()
@@ -491,8 +491,13 @@ impl GameState {
     /// given the Wheel of Fortune.
     pub fn seen_centers(&self) -> HashSet<String> {
         let mut keys = HashSet::new();
+        let mut unmarked = self.jackdaw_unmarked_jokers.clone();
         for joker in &self.jokers {
             if let Some(row) = crate::joker_data::joker_row(joker.borrow().name()) {
+                if let Some(p) = unmarked.iter().position(|k| k == row.key) {
+                    unmarked.remove(p);
+                    continue;
+                }
                 keys.insert(row.key.to_string());
             }
         }

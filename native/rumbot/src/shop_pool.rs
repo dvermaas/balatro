@@ -33,7 +33,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use crate::consumable_data::{CONSUMABLE_DATA, EXCLUDED_FROM_POOLS};
+use crate::consumable_data::{ConsumableRow, CONSUMABLE_DATA, EXCLUDED_FROM_POOLS};
 use crate::joker_data::{pool_for_rarity, JOKER_DATA};
 use crate::pack_data::{PackRow, PACK_DATA};
 use crate::rng::RunRng;
@@ -196,6 +196,8 @@ pub fn draw_joker<O: AsRef<str>, S: AsRef<str>, P: AsRef<str>>(
 /// made a Five of a Kind is never offered the card for it, so a simulator that
 /// ignores this hands out deck-defining cards for hands the player cannot yet
 /// make.
+const TAROT_PLANET_ORDER: &[&str] = &["fool", "mercury", "magician", "venus", "high_priestess", "earth", "empress", "mars", "emperor", "jupiter", "heirophant", "saturn", "lovers", "uranus", "chariot", "neptune", "justice", "pluto", "hermit", "planet_x", "wheel_of_fortune", "ceres", "strength", "eris", "hanged_man", "death", "temperance", "devil", "tower", "star", "moon", "sun", "judgement", "world"];
+
 pub fn build_consumable_pool<H: AsRef<str>, S: AsRef<str>>(
     card_set: &str,
     played_hands: &[H],
@@ -205,7 +207,13 @@ pub fn build_consumable_pool<H: AsRef<str>, S: AsRef<str>>(
     let played = set_of(played_hands);
     let already = set_of(seen);
     let mut pool = Vec::new();
-    for row in CONSUMABLE_DATA.iter().filter(|row| row.set == card_set) {
+    let rows: Vec<&ConsumableRow> = if card_set == "Tarot_Planet" {
+        // P_CENTER_POOLS.Tarot_Planet: Tarots and Planets interleaved by their `order`
+        TAROT_PLANET_ORDER.iter().filter_map(|k| CONSUMABLE_DATA.iter().find(|r| r.key == format!("c_{k}"))).collect()
+    } else {
+        CONSUMABLE_DATA.iter().filter(|row| row.set == card_set).collect()
+    };
+    for row in rows {
         if EXCLUDED_FROM_POOLS.contains(&row.name) {
             pool.push(UNAVAILABLE.to_string()); // The Soul, Black Hole
         } else if row.softlock && !played.contains(row.hand_type) {
@@ -596,17 +604,20 @@ fn soulable(
     black_hole_used: bool,
     showman: bool,
 ) -> Option<&'static str> {
+    // common_events.lua:2088-2100: two independent blocks; a Soul hit does not skip the Black Hole roll (and the
+    // Black Hole overwrites it on a double hit)
+    let mut forced = None;
     if (card_set == "Tarot" || card_set == "Spectral") && !(soul_used && !showman) {
         if rng.pseudorandom(&soul_key(card_set, ante), None, None) > 0.997 {
-            return Some("c_soul");
+            forced = Some("c_soul");
         }
     }
     if (card_set == "Planet" || card_set == "Spectral") && !(black_hole_used && !showman) {
         if rng.pseudorandom(&soul_key(card_set, ante), None, None) > 0.997 {
-            return Some("c_black_hole");
+            forced = Some("c_black_hole");
         }
     }
-    None
+    forced
 }
 
 /// One consumable from a pack, The Soul/Black Hole check included.

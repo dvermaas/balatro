@@ -1,0 +1,30 @@
+[package]
+name = "jevbot"
+version = "0.1.0"
+edition = "2021"
+description = "The whole bot in Rust (stage C+ of the Rust port): policy, forecasts, bot loop, backends. See docs/rust-port-guide.md"
+license = "MIT"
+
+[lib]
+name = "jevbot"
+path = "src/lib.rs"
+
+[dependencies]
+jev_kernel = { path = "../kernel" }
+rumbot_sim = { path = "../rumbot" }
+simcore = { path = "../simcore" }
+pycompat = { path = "../pycompat" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
+flate2 = "1"
+regex = "1"
+fancy-regex = "0.14"
+ureq = { version = "2", default-features = false, features = ["tls"] }
+typesafe = { path = "../typesafe" }
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[profile.test]
+opt-level = 2

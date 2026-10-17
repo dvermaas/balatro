@@ -1,0 +1,2778 @@
+{
+"hand_examples": {
+"Flush Five": [
+[
+"S_A",
+true
+],
+[
+"S_A",
+true
+],
+[
+"S_A",
+true
+],
+[
+"S_A",
+true
+],
+[
+"S_A",
+true
+]
+],
+"Flush House": [
+[
+"D_7",
+true
+],
+[
+"D_7",
+true
+],
+[
+"D_7",
+true
+],
+[
+"D_4",
+true
+],
+[
+"D_4",
+true
+]
+],
+"Five of a Kind": [
+[
+"S_A",
+true
+],
+[
+"H_A",
+true
+],
+[
+"H_A",
+true
+],
+[
+"C_A",
+true
+],
+[
+"D_A",
+true
+]
+],
+"Straight Flush": [
+[
+"S_Q",
+true
+],
+[
+"S_J",
+true
+],
+[
+"S_T",
+true
+],
+[
+"S_9",
+true
+],
+[
+"S_8",
+true
+]
+],
+"Four of a Kind": [
+[
+"S_J",
+true
+],
+[
+"H_J",
+true
+],
+[
+"C_J",
+true
+],
+[
+"D_J",
+true
+],
+[
+"C_3",
+false
+]
+],
+"Full House": [
+[
+"H_K",
+true
+],
+[
+"C_K",
+true
+],
+[
+"D_K",
+true
+],
+[
+"S_2",
+true
+],
+[
+"D_2",
+true
+]
+],
+"Flush": [
+[
+"H_A",
+true
+],
+[
+"H_K",
+true
+],
+[
+"H_T",
+true
+],
+[
+"H_5",
+true
+],
+[
+"H_4",
+true
+]
+],
+"Straight": [
+[
+"D_J",
+true
+],
+[
+"C_T",
+true
+],
+[
+"C_9",
+true
+],
+[
+"S_8",
+true
+],
+[
+"H_7",
+true
+]
+],
+"Three of a Kind": [
+[
+"S_T",
+true
+],
+[
+"C_T",
+true
+],
+[
+"D_T",
+true
+],
+[
+"H_6",
+false
+],
+[
+"D_5",
+false
+]
+],
+"Two Pair": [
+[
+"H_A",
+true
+],
+[
+"D_A",
+true
+],
+[
+"C_Q",
+false
+],
+[
+"H_4",
+true
+],
+[
+"C_4",
+true
+]
+],
+"Pair": [
+[
+"S_K",
+false
+],
+[
+"S_9",
+true
+],
+[
+"D_9",
+true
+],
+[
+"H_6",
+false
+],
+[
+"D_3",
+false
+]
+],
+"High Card": [
+[
+"S_A",
+true
+],
+[
+"D_Q",
+false
+],
+[
+"D_9",
+false
+],
+[
+"C_4",
+false
+],
+[
+"D_3",
+false
+]
+]
+},
+"centers": {
+"c_ankh": {
+"name": "Ankh",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": 2
+}
+},
+"c_aura": {
+"name": "Aura",
+"effect": null,
+"set": "Spectral"
+},
+"c_base": {
+"name": "Default Base",
+"effect": "Base",
+"set": "Default"
+},
+"c_black_hole": {
+"name": "Black Hole",
+"effect": null,
+"set": "Spectral"
+},
+"c_ceres": {
+"name": "Ceres",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Flush House",
+"softlock": true
+}
+},
+"c_chariot": {
+"name": "The Chariot",
+"effect": "Enhance",
+"set": "Tarot",
+"config": {
+"max_highlighted": 1,
+"mod_conv": "m_steel"
+}
+},
+"c_cryptid": {
+"name": "Cryptid",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": 2,
+"max_highlighted": 1
+}
+},
+"c_death": {
+"name": "Death",
+"effect": "Card Conversion",
+"set": "Tarot",
+"config": {
+"max_highlighted": 2,
+"min_highlighted": 2,
+"mod_conv": "card"
+}
+},
+"c_deja_vu": {
+"name": "Deja Vu",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": "Red",
+"max_highlighted": 1
+}
+},
+"c_devil": {
+"name": "The Devil",
+"effect": "Enhance",
+"set": "Tarot",
+"config": {
+"max_highlighted": 1,
+"mod_conv": "m_gold"
+}
+},
+"c_earth": {
+"name": "Earth",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Full House"
+}
+},
+"c_ectoplasm": {
+"name": "Ectoplasm",
+"effect": null,
+"set": "Spectral"
+},
+"c_emperor": {
+"name": "The Emperor",
+"effect": "Round Bonus",
+"set": "Tarot",
+"config": {
+"tarots": 2
+}
+},
+"c_empress": {
+"name": "The Empress",
+"effect": "Enhance",
+"set": "Tarot",
+"config": {
+"max_highlighted": 2,
+"mod_conv": "m_mult"
+}
+},
+"c_eris": {
+"name": "Eris",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Flush Five",
+"softlock": true
+}
+},
+"c_familiar": {
+"name": "Familiar",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": 3,
+"remove_card": true
+}
+},
+"c_fool": {
+"name": "The Fool",
+"effect": "Disable Blind Effect",
+"set": "Tarot"
+},
+"c_grim": {
+"name": "Grim",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": 2,
+"remove_card": true
+}
+},
+"c_hanged_man": {
+"name": "The Hanged Man",
+"effect": "Card Removal",
+"set": "Tarot",
+"config": {
+"max_highlighted": 2,
+"remove_card": true
+}
+},
+"c_heirophant": {
+"name": "The Hierophant",
+"effect": "Enhance",
+"set": "Tarot",
+"config": {
+"max_highlighted": 2,
+"mod_conv": "m_bonus"
+}
+},
+"c_hermit": {
+"name": "The Hermit",
+"effect": "Dollar Doubler",
+"set": "Tarot",
+"config": {
+"extra": 20
+}
+},
+"c_hex": {
+"name": "Hex",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": 2
+}
+},
+"c_high_priestess": {
+"name": "The High Priestess",
+"effect": "Round Bonus",
+"set": "Tarot",
+"config": {
+"planets": 2
+}
+},
+"c_immolate": {
+"name": "Immolate",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": {
+"destroy": 5,
+"dollars": 20
+},
+"remove_card": true
+}
+},
+"c_incantation": {
+"name": "Incantation",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": 4,
+"remove_card": true
+}
+},
+"c_judgement": {
+"name": "Judgement",
+"effect": "Random Joker",
+"set": "Tarot"
+},
+"c_jupiter": {
+"name": "Jupiter",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Flush"
+}
+},
+"c_justice": {
+"name": "Justice",
+"effect": "Enhance",
+"set": "Tarot",
+"config": {
+"max_highlighted": 1,
+"mod_conv": "m_glass"
+}
+},
+"c_lovers": {
+"name": "The Lovers",
+"effect": "Enhance",
+"set": "Tarot",
+"config": {
+"max_highlighted": 1,
+"mod_conv": "m_wild"
+}
+},
+"c_magician": {
+"name": "The Magician",
+"effect": "Enhance",
+"set": "Tarot",
+"config": {
+"max_highlighted": 2,
+"mod_conv": "m_lucky"
+}
+},
+"c_mars": {
+"name": "Mars",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Four of a Kind"
+}
+},
+"c_medium": {
+"name": "Medium",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": "Purple",
+"max_highlighted": 1
+}
+},
+"c_mercury": {
+"name": "Mercury",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Pair"
+}
+},
+"c_moon": {
+"name": "The Moon",
+"effect": "Suit Conversion",
+"set": "Tarot",
+"config": {
+"max_highlighted": 3,
+"suit_conv": "Clubs"
+}
+},
+"c_neptune": {
+"name": "Neptune",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Straight Flush"
+}
+},
+"c_ouija": {
+"name": "Ouija",
+"effect": null,
+"set": "Spectral"
+},
+"c_planet_x": {
+"name": "Planet X",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Five of a Kind",
+"softlock": true
+}
+},
+"c_pluto": {
+"name": "Pluto",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "High Card"
+}
+},
+"c_saturn": {
+"name": "Saturn",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Straight"
+}
+},
+"c_sigil": {
+"name": "Sigil",
+"effect": null,
+"set": "Spectral"
+},
+"c_soul": {
+"name": "The Soul",
+"effect": "Unlocker",
+"set": "Spectral"
+},
+"c_star": {
+"name": "The Star",
+"effect": "Suit Conversion",
+"set": "Tarot",
+"config": {
+"max_highlighted": 3,
+"suit_conv": "Diamonds"
+}
+},
+"c_strength": {
+"name": "Strength",
+"effect": "Round Bonus",
+"set": "Tarot",
+"config": {
+"max_highlighted": 2,
+"mod_conv": "up_rank"
+}
+},
+"c_sun": {
+"name": "The Sun",
+"effect": "Suit Conversion",
+"set": "Tarot",
+"config": {
+"max_highlighted": 3,
+"suit_conv": "Hearts"
+}
+},
+"c_talisman": {
+"name": "Talisman",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": "Gold",
+"max_highlighted": 1
+}
+},
+"c_temperance": {
+"name": "Temperance",
+"effect": "Joker Payout",
+"set": "Tarot",
+"config": {
+"extra": 50
+}
+},
+"c_tower": {
+"name": "The Tower",
+"effect": "Enhance",
+"set": "Tarot",
+"config": {
+"max_highlighted": 1,
+"mod_conv": "m_stone"
+}
+},
+"c_trance": {
+"name": "Trance",
+"effect": null,
+"set": "Spectral",
+"config": {
+"extra": "Blue",
+"max_highlighted": 1
+}
+},
+"c_uranus": {
+"name": "Uranus",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Two Pair"
+}
+},
+"c_venus": {
+"name": "Venus",
+"effect": "Hand Upgrade",
+"set": "Planet",
+"config": {
+"hand_type": "Three of a Kind"
+}
+},
+"c_wheel_of_fortune": {
+"name": "The Wheel of Fortune",
+"effect": "Round Bonus",
+"set": "Tarot",
+"config": {
+"extra": 4
+}
+},
+"c_world": {
+"name": "The World",
+"effect": "Suit Conversion",
+"set": "Tarot",
+"config": {
+"max_highlighted": 3,
+"suit_conv": "Spades"
+}
+},
+"c_wraith": {
+"name": "Wraith",
+"effect": null,
+"set": "Spectral"
+},
+"j_8_ball": {
+"name": "8 Ball",
+"effect": "Spawn Tarot",
+"set": "Joker",
+"config": {
+"extra": 4
+}
+},
+"j_abstract": {
+"name": "Abstract Joker",
+"effect": "Joker Mult",
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_acrobat": {
+"name": "Acrobat",
+"effect": "Shop size",
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_ancient": {
+"name": "Ancient Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 1.5
+}
+},
+"j_arrowhead": {
+"name": "Arrowhead",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 50
+}
+},
+"j_astronomer": {
+"name": "Astronomer",
+"effect": "",
+"set": "Joker"
+},
+"j_banner": {
+"name": "Banner",
+"effect": "Discard Chips",
+"set": "Joker",
+"config": {
+"extra": 30
+}
+},
+"j_baron": {
+"name": "Baron",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 1.5
+}
+},
+"j_baseball": {
+"name": "Baseball Card",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 1.5
+}
+},
+"j_blackboard": {
+"name": "Blackboard",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_bloodstone": {
+"name": "Bloodstone",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": {
+"Xmult": 1.5,
+"odds": 2
+}
+}
+},
+"j_blue_joker": {
+"name": "Blue Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_blueprint": {
+"name": "Blueprint",
+"effect": "Copycat",
+"set": "Joker"
+},
+"j_bootstraps": {
+"name": "Bootstraps",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 5,
+"mult": 2
+}
+}
+},
+"j_brainstorm": {
+"name": "Brainstorm",
+"effect": "Copycat",
+"set": "Joker"
+},
+"j_bull": {
+"name": "Bull",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_burglar": {
+"name": "Burglar",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_burnt": {
+"name": "Burnt Joker",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 4,
+"h_size": 0
+}
+},
+"j_business": {
+"name": "Business Card",
+"effect": "Face Card dollar Chance",
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_caino": {
+"name": "Caino",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_campfire": {
+"name": "Campfire",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 0.25
+}
+},
+"j_card_sharp": {
+"name": "Card Sharp",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"Xmult": 3
+}
+}
+},
+"j_cartomancer": {
+"name": "Cartomancer",
+"effect": "Tarot Buff",
+"set": "Joker"
+},
+"j_castle": {
+"name": "Castle",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 3,
+"chips": 0
+}
+}
+},
+"j_cavendish": {
+"name": "Cavendish",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"Xmult": 3,
+"odds": 1000
+}
+}
+},
+"j_ceremonial": {
+"name": "Ceremonial Dagger",
+"effect": "",
+"set": "Joker",
+"config": {
+"mult": 0
+}
+},
+"j_certificate": {
+"name": "Certificate",
+"effect": "",
+"set": "Joker"
+},
+"j_chaos": {
+"name": "Chaos the Clown",
+"effect": "Bonus Rerolls",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_chicot": {
+"name": "Chicot",
+"effect": "",
+"set": "Joker"
+},
+"j_clever": {
+"name": "Clever Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"t_chips": 80,
+"type": "Two Pair"
+}
+},
+"j_cloud_9": {
+"name": "Cloud 9",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_constellation": {
+"name": "Constellation",
+"effect": null,
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.1
+}
+},
+"j_crafty": {
+"name": "Crafty Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"t_chips": 80,
+"type": "Flush"
+}
+},
+"j_crazy": {
+"name": "Crazy Joker",
+"effect": "Type Mult",
+"set": "Joker",
+"config": {
+"t_mult": 12,
+"type": "Straight"
+}
+},
+"j_credit_card": {
+"name": "Credit Card",
+"effect": "Credit",
+"set": "Joker",
+"config": {
+"extra": 20
+}
+},
+"j_delayed_grat": {
+"name": "Delayed Gratification",
+"effect": "Discard dollars",
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_devious": {
+"name": "Devious Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"t_chips": 100,
+"type": "Straight"
+}
+},
+"j_diet_cola": {
+"name": "Diet Cola",
+"effect": null,
+"set": "Joker"
+},
+"j_dna": {
+"name": "DNA",
+"effect": null,
+"set": "Joker"
+},
+"j_drivers_license": {
+"name": "Driver's License",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_droll": {
+"name": "Droll Joker",
+"effect": "Type Mult",
+"set": "Joker",
+"config": {
+"t_mult": 10,
+"type": "Flush"
+}
+},
+"j_drunkard": {
+"name": "Drunkard",
+"effect": "Discard Size",
+"set": "Joker",
+"config": {
+"d_size": 1
+}
+},
+"j_duo": {
+"name": "The Duo",
+"effect": "X1.5 Mult",
+"set": "Joker",
+"config": {
+"Xmult": 2,
+"type": "Pair"
+}
+},
+"j_dusk": {
+"name": "Dusk",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_egg": {
+"name": "Egg",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_erosion": {
+"name": "Erosion",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 4
+}
+},
+"j_even_steven": {
+"name": "Even Steven",
+"effect": "Even Card Buff",
+"set": "Joker",
+"config": {
+"extra": 4
+}
+},
+"j_faceless": {
+"name": "Faceless Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 5,
+"faces": 3
+}
+}
+},
+"j_family": {
+"name": "The Family",
+"effect": "X3 Mult",
+"set": "Joker",
+"config": {
+"Xmult": 4,
+"type": "Four of a Kind"
+}
+},
+"j_fibonacci": {
+"name": "Fibonacci",
+"effect": "Card Mult",
+"set": "Joker",
+"config": {
+"extra": 8
+}
+},
+"j_flash": {
+"name": "Flash Card",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 2,
+"mult": 0
+}
+},
+"j_flower_pot": {
+"name": "Flower Pot",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_fortune_teller": {
+"name": "Fortune Teller",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_four_fingers": {
+"name": "Four Fingers",
+"effect": "",
+"set": "Joker"
+},
+"j_gift": {
+"name": "Gift Card",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_glass": {
+"name": "Glass Joker",
+"effect": "Glass Card",
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.75
+}
+},
+"j_gluttenous_joker": {
+"name": "Gluttonous Joker",
+"effect": "Suit Mult",
+"set": "Joker",
+"config": {
+"extra": {
+"s_mult": 3,
+"suit": "Clubs"
+}
+}
+},
+"j_golden": {
+"name": "Golden Joker",
+"effect": "Bonus dollars",
+"set": "Joker",
+"config": {
+"extra": 4
+}
+},
+"j_greedy_joker": {
+"name": "Greedy Joker",
+"effect": "Suit Mult",
+"set": "Joker",
+"config": {
+"extra": {
+"s_mult": 3,
+"suit": "Diamonds"
+}
+}
+},
+"j_green_joker": {
+"name": "Green Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"discard_sub": 1,
+"hand_add": 1
+}
+}
+},
+"j_gros_michel": {
+"name": "Gros Michel",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": {
+"mult": 15,
+"odds": 6
+}
+}
+},
+"j_hack": {
+"name": "Hack",
+"effect": "Low Card double",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_half": {
+"name": "Half Joker",
+"effect": "Hand Size Mult",
+"set": "Joker",
+"config": {
+"extra": {
+"mult": 20,
+"size": 3
+}
+}
+},
+"j_hallucination": {
+"name": "Hallucination",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_hanging_chad": {
+"name": "Hanging Chad",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_hiker": {
+"name": "Hiker",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 5
+}
+},
+"j_hit_the_road": {
+"name": "Hit the Road",
+"effect": "Jack Discard Effect",
+"set": "Joker",
+"config": {
+"extra": 0.5
+}
+},
+"j_hologram": {
+"name": "Hologram",
+"effect": null,
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.25
+}
+},
+"j_ice_cream": {
+"name": "Ice Cream",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 5,
+"chips": 100
+}
+}
+},
+"j_idol": {
+"name": "The Idol",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_invisible": {
+"name": "Invisible Joker",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_joker": {
+"name": "Joker",
+"effect": "Mult",
+"set": "Joker",
+"config": {
+"mult": 4
+}
+},
+"j_jolly": {
+"name": "Jolly Joker",
+"effect": "Type Mult",
+"set": "Joker",
+"config": {
+"t_mult": 8,
+"type": "Pair"
+}
+},
+"j_juggler": {
+"name": "Juggler",
+"effect": "Hand Size",
+"set": "Joker",
+"config": {
+"h_size": 1
+}
+},
+"j_loyalty_card": {
+"name": "Loyalty Card",
+"effect": "1 in 10 mult",
+"set": "Joker",
+"config": {
+"extra": {
+"Xmult": 4,
+"every": 5,
+"remaining": "5 remaining"
+}
+}
+},
+"j_luchador": {
+"name": "Luchador",
+"effect": null,
+"set": "Joker"
+},
+"j_lucky_cat": {
+"name": "Lucky Cat",
+"effect": null,
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.25
+}
+},
+"j_lusty_joker": {
+"name": "Lusty Joker",
+"effect": "Suit Mult",
+"set": "Joker",
+"config": {
+"extra": {
+"s_mult": 3,
+"suit": "Hearts"
+}
+}
+},
+"j_mad": {
+"name": "Mad Joker",
+"effect": "Type Mult",
+"set": "Joker",
+"config": {
+"t_mult": 10,
+"type": "Two Pair"
+}
+},
+"j_madness": {
+"name": "Madness",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 0.5
+}
+},
+"j_mail": {
+"name": "Mail-In Rebate",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 5
+}
+},
+"j_marble": {
+"name": "Marble Joker",
+"effect": "Stone card hands",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_matador": {
+"name": "Matador",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 8
+}
+},
+"j_merry_andy": {
+"name": "Merry Andy",
+"effect": "",
+"set": "Joker",
+"config": {
+"d_size": 3,
+"h_size": -1
+}
+},
+"j_midas_mask": {
+"name": "Midas Mask",
+"effect": null,
+"set": "Joker"
+},
+"j_mime": {
+"name": "Mime",
+"effect": "Hand card double",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_misprint": {
+"name": "Misprint",
+"effect": "Random Mult",
+"set": "Joker",
+"config": {
+"extra": {
+"max": 23,
+"min": 0
+}
+}
+},
+"j_mr_bones": {
+"name": "Mr. Bones",
+"effect": "Prevent Death",
+"set": "Joker"
+},
+"j_mystic_summit": {
+"name": "Mystic Summit",
+"effect": "No Discard Mult",
+"set": "Joker",
+"config": {
+"extra": {
+"d_remaining": 0,
+"mult": 15
+}
+}
+},
+"j_obelisk": {
+"name": "Obelisk",
+"effect": null,
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.2
+}
+},
+"j_odd_todd": {
+"name": "Odd Todd",
+"effect": "Odd Card Buff",
+"set": "Joker",
+"config": {
+"extra": 31
+}
+},
+"j_onyx_agate": {
+"name": "Onyx Agate",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 7
+}
+},
+"j_oops": {
+"name": "Oops! All 6s",
+"effect": "",
+"set": "Joker"
+},
+"j_order": {
+"name": "The Order",
+"effect": "X3 Mult",
+"set": "Joker",
+"config": {
+"Xmult": 3,
+"type": "Straight"
+}
+},
+"j_pareidolia": {
+"name": "Pareidolia",
+"effect": "All face cards",
+"set": "Joker"
+},
+"j_perkeo": {
+"name": "Perkeo",
+"effect": "",
+"set": "Joker"
+},
+"j_photograph": {
+"name": "Photograph",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_popcorn": {
+"name": "Popcorn",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 4,
+"mult": 20
+}
+},
+"j_raised_fist": {
+"name": "Raised Fist",
+"effect": "Socialized Mult",
+"set": "Joker"
+},
+"j_ramen": {
+"name": "Ramen",
+"effect": null,
+"set": "Joker",
+"config": {
+"Xmult": 2,
+"extra": 0.01
+}
+},
+"j_red_card": {
+"name": "Red Card",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_reserved_parking": {
+"name": "Reserved Parking",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 1,
+"odds": 2
+}
+}
+},
+"j_ride_the_bus": {
+"name": "Ride the Bus",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_riff_raff": {
+"name": "Riff-raff",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_ring_master": {
+"name": "Showman",
+"effect": "",
+"set": "Joker"
+},
+"j_rocket": {
+"name": "Rocket",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 1,
+"increase": 2
+}
+}
+},
+"j_rough_gem": {
+"name": "Rough Gem",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_runner": {
+"name": "Runner",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 15,
+"chips": 0
+}
+}
+},
+"j_satellite": {
+"name": "Satellite",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_scary_face": {
+"name": "Scary Face",
+"effect": "Scary Face Cards",
+"set": "Joker",
+"config": {
+"extra": 30
+}
+},
+"j_scholar": {
+"name": "Scholar",
+"effect": "Ace Buff",
+"set": "Joker",
+"config": {
+"extra": {
+"chips": 20,
+"mult": 4
+}
+}
+},
+"j_seance": {
+"name": "Seance",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"poker_hand": "Straight Flush"
+}
+}
+},
+"j_seeing_double": {
+"name": "Seeing Double",
+"effect": "X1.5 Mult club 7",
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_selzer": {
+"name": "Seltzer",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 10
+}
+},
+"j_shoot_the_moon": {
+"name": "Shoot the Moon",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 13
+}
+},
+"j_shortcut": {
+"name": "Shortcut",
+"effect": null,
+"set": "Joker"
+},
+"j_sixth_sense": {
+"name": "Sixth Sense",
+"effect": null,
+"set": "Joker"
+},
+"j_sly": {
+"name": "Sly Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"t_chips": 50,
+"type": "Pair"
+}
+},
+"j_smeared": {
+"name": "Smeared Joker",
+"effect": "",
+"set": "Joker"
+},
+"j_smiley": {
+"name": "Smiley Face",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 5
+}
+},
+"j_sock_and_buskin": {
+"name": "Sock and Buskin",
+"effect": "Face card double",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_space": {
+"name": "Space Joker",
+"effect": "Upgrade Hand chance",
+"set": "Joker",
+"config": {
+"extra": 4
+}
+},
+"j_splash": {
+"name": "Splash",
+"effect": null,
+"set": "Joker"
+},
+"j_square": {
+"name": "Square Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 4,
+"chips": 0
+}
+}
+},
+"j_steel_joker": {
+"name": "Steel Joker",
+"effect": "Steel Card Buff",
+"set": "Joker",
+"config": {
+"extra": 0.2
+}
+},
+"j_stencil": {
+"name": "Joker Stencil",
+"effect": "Hand Size Mult",
+"set": "Joker"
+},
+"j_stone": {
+"name": "Stone Joker",
+"effect": "Stone Card Buff",
+"set": "Joker",
+"config": {
+"extra": 25
+}
+},
+"j_stuntman": {
+"name": "Stuntman",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 250,
+"h_size": 2
+}
+}
+},
+"j_supernova": {
+"name": "Supernova",
+"effect": "Hand played mult",
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_superposition": {
+"name": "Superposition",
+"effect": null,
+"set": "Joker"
+},
+"j_swashbuckler": {
+"name": "Swashbuckler",
+"effect": "Set Mult",
+"set": "Joker",
+"config": {
+"mult": 1
+}
+},
+"j_throwback": {
+"name": "Throwback",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 0.25
+}
+},
+"j_ticket": {
+"name": "Golden Ticket",
+"effect": "dollars for Gold cards",
+"set": "Joker",
+"config": {
+"extra": 4
+}
+},
+"j_to_the_moon": {
+"name": "To the Moon",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 1
+}
+},
+"j_todo_list": {
+"name": "To Do List",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"dollars": 4,
+"poker_hand": "High Card"
+}
+}
+},
+"j_trading": {
+"name": "Trading Card",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 3
+}
+},
+"j_tribe": {
+"name": "The Tribe",
+"effect": "X3 Mult",
+"set": "Joker",
+"config": {
+"Xmult": 2,
+"type": "Flush"
+}
+},
+"j_triboulet": {
+"name": "Triboulet",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_trio": {
+"name": "The Trio",
+"effect": "X2 Mult",
+"set": "Joker",
+"config": {
+"Xmult": 3,
+"type": "Three of a Kind"
+}
+},
+"j_troubadour": {
+"name": "Troubadour",
+"effect": "Hand Size, Plays",
+"set": "Joker",
+"config": {
+"extra": {
+"h_plays": -1,
+"h_size": 2
+}
+}
+},
+"j_trousers": {
+"name": "Spare Trousers",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 2
+}
+},
+"j_turtle_bean": {
+"name": "Turtle Bean",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"h_mod": 1,
+"h_size": 5
+}
+}
+},
+"j_vagabond": {
+"name": "Vagabond",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": 4
+}
+},
+"j_vampire": {
+"name": "Vampire",
+"effect": null,
+"set": "Joker",
+"config": {
+"Xmult": 1,
+"extra": 0.1
+}
+},
+"j_walkie_talkie": {
+"name": "Walkie Talkie",
+"effect": null,
+"set": "Joker",
+"config": {
+"extra": {
+"chips": 10,
+"mult": 4
+}
+}
+},
+"j_wee": {
+"name": "Wee Joker",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": {
+"chip_mod": 8,
+"chips": 0
+}
+}
+},
+"j_wily": {
+"name": "Wily Joker",
+"effect": null,
+"set": "Joker",
+"config": {
+"t_chips": 100,
+"type": "Three of a Kind"
+}
+},
+"j_wrathful_joker": {
+"name": "Wrathful Joker",
+"effect": "Suit Mult",
+"set": "Joker",
+"config": {
+"extra": {
+"s_mult": 3,
+"suit": "Spades"
+}
+}
+},
+"j_yorick": {
+"name": "Yorick",
+"effect": "",
+"set": "Joker",
+"config": {
+"extra": {
+"discards": 23,
+"xmult": 1
+}
+}
+},
+"j_zany": {
+"name": "Zany Joker",
+"effect": "Type Mult",
+"set": "Joker",
+"config": {
+"t_mult": 12,
+"type": "Three of a Kind"
+}
+},
+"m_bonus": {
+"name": "Bonus",
+"effect": "Bonus Card",
+"set": "Enhanced",
+"config": {
+"bonus": 30
+}
+},
+"m_glass": {
+"name": "Glass Card",
+"effect": "Glass Card",
+"set": "Enhanced",
+"config": {
+"Xmult": 2,
+"extra": 4
+}
+},
+"m_gold": {
+"name": "Gold Card",
+"effect": "Gold Card",
+"set": "Enhanced",
+"config": {
+"h_dollars": 3
+}
+},
+"m_lucky": {
+"name": "Lucky Card",
+"effect": "Lucky Card",
+"set": "Enhanced",
+"config": {
+"mult": 20,
+"p_dollars": 20
+}
+},
+"m_mult": {
+"name": "Mult",
+"effect": "Mult Card",
+"set": "Enhanced",
+"config": {
+"mult": 4
+}
+},
+"m_steel": {
+"name": "Steel Card",
+"effect": "Steel Card",
+"set": "Enhanced",
+"config": {
+"h_x_mult": 1.5
+}
+},
+"m_stone": {
+"name": "Stone Card",
+"effect": "Stone Card",
+"set": "Enhanced",
+"config": {
+"bonus": 50
+}
+},
+"m_wild": {
+"name": "Wild Card",
+"effect": "Wild Card",
+"set": "Enhanced"
+},
+"p_arcana_jumbo_1": {
+"name": "Jumbo Arcana Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 5
+}
+},
+"p_arcana_jumbo_2": {
+"name": "Jumbo Arcana Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 5
+}
+},
+"p_arcana_mega_1": {
+"name": "Mega Arcana Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 2,
+"extra": 5
+}
+},
+"p_arcana_mega_2": {
+"name": "Mega Arcana Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 2,
+"extra": 5
+}
+},
+"p_arcana_normal_1": {
+"name": "Arcana Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_arcana_normal_2": {
+"name": "Arcana Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_arcana_normal_3": {
+"name": "Arcana Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_arcana_normal_4": {
+"name": "Arcana Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_buffoon_jumbo_1": {
+"name": "Jumbo Buffoon Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 4
+}
+},
+"p_buffoon_mega_1": {
+"name": "Mega Buffoon Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 2,
+"extra": 4
+}
+},
+"p_buffoon_normal_1": {
+"name": "Buffoon Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 2
+}
+},
+"p_buffoon_normal_2": {
+"name": "Buffoon Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 2
+}
+},
+"p_celestial_jumbo_1": {
+"name": "Jumbo Celestial Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 5
+}
+},
+"p_celestial_jumbo_2": {
+"name": "Jumbo Celestial Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 5
+}
+},
+"p_celestial_mega_1": {
+"name": "Mega Celestial Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 2,
+"extra": 5
+}
+},
+"p_celestial_mega_2": {
+"name": "Mega Celestial Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 2,
+"extra": 5
+}
+},
+"p_celestial_normal_1": {
+"name": "Celestial Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_celestial_normal_2": {
+"name": "Celestial Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_celestial_normal_3": {
+"name": "Celestial Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_celestial_normal_4": {
+"name": "Celestial Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_spectral_jumbo_1": {
+"name": "Jumbo Spectral Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 4
+}
+},
+"p_spectral_mega_1": {
+"name": "Mega Spectral Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 2,
+"extra": 4
+}
+},
+"p_spectral_normal_1": {
+"name": "Spectral Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 2
+}
+},
+"p_spectral_normal_2": {
+"name": "Spectral Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 2
+}
+},
+"p_standard_jumbo_1": {
+"name": "Jumbo Standard Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 5
+}
+},
+"p_standard_jumbo_2": {
+"name": "Jumbo Standard Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 5
+}
+},
+"p_standard_mega_1": {
+"name": "Mega Standard Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 2,
+"extra": 5
+}
+},
+"p_standard_mega_2": {
+"name": "Mega Standard Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 2,
+"extra": 5
+}
+},
+"p_standard_normal_1": {
+"name": "Standard Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_standard_normal_2": {
+"name": "Standard Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_standard_normal_3": {
+"name": "Standard Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"p_standard_normal_4": {
+"name": "Standard Pack",
+"effect": null,
+"set": "Booster",
+"config": {
+"choose": 1,
+"extra": 3
+}
+},
+"v_antimatter": {
+"name": "Antimatter",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 15
+}
+},
+"v_blank": {
+"name": "Blank",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 5
+}
+},
+"v_clearance_sale": {
+"name": "Clearance Sale",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 25
+}
+},
+"v_crystal_ball": {
+"name": "Crystal Ball",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 3
+}
+},
+"v_directors_cut": {
+"name": "Director's Cut",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 10
+}
+},
+"v_glow_up": {
+"name": "Glow Up",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 4
+}
+},
+"v_grabber": {
+"name": "Grabber",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1
+}
+},
+"v_hieroglyph": {
+"name": "Hieroglyph",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1
+}
+},
+"v_hone": {
+"name": "Hone",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 2
+}
+},
+"v_illusion": {
+"name": "Illusion",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 4
+}
+},
+"v_liquidation": {
+"name": "Liquidation",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 50
+}
+},
+"v_magic_trick": {
+"name": "Magic Trick",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 4
+}
+},
+"v_money_tree": {
+"name": "Money Tree",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 100
+}
+},
+"v_nacho_tong": {
+"name": "Nacho Tong",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1
+}
+},
+"v_observatory": {
+"name": "Observatory",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1.5
+}
+},
+"v_omen_globe": {
+"name": "Omen Globe",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 4
+}
+},
+"v_overstock_norm": {
+"name": "Overstock",
+"effect": null,
+"set": "Voucher"
+},
+"v_overstock_plus": {
+"name": "Overstock Plus",
+"effect": null,
+"set": "Voucher"
+},
+"v_paint_brush": {
+"name": "Paint Brush",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1
+}
+},
+"v_palette": {
+"name": "Palette",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1
+}
+},
+"v_petroglyph": {
+"name": "Petroglyph",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1
+}
+},
+"v_planet_merchant": {
+"name": "Planet Merchant",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 2.4,
+"extra_disp": 2
+}
+},
+"v_planet_tycoon": {
+"name": "Planet Tycoon",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 8,
+"extra_disp": 4
+}
+},
+"v_recyclomancy": {
+"name": "Recyclomancy",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1
+}
+},
+"v_reroll_glut": {
+"name": "Reroll Glut",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 2
+}
+},
+"v_reroll_surplus": {
+"name": "Reroll Surplus",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 2
+}
+},
+"v_retcon": {
+"name": "Retcon",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 10
+}
+},
+"v_seed_money": {
+"name": "Seed Money",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 50
+}
+},
+"v_tarot_merchant": {
+"name": "Tarot Merchant",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 2.4,
+"extra_disp": 2
+}
+},
+"v_tarot_tycoon": {
+"name": "Tarot Tycoon",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 8,
+"extra_disp": 4
+}
+},
+"v_telescope": {
+"name": "Telescope",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 3
+}
+},
+"v_wasteful": {
+"name": "Wasteful",
+"effect": null,
+"set": "Voucher",
+"config": {
+"extra": 1
+}
+}
+},
+"enh_label": {
+"c_base": "Base Card",
+"m_bonus": "Bonus Card",
+"m_mult": "Mult Card",
+"m_wild": "Wild Card",
+"m_glass": "Glass Card",
+"m_steel": "Steel Card",
+"m_stone": "Stone Card",
+"m_gold": "Gold Card",
+"m_lucky": "Lucky Card"
+},
+"tags": {
+"tag_boss": "Boss Tag",
+"tag_buffoon": "Buffoon Tag",
+"tag_charm": "Charm Tag",
+"tag_coupon": "Coupon Tag",
+"tag_d_six": "D6 Tag",
+"tag_double": "Double Tag",
+"tag_economy": "Economy Tag",
+"tag_ethereal": "Ethereal Tag",
+"tag_foil": "Foil Tag",
+"tag_garbage": "Garbage Tag",
+"tag_handy": "Handy Tag",
+"tag_holo": "Holographic Tag",
+"tag_investment": "Investment Tag",
+"tag_juggle": "Juggle Tag",
+"tag_meteor": "Meteor Tag",
+"tag_negative": "Negative Tag",
+"tag_orbital": "Orbital Tag",
+"tag_polychrome": "Polychrome Tag",
+"tag_rare": "Rare Tag",
+"tag_skip": "Skip Tag",
+"tag_standard": "Standard Tag",
+"tag_top_up": "Top-up Tag",
+"tag_uncommon": "Uncommon Tag",
+"tag_voucher": "Voucher Tag"
+},
+"tag_config": {
+"tag_boss": {
+"name": "Boss Tag",
+"config": {
+"type": "new_blind_choice"
+}
+},
+"tag_buffoon": {
+"name": "Buffoon Tag",
+"config": {
+"type": "new_blind_choice"
+}
+},
+"tag_charm": {
+"name": "Charm Tag",
+"config": {
+"type": "new_blind_choice"
+}
+},
+"tag_coupon": {
+"name": "Coupon Tag",
+"config": {
+"type": "shop_final_pass"
+}
+},
+"tag_d_six": {
+"name": "D6 Tag",
+"config": {
+"type": "shop_start"
+}
+},
+"tag_double": {
+"name": "Double Tag",
+"config": {
+"type": "tag_add"
+}
+},
+"tag_economy": {
+"name": "Economy Tag",
+"config": {
+"max": 40,
+"type": "immediate"
+}
+},
+"tag_ethereal": {
+"name": "Ethereal Tag",
+"config": {
+"type": "new_blind_choice"
+}
+},
+"tag_foil": {
+"name": "Foil Tag",
+"config": {
+"edition": "foil",
+"odds": 2,
+"type": "store_joker_modify"
+}
+},
+"tag_garbage": {
+"name": "Garbage Tag",
+"config": {
+"dollars_per_discard": 1,
+"type": "immediate"
+}
+},
+"tag_handy": {
+"name": "Handy Tag",
+"config": {
+"dollars_per_hand": 1,
+"type": "immediate"
+}
+},
+"tag_holo": {
+"name": "Holographic Tag",
+"config": {
+"edition": "holo",
+"odds": 3,
+"type": "store_joker_modify"
+}
+},
+"tag_investment": {
+"name": "Investment Tag",
+"config": {
+"dollars": 25,
+"type": "eval"
+}
+},
+"tag_juggle": {
+"name": "Juggle Tag",
+"config": {
+"h_size": 3,
+"type": "round_start_bonus"
+}
+},
+"tag_meteor": {
+"name": "Meteor Tag",
+"config": {
+"type": "new_blind_choice"
+}
+},
+"tag_negative": {
+"name": "Negative Tag",
+"config": {
+"edition": "negative",
+"odds": 5,
+"type": "store_joker_modify"
+}
+},
+"tag_orbital": {
+"name": "Orbital Tag",
+"config": {
+"levels": 3,
+"type": "immediate"
+}
+},
+"tag_polychrome": {
+"name": "Polychrome Tag",
+"config": {
+"edition": "polychrome",
+"odds": 4,
+"type": "store_joker_modify"
+}
+},
+"tag_rare": {
+"name": "Rare Tag",
+"config": {
+"odds": 3,
+"type": "store_joker_create"
+}
+},
+"tag_skip": {
+"name": "Skip Tag",
+"config": {
+"skip_bonus": 5,
+"type": "immediate"
+}
+},
+"tag_standard": {
+"name": "Standard Tag",
+"config": {
+"type": "new_blind_choice"
+}
+},
+"tag_top_up": {
+"name": "Top-up Tag",
+"config": {
+"spawn_jokers": 2,
+"type": "immediate"
+}
+},
+"tag_uncommon": {
+"name": "Uncommon Tag",
+"config": {
+"type": "store_joker_create"
+}
+},
+"tag_voucher": {
+"name": "Voucher Tag",
+"config": {
+"type": "voucher_add"
+}
+}
+},
+"blinds": {
+"bl_arm": "The Arm",
+"bl_big": "Big Blind",
+"bl_club": "The Club",
+"bl_eye": "The Eye",
+"bl_final_acorn": "Amber Acorn",
+"bl_final_bell": "Cerulean Bell",
+"bl_final_heart": "Crimson Heart",
+"bl_final_leaf": "Verdant Leaf",
+"bl_final_vessel": "Violet Vessel",
+"bl_fish": "The Fish",
+"bl_flint": "The Flint",
+"bl_goad": "The Goad",
+"bl_head": "The Head",
+"bl_hook": "The Hook",
+"bl_house": "The House",
+"bl_manacle": "The Manacle",
+"bl_mark": "The Mark",
+"bl_mouth": "The Mouth",
+"bl_needle": "The Needle",
+"bl_ox": "The Ox",
+"bl_pillar": "The Pillar",
+"bl_plant": "The Plant",
+"bl_psychic": "The Psychic",
+"bl_serpent": "The Serpent",
+"bl_small": "Small Blind",
+"bl_tooth": "The Tooth",
+"bl_wall": "The Wall",
+"bl_water": "The Water",
+"bl_wheel": "The Wheel",
+"bl_window": "The Window"
+}
+}

@@ -1060,7 +1060,14 @@ fn wraith(game: &mut GameState, _cards: &[CardRef]) {
 /// Copy the last Tarot or Planet used this run, itself excepted.
 fn the_fool(game: &mut GameState, _cards: &[CardRef]) {
     let last = game.last_tarot_planet.clone();
-    if last.is_empty() || last == "c_fool" {
+    if last.is_empty() {
+        // create_card('Tarot_Planet', ..., forced_key=nil, 'fool'): a random Tarot or Planet (Jackdaw's patch; the
+        // game itself never lets The Fool be used with nothing to copy)
+        let specs = game.random_consumables_set("Tarot_Planet", 1, "fool");
+        game.add_consumables(&specs, Edition::None);
+        return;
+    }
+    if last == "c_fool" {
         return;
     }
     if let Some(name) = crate::shop_pool::name_by_consumable_key(&last) {

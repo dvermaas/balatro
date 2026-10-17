@@ -198,6 +198,7 @@ fn score_card_once(card: &CardRef, ctx: &mut ScoreContext, game: &mut GameState)
             LUCKY_MONEY_CHANCE.1,
         ) {
             ctx.money_gained += 20;
+            ctx.card_pay += 20;
             ctx.chance_paid += 20;
             lucky_trigger = true;
         }
@@ -207,6 +208,7 @@ fn score_card_once(card: &CardRef, ctx: &mut ScoreContext, game: &mut GameState)
 
     if seal == Seal::Gold {
         ctx.money_gained += 3;
+        ctx.card_pay += 3;
     }
     lucky_trigger
 }
@@ -301,6 +303,7 @@ pub fn score_hand(
         game.money,
         game.probability_scale(),
     );
+    ctx.hide_card_pay = game.jackdaw_card_pay_unseen;
     // A debuffed joker scores nothing at all -- a perishable that has run out its
     // rounds sits in the row contributing neither chips nor mult.
     // (owner, spec, source): the joker in the row, the ability it runs, and the

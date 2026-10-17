@@ -291,7 +291,16 @@ impl GameState {
         count: i32,
         append: &str,
     ) -> Vec<&'static ConsumableSpec> {
-        let card_set = kind.set_name();
+        self.random_consumables_set(kind.set_name(), count, append)
+    }
+
+    /// As `random_consumables` for a pool named by its set (`"Tarot_Planet"` is The Fool's).
+    pub fn random_consumables_set(
+        &mut self,
+        card_set: &str,
+        count: i32,
+        append: &str,
+    ) -> Vec<&'static ConsumableSpec> {
         // Planets are gated on the hand they level having been played.
         let played: Vec<&str> = self
             .hand_levels

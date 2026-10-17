@@ -20,3 +20,29 @@ Local changes to this copy are listed here, newest last:
   drawn_to_hand in the lovely dump): only the joker it held is released, and the pick is over non-debuffed
   jokers except that one (all of them if none is left). Vanilla re-enabled every joker first
   (Jackdaw: `sim_patches.crimson_heart`). Found by the v25 identity check (9YUMEW2U).
+- Lost round (game.rs `_lose_round`): the end_of_round joker effects now run on the losing play too (when no
+  Mr. Bones saves it). state_events.lua:107 (end_round) calls SMODS.calculate_context({end_of_round}) before
+  it looks at game_over, and card.lua:3283-3349 (Popcorn, ...) has no game_over guard, so Popcorn is eaten,
+  Rocket/Egg/Gift Card tick on a loss. Visible only in the final view (R8ZXJN6L@342). Found by the engine replay.
+- Swashbuckler checked, no rumbot change (KGA553W7@375): card.lua:4609-4617 sums `sell_cost` of every other
+  joker in G.jokers with no debuff test; rumbot matches. Jackdaw (jokers.py `_swashbuckler`) skips debuffed
+  jokers (`and not j.debuff`), so under Crimson Heart it scores less (Mult 8 vs 11: 102 vs 111 x 122).
+
+- shop_pool.rs `soulable`: a Spectral Soul hit still makes the Black Hole roll (common_events.lua:2088-2100).
+  `Tarot_Planet` pool (interleaved by `order`) + `random_consumables_set`; The Fool with nothing to copy draws from it
+  (Jackdaw patch). GameState flags `fool_always_usable`, `pack_ignores_played` (default false) mirror Jackdaw's pack
+  path in item forecasts.
+
+## fc-items3: forecast-only Jackdaw mirror
+`GameState.jackdaw_card_pay_unseen` (default false; set only by the Rust items forecast when Python would have fallen back to Jackdaw): Bootstraps and Bull
+do not count the hand's Gold Seal/Lucky pay. The game counts it (card.lua:1400-1403 dollar_buffer, read at card.lua:4297 and 4407); Jackdaw does not. No
+change to rumbot's own behaviour.
+
+## fc-items4: forecast-only Jackdaw mirror (pack path)
+`pack_ignores_played` now stays on for the whole pick and `add_random_joker` (game_jokers.rs) then ignores the seen centers, because Jackdaw never fills
+`used_jokers` after build_state, so Judgement/Wraith may create a joker the player owns (the game excludes it). Default false; rumbot's own behaviour unchanged.
+
+## fc-items5: forecast-only Jackdaw mirror (unmarked owned jokers)
+`GameState.jackdaw_unmarked_jokers` (default empty; set only by the Rust items forecast on a Jackdaw-replay restart): joker keys owned when the state was built.
+`seen_centers` skips one occurrence of each, so shops and packs may roll a joker the player owns. The game excludes it (G.GAME.used_jokers is set at
+creation, card.lua:349-354); Jackdaw's build_state leaves used_jokers empty. No change to rumbot's own behaviour.
