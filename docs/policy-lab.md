@@ -535,3 +535,24 @@ deck's main hand at ante 4 was Pair, mean ante 7.32) because they keep playing P
 Straight decks drift into other hands after ante 5 (Flush: 4 of 35 won, 0 of 21 at ante 6). Engines from
 the guides formed in about 5% (face cards) and 1% (others) of runs. Nudging discards, suit tarots or
 engine pieces did not convert that into wins: the forecast's frozen-build judgement beat each heuristic.
+
+**Learned value: not worth building (2026-10-17).** Question: can a model of "how far does a run get from
+this shop state" add the long-term value the frozen-build forecast misses? Data: 14,861 shop visits from
+about 700 logged v28/v31 games (incl. 400 new v31 games, `--seeds 400 --seed-offset 260`). Features: money,
+joker counts by kind and edition, levels, deck size and enhancements, vouchers, hand size, typical hand
+vs this ante's and the wall's boss, play_mix share; target blinds still to be cleared (R2) and win (AUC),
+5-fold CV grouped by game.
+- Within an ante, summary features explain little: R2 0.06 / 0.12 / 0.17 / 0.17 / 0.11 at antes 3-7,
+  win AUC 0.59-0.75. Across antes R2 is 0.6, but that is the ante itself.
+- One indicator per joker (119 jokers) makes it worse out of sample (overfits).
+- So outcomes from a given state are mostly decided by later shops, draws and bosses; a learned terminal
+  value would add little over the forecast at this data size. Not built.
+
+| arm (vs v31, 200 seeds) | ante | wins (v31: 40) |
+|---|---:|---:|
+| v23 early slot fill off (`bot-early-off`) | +0.01 +- 0.04 | 37 |
+| early slot fill up to 5 jokers | -0.04 +- 0.03 | 41 |
+| pack jokers valued with the best play re-chosen (`bot-jreopt-pick`) | -0.07 +- 0.03 | 40 |
+| + same for the weakest-joker swap ranking (60% slower) | -0.01 +- 0.08 | 40 |
+
+The early slot fill is redundant since v31 (the 1 SE bar buys those jokers anyway).
