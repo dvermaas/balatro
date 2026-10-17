@@ -33,6 +33,9 @@ pub trait Game {
 ///   score:  {"type": "score", "instructions": str | dict, ...} -> {"type": "score", "score": f, ...}
 ///   noul:   {"type": "noul", "instructions": str, ...} -> {"type": "noul", "noul": f}
 pub trait Jev {
+    /// Called by the bot right before every `system_one` with the bot's `last_state` (the Python
+    /// `_code_jev` stand-in reads `bot_ref[0].last_state`). Real JEV ignores it.
+    fn observe(&mut self, _last_state: &Value) {}
     fn system_one(&mut self, state: &Value, questions: &Map<String, Value>) -> Result<JevResponse, String>;
 }
 
@@ -57,3 +60,7 @@ pub trait Oracle {
     /// `rollout_items.Picker(pub).pick_pub(pub)`.
     fn pick_pub(&mut self, pub_gs: &Value) -> Value;
 }
+
+/// The oracle is shared between the bot (decisions call the forecasts) and the code stand-in for
+/// JEV (`codejev.rs`), so both draw from one ordered stream of recorded/real calls.
+pub type SharedOracle = std::rc::Rc<std::cell::RefCell<dyn Oracle>>;
