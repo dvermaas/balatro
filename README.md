@@ -108,8 +108,9 @@ the simulator first (next section).
   - `sim60-a`: mean ante **6.50**, 10 wins out of 60 (v27: 5.90, 4 wins);
   - 60 fresh seeds (`--seeds 60`): **6.63**, 10 wins (v27: 6.15, 6 wins);
   - 200 fresh seeds (`--seeds 200 --seed-offset 60`): **6.68**, 40 wins (20%; v28: 6.46, 27 wins);
-  - v28 planets, v29 Negative jokers, v30 Verdant Leaf, v31 auto-buy bar 1 SE: see
-    [docs/policy-lab.md](docs/policy-lab.md), "Mid-game scaling experiments" and after;
+  - v28 planets, v29 Negative jokers, v30 Verdant Leaf, v31 auto-buy bar 1 SE: conclusions in
+    [docs/lab-lessons.md](docs/lab-lessons.md), numbers in [docs/policy-lab.md](docs/policy-lab.md)
+    ("Mid-game scaling experiments" and after), every game in `docs/samples/cloud-lab/`;
   - about a third of runs reach ante 8, where the finisher bosses (Violet Vessel, Crimson Heart,
     Amber Acorn) take most of them.
 
