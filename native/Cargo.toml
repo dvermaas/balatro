@@ -1,18 +1,12 @@
-[package]
-name = "jev_native"
-version = "0.1.0"
-edition = "2021"
-description = "Rust kernel for the bot's joker-aware hand scorer (src/native.py, src/jokers.py)"
-license = "MIT"
-
-[lib]
-name = "jev_native"
-crate-type = ["cdylib"]
-
-[dependencies]
-jev_kernel = { path = "kernel" }
-pyo3 = { version = "0.30", features = ["extension-module", "abi3-py312"] }
+# The Rust bot and its crates: build everything with `cargo build --release` here (binaries in
+# native/target/release). See README "Rust bot".
+[workspace]
+resolver = "2"
+members = ["bot", "kernel", "simcore", "rumbot", "pycompat", "typesafe"]
 
 [profile.release]
 lto = true
 codegen-units = 1
+
+[profile.test]
+opt-level = 2

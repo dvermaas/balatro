@@ -4,10 +4,8 @@
 //! `forecast_apply`. Uses the engine's BalatroBot-shaped gamestate as the `_area_cards` views.
 
 use crate::engine::RumbotGame;
-use crate::forecast_apply::apply_option;
 use crate::forecast_state::state_json_from_pub;
 use crate::gs;
-use crate::iface::Game;
 use crate::picker::Picker;
 use rumbot_sim::game::GameState;
 use rumbot_sim::rng::RunRng;
@@ -355,7 +353,7 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
         with_supported.push(o2);
         rmap.insert(key, Value::Array(std::mem::take(&mut runs[oi])));
     }
-    let mut out = crate::prof::time("fi.assemble", || crate::forecast_stats::assemble(&with_supported, None, &rmap, bosses, k as i64));
+    let out = crate::prof::time("fi.assemble", || crate::forecast_stats::assemble(&with_supported, None, &rmap, bosses, k as i64));
     let mut m = serde_json::Map::new();
     for key in ["options", "rollouts", "bosses"] {
         m.insert(key.into(), out[key].clone());

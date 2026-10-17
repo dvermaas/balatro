@@ -959,8 +959,7 @@ impl GameState {
         // Chicot disables the boss from setting_blind and add_to_deck, neither of
         // which a debuffed one runs.
         if self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .any(|j| j.borrow().name() == "Chicot")
         {
             return None;
@@ -1008,11 +1007,12 @@ impl GameState {
     /// joker working: a debuffed Stuntman went on taking two off the hand size, so
     /// the run dealt seven cards where the game dealt nine.
     pub fn active_jokers(&self) -> Vec<JokerRef> {
-        self.jokers
-            .iter()
-            .filter(|j| !j.borrow().debuffed)
-            .cloned()
-            .collect()
+        self.active_jokers_iter().cloned().collect()
+    }
+
+    /// `active_jokers` without the copy, for a scan that leaves the row alone.
+    pub fn active_jokers_iter(&self) -> impl Iterator<Item = &JokerRef> + '_ {
+        self.jokers.iter().filter(|j| !j.borrow().debuffed)
     }
 
     /// The row as calculate_joker walks it: a debuffed joker is skipped.
@@ -1027,15 +1027,13 @@ impl GameState {
 
     /// Every card counts as a face card.
     pub fn has_pareidolia(&self) -> bool {
-        self.active_jokers()
-            .iter()
+        self.active_jokers_iter()
             .any(|j| j.borrow().name() == "Pareidolia")
     }
 
     /// Hearts count as Diamonds and Spades as Clubs, both ways.
     pub fn has_smeared(&self) -> bool {
-        self.active_jokers()
-            .iter()
+        self.active_jokers_iter()
             .any(|j| j.borrow().name() == "Smeared Joker")
     }
 
@@ -1047,28 +1045,24 @@ impl GameState {
     /// `RunRng::pessimistic`.
     pub fn probability_scale(&self) -> f64 {
         let count = self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .filter(|j| j.borrow().name() == "Oops! All 6s")
             .count();
         2f64.powi(count as i32)
     }
 
     pub fn splash(&self) -> bool {
-        self.active_jokers()
-            .iter()
+        self.active_jokers_iter()
             .any(|j| j.borrow().name() == "Splash")
     }
 
     pub fn four_fingers(&self) -> bool {
-        self.active_jokers()
-            .iter()
+        self.active_jokers_iter()
             .any(|j| j.borrow().name() == "Four Fingers")
     }
 
     pub fn shortcut_joker(&self) -> bool {
-        self.active_jokers()
-            .iter()
+        self.active_jokers_iter()
             .any(|j| j.borrow().name() == "Shortcut")
     }
 
@@ -1201,8 +1195,7 @@ impl GameState {
         let config = self.deck_config();
         let mut hands = BASE_HANDS + self.vouchers.iter().map(|v| v.extra_hands).sum::<i32>();
         hands += self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .map(|j| j.borrow().spec.extra_hands)
             .sum::<i32>();
         hands += config.hands;
@@ -1210,8 +1203,7 @@ impl GameState {
         let mut discards = BASE_DISCARDS - if self.stake >= 5 { 1 } else { 0 };
         discards += self.vouchers.iter().map(|v| v.extra_discards).sum::<i32>();
         discards += self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .map(|j| j.borrow().spec.extra_discards)
             .sum::<i32>();
         discards += config.discards;
@@ -1673,8 +1665,7 @@ impl GameState {
         self.hands_left = hands;
         self.discards_left = discards;
         self.free_rerolls_carried = self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .map(|j| j.borrow().spec.free_rerolls)
             .sum();
         self.reroll_price_carried = if self.temp_reroll_cost {
@@ -2210,7 +2201,7 @@ impl GameState {
             .cloned()
             .collect();
         self.hands_left -= 1;
-        *self.hand_levels.plays.entry(result.hand).or_insert(0) += 1;
+        *self.hand_levels.plays.get_mut(&result.hand) += 1;
         self.last_hand = result.hand.label().to_string();
 
         self._play_hand_score(&result, &played, &held, debuffed);
@@ -2763,8 +2754,7 @@ impl GameState {
         // And now the interest, on what is left after the rent. The multiplier
         // applies after the cap has bitten.
         let per_block = 1 + self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .map(|j| j.borrow().spec.interest_bonus)
             .sum::<i32>();
         if !self.deck_config().no_interest {
@@ -2904,8 +2894,7 @@ impl GameState {
         let seen = self.seen_centers();
         let seen_vec: Vec<String> = if self.pack_ignores_played { Vec::new() } else { seen.iter().cloned().collect() };
         let showman = self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .any(|j| j.borrow().spec.allows_duplicates);
         let flags: Vec<String> = self.pool_flags.iter().cloned().collect();
         let stickers = self.sticker_rules();
@@ -3134,8 +3123,7 @@ impl GameState {
         let seen = self.seen_centers();
         let seen_vec: Vec<String> = seen.iter().cloned().collect();
         let showman = self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .any(|j| j.borrow().spec.allows_duplicates);
         let flags: Vec<String> = self.pool_flags.iter().cloned().collect();
         let rates = self._shop_rates();
@@ -3319,8 +3307,7 @@ impl GameState {
             let seen = self.seen_centers();
             let seen_vec: Vec<String> = seen.iter().cloned().collect();
             let showman = self
-                .active_jokers()
-                .iter()
+                .active_jokers_iter()
                 .any(|j| j.borrow().spec.allows_duplicates);
             let flags: Vec<String> = self.pool_flags.iter().cloned().collect();
             let ante = self.ante;
@@ -3370,8 +3357,7 @@ impl GameState {
         if let Some(spec) = slot.consumable {
             if spec.kind == ConsumableKind::Planet
                 && self
-                    .active_jokers()
-                    .iter()
+                    .active_jokers_iter()
                     .any(|j| j.borrow().spec.free_planets)
             {
                 return 0;
@@ -3402,8 +3388,7 @@ impl GameState {
         }
         if pack.kind == PackKind::Celestial
             && self
-                .active_jokers()
-                .iter()
+                .active_jokers_iter()
                 .any(|j| j.borrow().spec.free_planets)
         {
             return 0;
@@ -3422,8 +3407,7 @@ impl GameState {
         }
         let mut shop = Shop::default();
         shop.free_rerolls = self
-            .active_jokers()
-            .iter()
+            .active_jokers_iter()
             .map(|j| j.borrow().spec.free_rerolls)
             .sum();
         // Set before it is filled, not after: seen_centers blanks a pool with what
@@ -4551,7 +4535,7 @@ impl GameState {
             out = (0, self.jokers.clone(), dollars, 0);
         } else {
             // Counted before it scores, as the play counts it.
-            *self.hand_levels.plays.entry(result.hand).or_insert(0) += 1;
+            *self.hand_levels.plays.get_mut(&result.hand) += 1;
             // The Arm takes the level off before the hand scores, as `_play` does.
             let mut arm = false;
             if self.boss().is_some_and(|b| b.level_down_played_hand) {

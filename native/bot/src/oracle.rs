@@ -5,7 +5,7 @@
 use crate::forecast;
 use crate::iface::Oracle;
 use crate::picker::{pick_json, Picker};
-use serde_json::{json, Value};
+use serde_json::Value;
 
 pub struct RustOracle;
 

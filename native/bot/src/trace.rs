@@ -1,16 +1,22 @@
-//! Reference traces of the v27 Python bot (`scripts/port/trace_game.py`) and fixture paths.
+//! Reference traces and fixtures recorded from the v27 Python bot (by the former scripts/port tools; the
+//! recordings stay valid without the Python code), and their paths.
 
 use flate2::read::GzDecoder;
 use serde_json::Value;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 
-/// `runs/_port` of the main port worktree (traces and fixtures are not in git). Override with
-/// `JEV_PORT_DATA`.
+/// Where the traces and fixtures live (they are not in git): `$JEV_PORT_DATA`, else this repo's
+/// `runs/_port`, else `runs/_port` of the port worktree they were recorded in.
 pub fn data_dir() -> PathBuf {
-    std::env::var_os("JEV_PORT_DATA")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("C:/Users/admin/Documents/Repos/balatro-rust/runs/_port"))
+    if let Some(d) = std::env::var_os("JEV_PORT_DATA") {
+        return PathBuf::from(d);
+    }
+    let here = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../runs/_port");
+    if here.is_dir() {
+        return here;
+    }
+    PathBuf::from("C:/Users/admin/Documents/Repos/balatro-rust/runs/_port")
 }
 
 pub fn fixtures_dir() -> PathBuf {

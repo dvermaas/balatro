@@ -1,6 +1,11 @@
 //! The JEV Balatro bot in Rust. Each module ports one Python module, line by line; see
 //! docs/rust-port-guide.md for the conventions and the identity checks.
 
+/// mimalloc for every binary and test that links the bot: the forecasts allocate heavily (JSON states,
+/// rumbot clones) and spent about a third of their time in the system allocator.
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 pub mod gs;
 pub mod iface;
 pub mod trace;

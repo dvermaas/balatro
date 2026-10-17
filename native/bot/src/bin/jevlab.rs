@@ -123,6 +123,7 @@ fn play(seed: &str) -> Result<Value, String> {
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
     bot.dec = jevbot::decisions::DecisionCfg::lab();
+    bot.recorder.raw_states = want_trace; // only decisions.jsonl is read back
     bot.act("start", Some(&json!({"seed": seed, "deck": "RED", "stake": "WHITE"}))).map_err(|e| format!("start: {e:?}"))?;
     let mut engine_won = false;
     for _ in 0..20000 {
@@ -159,8 +160,10 @@ fn play(seed: &str) -> Result<Value, String> {
         let d = b[2].as_str().map(String::from).unwrap_or_else(|| b[2].to_string());
         json!([b[0], if d.contains("replace") { "swap" } else { "joker" }, b[2]])
     }).collect();
-    let fs: Vec<f64> = ev.iter().map(|e| num(&e["forecast_seconds"])).filter(|x| *x != 0.0).collect();
-    let ifs: Vec<f64> = ev.iter().map(|e| num(&e["item_forecast_seconds"])).filter(|x| *x != 0.0).collect();
+    // every event that ran a forecast (policy_lab.py counted only nonzero times, so a forecast that rounded
+    // to 0.00 s went missing and the count depended on machine speed)
+    let fs: Vec<f64> = ev.iter().filter_map(|e| e.get("forecast_seconds")).map(num).collect();
+    let ifs: Vec<f64> = ev.iter().filter_map(|e| e.get("item_forecast_seconds")).map(num).collect();
     let won = summ["result"] == "won" || engine_won;
     let mut death = Value::Null;
     if !won {

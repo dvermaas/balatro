@@ -209,7 +209,7 @@ pub fn build_consumable_pool<H: AsRef<str>, S: AsRef<str>>(
     let mut pool = Vec::new();
     let rows: Vec<&ConsumableRow> = if card_set == "Tarot_Planet" {
         // P_CENTER_POOLS.Tarot_Planet: Tarots and Planets interleaved by their `order`
-        TAROT_PLANET_ORDER.iter().filter_map(|k| CONSUMABLE_DATA.iter().find(|r| r.key == format!("c_{k}"))).collect()
+        TAROT_PLANET_ORDER.iter().filter_map(|k| CONSUMABLE_DATA.iter().find(|r| r.key.strip_prefix("c_") == Some(k))).collect()
     } else {
         CONSUMABLE_DATA.iter().filter(|row| row.set == card_set).collect()
     };

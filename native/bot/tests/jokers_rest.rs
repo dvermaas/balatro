@@ -2,7 +2,7 @@
 //! planet_level against scripts/port/fixtures/jokers_rest.py. Every row must match: JSON by
 //! serde_json::to_string (key order and int/float types included), gain by f64 bits.
 
-use jevbot::{hands, jokers, trace};
+use jevbot::{jokers, trace};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 

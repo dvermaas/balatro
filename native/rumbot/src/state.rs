@@ -578,8 +578,7 @@ pub fn pack_row(game: &GameState, option: &PackChoice, picked: &[CardRef]) -> St
 
 /// Whether the run holds a joker that makes Planets free (Astronomer).
 fn has_free_planets(game: &GameState) -> bool {
-    game.active_jokers()
-        .iter()
+    game.active_jokers_iter()
         .any(|j| j.borrow().spec.free_planets)
 }
 

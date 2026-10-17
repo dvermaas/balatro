@@ -199,7 +199,7 @@ fn consumable_spec_json(
 
 fn consumable_json(g: &GameState, c: &ConsumableRef) -> Value {
     let cb = c.borrow();
-    let astronomer = g.active_jokers().iter().any(|j| j.borrow().spec.free_planets);
+    let astronomer = g.active_jokers_iter().any(|j| j.borrow().spec.free_planets);
     let buy = if cb.spec.kind == ConsumableKind::Planet && astronomer { 0 } else { g.card_cost(cb.spec.cost, cb.edition) };
     let (spec, uid, ed) = (cb.spec, cb.uid, cb.edition);
     drop(cb);
