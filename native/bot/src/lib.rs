@@ -5,6 +5,8 @@ pub mod gs;
 pub mod iface;
 pub mod trace;
 
+pub mod analytics;
+pub mod benchmark;
 pub mod build;
 pub mod codejev;
 pub mod decisions;
