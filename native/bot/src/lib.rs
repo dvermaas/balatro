@@ -5,6 +5,7 @@ pub mod gs;
 pub mod iface;
 pub mod trace;
 
+pub mod balatro;
 pub mod build;
 pub mod codejev;
 pub mod decisions;
@@ -17,6 +18,7 @@ pub mod forecast_apply;
 pub mod forecast_items;
 pub mod hands;
 pub mod jev_bot;
+pub mod jev_client;
 pub mod jokers;
 pub mod odds;
 pub mod oracle;
