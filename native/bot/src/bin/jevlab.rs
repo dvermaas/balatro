@@ -18,28 +18,10 @@ use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
 
-const SIM30_A: [&str; 30] = [
-    "TU9KANLF", "MGBZKPLC", "YZAI217Z", "2YLF77B5", "1YJ4DQ2R", "XFIKZ36U", "665WDGX8", "UDBU5JA1", "11BLBC1T", "6CLKMFPY",
-    "1SHJTVG7", "EV2CS4TX", "Z9DXS1JX", "6L3CIXAF", "R8ZXJN6L", "MZ5KZ3JH", "AEQ18EUN", "HXGTTFCH", "3XFPWBMH", "61QF3Z7R",
-    "SXYS1LUB", "QNCJLKQ3", "X4JSXYEF", "KGA553W7", "XT9RAZDH", "4R5NYC8E", "68RZS4XR", "F1PE5WEY", "SKP9DVE3", "WKPGXL14",
-];
-// benchmark.py SETS["sim60-a"] = SETS["sim30-a"] + these 30
-const SIM60_B: [&str; 30] = [
-    "GY2PWF7D", "Z88P7IDQ", "BIA2QXW3", "8Y1ZLY8X", "57R27KQ2", "GMJWI7Q1", "D172P6BH", "DUSJQ1TN", "MHVZ1JEC", "K792ZEJU",
-    "A7MZDVCC", "Z3GELG7B", "DRMQY3JS", "IDXTTNVK", "PCL2K7FC", "XYK41G5M", "JU76QQT6", "USJXYQLN", "2HKM8YZ8", "BAF8SB49",
-    "6MV2BE26", "54ATPSF9", "NSMRHDU9", "7NULGXWV", "3F5ILH3G", "D54JXDEK", "GTYIS5F4", "RS718JG4", "RHPJ6FZH", "QQ7KIM4A",
-];
-const GAP4_A: [&str; 4] = ["XYK41G5M", "68RZS4XR", "R8ZXJN6L", "54ATPSF9"];
 const ARM: &str = "bot-forecast-long";
 
 fn seed_set(name: &str) -> Option<Vec<String>> {
-    let v: Vec<&str> = match name {
-        "sim30-a" => SIM30_A.to_vec(),
-        "sim60-a" => SIM30_A.iter().chain(SIM60_B.iter()).copied().collect(),
-        "gap4-a" => GAP4_A.to_vec(),
-        _ => return None,
-    };
-    Some(v.into_iter().map(String::from).collect())
+    jevbot::benchmark::set(name).map(|s| s.iter().map(|x| x.to_string()).collect())
 }
 
 fn num(v: &Value) -> f64 {
