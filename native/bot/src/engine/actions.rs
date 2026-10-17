@@ -364,7 +364,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
             let a = Action {
                 r#type: ActionType::UseConsumable,
                 index: i as i32,
-                cards: cards.iter().map(|&c| c as usize).collect(),
+                cards: { let mut v: Vec<usize> = cards.iter().map(|&c| c as usize).collect(); v.sort_unstable(); v }, // Jackdaw targets are hand positions, order-free
             };
             if !g.is_legal(&a) {
                 return Err(cannot(g));
@@ -405,7 +405,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
                 let a = Action {
                     r#type: ActionType::PickPack,
                     index: i as i32,
-                    cards: targets.iter().map(|&c| c.max(0) as usize).collect(),
+                    cards: { let mut v: Vec<usize> = targets.iter().map(|&c| c.max(0) as usize).collect(); v.sort_unstable(); v },
                 };
                 if targets.iter().any(|&c| c < 0) || !g.is_legal(&a) {
                     return Err(illegal("Cannot pick that pack card (no room, or wrong targets)"));
