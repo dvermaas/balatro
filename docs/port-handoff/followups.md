@@ -45,3 +45,6 @@
   (`fool_always_usable`, `pack_ignores_played`) for v27 identity; drop them once Jackdaw is not the reference.
 - analytics (Python too): run_metrics "progress" never adds the final-blind share (last_move only holds
   discards_left, so target is 0): progress == rounds_won. Ported as-is; fix in both if the share was intended.
+- panel/jev_bot: benchmark queue not ported (JevBot on_menu benchmark path is todo!; POST /api/benchmark
+  answers 500); `--legacy` (v1 bot) and error tracebacks not ported. JEV API errors surface as a panic in
+  JevBot::query caught by the panel: turn into a Result like Python's TypeSafeError.
