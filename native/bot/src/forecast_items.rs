@@ -137,6 +137,9 @@ pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker
     // rumbot puts cards a pack creates (Cryptid, Familiar...) at the front. uids grow in creation order, like sort_id.
     g.full_deck.sort_by_key(|c| c.borrow().uid);
     g.draw_pile.sort_by_key(|c| c.borrow().uid);
+    // ...and carries only the rng pools, the seed (no live Lua state).
+    g.seed = seed.to_string();
+    g.rng.live = None;
     Ok(Applied { g: g, pack: pack0.unwrap_or_default(), taken, view0 })
 }
 
@@ -231,6 +234,7 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                     continue;
                 }
             };
+            let from_pack = !applied.pack.is_empty();
             let (mut g, pol) = {
                 let sig: Vec<String> = applied.g.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect();
                 let (g, p) = {
@@ -239,6 +243,9 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                 let p = pols.entry(sig).or_insert(p).clone();
                 (g, p)
             };
+            // Python's policy is built for Jackdaw's joker order, but the rollout's game comes from describe -> build, which
+            // orders the jokers by sort_id (a pack joker created before a later shop joker lands before it); the policy stays
+            // positional. Mirror both: policy above from the unsorted order, game sorted here.
             let pols_ref = std::cell::RefCell::new(&mut pols);
             let mut rebuild = |gm: &GameState| -> simcore::Policy {
                 let sig: Vec<String> = gm.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect();
@@ -253,13 +260,33 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
             // on Jackdaw. Mirror that: restart from the applied state with Jackdaw's scoring quirk (Bootstraps/Bull
             // do not see the hand's card pay) and the policy rebuilds Python's loop does.
             let g0 = g.deep_clone();
-            let rows = match simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, None, Some(&items), None) {
+            // (the Jackdaw replay after a STRICT_ABORT restarts from g0, which keeps Jackdaw's own order)
+            if from_pack {
+                g.jokers.sort_by_key(|j| j.borrow().uid);
+            }
+            if let (Ok(path), Ok(kk)) = (std::env::var("FC_CMP"), std::env::var("FC_CMPK")) {
+                if kk == k.to_string() && gs::s(gs::get(o, "key")) == std::env::var("FC_CMPO").unwrap_or_default() {
+                    let d: StateDesc = serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).expect("desc");
+                    let mut gp = simcore::build(&d).expect("build"); gp.seed = sd.clone(); gp.rng = RunRng::new(sd.clone()); if let Some(pl) = &d.rng_pools { gp.rng.pools = pl.clone(); }
+                    std::fs::write(format!("{path}.py.txt"), format!("{:#?}", gp)).unwrap();
+                    std::fs::write(format!("{path}.rs.txt"), format!("{:#?}", g)).unwrap();
+                }
+            }
+            if std::env::var("FC_ROWS").is_ok() { eprintln!("START {} {} $={} jokers={:?} deck={} draw={}", gs::s(gs::get(o, "key")), k, g.money, g.jokers.iter().map(|j| format!("{}#{}", j.borrow().spec.name, j.borrow().uid)).collect::<Vec<_>>(), g.full_deck.len(), g.draw_pile.len()); }
+            let mut tr0: Vec<String> = Vec::new();
+            let r0 = simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, if std::env::var("FC_TRACE").is_ok() { Some(&mut tr0) } else { None }, Some(&items), None);
+            for l in &tr0 { eprintln!("TR0 {} {} {}", gs::s(gs::get(o, "key")), k, l); }
+            let rows = match r0 {
                 Ok(r) => r,
                 Err(e) if e == simcore::STRICT_ABORT => {
                     g = g0;
                     if std::env::var("FC_ROWS").is_ok() { eprintln!("ABORT {} {}", gs::s(gs::get(o, "key")), k); }
                     g.jackdaw_card_pay_unseen = true;
-                    simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, None, Some(&items), Some(&mut rebuild)).expect("items rollout")
+                    g.jackdaw_unmarked_jokers = gs::cards_of(pub_, "jokers").iter().map(|c| gs::s(gs::get(c, "key")).to_string()).collect(); // jokers owned before the option (pick/buy marks its own)
+                    let mut tr: Vec<String> = Vec::new();
+                    let r = simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 900, if std::env::var("FC_TRACE").is_ok() { Some(&mut tr) } else { None }, Some(&items), Some(&mut rebuild)).expect("items rollout");
+                    for l in &tr { eprintln!("TR {} {} {}", gs::s(gs::get(o, "key")), k, l); }
+                    r
                 }
                 Err(e) => panic!("items rollout: {e}"),
             };

@@ -96,7 +96,7 @@ PY   {}", strip(&got), strip(&l["ret"]));
                         .to_string();
                     let e = classes.entry(cls).or_default();
                     e.0 += 1;
-                    if e.1.len() < 5 {
+                    if e.1.len() < 50 {
                         e.1.push(format!("{}#{}: {}", f.file_name().unwrap().to_string_lossy(), idx, d.chars().take(200).collect::<String>()));
                     }
                 }

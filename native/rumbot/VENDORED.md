@@ -37,3 +37,12 @@ Local changes to this copy are listed here, newest last:
 `GameState.jackdaw_card_pay_unseen` (default false; set only by the Rust items forecast when Python would have fallen back to Jackdaw): Bootstraps and Bull
 do not count the hand's Gold Seal/Lucky pay. The game counts it (card.lua:1400-1403 dollar_buffer, read at card.lua:4297 and 4407); Jackdaw does not. No
 change to rumbot's own behaviour.
+
+## fc-items4: forecast-only Jackdaw mirror (pack path)
+`pack_ignores_played` now stays on for the whole pick and `add_random_joker` (game_jokers.rs) then ignores the seen centers, because Jackdaw never fills
+`used_jokers` after build_state, so Judgement/Wraith may create a joker the player owns (the game excludes it). Default false; rumbot's own behaviour unchanged.
+
+## fc-items5: forecast-only Jackdaw mirror (unmarked owned jokers)
+`GameState.jackdaw_unmarked_jokers` (default empty; set only by the Rust items forecast on a Jackdaw-replay restart): joker keys owned when the state was built.
+`seen_centers` skips one occurrence of each, so shops and packs may roll a joker the player owns. The game excludes it (G.GAME.used_jokers is set at
+creation, card.lua:349-354); Jackdaw's build_state leaves used_jokers empty. No change to rumbot's own behaviour.
