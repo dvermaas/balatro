@@ -69,6 +69,10 @@ fn seal_str(s: Seal) -> Option<&'static str> {
     }
 }
 
+pub fn center_name(key: &str) -> String {
+    tables()["centers"][key]["name"].as_str().unwrap_or_default().to_string()
+}
+
 fn center_effect(key: &str) -> Option<String> {
     tables()["centers"][key]["effect"].as_str().map(String::from)
 }
