@@ -43,3 +43,5 @@
   description; its num_eq treats ints and floats alike. The items end-to-end forecast test covers it.
 - forecast_items sets two rumbot flags that mirror Jackdaw's OpenBooster/PickPackCard shortcuts
   (`fool_always_usable`, `pack_ignores_played`) for v27 identity; drop them once Jackdaw is not the reference.
+- analytics (Python too): run_metrics "progress" never adds the final-blind share (last_move only holds
+  discards_left, so target is 0): progress == rounds_won. Ported as-is; fix in both if the share was intended.
