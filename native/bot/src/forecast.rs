@@ -48,7 +48,7 @@ pub fn forecast_clock(
     budget_s: Option<f64>,
     clock: &dyn Fn() -> f64,
 ) -> Value {
-    let all = options(pub_);
+    let all = crate::prof::time("f.options", || options(pub_));
     let opts: Vec<&Value> = all
         .iter()
         .filter(|o| {
@@ -64,7 +64,7 @@ pub fn forecast_clock(
         let key = gs::s(gs::get(o, "key")).to_string();
         let pol = policy_of(&option_jokers(pub_, o));
         let s0 = seed(0);
-        let (error, base) = match apply_option_json(pub_, o, &s0) {
+        let (error, base) = match crate::prof::time("f.apply0", || apply_option_json(pub_, o, &s0)) {
             Err(_) => (true, None),
             Ok((_, Some(_))) => (false, None),
             Ok((_, None)) => match apply_option(pub_, o, &s0) {
@@ -86,14 +86,14 @@ pub fn forecast_clock(
                 let sd = seed(i);
                 let mut g = match &e.base {
                     Some(b) => {
-                        let mut g = b.deep_clone();
+                        let mut g = crate::prof::time("f.deep_clone", || b.deep_clone());
                         g.rng = rumbot_sim::rng::RunRng::new(sd.clone());
                         g
                     }
-                    None => apply_option(pub_, e.opt, &sd).expect("option applied at seed 0"),
+                    None => crate::prof::time("f.apply_k", || apply_option(pub_, e.opt, &sd)).expect("option applied at seed 0"),
                 };
                 g.seed = sd;
-                let rows = play_horizon(&mut g, &e.pol, bosses_u, 600).expect("rollout");
+                let rows = crate::prof::time("f.play_horizon", || play_horizon(&mut g, &e.pol, bosses_u, 600)).expect("rollout");
                 runs[ei].push(Value::Array(rows.iter().map(row_json).collect()));
             }
         }
@@ -108,7 +108,7 @@ pub fn forecast_clock(
     for (e, r) in ents.iter().zip(runs) {
         rmap.insert(e.key.clone(), Value::Array(r));
     }
-    let mut out = assemble(&all, keys, &rmap, bosses, k as i64);
+    let mut out = crate::prof::time("f.assemble", || assemble(&all, keys, &rmap, bosses, k as i64));
     let m = out.as_object_mut().unwrap();
     m.insert("seconds".into(), json!(pycompat::pyround(clock(), 2)));
     m.insert("_runs".into(), Value::Object(rmap));

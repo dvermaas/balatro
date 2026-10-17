@@ -257,13 +257,13 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let info = super::round_info(gs_);
     let boss = gs::get(&info, "blind").as_str().unwrap_or("").to_string();
     let rnd = gs::get(gs_, "round");
-    let js = jokers::build(gs_, None);
+    let js = crate::prof::time("sh.jokers_build", || jokers::build(gs_, None));
     let base_levels = gs::d(gs::get(gs_, "hands"));
     let levels = _boss_levels(base_levels, &boss);
     let infos: Vec<Info> = hand.iter().map(card_info).collect();
     let scorer = Scorer::new(levels.clone(), js.clone(), Rnd::from_value(rnd));
     let allowed = BossAllow::new(base_levels, &boss);
-    let mut plays: Vec<Value> = play_candidates(hand, &levels, 8, ScorerArg::Jokers(&scorer), Allowed::Boss(&allowed))
+    let mut plays: Vec<Value> = crate::prof::time("sh.play_candidates", || play_candidates(hand, &levels, 8, ScorerArg::Jokers(&scorer), Allowed::Boss(&allowed)))
         .iter().map(|p| p.to_json()).collect();
     if plays.is_empty() {
         // Nothing scores under Eye/Mouth yet: a play may still cycle cards, but cannot be a sure clear.
@@ -282,7 +282,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         return Ok(());
     }
 
-    let plays = setup_plays(gs_, hand, &plays, &levels, &scorer, &allowed, &info, margin);
+    let plays = crate::prof::time("sh.setup_plays", || setup_plays(gs_, hand, &plays, &levels, &scorer, &allowed, &info, margin));
     let hl = gs::mget(area(gs_, "hand"), "highlighted_limit");
     let cap = if gs::truthy(hl) { gs::int(hl) } else { 5 } as usize;
     let discards_left = gs::get(&info, "discards_left");
@@ -292,7 +292,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     } else {
         vec![]
     };
-    let b = build::decide(gs_);
+    let b = crate::prof::time("sh.build_decide", || build::decide(gs_));
     let est0 = gs::int(gs::get(&plays[0], "estimate"));
     let pace_v = gs::get(&info, "chips_needed_per_remaining_hand");
     let pace_f = if gs::truthy(pace_v) { gs::num(pace_v) } else { 0.0 };

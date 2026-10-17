@@ -15,19 +15,21 @@ fn list(v: &Value) -> Vec<Value> {
 
 impl Oracle for RustOracle {
     fn forecast(&mut self, pub_gs: &Value, n: i64, bosses: i64, keys: &[String], budget_s: Option<f64>) -> Value {
-        forecast::forecast(pub_gs, n as usize, bosses, Some(keys), budget_s)
+        crate::prof::time("oracle.forecast", || forecast::forecast(pub_gs, n as usize, bosses, Some(keys), budget_s))
     }
     fn items_forecast(&mut self, pub_gs: &Value, n: i64, bosses: i64, keys: &[String], budget_s: Option<f64>) -> Value {
-        crate::forecast_items::items_forecast(pub_gs, n as usize, bosses, Some(keys), budget_s)
+        crate::prof::time("oracle.items_forecast", || crate::forecast_items::items_forecast(pub_gs, n as usize, bosses, Some(keys), budget_s))
     }
     fn picker_values(&mut self, pub_gs: &Value, a: &Value) -> Value {
+        crate::prof::time("oracle.picker_values", || {
         let (pack, hand, jk) = (list(&a["pack"]), list(&a["hand"]), list(&a["jokers"]));
         let mut p = Picker::new(pub_gs);
         let v = p.values(&pack, &hand, &a["money"], &jk, a["joker_limit"].as_i64().unwrap_or(5));
         Value::Array(v.iter().map(|v| v.to_json()).collect())
+        })
     }
     fn pick_pub(&mut self, pub_gs: &Value) -> Value {
-        pick_json(Picker::new(pub_gs).pick_pub(pub_gs))
+        crate::prof::time("oracle.pick_pub", || pick_json(Picker::new(pub_gs).pick_pub(pub_gs)))
     }
 }
 

@@ -31,3 +31,17 @@
   tarots.rs by rumbot name, suit from the picker's build), `assemble` + vs_skip; on STRICT_ABORT (joker added / copier) rebuild the policy from the
   game's jokers and continue (Python does; Rust has no non-strict continuation yet).
 - Profile (item 2) not done.
+
+## perf (profile of jevlab arm F, 2YLF77B5+1YJ4DQ2R, --jobs 1)
+- No sampling profiler (samply needs admin; declined). Coarse timers: `JEV_PERF=1` prints `PROF <label> <s> <calls>` at exit (`src/prof.rs`).
+- Before (20.3 s total, 2 games): items_forecast 13.9 s (68%): apply_item_option 7.0 s (35%; pack options 925 us/call: engine full-gamestate view
+  twice per pick), play_horizon 3.3 s (16%), policy_of_game 3.2 s (16%, rebuilt even when the policy cache hit). forecast (shop) 2.7 s (13%,
+  play_horizon 2.2). Rest 3.7 s: h.selecting_hand 3.5 s (139 calls, 25 ms; jokers_build/play_candidates/setup_plays/build_decide only ~0.9 s of
+  it, ~2.6 s still unattributed), game.act+gamestate 0.6 s.
+- Fixed (results identical): policy_of_game only on a policy-cache miss (3.2 s -> 0.1 s); `ItemCache` caches the pub->game build per option /
+  pack (apply_nopack 750 -> 30 us); pack loop reads `RumbotGame::pack_view()` (money/jokers/hand/pack only) and `act_only` skips the discarded
+  post-action view; RecGame no longer logs/clones every call unless JEVLAB_TRACE.
+- After: items_forecast ~9.8 s of 16.5 s total in the same measurement (machine load varies a lot between runs, so compare ratios): apply_item_option
+  now ~2.8 s vs play_horizon 3.6 s.
+- Next: selecting_hand's unattributed ~2.6 s, the remaining h.shop non-oracle ~3 s, pack `pk.state` (173 us) / `pk.pick`, per-rollout play_horizon itself.
+- Verified: fc_items (FC_STRIDE=10 and full), fc_packs, live 8 seeds identical on arms E (1YJ4DQ2R call 330 known) and F.

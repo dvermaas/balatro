@@ -76,6 +76,20 @@ impl RumbotGame {
         self.call("gamestate", None)
     }
 
+    /// `call` for an action whose returned view the caller discards (the forecasts' pack loop); the view is not built.
+    pub fn act_only(&mut self, method: &str, params: &Value) -> Result<(), RpcError> {
+        self.calls += 1;
+        if self.g.is_none() {
+            return Err(rpc_error(-32002, format!("Method '{method}' requires an active run")));
+        }
+        actions::act(self, method, params)
+    }
+
+    /// Light gamestate for the forecasts' pack loop: money, jokers, hand, pack only.
+    pub fn pack_view(&self) -> Value {
+        view::serialize_pack_view(self)
+    }
+
     fn view(&mut self) -> Value {
         match &self.g {
             None => json!({"state": "MENU", "round_num": 0, "ante_num": 0, "money": 0}),

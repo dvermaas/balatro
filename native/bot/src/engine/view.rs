@@ -384,6 +384,21 @@ fn pack_choice_json(g: &GameState, c: &PackChoice) -> Value {
     }
 }
 
+// The areas the forecasts' pack loop reads (money, jokers, hand, pack) of `serialize`, without the rest of the view.
+pub fn serialize_pack_view(eng: &RumbotGame) -> Value {
+    let g = eng.g.as_ref().expect("serialize needs a run");
+    let live = g.blind.is_some();
+    let mut out = Map::new();
+    out.insert("money".into(), json!(g.money));
+    out.insert("jokers".into(), area(g.jokers.iter().map(|j| joker_json(g, j, true)).collect(), g.joker_slots() as i64, 1));
+    out.insert("hand".into(), area(g.hand.iter().map(|c| playing_card(g, c, "hand", live)).collect(), g.hand_size() as i64, 5));
+    if g.phase == Phase::Pack {
+        let cards: Vec<Value> = g.pack_options.iter().map(|c| pack_choice_json(g, c)).collect();
+        out.insert("pack".into(), area(cards, 2, 1));
+    }
+    Value::Object(out)
+}
+
 // sim_backend.serialize
 pub fn serialize(eng: &mut RumbotGame) -> Value {
     let g = eng.g.as_ref().expect("serialize needs a run");
