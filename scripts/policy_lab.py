@@ -380,7 +380,12 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-b4": {"items": True, "bosses": 4},
             # interest guard: a buy that lowers our interest by L dollars a round needs `guard` x L more SEs
             "bot-guard02": {"items": True, "guard": 0.2},
-            "bot-guard04": {"items": True, "guard": 0.4}}
+            "bot-guard04": {"items": True, "guard": 0.4},
+            # build commitment: from ante 3, discard plans that chase the deck's main hand (readiness.play_mix)
+            # get their expected score x (1 + commit) before ranking; `commit_hands` limits it to those mains
+            "bot-commit15-fs": {"items": True, "commit": 0.15, "commit_hands": ("Flush", "Straight")},
+            "bot-commit30-fs": {"items": True, "commit": 0.30, "commit_hands": ("Flush", "Straight")},
+            "bot-commit15-all": {"items": True, "commit": 0.15}}
 SKIP_TAGS = {
     "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
                "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
@@ -564,6 +569,9 @@ def _play_bot(seed, arm_name, t0):
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
     _DEFAULTS.setdefault("shop", decisions.shop)
+    import odds
+    _DEFAULTS.setdefault("odds", odds.forecast)
+    odds.forecast = _DEFAULTS["odds"]
     _DEFAULTS.setdefault("blind", decisions.blind_select)
     decisions.blind_select = _DEFAULTS["blind"]
     if opts.get("skip_tags"):
@@ -605,6 +613,30 @@ def _play_bot(seed, arm_name, t0):
             decisions.selecting_hand = round_planner.wrap(orig_selecting_hand, pstats)
         bot = JevBot(deck="RED", stake="WHITE", game=SimBalatro(), jev=jev, log_dir=Path(tmp))
         ref[0] = bot
+        if opts.get("commit"):
+            import odds
+            import readiness
+            import build as build_mod
+            orig_fc, bonus, only = _DEFAULTS["odds"], opts["commit"], opts.get("commit_hands")
+
+            def committed(discards, *a, **kw):
+                out = orig_fc(discards, *a, **kw)
+                gs = bot.last_state or {}
+                if (gs.get("ante_num") or 1) < 3:
+                    return out
+                mix = readiness.play_mix(gs)
+                main = max(mix, key=mix.get) if mix else None
+                if not main or (only and main not in only):
+                    return out
+                suit = build_mod.decide(gs).get("suit")
+                want = "flush" if main in build_mod.FLUSH_FAMILY else "straight" if main == "Straight" else \
+                    "sets" if main in build_mod.PAIR_FAMILY else "high"
+                for d in discards:
+                    kind, arg = d.get("goal") or (None, None)
+                    if kind == want and (want != "flush" or not suit or arg == suit) and d.get("expected_score"):
+                        d["expected_score"] = int(d["expected_score"] * (1 + bonus))
+                return out
+            odds.forecast = committed
         if opts.get("guard"):
             import strategy
             orig_ff, k = _DEFAULTS["ff"], opts["guard"]
@@ -690,6 +722,8 @@ def _play_bot(seed, arm_name, t0):
     finally:
         decisions._forecast_fields = _DEFAULTS["ff"]
         decisions.shop = _DEFAULTS["shop"]
+        import odds
+        odds.forecast = _DEFAULTS["odds"]
         decisions.blind_select = _DEFAULTS["blind"]
         decisions.selecting_hand = orig_selecting_hand  # workers play many games: never leak the wrapper
         if shop_patch:
