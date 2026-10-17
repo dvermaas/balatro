@@ -288,7 +288,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let discards_left = gs::get(&info, "discards_left");
     let hands_left = gs::num(gs::get(&info, "hands_left"));
     let mut discards: Vec<Value> = if gs::truthy(discards_left) && gs::num(discards_left) > 0.0 {
-        discard_candidates(hand, cap).iter().map(|d| d.to_json()).collect()
+        crate::prof::time("sh.discard_cands", || discard_candidates(hand, cap)).iter().map(|d| d.to_json()).collect()
     } else {
         vec![]
     };
@@ -297,7 +297,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let pace_v = gs::get(&info, "chips_needed_per_remaining_hand");
     let pace_f = if gs::truthy(pace_v) { gs::num(pace_v) } else { 0.0 };
     if !discards.is_empty() {
-        let preserve = preserve_discard(hand, &plays[0], &scorer, cap);
+        let preserve = crate::prof::time("sh.preserve", || preserve_discard(hand, &plays[0], &scorer, cap));
         let pc: HashSet<usize> = idx_list(gs::get(&preserve, "cards")).into_iter().collect();
         if !pc.is_empty()
             && discards.iter().all(|d| idx_list(gs::get(d, "cards")).into_iter().collect::<HashSet<_>>() != pc)
@@ -318,8 +318,8 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         let serpent = boss == "The Serpent";
         let draw_count = |n: usize| -> i64 { if serpent { 3 } else { (hand_size - hand.len() as i64 + n as i64).max(0) } };
         let deck: Vec<Info> = cards_of(gs_, "cards").iter().map(card_info).collect();
-        odds::forecast(&mut discards, &infos, &deck, &factory, Allowed::Boss(&allowed),
-            gs::num(gs::get(&info, "chips_still_needed")) * margin, pace_f, DrawCount::Func(&draw_count), 32);
+        crate::prof::time("sh.odds_forecast", || odds::forecast(&mut discards, &infos, &deck, &factory, Allowed::Boss(&allowed),
+            gs::num(gs::get(&info, "chips_still_needed")) * margin, pace_f, DrawCount::Func(&draw_count), 32));
         for d in discards.iter_mut() {
             let fits = build::fits(gs::get(d, "goal"), &b);
             let e = gs::num(gs::get(d, "expected_score"));
@@ -378,7 +378,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         return Ok(());
     }
 
-    let (answers, meta) = bot.query(gs_, &state, &questions)?;
+    let (answers, meta) = crate::prof::time("sh.query", || bot.query(gs_, &state, &questions))?;
     let p_play = answers.get("play_now").map_or(1.0, |a| gs::num(gs::get(a, "noul")));
     let pp: Vec<(String, f64)> = match answers.get("best_play") {
         Some(a) => probs_of(a),

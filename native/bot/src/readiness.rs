@@ -120,7 +120,7 @@ fn hand_size(g: &Value) -> usize {
 fn sorted_deck(g: &Value) -> Vec<Info> {
     let mut deck: Vec<Info> = gs::cards_of(g, "cards").iter().map(hands::card_info).collect();
     deck.extend(gs::cards_of(g, "hand").iter().map(hands::card_info));
-    deck.sort_by(|a, b| key(a).cmp(&key(b)));
+    deck.sort_by_cached_key(key);
     deck
 }
 
@@ -139,7 +139,7 @@ pub fn power(g: &Value, samples: usize) -> Option<Power> {
     for _ in 0..samples {
         let idx = rng.sample_indices(deck.len(), size);
         let mut hand: Vec<Info> = idx.iter().map(|&i| deck[i].clone()).collect();
-        hand.sort_by(|a, b| hand_sort_key(a).cmp(&hand_sort_key(b)));
+        hand.sort_by_cached_key(hand_sort_key);
         scores.push(hands::best_score(&hand, ScorerArg::Jokers(&scorer), Allowed::None));
     }
     scores.sort();

@@ -45,3 +45,15 @@
   now ~2.8 s vs play_horizon 3.6 s.
 - Next: selecting_hand's unattributed ~2.6 s, the remaining h.shop non-oracle ~3 s, pack `pk.state` (173 us) / `pk.pick`, per-rollout play_horizon itself.
 - Verified: fc_items (FC_STRIDE=10 and full), fc_packs, live 8 seeds identical on arms E (1YJ4DQ2R call 330 known) and F.
+
+## perf round 2 (arm F, 2YLF77B5+1YJ4DQ2R, --jobs 1; same session, before -> after)
+- New timers: `sh.odds_forecast/preserve/discard_cands/query` (selecting_hand), `s.shop_forecast/item_forecast/readiness/build/gain/recent/score_items` (shop).
+- Attribution (before): total 14.9 s. h.shop 12.1: s.shop_forecast 3.7 (f.play_horizon 2.9), s.item_forecast 3.8, **s.score_items 3.0** (the CodeJev stand-in
+  re-runs `items_forecast` n=FORECAST_N on 75 shops: it is a different n/keys, so not cacheable; it disappears with a real JEV), s.build 0.9 + sh.build_decide 0.4 +
+  s.readiness 0.3 (play_mix/power kernel scoring; play_mix already process-cached by signature). h.selecting_hand 2.15: odds_forecast 1.15, build 0.43, query 0.13,
+  setup_plays 0.07 (the old "unattributed 2.6 s" was odds::forecast: 32 samples x discards of kernel best_score, not JSON/describe).
+  items: fi.play_horizon 4.4, fi.apply_PACK 1.47 (pk.state 0.57, pk.pick 0.31, open_pack 0.17).
+- Fixed: odds/readiness sorts allocated `[String;6]` keys per comparison -> `sort_by_cached_key` (stable, same order). Total 14.9 -> 13.9 s, odds_forecast 1.15 -> 1.04 s,
+  selecting_hand 2.15 -> 1.99 s. The rest is real kernel/rollout compute; JSON building (pack_view etc.) is already lean.
+- Verified: fc_items STRIDE=10, fc_packs, bot_replay 8, live 8 seeds identical on F and E (1YJ4DQ2R call 330 known).
+- Next if needed: the kernel itself (each_play enumerates all <=5-subsets per sample), play_horizon.
