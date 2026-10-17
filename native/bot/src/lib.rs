@@ -19,6 +19,7 @@ pub mod hands;
 pub mod jev_bot;
 pub mod jokers;
 pub mod odds;
+pub mod oracle;
 pub mod picker;
 pub mod prompts;
 pub mod readiness;

@@ -212,6 +212,11 @@ pub struct RunRecorder {
 }
 
 impl RunRecorder {
+    /// The current run directory (None before the first `ensure`).
+    pub fn dir(&self) -> Option<&Path> {
+        self.dir.as_deref()
+    }
+
     /// RunRecorder(root, backend). `version` is the bot's PROMPT_VERSION.
     pub fn new(
         root: impl Into<PathBuf>, backend: &str, version: &str, scorer: &str, rollouts: &str,
