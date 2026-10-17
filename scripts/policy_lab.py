@@ -407,7 +407,11 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             # vouchers whose value only shows in later shops (the forecast's rollouts never shop): bought by code
             # while `vfloor` dollars stay, before the forecast's own picks
             "bot-vouch10": {"items": True, "vouch": "future", "vfloor": 10},
-            "bot-vouch25": {"items": True, "vouch": "future", "vfloor": 25}}
+            "bot-vouch25": {"items": True, "vouch": "future", "vfloor": 25},
+            # planets on plain hand-size deals (no +3 cards): what the deck really plays, not what discards could build
+            "bot-plx0": {"items": True, "planet_extra": 0},
+            # planets for Pair / Two Pair weighted x`pair_bias` (the 5k-game teacher levels Pair in 77% of its wins)
+            "bot-pairbias": {"items": True, "pair_bias": 1.5}}
 FUTURE_VOUCHERS = ["Antimatter", "Blank", "Overstock", "Overstock Plus", "Telescope", "Observatory", "Clearance Sale",
                    "Liquidation", "Crystal Ball", "Reroll Surplus", "Reroll Glut", "Seed Money", "Money Tree"]
 ENGINES = [
@@ -658,6 +662,16 @@ def _play_bot(seed, arm_name, t0):
     decisions.MAX_REROLLS = opts.get("max_rerolls", _DEFAULTS["rr"][0])
     decisions.INTEREST_BUFFER = opts.get("buffer", _DEFAULTS["rr"][1])
     _DEFAULTS.setdefault("pv", rollout_items.Picker.planet_value)
+    import readiness as _rd
+    _DEFAULTS.setdefault("mix", (_rd.MIX_EXTRA, rollout_items.planet_gain.__defaults__))
+    _DEFAULTS.setdefault("pmix", _rd.play_mix)
+    _rd.play_mix = _DEFAULTS["pmix"]
+    _rd.MIX_EXTRA = opts.get("planet_extra", _DEFAULTS["mix"][0])
+    _rd._MIX_CACHE.clear()  # keyed by seed/round, not by these settings
+    d = list(_DEFAULTS["mix"][1])
+    if "planet_extra" in opts:
+        d[1] = opts["planet_extra"]
+    rollout_items.planet_gain.__defaults__ = tuple(d)
     _DEFAULTS.setdefault("cv", rollout_items.Picker.consumable_value)
     _DEFAULTS.setdefault("jv", rollout_items.Picker.joker_value)
     rollout_items.Picker.joker_value = _DEFAULTS["jv"]
@@ -825,6 +839,26 @@ def _play_bot(seed, arm_name, t0):
                             best = (FUTURE_VOUCHERS.index(lab), k)
                 return best[1] if best else orig_rule(gs, items, money)
             decisions._planet_rule = rule
+        if opts.get("pair_bias"):
+            import readiness as _rd2
+            orig_pv, bias = rollout_items.Picker.planet_value, opts["pair_bias"]
+
+            def planet_value(self, c):
+                v = orig_pv(self, c)
+                import re
+                eff = _d(c.get("value")).get("effect") or ""
+                return v * bias if re.search(r"Level up (Pair|Two Pair) ", eff) else v
+            rollout_items.Picker.planet_value = planet_value
+            orig_mix = _rd2.play_mix
+
+            def mix(gs, samples=24):
+                m = dict(orig_mix(gs, samples))
+                for h in ("Pair", "Two Pair"):
+                    if h in m:
+                        m[h] *= bias
+                return m
+            _rd2.play_mix = mix
+            decisions.readiness.play_mix = mix
         if opts.get("mouth"):
             import random
             import jokers as jk
@@ -949,6 +983,8 @@ def _play_bot(seed, arm_name, t0):
         decisions._forecast_fields = _DEFAULTS["ff"]
         decisions._weakest_jokers = _DEFAULTS["weak_fn"]
         decisions.shop = _DEFAULTS["shop"]
+        import readiness as _rd3
+        _rd3.play_mix = _DEFAULTS["pmix"]
         decisions._planet_rule = _DEFAULTS["prule"]
         decisions.BossAllow.__call__, decisions.BossAllow.native_spec = _DEFAULTS["ba"]
         import odds
