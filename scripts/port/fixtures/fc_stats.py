@@ -65,7 +65,9 @@ def main():
                 rows.append({"fn": "options", "args": {"mode": mode, "pub": pub}, "ret": opts})
                 rows.append({"fn": "filtered", "args": {"mode": mode, "pub": pub, "keys": keys},
                              "ret": {"recorded": list(ret["options"].keys()),
-                                     "errors": list((ret.get("errors") or {}).keys())}})
+                                     "errors": list((ret.get("errors") or {}).keys()),
+                                     # options whose rollouts all failed (no runs) are dropped too
+                                     "no_runs": [k for k, v in (ret.get("_runs") or {}).items() if not v]}})
                 if mode == "items":
                     rows.append({"fn": "best", "args": {"fc": ret}, "ret": rollout_items.best(ret)})
                     continue
