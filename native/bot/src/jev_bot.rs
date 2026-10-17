@@ -297,6 +297,8 @@ pub struct JevBot {
     pub _forecast_cache: Option<(Value, Value)>,
     pub _item_forecast_cache: Option<(Value, Value)>,
     pub auto_actions: bool,
+    /// decisions.py module constants the lab overrides (FORECAST_N etc.).
+    pub dec: crate::decisions::DecisionCfg,
     pub event_hook: Option<EventHook>,
 }
 
@@ -322,7 +324,7 @@ impl JevBot {
             stats: Stats::default(), last_state: None,
             _shop_key: Value::Null, _shop_actions: 0, _failed: HashSet::new(), _rerolls: 0,
             _recent: vec![], _recent_seed: Value::Null, _forecast_cache: None, _item_forecast_cache: None,
-            auto_actions: true, event_hook: None,
+            auto_actions: true, dec: crate::decisions::DecisionCfg::production(), event_hook: None,
         }
     }
 
