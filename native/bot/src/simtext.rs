@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
 
-const DEFAULT_LOC_DIR: &str = "C:/Users/admin/Documents/Repos/balatro-rust/runs/_loc";
+const DEFAULT_LOC_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../runs/_loc");
 
 fn loc_dir() -> PathBuf {
     match std::env::var("BALATRO_LOC_DIR") {
