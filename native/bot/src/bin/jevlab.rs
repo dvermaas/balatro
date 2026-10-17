@@ -49,14 +49,85 @@ fn r1(x: f64) -> f64 {
     (x * 10.0).round() / 10.0
 }
 
+/// Wraps the game: records every call as a trace "call" line (method, params, ok/err) into `log`.
+struct RecGame {
+    inner: Box<dyn jevbot::iface::Game>,
+    log: Rc<RefCell<Vec<Value>>>,
+}
+impl jevbot::iface::Game for RecGame {
+    fn call(&mut self, method: &str, params: Option<&Value>) -> Result<Value, jevbot::iface::RpcError> {
+        let r = self.inner.call(method, params);
+        let mut rec = json!({"k": "call", "method": method, "params": params.cloned().unwrap_or(Value::Null)});
+        match &r {
+            Ok(v) => rec["ok"] = v.clone(),
+            Err(e) => rec["err"] = json!({"code": e.code, "message": e.message, "name": e.name}),
+        }
+        self.log.borrow_mut().push(rec);
+        r
+    }
+    fn backend(&self) -> &str {
+        self.inner.backend()
+    }
+}
+
+/// Strip card `id` fields and timing keys, for comparison.
+fn norm(v: &Value) -> Value {
+    match jevbot::replay::strip_timing(v) {
+        Value::Object(m) => Value::Object(m.into_iter().filter(|(k, _)| k != "id" && k != "sort_id").map(|(k, v)| (k, norm(&v))).collect()),
+        Value::Array(a) => Value::Array(a.iter().map(norm).collect()),
+        o => o,
+    }
+}
+
+fn first_diff(a: &Value, b: &Value, path: &str) -> Option<String> {
+    match (a, b) {
+        (Value::Object(x), Value::Object(y)) => {
+            for (k, v) in x {
+                match y.get(k) {
+                    None => return Some(format!("{path}.{k}: rust {} vs python MISSING", jevbot::trace::short(v, 120))),
+                    Some(w) => if let Some(d) = first_diff(v, w, &format!("{path}.{k}")) { return Some(d) },
+                }
+            }
+            y.keys().find(|k| !x.contains_key(*k)).map(|k| format!("{path}.{k}: rust MISSING vs python {}", jevbot::trace::short(&y[k], 120)))
+        }
+        (Value::Array(x), Value::Array(y)) => {
+            for i in 0..x.len().min(y.len()) {
+                if let Some(d) = first_diff(&x[i], &y[i], &format!("{path}[{i}]")) { return Some(d) }
+            }
+            if x.len() != y.len() { Some(format!("{path}: len rust {} vs python {}", x.len(), y.len())) } else { None }
+        }
+        _ => if a == b { None } else { Some(format!("{path}: rust {} vs python {}", jevbot::trace::short(a, 120), jevbot::trace::short(b, 120))) },
+    }
+}
+
+/// First differing call between the live log and the Python trace of `seed`.
+fn diff_trace(seed: &str, log: &[Value]) -> String {
+    let p = jevbot::trace::trace_files("bot-forecast-long").into_iter().find(|p| p.to_string_lossy().contains(seed));
+    let Some(p) = p else { return "no python trace".into() };
+    let py: Vec<Value> = jevbot::trace::load_trace(&p).into_iter().filter(|r| r["k"] == "call").collect();
+    for (i, r) in log.iter().enumerate() {
+        let Some(w) = py.get(i) else { return format!("call {i}: python trace ended ({} calls), rust continues with {}", py.len(), r["method"]) };
+        for key in ["method", "params", "ok", "err"] {
+            let (a, b) = (norm(r.get(key).unwrap_or(&Value::Null)), norm(w.get(key).unwrap_or(&Value::Null)));
+            if let Some(d) = first_diff(&a, &b, key) {
+                let prev = if i > 0 { format!("{} {}", log[i - 1]["method"], jevbot::trace::short(&log[i - 1]["params"], 80)) } else { String::new() };
+                return format!("call {i} ({} {}) after [{prev}]: {d}", r["method"], jevbot::trace::short(&r["params"], 80));
+            }
+        }
+    }
+    if py.len() > log.len() { format!("rust ended at call {} of {}", log.len(), py.len()) } else { "identical".into() }
+}
+
 fn play(seed: &str) -> Result<Value, String> {
     let t0 = std::time::Instant::now();
     let tmp = std::env::temp_dir().join(format!("plab_{}_{}", seed, std::process::id()));
     let _ = std::fs::remove_dir_all(&tmp);
     let oracle: SharedOracle = Rc::new(RefCell::new(RustOracle));
+    let calls: Rc<RefCell<Vec<Value>>> = Rc::new(RefCell::new(Vec::new()));
+    let want_trace = std::env::var_os("JEVLAB_TRACE").is_some();
     let jev = CodeJev::new(false, oracle.clone());
     let mut bot = JevBot::new(
-        "RED", "WHITE", "code-top-option", &tmp, Box::new(RumbotGame::new()), Box::new(jev), oracle,
+        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(RumbotGame::new()), log: calls.clone() }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
     bot.dec = jevbot::decisions::DecisionCfg::lab();
@@ -134,7 +205,17 @@ fn play(seed: &str) -> Result<Value, String> {
     put("prompt_version", summ["prompt_version"].clone());
     put("item_fc", json!(ifs.len()));
     put("item_fc_s", json!(r1(ifs.iter().sum())));
-    let _ = std::fs::remove_dir_all(&tmp);
+    if !want_trace { let _ = std::fs::remove_dir_all(&tmp); }
+    if want_trace {
+        let log = calls.borrow();
+        let d = std::path::PathBuf::from(std::env::var("JEVLAB_TRACE").unwrap());
+        let _ = std::fs::create_dir_all(&d);
+        use flate2::{write::GzEncoder, Compression};
+        let mut gz = GzEncoder::new(std::fs::File::create(d.join(format!("{seed}.jsonl.gz"))).map_err(|e| e.to_string())?, Compression::fast());
+        for r in log.iter() { writeln!(gz, "{r}").map_err(|e| e.to_string())?; }
+        let _ = writeln!(gz, "{}", json!({"k": "end", "result": row}));
+        eprintln!("{seed}: first divergence: {}", diff_trace(seed, &log));
+    }
     Ok(Value::Object(row))
 }
 
