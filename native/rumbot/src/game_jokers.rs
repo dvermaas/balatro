@@ -172,7 +172,7 @@ impl GameState {
             .map(|c| format!("m_{}", c.borrow().enhancement.as_str()))
             .collect();
         let seen = self.seen_centers();
-        let seen_vec: Vec<String> = seen.into_iter().collect();
+        let seen_vec: Vec<String> = if self.pack_ignores_played { Vec::new() } else { seen.into_iter().collect() };
         let flags: Vec<String> = self.pool_flags.iter().cloned().collect();
         let showman = self
             .active_jokers()

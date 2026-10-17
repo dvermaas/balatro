@@ -153,3 +153,17 @@ Hole roll (common_events.lua:2088-2100). NOT done: the lite comparison is not ye
   idx 71 k=11 from both sides (full `describe` comparison, the missing GameState -> StateDesc inverse).
 - Debug: `FC_ROWS=1` also prints `ABORT <opt> <k>`; fc_items mismatch lines now carry `#idx`.
 - Checks after the change: engine_replay (IGNORE="].id") 47/60, fc_packs passing.
+
+### Task fc-items4 status
+- Sampled fc_items (FC_STRIDE=10): 313 -> **320/320**. fc_packs ok, engine_replay 47. Four causes, all in the post-pick state of buy_pack_* options:
+  1. Deck order: Python hands the post-pick state over via describe -> build, which orders deck/draw pile by sort_id (uid); rumbot puts pack-created
+     cards (Cryptid copies) first. `apply_item_option` now sorts `full_deck` and `draw_pile` by uid.
+  2. Jackdaw's use_consumeable appends Cryptid copies without firing playing_card_added (game.py:2606-2625), so Hologram does not grow
+     (the modded game does); the pick restores Hologram counters after c_cryptid.
+  3. Jackdaw's used_jokers is never filled, so Judgement/Wraith may create a joker the player owns: `pack_ignores_played` now stays on for the
+     whole pick and `add_random_joker` then ignores seen centers (rumbot game_jokers.rs).
+  4. The owned-jokers hiding used for the pack fill is now Buffoon-only (it removed Juggler's hand size while an Arcana/Spectral pack dealt its
+     hand, so the pack hand had one card fewer).
+- Method (no py_rows.py exists in the repo): dump Python `sim_bridge.describe(gs, rng=True)` after `ri.apply_option`, build it with `simcore::build`, and
+  `{:#?}` diff against the `apply_item_option` GameState (strip uid/rng); per-rollout rows from Python by spying `rollout.summarize` in `ri._forecast`.
+- Not done: describe_lite still omits deck cards, hand levels and joker counters (the fields that differed here).
