@@ -9,7 +9,7 @@ use crate::gs;
 use crate::hands::{self, Info, Levels};
 use crate::strategy::{CONTAINED_IN, HAND_NAMES};
 use regex::Regex;
-use serde_json::{json, Value};
+use serde_json::{json, Map, Value};
 use std::cell::OnceCell;
 use std::sync::OnceLock;
 
@@ -463,8 +463,222 @@ pub fn unmodelled(jokers: &[JokerEntry]) -> Vec<Option<String>> {
     jokers.iter().filter(|j| j.rule.is_none() && j.scoring).map(|j| j.label.clone()).collect()
 }
 
-// TODO(jokers-rest): jokers.py 190-285 (play_forecast_supported, PLAY_STABLE/PLAY_UTILITY, after_discard,
-// after_play) and 395-441 (sample_plays, gain, planet_level).
+fn label_of(c: &Value) -> Option<&str> {
+    gs::get(c, "label").as_str()
+}
+
+/// Python `x.get(k) or ""` for an effect string.
+fn effect_or_empty(v: &Value) -> String {
+    match v {
+        Value::String(s) => s.clone(),
+        _ => String::new(),
+    }
+}
+
+/// `{**card, "value": {**card["value"], "effect": effect}}`.
+fn with_effect(card: &Value, effect: String) -> Value {
+    let mut c = card.as_object().cloned().unwrap_or_default();
+    let mut v = gs::d(gs::get(card, "value")).clone();
+    v.insert("effect".to_string(), Value::String(effect));
+    c.insert("value".to_string(), Value::Object(v));
+    Value::Object(c)
+}
+
+// jokers.py 222-233
+/// Forecast known discard-sensitive scoring values without mutating the live snapshot.
+/// Banner/Mystic Summit use the decremented round counter in score(). Other event-driven
+/// effects remain approximations, just as in the normal scorer.
+pub fn after_discard(gs_: &Value, discarded: &[Value], drawn: i64) -> Vec<JokerEntry> {
+    let mut cards: Vec<Value> = Vec::new();
+    for card in gs::cards_of(gs_, "jokers") {
+        let mut effect = effect_or_empty(gs::mget(gs::d(gs::get(card, "value")), "effect"));
+        let label = label_of(card);
+        if label == Some("Blue Joker") {
+            let remaining = (gs::cards_of(gs_, "cards").len() as i64 - drawn).max(0);
+            effect = format!("+{} Chips", 2 * remaining);
+        } else if label == Some("Ramen") {
+            if let Some(m) = rx!(r"^X(\d+(?:\.\d+)?) Mult").captures(&effect) {
+                let v = m[1].parse::<f64>().unwrap() - 0.01 * (discarded.len() as f64);
+                let v = if v > 1.0 { v } else { 1.0 }; // max(1, v) is the int 1 when v <= 1; both print 1.00000000
+                effect = format!("X{} Mult", pycompat::fixed(v, 8));
+            }
+        } else if label == Some("Green Joker") {
+            if let Some(m) = rx!(r"Currently \+(\d+(?:\.\d+)?) Mult").captures(&effect) {
+                let v = m[1].parse::<f64>().unwrap() - 1.0;
+                // max(0, v): the int 0 (prints "0") when v <= 0, else the float
+                let shown = if v > 0.0 { pycompat::pyfloat(v) } else { "0".to_string() };
+                effect = format!("+{} Mult", shown);
+            }
+        }
+        cards.push(with_effect(card, effect));
+    }
+    build(gs_, Some(&cards))
+}
+
+// jokers.py 236-240
+/// Only effects whose transition is modeled below or which stay fixed between plays.
+/// Unknown, scaling, destructive, random and copy jokers fall back to normal hand play.
+const PLAY_STABLE: &[&str] = &[
+    "Joker", "Greedy Joker", "Lusty Joker", "Wrathful Joker", "Gluttonous Joker",
+    "Jolly Joker", "Zany Joker", "Mad Joker", "Crazy Joker", "Droll Joker",
+    "Sly Joker", "Wily Joker", "Clever Joker", "Devious Joker", "Crafty Joker",
+    "Half Joker", "Banner", "Mystic Summit", "Dusk", "Raised Fist", "Fibonacci",
+    "Scary Face", "Abstract Joker", "Even Steven", "Odd Todd", "Scholar",
+    "Supernova", "Blackboard", "Blue Joker", "Baron", "Photograph", "Acrobat",
+    "Sock and Buskin", "Hanging Chad", "Smiley Face", "Walkie Talkie",
+    "Shoot the Moon", "Stuntman", "The Duo", "The Trio", "The Family", "The Order", "The Tribe",
+    "Arrowhead", "Onyx Agate",
+];
+const PLAY_UTILITY: &[&str] = &["Burglar", "Riff-raff", "Golden Joker", "Showman", "Juggler", "Drunkard", "Troubadour"];
+
+// jokers.py 243-251
+pub fn play_forecast_supported(gs_: &Value) -> bool {
+    for c in gs::cards_of(gs_, "jokers") {
+        if gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")) {
+            return false;
+        }
+        let label = label_of(c);
+        if label.is_some_and(|l| PLAY_UTILITY.contains(&l)) {
+            continue;
+        }
+        if !label.is_some_and(|l| PLAY_STABLE.contains(&l)) || entry(c).rule.is_none() {
+            return false;
+        }
+    }
+    true
+}
+
+// jokers.py 254-263
+/// Supported joker state after a play; hand counters are updated by the caller.
+pub fn after_play(gs_: &Value, drawn: i64) -> Vec<JokerEntry> {
+    let mut cards: Vec<Value> = Vec::new();
+    for c in gs::cards_of(gs_, "jokers") {
+        if label_of(c) == Some("Blue Joker") {
+            let remaining = (gs::cards_of(gs_, "cards").len() as i64 - drawn).max(0);
+            cards.push(with_effect(c, format!("+{} Chips", 2 * remaining)));
+        } else {
+            cards.push(c.clone());
+        }
+    }
+    build(gs_, Some(&cards))
+}
+
+// jokers.py 396-416
+/// One hand to measure on: infos, combo (positions), scoring name, scoring positions, round dict.
+pub struct Sample {
+    pub infos: Vec<Info>,
+    pub combo: Vec<usize>,
+    pub name: &'static str,
+    pub sc: Vec<usize>,
+    pub rnd: Value,
+}
+
+fn or_num(v: &Value, default: f64) -> f64 {
+    if gs::truthy(v) { gs::num(v) } else { default }
+}
+
+/// Hands to measure items on: this run's recent plays, else the example hands of our likely hands.
+pub fn sample_plays(gs_: &Value, recent: &[Value]) -> Vec<Sample> {
+    let mut out: Vec<Sample> = Vec::new();
+    for r in recent {
+        let infos: Vec<Info> = r["infos"].as_array().unwrap().iter().map(Info::from_json).collect();
+        let combo: Vec<usize> = r["combo"].as_array().unwrap().iter().map(|i| i.as_u64().unwrap() as usize).collect();
+        let played: Vec<Info> = combo.iter().map(|&i| infos[i].clone()).collect();
+        let (name, sc) = hands::classify(&played);
+        out.push(Sample { infos, combo, name, sc, rnd: r["rnd"].clone() });
+    }
+    if out.len() >= 4 {
+        // fewer recent hands are too noisy alone: mix in typical ones
+        return out;
+    }
+    let hands_map = gs::d(gs::get(gs_, "hands"));
+    // sorted(hands, key=lambda n: (-(played or 0), -(level or 1)))[:2] or ["Pair"]
+    let mut keyed: Vec<(&String, f64, f64)> = hands_map
+        .iter()
+        .map(|(n, h)| (n, -or_num(gs::mget(gs::d(h), "played"), 0.0), -or_num(gs::mget(gs::d(h), "level"), 1.0)))
+        .collect();
+    keyed.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap().then(a.2.partial_cmp(&b.2).unwrap()));
+    let mut names: Vec<&str> = keyed.iter().take(2).map(|k| k.0.as_str()).collect();
+    if names.is_empty() {
+        names.push("Pair");
+    }
+    for n in names {
+        let ex_v = gs::get(hands_map.get(n).unwrap_or(&gs::NULL), "example");
+        let ex: Vec<Value> = if gs::truthy(ex_v) { ex_v.as_array().cloned().unwrap_or_default() } else { vec![] };
+        let infos: Vec<Info> = ex
+            .iter()
+            .map(|pair| {
+                let k = pair[0].as_str().unwrap();
+                Info {
+                    rank: Some(k.split('_').nth(1).unwrap().to_string()),
+                    suit: Some(k.chars().next().unwrap().to_string()),
+                    enh: None,
+                    edition: None,
+                    seal: None,
+                    debuff: false,
+                }
+            })
+            .collect();
+        if !infos.is_empty() {
+            let (name, sc) = hands::classify(&infos);
+            let combo: Vec<usize> = (0..infos.len()).collect();
+            out.push(Sample { infos, combo, name, sc, rnd: json!({"hands_left": 2, "discards_left": 1}) });
+        }
+    }
+    out
+}
+
+/// `levels.get(h, {}).get(k, default) + c`, keeping int or float as Python does.
+fn add_level(cur: Option<&Value>, default: i64, c: i64) -> Value {
+    match cur {
+        None => json!(default + c),
+        Some(Value::Number(n)) if n.is_i64() => json!(n.as_i64().unwrap() + c),
+        Some(v) => json!(gs::num(v) + c as f64),
+    }
+}
+
+// jokers.py 419-441
+/// Score ratio - 1 over sample hands after adding a joker card, removing joker index `remove`,
+/// or levelling a hand (level_up=(hand, chips, mult)). None when the joker's effect can't be modelled.
+pub fn gain(gs_: &Value, recent: &[Value], add: Option<&Value>, remove: Option<usize>, level_up: Option<(&str, i64, i64)>) -> Option<f64> {
+    let owned = gs::cards_of(gs_, "jokers");
+    if let Some(a) = add {
+        if entry(a).rule.is_none() {
+            return if entry(a).scoring { None } else { Some(0.0) };
+        }
+    }
+    let base_js = build(gs_, Some(owned));
+    let mut new_cards: Vec<Value> = owned.iter().enumerate().filter(|(n, _)| Some(*n) != remove).map(|(_, c)| c.clone()).collect();
+    if let Some(a) = add {
+        new_cards.push(a.clone());
+    }
+    let new_js = build(gs_, Some(&new_cards));
+    let levels: Levels = gs::d(gs::get(gs_, "hands")).clone();
+    let mut new_levels = levels.clone();
+    if let Some((h, c, m)) = level_up {
+        let mut cur: Map<String, Value> = levels.get(h).map_or_else(Map::new, |v| gs::d(v).clone());
+        let chips = add_level(cur.get("chips"), 0, c);
+        let mult = add_level(cur.get("mult"), 1, m);
+        cur.insert("chips".to_string(), chips);
+        cur.insert("mult".to_string(), mult);
+        new_levels.insert(h.to_string(), Value::Object(cur));
+    }
+    let (mut before, mut after) = (0i64, 0i64);
+    for s in sample_plays(gs_, recent) {
+        let rnd = Rnd::from_value(&s.rnd);
+        before += score(&s.infos, &s.combo, s.name, &s.sc, &levels, &base_js, &rnd);
+        after += score(&s.infos, &s.combo, s.name, &s.sc, &new_levels, &new_js, &rnd);
+    }
+    if before != 0 { Some(after as f64 / before as f64 - 1.0) } else { None }
+}
+
+// jokers.py 442-444
+/// (hand, chips, mult) of a planet's "Level up" text, else None.
+pub fn planet_level(effect: &str) -> Option<(String, i64, i64)> {
+    static R: OnceLock<Regex> = OnceLock::new();
+    let re = R.get_or_init(|| Regex::new(&format!(r"Level up ({}) \+(\d+) Mult and \+(\d+) chips", hand_re())).unwrap());
+    re.captures(effect).map(|m| (m[1].to_string(), m[3].parse().unwrap(), m[2].parse().unwrap()))
+}
 
 // jokers.py 286-358
 /// Expected score of playing hand positions `combo` (scoring = indices into combo).
