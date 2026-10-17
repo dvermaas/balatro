@@ -71,29 +71,7 @@ pub(crate) fn play_obj(p: &Value, info: &Value, margin: f64) -> Value {
     Value::Object(obj)
 }
 
-// decisions.py 453-465 (lives in shop.rs upstream; private copy so this file stands alone)
-// SHARED? identical to shop::discard_obj
-fn discard_obj(d: &Value) -> Value {
-    let mut o = Map::new();
-    o.insert("plan".into(), gs::get(d, "label").clone());
-    o.insert("throws_away".into(), gs::get(d, "tossed").clone());
-    o.insert("fits_our_build".into(), if gs::d(d).contains_key("fits_build") { gs::get(d, "fits_build").clone() } else { json!(false) });
-    if gs::d(d).contains_key("expected_score") {
-        o.insert("modeled_average_next_play".into(), gs::get(d, "expected_score").clone());
-        o.insert("poor_draw_next_play".into(), gs::get(d, "low_score").clone());
-        o.insert("poor_draw_definition".into(), json!("20th percentile, not a guaranteed minimum"));
-        o.insert("average_change_vs_playing_now".into(), json!(format!("{:+}%", gs::int(gs::get(d, "gain_percent")))));
-        o.insert("chance_next_play_clears".into(),
-            json!(format!("{}%", pyround_int(100.0 * gs::num(gs::get(d, "chance_to_clear"))))));
-        o.insert("chance_next_play_meets_pace".into(),
-            json!(format!("{}%", pyround_int(100.0 * gs::num(gs::get(d, "chance_to_meet_pace"))))));
-        o.insert("cards_drawn".into(), gs::get(d, "drawn").clone());
-        let basis = format!("{} {} unordered draws; scoring model estimate", gs::int(gs::get(d, "samples")),
-            if gs::truthy(gs::get(d, "exact_draws")) { "all possible" } else { "sampled" });
-        o.insert("basis".into(), json!(basis));
-    }
-    Value::Object(o)
-}
+use super::shop::discard_obj;
 
 fn idx_list(v: &Value) -> Vec<usize> {
     gs::list(v).iter().map(|x| x.as_u64().expect("card index") as usize).collect()
