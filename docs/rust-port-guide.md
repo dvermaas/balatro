@@ -29,9 +29,11 @@ and status: [rust-port-scope.md](rust-port-scope.md) and the README section "Rus
   `scripts/port/fixtures/<name>.py` (the porting agent writes it). Inputs come from the traces'
   gamestates: `scripts/port/states.py` in Python, `jevbot::trace::states` in Rust.
 
-Python reference: `C:/Users/admin/Documents/Repos/balatro-rust/.venv/Scripts/python.exe`, with the
-v27 sources in `src/` (identical in every worktree). Native modules are installed; they give the
-same results as pure Python.
+Python reference: `C:/Users/admin/Documents/Repos/balatro-rust/.venv/Scripts/python.exe` with the
+v27 sources of the main port worktree: `import states` (from `scripts/port/`) puts them on
+`sys.path`, so fixture scripts work from your own worktree, which has no Jackdaw submodule or
+localization. Native modules are installed; they give the same results as pure Python
+(`JEV_NATIVE=0` forces pure Python).
 
 ## Protocol for each task
 

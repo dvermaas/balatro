@@ -5,8 +5,9 @@
     states.write_fixture("hands", rows)   # -> runs/_port/fixtures/hands.jsonl.gz
 
 The order matches `jevbot::trace::states` in Rust, so fixture row i can carry its input itself or
-just its index. Run fixture scripts with the port worktree's interpreter and sources:
-    C:/Users/admin/Documents/Repos/balatro-rust/.venv/Scripts/python.exe <script>
+just its index. Import this module first: it puts the frozen v27 `src/` of the main port worktree
+on sys.path. Run fixture scripts with that worktree's interpreter, from any directory:
+    C:/Users/admin/Documents/Repos/balatro-rust/.venv/Scripts/python.exe <your worktree>/scripts/port/fixtures/<name>.py
 """
 
 import gzip
@@ -14,8 +15,10 @@ import json
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-DATA = Path("C:/Users/admin/Documents/Repos/balatro-rust/runs/_port")
+# Always the frozen v27 sources of the main port worktree (it has the Jackdaw submodule and the
+# localization in runs/_loc), wherever the fixture script itself lives.
+ROOT = Path("C:/Users/admin/Documents/Repos/balatro-rust")
+DATA = ROOT / "runs" / "_port"
 sys.path[:0] = [str(ROOT / "src"), str(ROOT / "scripts")]
 
 
