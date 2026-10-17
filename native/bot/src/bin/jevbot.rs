@@ -17,14 +17,16 @@ use jevbot::iface::{Game, Jev, SharedOracle};
 use jevbot::jev_bot::{JevBot, RealClock, Stop};
 use jevbot::jev_client::{api_key_from_env, load_env, TypeSafeJev};
 use jevbot::oracle::RustOracle;
-use jevbot::recorder::SystemClock;
+use jevbot::recorder::{Clock, SystemClock};
 use serde_json::json;
 use std::cell::RefCell;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-/// Version tag for the recorder (Python stores PROMPT_VERSION; the Rust port has no prompt hash yet).
-const VERSION: &str = "rust";
+/// The Rust prompt version: sha1 of the behaviour-defining Rust sources.
+fn version() -> String {
+    jevbot::recorder::bot_version(&jevbot::recorder::native_dir())
+}
 
 struct Args {
     backend: String,
@@ -120,10 +122,11 @@ fn main() {
     };
     let log_dir = if sim { a.root.join("runs").join("sim") } else { a.root.join("runs") };
     let mut bot = JevBot::new(
-        &a.deck, &a.stake, &model, log_dir, game, jev, oracle, Box::new(RealClock::new()), VERSION, VERSION, VERSION,
+        &a.deck, &a.stake, &model, log_dir, game, jev, oracle, Box::new(RealClock::new()), &version(), &version(), &version(),
         Box::new(SystemClock),
     );
     bot.dec = DecisionCfg::production();
+    jevbot::recorder::snapshot_prompts(&a.root.join("runs").join("_prompts"), &version(), SystemClock.time());
     if let Some(seed) = &a.seed {
         if let Err(e) = bot.act("start", Some(&json!({"deck": a.deck, "stake": a.stake, "seed": seed}))) {
             eprintln!("start: {e}");
@@ -136,6 +139,10 @@ fn main() {
             Err(Stop::BenchmarkComplete) => break 0,
             Err(Stop::Rpc(e)) => {
                 eprintln!("game error: {e}");
+                break 1;
+            }
+            Err(Stop::Jev(m)) => {
+                eprintln!("Jev API: {m}");
                 break 1;
             }
             Err(Stop::Runtime(m)) => {

@@ -5,8 +5,7 @@ use super::{instr, recent, run_context, PACK_SCORE, PICK_CLEAR};
 use crate::build;
 use crate::gs::{self, area, cards_of};
 use crate::hands;
-use crate::iface::RpcError;
-use crate::jev_bot::{item_desc, score_q, JevBot};
+use crate::jev_bot::{item_desc, score_q, JevBot, Stop};
 use crate::jokers;
 use crate::prompts::{CASH_ITEM_QUESTION, ITEM_VALUE_LEVELS};
 use crate::strategy;
@@ -48,7 +47,7 @@ fn argmax(vals: &[f64]) -> usize {
 
 // SHARED? decisions.py 468-484 `_score_items`, for the pack only (shop.rs `score_items` is still todo!).
 // qname is always "pack" here, so the cash-step branch (shop only) never runs.
-fn score_items(bot: &mut JevBot, gs_: &Value, state: &Value, items: &ShopItems) -> (Vec<f64>, Value) {
+fn score_items(bot: &mut JevBot, gs_: &Value, state: &Value, items: &ShopItems) -> Result<(Vec<f64>, Value), Stop> {
     let mut questions = Map::new();
     for (k, (_, obj, _)) in items {
         let item: Map<String, Value> = gs::d(obj)
@@ -59,16 +58,16 @@ fn score_items(bot: &mut JevBot, gs_: &Value, state: &Value, items: &ShopItems) 
         let question = if gs::d(obj).contains_key("cash_outcome") { CASH_ITEM_QUESTION } else { instr("item_value") };
         questions.insert(k.clone(), score_q(json!({"question": question, "item": item}), json!(ITEM_VALUE_LEVELS)));
     }
-    let (answers, meta) = bot.query(gs_, state, &questions);
+    let (answers, meta) = bot.query(gs_, state, &questions)?;
     let scores = items
         .iter()
         .map(|(k, _)| gs::num(gs::get(answers.get(k).unwrap_or(&Value::Null), "score")))
         .collect();
-    (scores, meta)
+    Ok((scores, meta))
 }
 
 /// decisions.py 851-947 `booster(bot, gs)`.
-pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), RpcError> {
+pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let jok = area(gs_, "jokers");
     let jokers_full = int_or(jok, "count", 0) >= int_or(jok, "limit", 5);
     let (mains, mut state) = run_context(gs_);
@@ -187,7 +186,7 @@ pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), RpcError> {
             Err(e) => bot.emit("info", json!({"msg": format!("Pack pick failed ({e}); asking JEV")})),
         }
     }
-    let (scores, meta) = score_items(bot, gs_, &state, &items);
+    let (scores, meta) = score_items(bot, gs_, &state, &items)?;
     let bi = argmax(&scores);
     let best = items[bi].0.clone();
     let best_score = scores[bi];
@@ -253,7 +252,7 @@ pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), RpcError> {
         Ok(_) => Ok(()),
         Err(e) => {
             if gs::truthy(gs::get(&params, "skip")) {
-                return Err(e);
+                return Err(e.into());
             }
             // Tarot/Spectral that needs hand targets: aim at the first two cards, else give up on the pack.
             bot.emit("info", json!({"msg": format!("Pack pick needs targets ({e}); retrying with targets")}));

@@ -9,7 +9,7 @@
 use crate::analytics;
 use crate::iface::{Game, Jev, SharedOracle};
 use crate::jev_bot::{summarize, JevBot, RealClock, Stop};
-use crate::recorder::SystemClock;
+use crate::recorder::{Clock, SystemClock};
 use serde_json::{json, Map, Value};
 use std::collections::VecDeque;
 use std::io::{Read, Write};
@@ -20,7 +20,11 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// Version tag the Rust bot stamps on its runs (no prompt hash in the port yet).
-pub const VERSION: &str = "rust";
+/// The Rust bot's prompt version id: sha1 of the Rust sources that define behaviour (recorder::bot_version).
+pub fn version() -> &'static str {
+    static V: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    V.get_or_init(|| crate::recorder::bot_version(&crate::recorder::native_dir()))
+}
 
 #[derive(Clone)]
 pub struct PanelConfig {
@@ -100,10 +104,11 @@ fn build_bot(cfg: &PanelConfig) -> Result<JevBot, String> {
         (Box::new(TypeSafeJev::new(&key, &cfg.model)?), cfg.model.clone())
     };
     let mut bot = JevBot::new(
-        &cfg.deck, &cfg.stake, &model, cfg.runs_dir(), game, jev, oracle, Box::new(RealClock::new()), VERSION, VERSION,
-        VERSION, Box::new(SystemClock),
+        &cfg.deck, &cfg.stake, &model, cfg.runs_dir(), game, jev, oracle, Box::new(RealClock::new()), version(), version(),
+        version(), Box::new(SystemClock),
     );
     bot.dec = crate::decisions::DecisionCfg::production();
+    crate::recorder::snapshot_prompts(&cfg.prompts_dir(), version(), SystemClock.time());
     Ok(bot)
 }
 
@@ -155,6 +160,7 @@ fn run_cmd(bot: &mut JevBot, cmd: &str, body: &Value) {
                 bot.emit("error", json!({"msg": format!("RPCError: {e}")}));
             }
         }
+        "benchmark" => bot.start_benchmark(body.get("set").and_then(Value::as_str)),
         "cancel_benchmark" => {
             bot.bench_queue.clear();
             bot.bench_done_pending = false;
@@ -162,6 +168,12 @@ fn run_cmd(bot: &mut JevBot, cmd: &str, body: &Value) {
         }
         _ => {}
     }
+}
+
+/// panel.py: `except TypeSafeError as e: emit("error", msg=f"Jev API: {e}")` (the text carries TypeSafe's
+/// HTTP status, e.g. the 402 "no usable credits" message).
+pub fn jev_error_text(e: &str) -> String {
+    format!("Jev API: {e}")
 }
 
 fn worker(cfg: PanelConfig, sh: Sh) {
@@ -205,14 +217,13 @@ fn worker(cfg: PanelConfig, sh: Sh) {
                 continue;
             }
             Ok(Err(Stop::BenchmarkComplete)) => {}
+            Ok(Err(Stop::Jev(e))) => bot.emit("error", json!({"msg": jev_error_text(&e)})),
             Ok(Err(Stop::Rpc(e))) => bot.emit("error", json!({"msg": format!("RPCError: {e}")})),
             Ok(Err(Stop::Runtime(m))) => bot.emit("error", json!({"msg": format!("RuntimeError: {m}")})),
             Err(p) => {
                 let m = panic_text(&p);
                 let lm = m.to_lowercase();
-                let msg = if let Some(e) = m.strip_prefix("JEV call failed: ") {
-                    format!("Jev API: {e}") // carries TypeSafe's HTTP 402 text when the org has no credits
-                } else if lm.contains("timed out") {
+                let msg = if lm.contains("timed out") {
                     "Balatro didn't respond for 60s. Usually a popup (e.g. 'Joker unlocked') is open in the game: click it away, then press Run.".to_string()
                 } else if lm.contains("connect") || lm.contains("refused") {
                     format!("Can't reach Balatro ({m}). Is the game running?")
@@ -258,7 +269,10 @@ fn command(sh: &Sh, cmd: &str, body: &Value) -> Result<(), String> {
             g.pending = 0;
             g.cmds.push_back((cmd.into(), body.clone()));
         }
-        "benchmark" => return Err("benchmark play is not ported to the Rust panel yet".into()),
+        "benchmark" => {
+            g.mode = "running".into();
+            g.cmds.push_back((cmd.into(), body.clone()));
+        }
         "cancel_benchmark" => g.cmds.push_back((cmd.into(), body.clone())),
         _ => return Err(format!("unknown command {cmd}")),
     }
@@ -277,16 +291,16 @@ fn live(cfg: &PanelConfig, sh: &Sh, since: i64) -> Value {
         .filter(|e| e["kind"] == "decision" && t - e["t"].as_f64().unwrap_or(0.0) <= 60.0)
         .count();
     let backend = cfg.backend_name();
-    let labels = analytics::prompt_versions(&cfg.prompts_dir(), VERSION);
+    let labels = analytics::prompt_versions(&cfg.prompts_dir(), version());
     let label = labels
         .iter()
-        .find(|v| v["version"] == VERSION)
+        .find(|v| v["version"] == version())
         .and_then(|v| v["label"].as_str())
         .unwrap_or("?")
         .to_string();
     let on_version: Vec<Value> = analytics::all_runs(&cfg.runs_dir())
         .into_iter()
-        .filter(|r| r["prompt_version"] == VERSION && analytics::run_backend(r) == backend)
+        .filter(|r| r["prompt_version"] == version() && analytics::run_backend(r) == backend)
         .collect();
     let durations: Vec<f64> = on_version
         .iter()
@@ -318,7 +332,7 @@ fn live(cfg: &PanelConfig, sh: &Sh, since: i64) -> Value {
         "game_state": gs.and_then(|g| g.get("state")).cloned().unwrap_or(Value::Null),
         "game": gs.map(summarize).unwrap_or(Value::Null),
         "current_run": snap.run,
-        "version": {"id": VERSION, "label": label, "legacy": false, "runs": on_version.len(), "finished": finished},
+        "version": {"id": version(), "label": label, "legacy": false, "runs": on_version.len(), "finished": finished},
         "rate": {"decisions_per_min": recent, "avg_run_seconds": avg},
         "benchmark": {"name": snap.bench_name, "current": snap.bench_current, "remaining": snap.bench_remaining},
         "last_id": last_id, "events": sel,
@@ -363,7 +377,7 @@ fn route_get(cfg: &PanelConfig, sh: &Sh, target: &str) -> (u16, &'static str, Ve
             json_resp(200, live(cfg, sh, since))
         }
         "/api/runs" => {
-            let labels = analytics::prompt_versions(&cfg.prompts_dir(), VERSION);
+            let labels = analytics::prompt_versions(&cfg.prompts_dir(), version());
             let out: Vec<Value> = analytics::all_runs(&runs)
                 .into_iter()
                 .map(|r| {
@@ -377,9 +391,9 @@ fn route_get(cfg: &PanelConfig, sh: &Sh, target: &str) -> (u16, &'static str, Ve
         }
         "/api/benchmark" => json_resp(
             200,
-            analytics::benchmark_matrix(query_get(query, "set").as_deref(), backend, &runs, &cfg.prompts_dir(), VERSION),
+            analytics::benchmark_matrix(query_get(query, "set").as_deref(), backend, &runs, &cfg.prompts_dir(), version()),
         ),
-        "/api/prompts" => json_resp(200, Value::Array(analytics::version_stats(backend, &runs, &cfg.prompts_dir(), VERSION))),
+        "/api/prompts" => json_resp(200, Value::Array(analytics::version_stats(backend, &runs, &cfg.prompts_dir(), version()))),
         p if p.starts_with("/api/runs/") => {
             let id = pct_decode(&p["/api/runs/".len()..]);
             let dir = runs.join(&id);

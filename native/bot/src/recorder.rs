@@ -29,9 +29,57 @@ pub trait Clock {
     fn stamp(&self) -> String;
 }
 
-/// UTC system clock. Python uses local time; there is no tz crate here, so a bot that needs local
-/// run-dir names injects its own Clock.
+/// System clock: `time()` is epoch seconds; `stamp()` is local time like Python's
+/// time.strftime("%Y%m%d-%H%M%S") (Windows GetLocalTime; other platforms fall back to UTC).
 pub struct SystemClock;
+
+#[cfg(windows)]
+#[repr(C)]
+#[derive(Default)]
+struct SystemTime {
+    year: u16,
+    month: u16,
+    dow: u16,
+    day: u16,
+    hour: u16,
+    minute: u16,
+    second: u16,
+    ms: u16,
+}
+
+#[cfg(windows)]
+extern "system" {
+    fn GetLocalTime(t: *mut SystemTime);
+}
+
+/// Local wall-clock "YYYYmmdd-HHMMSS" right now.
+fn local_stamp(utc_secs: i64) -> String {
+    #[cfg(windows)]
+    {
+        let _ = utc_secs;
+        let mut t = SystemTime::default();
+        unsafe { GetLocalTime(&mut t) };
+        format!("{:04}{:02}{:02}-{:02}{:02}{:02}", t.year, t.month, t.day, t.hour, t.minute, t.second)
+    }
+    #[cfg(not(windows))]
+    {
+        utc_stamp(utc_secs)
+    }
+}
+
+/// "YYYYmmdd-HHMMSS" of an epoch second in UTC.
+pub fn utc_stamp(secs: i64) -> String {
+    let (y, m, d) = civil_from_days(secs.div_euclid(86400));
+    let rem = secs.rem_euclid(86400);
+    format!("{y:04}{m:02}{d:02}-{:02}{:02}{:02}", rem / 3600, rem % 3600 / 60, rem % 60)
+}
+
+impl SystemClock {
+    /// The same instant as `stamp()` in UTC (tests compare the two to check the local offset).
+    pub fn stamp_utc_for_test(&self) -> String {
+        utc_stamp(self.time().floor() as i64)
+    }
+}
 
 impl Clock for SystemClock {
     fn time(&self) -> f64 {
@@ -41,10 +89,7 @@ impl Clock for SystemClock {
             .unwrap_or(0.0)
     }
     fn stamp(&self) -> String {
-        let secs = self.time().floor() as i64;
-        let (y, m, d) = civil_from_days(secs.div_euclid(86400));
-        let rem = secs.rem_euclid(86400);
-        format!("{y:04}{m:02}{d:02}-{:02}{:02}{:02}", rem / 3600, rem % 3600 / 60, rem % 60)
+        local_stamp(self.time().floor() as i64)
     }
 }
 
@@ -116,6 +161,70 @@ pub fn version_hash(files: &[&str], root: &Path) -> String {
         }
     }
     sha1(&buf)[..4].iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// The Rust sources that define behaviour, sorted, relative to `native/`.
+pub fn behaviour_sources(native: &Path) -> Vec<String> {
+    fn walk(dir: &Path, rel: &str, out: &mut Vec<String>) {
+        let Ok(rd) = fs::read_dir(dir) else { return };
+        for e in rd.flatten() {
+            let name = e.file_name().to_string_lossy().to_string();
+            let path = e.path();
+            let r = format!("{rel}/{name}");
+            if path.is_dir() {
+                walk(&path, &r, out);
+            } else if name.ends_with(".rs") {
+                out.push(r);
+            }
+        }
+    }
+    let mut out = Vec::new();
+    for d in ["bot/src", "simcore/src", "kernel/src", "rumbot/src", "pycompat/src"] {
+        walk(&native.join(d), d, &mut out);
+    }
+    out.sort();
+    out
+}
+
+/// The Rust bot's prompt version: `version_hash` over `behaviour_sources` (sha1 of their exact bytes).
+pub fn bot_version(native: &Path) -> String {
+    let files = behaviour_sources(native);
+    let refs: Vec<&str> = files.iter().map(String::as_str).collect();
+    version_hash(&refs, native)
+}
+
+/// The `native/` directory of this checkout (compile-time path; override with JEV_NATIVE_DIR).
+pub fn native_dir() -> PathBuf {
+    std::env::var_os("JEV_NATIVE_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| Path::new(env!("CARGO_MANIFEST_DIR")).join(".."))
+}
+
+/// `recorder.snapshot_prompts()`: save the prompt text under `version` in `prompts_dir`
+/// (index.json order + `<version>.json`), once per version.
+pub fn snapshot_prompts(prompts_dir: &Path, version: &str, created: f64) {
+    fs::create_dir_all(prompts_dir).expect("create prompts dir");
+    let index_path = prompts_dir.join("index.json");
+    let mut index: Value = if index_path.exists() {
+        serde_json::from_str(&fs::read_to_string(&index_path).expect("read index.json")).expect("index json")
+    } else {
+        json!({"order": []})
+    };
+    let order = index["order"].as_array_mut().expect("order");
+    if order.iter().any(|v| v == version) {
+        return;
+    }
+    order.push(json!(version));
+    let mut out = String::new();
+    dumps_indent(&index, 0, &mut out);
+    fs::write(&index_path, text_out(&out)).expect("write index.json");
+    let kv = |a: &[(&str, &str)]| Value::Object(a.iter().map(|(k, v)| (k.to_string(), json!(v))).collect());
+    let snap = json!({"version": version, "created": created, "note": crate::prompts::VERSION_NOTE,
+        "rules": crate::prompts::GAME_RULES, "instructions": kv(crate::prompts::INSTRUCTIONS),
+        "options": kv(crate::prompts::OPTIONS)});
+    let mut out = String::new();
+    dumps_indent(&snap, 0, &mut out);
+    fs::write(prompts_dir.join(format!("{version}.json")), text_out(&out)).expect("write snapshot");
 }
 
 /// json.dumps(v, indent=2). pycompat's dumps has no indent option, so the containers are laid out
@@ -212,6 +321,16 @@ pub struct RunRecorder {
 }
 
 impl RunRecorder {
+    /// The runs root this recorder writes under.
+    pub fn root(&self) -> &Path {
+        &self.root
+    }
+
+    /// The prompt version it stamps on runs.
+    pub fn version(&self) -> &str {
+        &self.version
+    }
+
     /// The current run directory (None before the first `ensure`).
     pub fn dir(&self) -> Option<&Path> {
         self.dir.as_deref()
