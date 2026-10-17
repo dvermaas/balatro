@@ -556,3 +556,7 @@ vs this ante's and the wall's boss, play_mix share; target blinds still to be cl
 | + same for the weakest-joker swap ranking (60% slower) | -0.01 +- 0.08 | 40 |
 
 The early slot fill is redundant since v31 (the 1 SE bar buys those jokers anyway).
+| The Mouth: first play limited to hand types the deck makes in >= 60% of sampled hands (`bot-mouth60`) | -0.06 +- 0.04 | 38 |
+| same at 80% (`bot-mouth80`) | -0.08 +- 0.05 | 40 |
+
+(The Mouth's later off-type plays are deliberate card cycling when no hand of the locked type is held.)
