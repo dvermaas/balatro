@@ -376,8 +376,42 @@ pub fn allows(allow: (u8, u32, bool), combo_len: usize, name: usize) -> bool {
     }
 }
 
+impl Scorer {
+    /// No score reads the cards left in hand: no held rules, and no hand rule on held cards (kinds 5,
+    /// 10 and unknown) or on the number of cards played (kind 2).
+    fn ignores_held(&self) -> bool {
+        self.held.is_empty() && self.hands.iter().flatten().all(|h| matches!(h.0, 0 | 1 | 3 | 4 | 6 | 7 | 8 | 9 | 11))
+    }
+}
+
+/// The plays that can be the best one: `each_play`'s, minus those with a kicker (a played card that
+/// does not score) whenever a kicker cannot matter. Then dropping a play's kickers keeps its hand type
+/// and scoring cards (in the same order), and the score reads nothing else: the scorer ignores held
+/// cards, no Steel card is in hand (held Steel multiplies), and the boss does not count cards (The
+/// Psychic). So the best score, and the best (score, hand) pair, are the same as over every play.
+pub fn each_best_candidate(s: &Scorer, cards: &[Card], allow: (u8, u32, bool), mut f: impl FnMut(f64, usize, &[usize], &[usize])) {
+    let prune = allow.0 != 1 && s.ignores_held() && !cards.iter().any(|c| c.enh == STEEL);
+    if !prune {
+        return each_play(s, cards, allow, f);
+    }
+    each_classified(cards, |name, combo, sc| {
+        if sc.len() == combo.len() && allows(allow, combo.len(), name) {
+            f(s.score(cards, combo, name, sc), name, combo, sc);
+        }
+    });
+}
+
 /// Every allowed subset of 1..=5 cards in itertools.combinations order: f(score, name, combo, scoring).
 pub fn each_play(s: &Scorer, cards: &[Card], allow: (u8, u32, bool), mut f: impl FnMut(f64, usize, &[usize], &[usize])) {
+    each_classified(cards, |name, combo, sc| {
+        if allows(allow, combo.len(), name) {
+            f(s.score(cards, combo, name, sc), name, combo, sc);
+        }
+    });
+}
+
+/// Every subset of 1..=5 cards in itertools.combinations order with its classification: f(name, combo, scoring).
+fn each_classified(cards: &[Card], mut f: impl FnMut(usize, &[usize], &[usize])) {
     let n = cards.len();
     let mut cs: Vec<Card> = Vec::with_capacity(5);
     let mut sc: Vec<usize> = Vec::with_capacity(5);
@@ -389,10 +423,7 @@ pub fn each_play(s: &Scorer, cards: &[Card], allow: (u8, u32, bool), mut f: impl
             cs.clear();
             cs.extend(combo.iter().map(|&i| cards[i]));
             let name = classify_into(&cs, &mut sc);
-            if allows(allow, r, name) {
-                let score = s.score(cards, &combo, name, &sc);
-                f(score, name, &combo, &sc);
-            }
+            f(name, &combo, &sc);
             // next combination
             let mut i = r;
             while i > 0 && combo[i - 1] == i - 1 + n - r {

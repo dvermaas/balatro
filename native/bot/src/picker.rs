@@ -135,7 +135,7 @@ struct Deal {
     cards: Vec<jev_kernel::Card>,
     /// best score per hand type at the current levels
     best: [Option<f64>; 12],
-    /// every play, grouped by hand type: (positions, scoring positions)
+    /// the plays that can be best, grouped by hand type: (positions, scoring positions)
     plays: [Vec<(Small, Small)>; 12],
 }
 
@@ -175,7 +175,9 @@ impl PlanetDeals {
             let hand: Vec<Info> = rng.sample_indices(infos.len(), size as usize).into_iter().map(|i| infos[i].clone()).collect();
             let cards = jev_kernel::cards_of(&crate::hands::native::encode_cards(&hand)?);
             let mut d = Deal { cards: Vec::new(), best: [None; 12], plays: Default::default() };
-            jev_kernel::each_play(ns, &cards, (0, 0, false), |score, name, combo, sc| {
+            // the best play per type, and the type-h plays a planet rescores, are among these (a kicker never
+            // matters where they are pruned, at either level)
+            jev_kernel::each_best_candidate(ns, &cards, (0, 0, false), |score, name, combo, sc| {
                 if d.best[name].map_or(true, |b| score > b) {
                     d.best[name] = Some(score);
                 }
