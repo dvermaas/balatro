@@ -111,6 +111,7 @@ pub fn start(eng: &mut RumbotGame, params: &Value) -> Result<(), RpcError> {
     eng.deck_limit = g.full_deck.len();
     eng.g = Some(g);
     eng.round_hands_played = 0;
+    eng.round_started = false;
     eng.played_this_round.clear();
     eng.pack_from_shop = false;
     eng.shop_frozen = None;
@@ -190,6 +191,9 @@ pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), Rpc
         "select" => {
             phase_check(g, &[Phase::BlindSelect])?;
             g.step(&Action::new(ActionType::SelectBlind));
+            eng.round_started = true;
+            eng.last_chips = 0;
+            eng.last_round = (g.hands_left, g.discards_left, g.discards_used);
             eng.round_hands_played = 0;
             eng.played_this_round.clear();
         }
@@ -221,7 +225,10 @@ pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), Rpc
             if cards.iter().any(|&i| i < 0 || i >= n) {
                 return Err(illegal("Card index out of range"));
             }
-            let idx: Vec<usize> = cards.iter().map(|&i| i as usize).collect();
+            let mut idx: Vec<usize> = cards.iter().map(|&i| i as usize).collect();
+            if !play {
+                idx.sort_unstable(); // rumbot wants discards ascending; order is irrelevant to the discard
+            }
             let a = Action::with_cards(if play { ActionType::Play } else { ActionType::Discard }, idx.clone());
             if !g.is_legal(&a) {
                 return Err(illegal("Forced card (Cerulean Bell) must be in the selection"));
@@ -233,7 +240,16 @@ pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), Rpc
                 *eng.played_this_round.entry(hand).or_insert(0) += 1;
                 eng.round_hands_played += 1;
             }
+            let (hl, dl, du) = (g.hands_left, g.discards_left, g.discards_used);
             g.step(&a);
+            eng.last_chips = g.chips_scored;
+            eng.last_round = if g.phase == Phase::Playing {
+                (g.hands_left, g.discards_left, g.discards_used)
+            } else if play {
+                (hl - 1, dl, du)
+            } else {
+                (hl, dl - 1, du + 1)
+            };
         }
         "buy" => {
             if let Some(i) = params.get("card") {
