@@ -24,3 +24,6 @@
 - duplicated helpers to consolidate: Python-style `repr` of a JSON value (forecast_state.rs `py_repr`, picker.rs)
   -> pycompat; rollout.py `candidates`/`_rv`/`_straight` copy in picker.rs -> the rollout port; tarots
   MEASURABLE copy in picker.rs -> tarots.rs; simtext `fmt_g` (%.Ng) -> pycompat.
+- forecast_apply: selling a ready Invisible Joker (draws RNG) returns Err; untested (not in the sample).
+  Campfire/Hologram bumps, negative editions, Juggler/Troubadour/Turtle Bean hand size are coded from
+  Jackdaw but may be unexercised by the 400-call fixture.
