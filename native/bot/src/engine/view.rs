@@ -139,7 +139,7 @@ fn effect_value(text: String) -> Map<String, Value> {
     value
 }
 
-fn joker_json(g: &GameState, j: &JokerRef) -> Value {
+fn joker_json(g: &GameState, j: &JokerRef, in_jokers: bool) -> Value {
     let jb = j.borrow();
     let name = jb.spec.name;
     let key = joker_row(name).map_or("", |r| r.key);
@@ -165,7 +165,7 @@ fn joker_json(g: &GameState, j: &JokerRef) -> Value {
     let (debuff, hidden, uid) = (jb.debuffed, jb.face_down, jb.uid);
     drop(jb);
     let sell = g.sell_value(j);
-    card_json(uid, key, "JOKER", name, effect_value(PLACEHOLDER.into()), m, debuff, hidden, sell as i64, buy as i64)
+    card_json(uid, key, "JOKER", name, effect_value(super::text::joker_effect(g, j, in_jokers, debuff)), m, debuff, hidden, sell as i64, buy as i64)
 }
 
 fn consumable_set(k: ConsumableKind) -> &'static str {
@@ -341,7 +341,7 @@ fn price_card(g: &GameState, base: i32, ed: Edition, extra_sell: i64, buy: i64) 
 fn shop_slot_json(g: &GameState, slot: &rumbot_sim::shop::ShopSlot) -> Value {
     let buy = g.slot_price(slot) as i64;
     if let Some(j) = &slot.joker {
-        let mut v = joker_json(g, j);
+        let mut v = joker_json(g, j, false);
         let (jb_sell, jb_buy) = {
             let jb = j.borrow();
             price_card(g, jb.spec.cost, jb.edition, jb.extra_sell_value as i64, buy)
@@ -374,7 +374,7 @@ fn pack_json(g: &GameState, p: &rumbot_sim::shop::PackSpec, first_shop: bool) ->
 
 fn pack_choice_json(g: &GameState, c: &PackChoice) -> Value {
     match c {
-        PackChoice::Joker(j) => joker_json(g, j),
+        PackChoice::Joker(j) => joker_json(g, j, false),
         PackChoice::Card(c) => playing_card(g, c, "pack", true),
         // no per-card id in rumbot for a pack's consumables: id 0
         PackChoice::Consumable(spec) => {
@@ -431,7 +431,7 @@ pub fn serialize(eng: &mut RumbotGame) -> Value {
     out.insert("blinds".into(), blinds(g));
     out.insert(
         "jokers".into(),
-        area(g.jokers.iter().map(|j| joker_json(g, j)).collect(), g.joker_slots() as i64, 1),
+        area(g.jokers.iter().map(|j| joker_json(g, j, true)).collect(), g.joker_slots() as i64, 1),
     );
     out.insert(
         "consumables".into(),
