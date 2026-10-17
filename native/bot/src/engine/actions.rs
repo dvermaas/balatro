@@ -182,7 +182,27 @@ fn truthy(v: Option<&Value>) -> bool {
 }
 
 // bridge/backend.py _handle_action + deserializer.rpc_to_action + game.py step
+fn d_size_total(g: &GameState) -> i32 {
+    g.jokers.iter().map(|j| match j.borrow().spec.name { "Drunkard" => 1, "Merry Andy" => 3, _ => 0 }).sum()
+}
+
+// Jackdaw card.py:762-775/835-844 (card.lua:591): add_to_deck/remove_from_deck ease the CURRENT round's discards_left by d_size;
+// rumbot only changes it at blind start, so mirror the delta into the stale-round snapshot outside Playing.
 pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), RpcError> {
+    let before = eng.g.as_ref().map(|g| (g.phase, d_size_total(g)));
+    let r = act_inner(eng, method, params);
+    if let (Some((ph, d0)), Some(g)) = (before, eng.g.as_ref()) {
+        if r.is_ok() && ph != Phase::Playing && g.phase != Phase::Playing {
+            let d1 = d_size_total(g);
+            if d1 != d0 {
+                eng.last_round.1 = (eng.last_round.1 + d1 - d0).max(0);
+            }
+        }
+    }
+    r
+}
+
+fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), RpcError> {
     if method == "rearrange" {
         return rearrange(eng, params);
     }
