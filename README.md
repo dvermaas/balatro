@@ -104,12 +104,14 @@ the simulator first (next section).
   [docs/policy-lab.md](docs/policy-lab.md).
 - **Speed**: with the Rust modules, 56 lab games take about 60 s on 12 workers, against 680 s in
   pure Python.
-- **Current baseline (v28, 2026-10-16)**, code only (no JEV), arm `bot-forecast-items`:
-  - `sim60-a`: mean ante **6.17**, 10 wins out of 60 (v27: 5.90, 4 wins);
-  - 60 fresh seeds (`--seeds 60`): **6.50**, 10 wins (v27: 6.15, 6 wins);
-  - v28 over v27, paired over the 120 seeds: about +0.31 ± 0.12 ante, from planets (see
-    [docs/policy-lab.md](docs/policy-lab.md), "Mid-game scaling experiments");
-  - most deaths are still at antes 5-7, the mid-game scaling wall from [docs/loss-audit.md](docs/loss-audit.md).
+- **Current baseline (v31, 2026-10-17)**, code only (no JEV), arm `bot-forecast-items`:
+  - `sim60-a`: mean ante **6.50**, 10 wins out of 60 (v27: 5.90, 4 wins);
+  - 60 fresh seeds (`--seeds 60`): **6.63**, 10 wins (v27: 6.15, 6 wins);
+  - 200 fresh seeds (`--seeds 200 --seed-offset 60`): **6.68**, 40 wins (20%; v28: 6.46, 27 wins);
+  - v28 planets, v29 Negative jokers, v30 Verdant Leaf, v31 auto-buy bar 1 SE: see
+    [docs/policy-lab.md](docs/policy-lab.md), "Mid-game scaling experiments" and after;
+  - about a third of runs reach ante 8, where the finisher bosses (Violet Vessel, Crimson Heart,
+    Amber Acorn) take most of them.
 
   The last JEV sim benchmark (v23, `sim30-a`, before later sim fixes) reached 6.43. Thirty seeds
   detect about 0.9 ante, so test changes code-only on 60+ seeds first.
