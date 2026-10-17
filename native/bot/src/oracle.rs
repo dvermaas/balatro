@@ -17,10 +17,8 @@ impl Oracle for RustOracle {
     fn forecast(&mut self, pub_gs: &Value, n: i64, bosses: i64, keys: &[String], budget_s: Option<f64>) -> Value {
         forecast::forecast(pub_gs, n as usize, bosses, Some(keys), budget_s)
     }
-    fn items_forecast(&mut self, _pub_gs: &Value, _n: i64, _bosses: i64, _keys: &[String], _budget_s: Option<f64>) -> Value {
-        // TODO(items): call forecast_items::items_forecast once it exists. Until then this reads as
-        // Python's failed item forecast: no `skip` baseline, so the bot logs it and drops the item layer.
-        json!({"options": {}, "errors": {"items_forecast": "not ported"}, "rollouts": 0, "seconds": 0.0})
+    fn items_forecast(&mut self, pub_gs: &Value, n: i64, bosses: i64, keys: &[String], budget_s: Option<f64>) -> Value {
+        crate::forecast_items::items_forecast(pub_gs, n as usize, bosses, Some(keys), budget_s)
     }
     fn picker_values(&mut self, pub_gs: &Value, a: &Value) -> Value {
         let (pack, hand, jk) = (list(&a["pack"]), list(&a["hand"]), list(&a["jokers"]));
@@ -67,7 +65,11 @@ impl Oracle for CheckedOracle {
         self.cmp("forecast", got, want)
     }
     fn items_forecast(&mut self, p: &Value, n: i64, b: i64, k: &[String], bs: Option<f64>) -> Value {
-        self.rec.items_forecast(p, n, b, k, bs)
+        let want = self.rec.items_forecast(p, n, b, k, bs);
+        // a time budget makes the rollout count machine-dependent: replay the recorded count without one
+        let m = want["rollouts"].as_i64().filter(|_| bs.is_some()).unwrap_or(n);
+        let got = RustOracle.items_forecast(p, m, b, k, None);
+        self.cmp("items_forecast", got, want)
     }
     fn picker_values(&mut self, p: &Value, a: &Value) -> Value {
         let want = self.rec.picker_values(p, a);

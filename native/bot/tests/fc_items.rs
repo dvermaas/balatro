@@ -54,7 +54,9 @@ fn fc_items_identical() {
                 Some("call") => last = l.get("ok"),
                 Some("oracle") if l["fn"] == "rollout_items.forecast" => {
                     idx += 1;
-                    if (idx - 1) % stride != 0 {
+                    if let Ok(o) = std::env::var("FC_ONLY") {
+                        if o != idx.to_string() { continue; }
+                    } else if (idx - 1) % stride != 0 {
                         continue;
                     }
                     total += 1;
@@ -73,6 +75,13 @@ fn fc_items_identical() {
                     ga.as_object_mut().unwrap().remove("seconds");
                     gb.as_object_mut().unwrap().remove("seconds");
                     let d = diff(&ga, &gb, "").unwrap_or_default();
+                    if std::env::var("FC_ONLY").is_ok() {
+                        for key in ga["options"].as_object().unwrap().keys() {
+                            if ga["options"][key] != gb["options"][key] { println!("OPT {key}
+RUST {}
+PY   {}", ga["options"][key], gb["options"][key]); break; }
+                        }
+                    }
                     if d.is_empty() && std::env::var("FC_DUMP").is_ok() {
                         println!("RUST {}
 PY   {}", strip(&got), strip(&l["ret"]));
