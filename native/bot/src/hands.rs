@@ -810,7 +810,7 @@ pub mod native {
     }
 
     // native.py 108-115
-    fn rule(r: &Option<jokers::Rule>) -> Option<jev_kernel::RuleIn> {
+    pub fn rule(r: &Option<jokers::Rule>) -> Option<jev_kernel::RuleIn> {
         let r = r.as_ref()?;
         Some((
             r.card.iter().map(|(p, c, m, x)| { let (k, a) = pred(p); (k, a, *c, *m, *x) }).collect(),
