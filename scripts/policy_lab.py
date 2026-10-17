@@ -377,7 +377,10 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-n48": {"items": True, "n": 48},
             # forecast horizon (production FORECAST_BOSSES = 3)
             "bot-b2": {"items": True, "bosses": 2},
-            "bot-b4": {"items": True, "bosses": 4}}
+            "bot-b4": {"items": True, "bosses": 4},
+            # interest guard: a buy that lowers our interest by L dollars a round needs `guard` x L more SEs
+            "bot-guard02": {"items": True, "guard": 0.2},
+            "bot-guard04": {"items": True, "guard": 0.4}}
 SKIP_TAGS = {
     "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
                "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
@@ -602,6 +605,24 @@ def _play_bot(seed, arm_name, t0):
             decisions.selecting_hand = round_planner.wrap(orig_selecting_hand, pstats)
         bot = JevBot(deck="RED", stake="WHITE", game=SimBalatro(), jev=jev, log_dir=Path(tmp))
         ref[0] = bot
+        if opts.get("guard"):
+            import strategy
+            orig_ff, k = _DEFAULTS["ff"], opts["guard"]
+
+            def ff(fc, key):
+                out = orig_ff(fc, key)
+                gs = bot.last_state or {}
+                money, idx = gs.get("money") or 0, int(key.split("_")[-1])
+                area = {"buy_card": "shop", "buy_voucher": "vouchers", "buy_pack": "packs", "replace": "shop"}
+                kind = next((a for a in area if key.startswith(a)), None)
+                if kind:
+                    cost = _d(_cards(gs, area[kind])[idx].get("cost")).get("buy", 0)
+                    if kind == "replace":
+                        cost -= _d(_cards(gs, "jokers")[int(key.split("_")[1])].get("cost")).get("sell", 0)
+                    lost = strategy.interest(money) - strategy.interest(money - cost)
+                    out["_fc_delta"] -= k * max(lost, 0) * max(out["_fc_se"], 1e-9)
+                return out
+            decisions._forecast_fields = ff
         if opts.get("xm_bonus") or opts.get("bonus_kind"):
             import strategy
             orig_ff = _DEFAULTS["ff"]
