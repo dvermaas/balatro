@@ -27,3 +27,6 @@
 - forecast_apply: selling a ready Invisible Joker (draws RNG) returns Err; untested (not in the sample).
   Campfire/Hologram bumps, negative editions, Juggler/Troubadour/Turtle Bean hand size are coded from
   Jackdaw but may be unexercised by the 400-call fixture.
+- engine text: Hiker perma_bonus, Oops! All 6s probability text, and perma_mult/x_mult/h_chips/dollars card
+  lines are never emitted because rumbot cards lack those fields. Check how rumbot tracks Hiker's per-card
+  chip bonus (does Hiker work in rumbot at all?) and add the fields if needed.
