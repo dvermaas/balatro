@@ -14,27 +14,42 @@ fn bot_replay() {
     let mut identical = 0;
     let mut n = 0;
     let mut errors: std::collections::BTreeMap<String, usize> = Default::default();
-    for (arm, items) in [("bot-forecast-long", false), ("bot-forecast-items", true)] {
-        for p in trace::trace_files(arm) {
-            let o = replay_game(&p, items, &dir);
-            n += 1;
-            identical += o.identical as usize;
-            matched.push(o.matched);
-            if let Some(e) = &o.error {
-                *errors.entry(e.chars().take(300).collect::<String>()).or_default() += 1;
-            }
+    let mut skipped: std::collections::BTreeMap<String, usize> = Default::default();
+    // JEV_REPLAY_GAMES=<n>: only the first n games (arm E's, then arm F's)
+    let limit: usize = std::env::var("JEV_REPLAY_GAMES").ok().and_then(|v| v.parse().ok()).unwrap_or(usize::MAX);
+    let games = [("bot-forecast-long", false), ("bot-forecast-items", true)]
+        .into_iter()
+        .flat_map(|(arm, items)| trace::trace_files(arm).into_iter().map(move |p| (p, items)))
+        .take(limit);
+    for (p, items) in games {
+        let o = replay_game(&p, items, &dir);
+        n += 1;
+        identical += o.identical as usize;
+        matched.push(o.matched);
+        for (h, c) in o.skipped {
+            *skipped.entry(h).or_default() += c;
+        }
+        if let Some(e) = &o.error {
+            *errors.entry(e.chars().take(300).collect::<String>()).or_default() += 1;
         }
     }
     matched.sort();
     for (e, c) in &errors {
         println!("  {c}x {e}");
     }
-    println!(
+    let mut line = format!(
         "bot replay: {identical}/{n} games identical; records matched min/median/max {}/{}/{}",
         matched[0],
         matched[matched.len() / 2],
         matched[matched.len() - 1]
     );
+    if std::env::var_os("JEV_REPLAY_SKIP").is_some() {
+        let mut v: Vec<_> = skipped.iter().collect();
+        v.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
+        let parts: Vec<String> = v.iter().map(|(h, c)| format!("{h} {c}")).collect();
+        line += &format!("; skipped steps: {}", if parts.is_empty() { "none".into() } else { parts.join(", ") });
+    }
+    println!("{line}");
     let _ = std::fs::remove_dir_all(&dir);
     if std::env::var_os("JEV_REPLAY_ASSERT").is_some() {
         assert_eq!(identical, n);
