@@ -5,10 +5,32 @@
 
 use serde_json::{Map, Value};
 
-// prompts.py 9-45
-macro_rules! v27_note {
+// prompts.py 8-81: the note of the last Python version (v32)
+macro_rules! py_note {
     () => {
         concat!(
+            "v32: no behaviour change. Merge of main's full Rust bot (native/bot, frozen at v27) into v31: ",
+            "native/sim now builds on native/simcore, which changes the version hash. sim60-a code-only lab: ",
+            "60/60 games identical to v31. Based on: ",
+            "v31: the forecasts' auto-buy bar drops from 2 to 1 paired SE over buying nothing (decisions.SURE_SE, ",
+            "rollout_items.best). Small sure gains (packs, swaps, planets) rarely cleared 2 SE at 16-24 rollouts. ",
+            "Lab, code only, pooled 320 paired seeds: +0.23 +- 0.10 ante, wins 60 vs 50 (1.5 SE: +0.09; 0.5 SE: ",
+            "+0.14 on 200). Verdant Leaf sales skip hand-size and life-saving jokers (Troubadour, Juggler, ...). ",
+            "Based on: ",
+            "v30: Verdant Leaf. The bot sells its weakest joker (smallest loss on recent hands) before playing ",
+            "when Verdant Leaf debuffs the hand (decisions._leaf_sale), and the sim lifts Verdant Leaf when a ",
+            "joker is sold (sim_patches.verdant_leaf_lifts_on_joker_sale; rumbot-sim already did). New sim ",
+            "baseline. v28 lab: 13 of 200 games died to Verdant Leaf at ante 8. Based on: ",
+            "v29: the shop offers Negative jokers and consumables with full slots (a Negative card brings its ",
+            "own slot; rollout.options already allowed it, decisions.shop's filter dropped it). Based on: ",
+            "v28: planets and joker text. (1) The shop buys the planet for the hand our deck scores most with ",
+            "(readiness.play_mix) and the biggest Celestial pack while $4 stays (decisions._planet_rule); a ",
+            "pack's planet is picked by rollout_items.planet_gain, which re-chooses the best play after the ",
+            "level-up on deals of hand size + 3 (Rust kernel), instead of jokers.gain with fixed plays, which ",
+            "spread levels over Pair, High Card and ties. v27 levelled only ~3 hands by ante 6. (2) Joker text ",
+            "fixes, in Python and the Rust kernel: The Idol needs its rank and suit (was every card of the ",
+            "suit), Bloodstone at its expected X, Driver's License's count is not +Mult, Seeing Double and ",
+            "Baseball Card (rarity from Jackdaw's centers) are modelled. Based on: ",
             "v27: item-forecast rollouts keep their policy when jokers are only removed (Madness, Ceremonial ",
             "Dagger, Popcorn or Gros Michel running out): the removed jokers' entries are dropped instead of ",
             "rebuilding the policy from the jokers' current text. Rust does the same, so Rust gives up on 1% ",
@@ -65,16 +87,17 @@ macro_rules! v27_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
-    "v28 (Rust only): speed only, same decisions as v27. The hand scorer kernel no longer allocates per ",
+    "v33 (Rust only): speed only, same decisions as v32. The hand scorer kernel no longer allocates per ",
     "play subset and walks flat rule lists; mimalloc is the allocator; rumbot's hand tables are arrays and ",
     "its read-only joker scans no longer copy the row. The play-mix cache is per game (it was process-wide, ",
-    "so games run on threads could depend on each other). Lab E+F, 16 seeds: every game identical (call ",
-    "logs and decisions); 19.4 s -> 11.3 s (E), 23.2 s -> 13.5 s (F). The Python code is removed. Based on: ",
-    v27_note!(),
+    "so games run on threads could depend on each other). Lab E+F, 30 seeds: every game identical (call ",
+    "logs and decisions); 16 seeds, 4 threads: 37.0 s -> 20.6 s (E), 54.0 s -> 27.2 s (F). The Python code ",
+    "is removed. Based on: ",
+    py_note!(),
 );
 
-/// The v27 note, as prompts.py had it (the Python fixtures compare it).
-pub const V27_NOTE: &str = v27_note!();
+/// The v32 note, as prompts.py had it (the Python fixtures compare it).
+pub const PY_NOTE: &str = py_note!();
 
 // Short factual brief, sent with every question as `game_rules`. Strategy lives in the questions.
 // prompts.py 47-51

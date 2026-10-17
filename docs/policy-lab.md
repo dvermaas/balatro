@@ -399,3 +399,178 @@ options also grows: in first-shop smoke tests the SE of a buy against skip rose 
 **Reading.** The direction is positive (1.4 SE), but 30 seeds can't confirm it. Blinds cleared is
 nearly a coin flip seed by seed (13 better, 11 worse). A 300-seed lab run is needed before this
 ships.
+
+## Mid-game scaling experiments (2026-10-16, cloud box, 4 workers): v28
+
+All arms are arm F (`bot-forecast-items`) plus one change, paired on the same seeds, code only. v27
+baseline: sim60-a 5.90 ante (4 wins); 60 fresh seeds (`--seeds 60`) 6.15 (6 wins).
+`PLAB_KEEP_LOGS=<dir>` keeps each game's `decisions.jsonl` and `states.jsonl.gz` for these analyses.
+
+**Diagnosis (v27, sim60-a).**
+- Hand levels barely move: the median best hand level is 2 at antes 5-7 and about 3 levels are
+  gained in total by ante 6. 18 of 60 games never used a planet from a consumable slot.
+- Joker slots are full from ante 3. Buys fall from about 2 per ante to 1 per ante after ante 4, with
+  about $30 held.
+- Jokers held at death are mostly flat +Mult/+Chips (Abstract, Blue Joker, Banner, Odd Todd). xMult
+  jokers are offered about 3 times a game and rarely bought: their forecast gain, re-run at n=64 on
+  saved states, is mostly negative for swaps (The Order -0.62 +- 0.17, The Tribe -0.44 +- 0.20).
+- The forecast is not saturated: from ante 3 the skip option already survives all 3 bosses in ~0%
+  of rollouts. Forecast skip blinds sit below what the game then clears (the game keeps shopping).
+
+**Planets (shipped as v28).** `jokers.gain` keeps each sample's play fixed, so a planet for a hand we
+don't play yet was worth 0: pack picks tied at +0.001 and levels spread over Pair, High Card and
+Straight Flush. v28 values a pack's planet with the best play re-chosen after the level-up on deals of
+hand size + 3 (`rollout_items.planet_gain`, Rust `best_score`), and the shop buys the planet for the
+`play_mix` top hand and the biggest Celestial pack while $4 stays (`decisions._planet_rule`).
+
+| change (lab arm) | sim60-a | fresh 60 |
+|---|---:|---:|
+| shop planet for the `play_mix` top hand (`bot-pl-mix`) | +0.00 +- 0.08 | |
+| + Celestial packs, keep $10 (`bot-pl-mix-cel10`) | +0.18 +- 0.15 | |
+| + Celestial packs, keep $4 (`bot-pl-mix-cel4`) | +0.20 +- 0.20 | |
+| + re-chosen planet picks (`bot-pl-reopt-cel4`) | +0.25 +- 0.19 | +0.13 +- 0.16 |
+| **v28 production code** (cb57eae7) | **+0.27 +- 0.20** (10 wins vs 4) | **+0.35 +- 0.14** (10 vs 6) |
+
+Pooled over 120 seeds v28 is about +0.31 +- 0.12 ante, wins 20 against 10. Levels gained by ante 6:
+2.8 -> 8.8. Lab time per game 16 -> 22 s.
+
+**Did not help.**
+- Rerolls: 4 per shop +0.12 +- 0.07; 4 down to $15 -0.03 +- 0.12; 6 down to $10 -0.12 +- 0.14.
+- An xMult bonus (+0.3 / +0.6 blinds added to xMult joker forecasts, `bot-xm-03/06`): 24 -> 39 xMult
+  buys, -0.05 / -0.08 +- 0.14 ante. Bought blindly, they are mostly conditional effects the build
+  doesn't meet (Baseball Card without Uncommons, Vampire without enhanced cards).
+- A joker-aware rollout discard (Rust only, `docs/samples/smart-discard.patch`, env
+  `JEV_SMART_DISCARD=1`): holds by suit (3+), rank groups, the best straight window and the best play,
+  each scored over 8 redraws with the text scorer. It is a stronger rollout player (skip clears 3.90
+  vs 3.61 blinds over the 3-boss horizon on 12 games' shops) but the shop decisions did not improve:
+  -0.02 +- 0.24 on sim60-a against v28, 2x slower. Every option gets the same better player, so
+  paired option differences barely move.
+
+**Reading.** The forecast judges each item alone against a frozen build. What it cannot see is the
+build changing around an item (later buys, planets and tarots aimed at a joker's condition), which is
+how strong runs find a working xMult. The shopping rollouts above were the one experiment that
+models later buys (+0.63 +- 0.45 on 30 seeds, Python only and slow).
+
+**After v28 (same day): wins vs losses, and four more arms, none shipped.**
+
+Win/loss comparison on 200 new v28 games with full logs (`--seeds 200 --seed-offset 60`, 27 wins),
+at the first shop of each ante, winners against games that died later:
+- Winners are already stronger at ante 3: a typical hand x 4 is 3.2x that ante's boss target, against 2.2x.
+- xMult jokers separate the mid-game. Winners hold 0.56 -> 0.89 -> 1.07 at antes 4 / 6 / 7; later losers
+  stay at about 0.55 and keep more flat +Mult jokers. Both see 2-3 xMult offers per game at antes 4-6;
+  winners end up holding 0.67 new ones by ante 5-7, losers 0.25.
+- A scaling-joker signal on the first 120 games (14 wins) did not hold on these 200.
+- Swap blind spot: with full slots, only the 2 jokers with the smallest measured loss on recent hands
+  may be sold. In one loss the forecast (n=16) had three Ramen swaps over the 2 SE bar (sell Abstract
+  Joker +1.25 +- 0.28) but only Fibonacci and Seltzer were eligible.
+
+| arm (vs v28, paired) | sim60-a | fresh 60 |
+|---|---:|---:|
+| late spending: from ante 5 keep $5, 6 rerolls (`bot-late5`) | -0.08 +- 0.09 | |
+| late spending from ante 6 (`bot-late6`) | -0.10 +- 0.05 | |
+| swaps may sell any of 3 jokers (`bot-swap3`) | -0.03 +- 0.09 | +0.02 +- 0.07 |
+| swaps may sell any joker (`bot-swap5`; 3.6 -> 3.8 swaps a game) | -0.05 +- 0.09 | +0.03 +- 0.09 |
+| shopping rollouts on v28 (`bot-items-shop`, 7x slower) | -0.27 +- 0.23 | -0.68 +- 0.28 |
+
+The shopping rollouts lose about half an ante over 120 seeds (-0.48 +- 0.18; 24 seeds better, 50
+worse), so porting `rollout_shop` to Rust is not worth it. Note: the lab's per-arm `mean_swaps` counts
+"replace" in a buy description, which reads "sell X for Y"; count "sell " instead.
+
+**v29, v30 and tag skipping (2026-10-17).**
+- Early game (antes 1-3, 200 v28 games): winners are stronger from the first shop (a typical hand x 4
+  is 6.2x the ante-1 boss target against 3.6x) with the same joker count and buys, which looks like
+  luck of the early shops. Edition jokers in ante 1-3 shops were taken 0 of 20 times, mostly because
+  slots were full.
+- **v29** (`a0adcc12`): `decisions.shop` dropped every joker when slots were full, Negative ones too
+  (`rollout.options` and the game allow them). sim60-a +0.05 +- 0.04, fresh 60 +0.00 (rare).
+- Where v28 runs end (200 games): 69 reach ante 8 and 27 win. The ante-8 finisher kills most of the
+  rest: Verdant Leaf 13, Violet Vessel 8 (8 of 8 met), Crimson Heart 6, Amber Acorn 5, Cerulean Bell 4.
+- **v30** (`9ecfe423`): under Verdant Leaf the bot never sold a joker, and Jackdaw never lifted the
+  boss on a sale (rumbot-sim did). `decisions._leaf_sale` sells the weakest joker first;
+  `sim_patches.verdant_leaf_lifts_on_joker_sale` lifts it. On the 200 seeds: wins 27 -> 29, Verdant
+  Leaf deaths 13 -> 10 (4 of the 13 now win; one v28 win, TIXQA7PH, now sells Troubadour and falls 2%
+  short: the sale should skip hand-size jokers). sim60-a and fresh 60: identical antes. **To check on
+  the real game:** that BalatroBot allows `sell` during a round (the bot falls back to playing if
+  not), and the sim patch against the Lua dump plus `sim_parity.py`.
+- Skipping small/big blinds for tags when readiness for the next blind is >= 1.3 / 1.5
+  (`bot-skip-strong`: Negative, Polychrome, Rare, Holographic, Investment, Orbital, Meteor, Buffoon,
+  Uncommon, Double; `bot-skip-wide` adds 9 more): strong -0.03 +- 0.19 / +0.02 +- 0.16, wide
+  -0.22 +- 0.21 / -0.38 +- 0.19 (sim60-a / fresh 60). A lost shop visit costs more than the tag.
+- Director's Cut / Retcon would reroll Violet Vessel, but neither Jackdaw nor BalatroBot (as used
+  here) has a boss-reroll action.
+
+**v31: the auto-buy bar (2026-10-17).** Both forecasts buy an option outright when it beats buying
+nothing by more than `SURE_SE` paired SEs in blinds cleared. At 16-24 rollouts the SE of a swap or pack
+against skip is often 0.2-0.5 blinds, so real gains of +0.3 to +0.9 missed the 2 SE bar (the planet
+problem again). Lab arms `bot-se15/se1/se05` against v30, paired:
+
+| bar | sim60-a | fresh 60 | 200 seeds | pooled |
+|---|---:|---:|---:|---:|
+| 1.5 SE | +0.15 +- 0.24 | +0.02 +- 0.18 | | |
+| **1 SE** | +0.28 +- 0.27 | +0.13 +- 0.18 | +0.23 +- 0.12 (40 wins vs 29) | **+0.23 +- 0.10, wins 60 vs 50 (320)** |
+| 0.5 SE | | | +0.14 +- 0.12 (37 vs 29) | |
+
+At 1 SE the bot buys about 3 more packs, 1.3 more jokers and 1.6 more swaps a game and rerolls less
+(10 -> 7). Shipped as v31 with a Verdant Leaf refinement: hand-size and life-saving jokers are sold
+last.
+
+**After v31: forecast settings and build ideas (2026-10-17), none shipped.** All paired against v31 on
+the 200 fresh seeds (`--seeds 200 --seed-offset 60`, `--stop-at-se 0`), code only.
+
+| arm | ante | wins (v31: 40) | note |
+|---|---:|---:|---|
+| 32 rollouts per option (`bot-n32`) | +0.00 +- 0.11 | 49 | sim60-a -0.07, fresh 60 -0.38; pooled 320: -0.08 +- 0.08, win pairs 33 vs 27 |
+| 48 rollouts (`bot-n48`) | -0.20 +- 0.12 | 40 | |
+| 2-boss horizon (`bot-b2`, 101 seeds) | -0.25 +- 0.15 | | |
+| 4-boss horizon (`bot-b4`) | +0.02 +- 0.06 | 46 | win pairs 16 vs 10, z 1.2 |
+| interest guard 0.2 / 0.4 SE per $ of lost interest | -0.06 / -0.11 | 38 / 39 | v31 spends harder early (median $7 at ante 3, v28 $13) and that is fine |
+| discard commitment to a Flush/Straight main hand +15% / +30% | -0.01 / -0.03 | 37 / 39 | |
+| discard commitment, every main hand +15% | -0.17 +- 0.08 | 31 | |
+| suit tarots from packs by measured gain (`bot-suitval`) | -0.12 +- 0.07 | 33 | the noisy measure took fewer suit tarots (13 of 62 picks; v31 35 of 98) |
+| engine pieces protected from swaps | -0.02 +- 0.02 | 42 | |
+| + 0.3 / 0.6 blinds credit for joining a started engine | -0.07 / -0.08 | 40 / 38 | losses holding an engine at death 12 -> 45 of ~160: engines form but don't score |
+
+Build analysis behind the last four (400 logged v28/v31 games): Pair decks win most (30% of runs whose
+deck's main hand at ante 4 was Pair, mean ante 7.32) because they keep playing Pair (43 of 52); Flush and
+Straight decks drift into other hands after ante 5 (Flush: 4 of 35 won, 0 of 21 at ante 6). Engines from
+the guides formed in about 5% (face cards) and 1% (others) of runs. Nudging discards, suit tarots or
+engine pieces did not convert that into wins: the forecast's frozen-build judgement beat each heuristic.
+
+**Learned value: not worth building (2026-10-17).** Question: can a model of "how far does a run get from
+this shop state" add the long-term value the frozen-build forecast misses? Data: 14,861 shop visits from
+about 700 logged v28/v31 games (incl. 400 new v31 games, `--seeds 400 --seed-offset 260`). Features: money,
+joker counts by kind and edition, levels, deck size and enhancements, vouchers, hand size, typical hand
+vs this ante's and the wall's boss, play_mix share; target blinds still to be cleared (R2) and win (AUC),
+5-fold CV grouped by game.
+- Within an ante, summary features explain little: R2 0.06 / 0.12 / 0.17 / 0.17 / 0.11 at antes 3-7,
+  win AUC 0.59-0.75. Across antes R2 is 0.6, but that is the ante itself.
+- One indicator per joker (119 jokers) makes it worse out of sample (overfits).
+- So outcomes from a given state are mostly decided by later shops, draws and bosses; a learned terminal
+  value would add little over the forecast at this data size. Not built.
+
+| arm (vs v31, 200 seeds) | ante | wins (v31: 40) |
+|---|---:|---:|
+| v23 early slot fill off (`bot-early-off`) | +0.01 +- 0.04 | 37 |
+| early slot fill up to 5 jokers | -0.04 +- 0.03 | 41 |
+| pack jokers valued with the best play re-chosen (`bot-jreopt-pick`) | -0.07 +- 0.03 | 40 |
+| + same for the weakest-joker swap ranking (60% slower) | -0.01 +- 0.08 | 40 |
+
+The early slot fill is redundant since v31 (the 1 SE bar buys those jokers anyway).
+| The Mouth: first play limited to hand types the deck makes in >= 60% of sampled hands (`bot-mouth60`) | -0.06 +- 0.04 | 38 |
+| same at 80% (`bot-mouth80`) | -0.08 +- 0.05 | 40 |
+
+(The Mouth's later off-type plays are deliberate card cycling when no hand of the locked type is held.)
+
+**Vouchers and the 5k-game comparison (2026-10-17).**
+- Vouchers that only pay off in later shops (Blank/Antimatter, Overstock, Telescope, Clearance Sale,
+  Crystal Ball, Reroll Surplus, Seed Money, ...) were almost never bought (0-1% of offers). Bought by code
+  while $10 / $25 stay (`bot-vouch10/25`): -0.14 +- 0.06 / -0.07 +- 0.05 ante (36 / 37 wins vs 40) and
+  about 40% slower (Overstock adds forecast options). Antimatter arrived only 6 times in 200 games.
+- The [5k-balatro-games](https://huggingface.co/datasets/makemake/5k-balatro-games) dataset (V68
+  heuristic in Pylatro, Blue Deck, with a score/RNG oracle and search shops, 74.6% wins), decoded per
+  ante from its tokens: its winners level Pair (highest level at ante 6: Pair 77%, mean Pair level 4.4;
+  its losers 3.4) and hold Card Sharp, Supernova, Green Joker, Half Joker; v31's highest level at ante 6
+  is spread (Straight 24%, Full House 22%, Two Pair 22%, Pair 15%; Pair level 2.1). It also holds more
+  xMult at antes 7-8 (1.3-1.6 vs 0.9-1.15) and more scaling jokers (0.6 vs 0.3).
+- Planets valued on plain hand-size deals (`bot-plx0`, readiness.MIX_EXTRA and planet_gain extra 0):
+  -0.03 +- 0.10, 42 wins vs 40. Pair/Two Pair planets x1.5 (`bot-pairbias`): -0.01 +- 0.04, 40 vs 40.

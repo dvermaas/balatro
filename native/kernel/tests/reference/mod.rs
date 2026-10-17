@@ -1,6 +1,7 @@
 #![allow(dead_code)]
-//! The kernel as it was before the allocation-free rewrite (classify_into, flattened rules), kept as the
-//! reference the fast version must match bit for bit.
+//! The kernel as it was before the allocation-free rewrite (classify_into, flattened rules), with the
+//! joker rules of v31 (pred kind 6, Seeing Double), kept as the reference the fast version must match
+//! bit for bit.
 use jev_kernel::{rank_chips, Card, HandIn, RuleIn, HAND_NAMES, STONE, WILD};
 pub type Eff = (f64, f64, f64);
 const BONUS: u8 = 3;
@@ -10,6 +11,7 @@ const STEEL: u8 = 6;
 const FOIL: u8 = 1;
 const HOLO: u8 = 2;
 const POLYCHROME: u8 = 3;
+const CLUBS: u32 = 3;
 const FLUSH_FIVE: usize = 0;
 const FLUSH_HOUSE: usize = 1;
 const FIVE_KIND: usize = 2;
@@ -112,13 +114,15 @@ struct Rule {
     hand: Option<HandIn>,
 }
 
-/// jokers._pred: 0 all, 1 suit (or Wild), 2 rank set. Kinds 3-5 (first_face, first, final) are
-/// position rules handled by the caller and never match here.
+/// jokers._pred: 0 all, 1 suit (or Wild), 2 rank set, 6 one rank of one suit (rank | suit << 8; Wild
+/// matches the suit). Kinds 3-5 (first_face, first, final) are position rules handled by the caller
+/// and never match here.
 fn pred(kind: u8, arg: u32, c: &Card) -> bool {
     match kind {
         0 => true,
         1 => c.suit as u32 == arg || c.enh == WILD,
         2 => c.rank != 0 && arg & (1 << c.rank) != 0,
+        6 => c.rank != 0 && c.rank as u32 == arg & 0xff && (c.suit as u32 == arg >> 8 || c.enh == WILD),
         _ => false,
     }
 }
@@ -170,6 +174,13 @@ impl OldScorer {
             7 => cond(ctx.played_this_round),
             8 => (0.0, ctx.times_played + 1.0, 1.0),
             9 => (v * self.discards_left, 0.0, 1.0),
+            11 => {
+                // Seeing Double: Wild cards fill Clubs first, then the other suits
+                let c = ctx.scoring_suits & (1 << CLUBS) != 0;
+                let o = ctx.scoring_suits & !(1 << CLUBS) != 0;
+                let w = ctx.wild;
+                cond((c || w > 0) && (o || (c && w > 0) || w >= 2))
+            }
             _ => {
                 let low = ctx.held.iter().map(nominal).fold(None, |m: Option<f64>, x| Some(m.map_or(x, |m| m.min(x))));
                 (0.0, 2.0 * low.unwrap_or(0.0), 1.0)

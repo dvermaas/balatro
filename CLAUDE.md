@@ -2,8 +2,8 @@
 
 Bot that plays Balatro with JEV (TypeSafe's typed System One model) as a JEV stress test, plus a
 local control panel for watching runs and comparing prompt versions. Everything is Rust, in the
-`native/` workspace; the Python original (v27, which the Rust bot matches seed by seed) is in git
-history up to `b146a7a`. See README.md for setup.
+`native/` workspace; the Python original (through v32, which the Rust bot matches seed by seed) is in
+git history up to `4628654`. See README.md for setup.
 
 ## Commands
 
@@ -11,9 +11,12 @@ history up to `b146a7a`. See README.md for setup.
   `~/.cargo/bin` may be missing from PATH). Binaries: `native/target/release/{jevbot,jevlab}`.
 - Tests: `cd native && cargo test --release`. Most compare against fixtures and traces recorded from the
   Python bot in `runs/_port` (not in git; `JEV_PORT_DATA` overrides the path); without them those tests
-  fail with "No such file". `fc_items` is slow (~2-5 min); `engine_replay` with `IGNORE="].id"`.
-  Identity bar: `bot_replay` 60/60, `fc_items` 3193/3193, `engine_replay` 47/60 (the rest are known
-  Jackdaw bugs). `kernel/tests/matches_reference.rs` pins the scorer to its original implementation.
+  fail with "No such file". `fc_items` is slow (~2-9 min); `engine_replay` with `IGNORE="].id"`.
+  Identity bar (v31 references, regenerated from v32's Python; docs/rust-port-guide.md "Reference data"):
+  `bot_replay` 60/60, `fc_items` 2913/2916, `fc_packs` 2223/2224 (the misses are a known Jackdaw bug,
+  followups.md), `engine_replay` 47/60 (the rest are known Jackdaw bugs). The references can no longer
+  be regenerated, so a behaviour change makes them stale; check it with the lab instead.
+  `kernel/tests/matches_reference.rs` pins the scorer to its original implementation.
 - Lab (no JEV, free): `jevlab --set sim30-a --arm E|F --jobs 8 [--limit N]` (E = bot-forecast-long,
   F = bot-forecast-items); rows in `runs/_policy_lab/<name>/results.jsonl`. `JEVLAB_TRACE=<dir>` writes
   every game's calls (and keeps the run dirs in $TMPDIR) and prints the first call that differs from

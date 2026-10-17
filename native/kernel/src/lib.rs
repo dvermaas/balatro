@@ -16,6 +16,7 @@ const STEEL: u8 = 6;
 const FOIL: u8 = 1;
 const HOLO: u8 = 2;
 const POLYCHROME: u8 = 3;
+const CLUBS: u32 = 3; // native._SUIT["C"]
 
 // Hand names in strategy.HAND_NAMES order.
 pub const HAND_NAMES: [&str; 12] = [
@@ -172,13 +173,15 @@ pub type Eff = (f64, f64, f64);
 pub type HandIn = (u8, u32, f64, Eff, Eff);
 pub type RuleIn = (Vec<(u8, u32, f64, f64, f64)>, Vec<(u8, u32, i64)>, Vec<(u8, u32, f64, f64)>, i64, Option<HandIn>);
 
-/// jokers._pred: 0 all, 1 suit (or Wild), 2 rank set. Kinds 3-5 (first_face, first, final) are
-/// position rules handled by the caller and never match here.
+/// jokers._pred: 0 all, 1 suit (or Wild), 2 rank set, 6 one rank of one suit (rank | suit << 8; Wild
+/// matches the suit). Kinds 3-5 (first_face, first, final) are position rules handled by the caller
+/// and never match here.
 fn pred(kind: u8, arg: u32, c: &Card) -> bool {
     match kind {
         0 => true,
         1 => c.suit as u32 == arg || c.enh == WILD,
         2 => c.rank != 0 && arg & (1 << c.rank) != 0,
+        6 => c.rank != 0 && c.rank as u32 == arg & 0xff && (c.suit as u32 == arg >> 8 || c.enh == WILD),
         _ => false,
     }
 }
@@ -236,6 +239,13 @@ impl Scorer {
             7 => cond(ctx.played_this_round),
             8 => (0.0, ctx.times_played + 1.0, 1.0),
             9 => (v * self.discards_left, 0.0, 1.0),
+            11 => {
+                // Seeing Double: Wild cards fill Clubs first, then the other suits
+                let c = ctx.scoring_suits & (1 << CLUBS) != 0;
+                let o = ctx.scoring_suits & !(1 << CLUBS) != 0;
+                let w = ctx.wild;
+                cond((c || w > 0) && (o || (c && w > 0) || w >= 2))
+            }
             _ => {
                 let low = ctx.held().map(nominal).fold(None, |m: Option<f64>, x| Some(m.map_or(x, |m| m.min(x))));
                 (0.0, 2.0 * low.unwrap_or(0.0), 1.0)

@@ -1,0 +1,210 @@
+diff --git a/native/sim/src/lib.rs b/native/sim/src/lib.rs
+index 23d4a58..62580f4 100644
+--- a/native/sim/src/lib.rs
++++ b/native/sim/src/lib.rs
+@@ -443,6 +443,58 @@ fn candidates(infos: &[kernel::Card]) -> Vec<Vec<usize>> {
+ #[derive(Clone)]
+ struct Policy {
+     jokers: Vec<(u8, Option<RuleIn>)>,
++    smart: bool,
++}
++
++/// Experimental (lab only, no Python twin yet): JEV_SMART_DISCARD=1 picks the discard by sampled redraws
++/// scored with the jokers (smart_discard) instead of rollout.Policy.discard's suit/rank heuristic.
++fn smart_enabled() -> bool {
++    static ON: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
++    *ON.get_or_init(|| std::env::var("JEV_SMART_DISCARD").map_or(false, |v| v == "1"))
++}
++
++impl Policy {
++    fn new(jokers: Vec<(u8, Option<RuleIn>)>) -> Self {
++        Policy { jokers, smart: smart_enabled() }
++    }
++}
++
++/// splitmix64: a tiny deterministic RNG that is easy to mirror in Python.
++struct Mix(u64);
++
++impl Mix {
++    fn next(&mut self) -> u64 {
++        self.0 = self.0.wrapping_add(0x9E37_79B9_7F4A_7C15);
++        let mut z = self.0;
++        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
++        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
++        z ^ (z >> 31)
++    }
++    fn below(&mut self, n: usize) -> usize {
++        (self.next() % n as u64) as usize
++    }
++}
++
++const SMART_DRAWS: usize = 8;
++
++fn card_key(c: &kernel::Card) -> (u8, u8, u8, u8, bool, bool) {
++    (c.rank, c.suit, c.enh, c.edition, c.red, c.debuff)
++}
++
++/// Best structural candidate's text score for a hand (rollout.Policy.decide without boss filters).
++fn best_struct(scorer: &kernel::Scorer, infos: &[kernel::Card]) -> f64 {
++    let mut best = 0.0f64;
++    for mut combo in candidates(infos) {
++        combo.sort_unstable();
++        combo.dedup();
++        let cs: Vec<kernel::Card> = combo.iter().map(|&p| infos[p]).collect();
++        let (name, sc) = kernel::classify(&cs);
++        let s = scorer.score(infos, &combo, name, &sc);
++        if s > best {
++            best = s;
++        }
++    }
++    best
+ }
+ 
+ /// kernel hand index (HAND_NAMES order) -> rumbot-sim HandType
+@@ -516,7 +568,7 @@ impl Policy {
+         let (score, combo, name) = best.expect("a non-empty hand has a candidate");
+         let behind = score * (hands_left as f64) < need as f64;
+         if discards_left > 0 && hands_left > 1 && behind {
+-            let toss = discard(&infos, &forced);
++            let toss = if self.smart { self.smart_discard(g, &scorer, &infos, &forced) } else { discard(&infos, &forced) };
+             if !toss.is_empty() {
+                 return (true, toss);
+             }
+@@ -527,6 +579,110 @@ impl Policy {
+         (false, combo)
+     }
+ 
++    /// JEV_SMART_DISCARD: the hold (cards kept) whose redraws score best on average. Holds: the
++    /// heuristic's, each suit with 3+ cards, all rank groups, the best 5-rank straight window, and the
++    /// best structural play's cards. Each tosses up to 5 of the rest (debuffed, then lowest, first) and
++    /// is scored over SMART_DRAWS redraws from the canonically sorted draw pile (splitmix64, seeded by
++    /// the hand), with the jokers' text scorer.
++    fn smart_discard(&self, g: &GameState, scorer: &kernel::Scorer, infos: &[kernel::Card], forced: &[usize]) -> Vec<usize> {
++        let n = infos.len();
++        let live: Vec<usize> = (0..n).filter(|&p| !infos[p].debuff).collect();
++        let base = discard(infos, forced);
++        let mut holds: Vec<Vec<usize>> = vec![(0..n).filter(|p| !base.contains(p)).collect()];
++        for s in 1..=4u8 {
++            let h: Vec<usize> = live.iter().copied()
++                .filter(|&p| infos[p].enh != kernel::STONE && (infos[p].suit == s || infos[p].enh == kernel::WILD)).collect();
++            if h.len() >= 3 {
++                holds.push(h);
++            }
++        }
++        let mut counts: HashMap<u8, usize> = HashMap::new();
++        for &p in &live {
++            if infos[p].rank != 0 && infos[p].enh != kernel::STONE {
++                *counts.entry(infos[p].rank).or_insert(0) += 1;
++            }
++        }
++        let groups: Vec<usize> = live.iter().copied()
++            .filter(|&p| infos[p].rank != 0 && infos[p].enh != kernel::STONE && counts[&infos[p].rank] >= 2).collect();
++        if !groups.is_empty() {
++            holds.push(groups);
++        }
++        // straight window: the 5-rank window holding the most distinct ranks (ties: the higher window)
++        let mut best_w: Option<Vec<usize>> = None;
++        for lo in 1..=10u8 {
++            let ranks: Vec<u8> = (lo..lo + 5).map(|r| if r == 1 { 14 } else { r }).collect();
++            let mut w: Vec<usize> = Vec::new();
++            for r in ranks {
++                if let Some(&p) = live.iter().find(|&&p| infos[p].rank == r && infos[p].enh != kernel::STONE) {
++                    w.push(p);
++                }
++            }
++            if w.len() >= 3 && best_w.as_ref().map_or(true, |b| w.len() >= b.len()) {
++                best_w = Some(w);
++            }
++        }
++        if let Some(w) = best_w {
++            holds.push(w);
++        }
++        let mut best_play: (f64, Vec<usize>) = (-1.0, vec![]);
++        for mut combo in candidates(infos) {
++            combo.sort_unstable();
++            combo.dedup();
++            let cs: Vec<kernel::Card> = combo.iter().map(|&p| infos[p]).collect();
++            let (name, sc) = kernel::classify(&cs);
++            let s = scorer.score(infos, &combo, name, &sc);
++            if s > best_play.0 {
++                best_play = (s, combo);
++            }
++        }
++        holds.push(best_play.1);
++
++        let mut pool: Vec<kernel::Card> = g.draw_pile.iter().map(info).collect();
++        pool.sort_by_key(card_key);
++        let mut seed: u64 = 0x5EED;
++        for c in infos {
++            let k = card_key(c);
++            seed = seed.wrapping_mul(1_000_003).wrapping_add(((k.0 as u64) << 8) | k.1 as u64);
++        }
++        let mut best: Option<(f64, Vec<usize>)> = None;
++        let mut seen: Vec<Vec<usize>> = Vec::new();
++        for hold in holds {
++            let mut toss: Vec<usize> = (0..n).filter(|p| !hold.contains(p)).collect();
++            toss.sort_by_key(|&p| (!infos[p].debuff, rv(&infos[p])));
++            toss.truncate(5);
++            for &f in forced {
++                if !toss.contains(&f) {
++                    toss.truncate(4);
++                    toss.push(f);
++                }
++            }
++            let mut key = toss.clone();
++            key.sort_unstable();
++            if toss.is_empty() || seen.contains(&key) {
++                continue;
++            }
++            seen.push(key);
++            let kept: Vec<kernel::Card> = (0..n).filter(|p| !toss.contains(p)).map(|p| infos[p]).collect();
++            let k = toss.len().min(pool.len());
++            let mut rng = Mix(seed);
++            let mut total = 0.0;
++            for _ in 0..SMART_DRAWS {
++                let mut idx: Vec<usize> = (0..pool.len()).collect();
++                let mut hand = kept.clone();
++                for j in 0..k {
++                    let t = j + rng.below(idx.len() - j);
++                    idx.swap(j, t);
++                    hand.push(pool[idx[j]]);
++                }
++                total += best_struct(scorer, &hand);
++            }
++            if best.as_ref().map_or(true, |b| total > b.0) {
++                best = Some((total, toss));
++            }
++        }
++        best.map(|b| b.1).unwrap_or(base)
++    }
++
+     /// rollout.Policy.cycle
+     fn cycle(&self, scorer: &kernel::Scorer, infos: &[kernel::Card], combo: Vec<usize>, name: usize, score: f64) -> Vec<usize> {
+         let mut spare: Vec<usize> = (0..infos.len()).filter(|p| !combo.contains(p)).collect();
+@@ -948,7 +1104,7 @@ fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, max_st
+ fn rollouts(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, seeds: Vec<String>, bosses: usize) -> PyResult<Vec<Vec<Row>>> {
+     let desc: StateDesc = serde_json::from_str(state_json).map_err(|e| PyValueError::new_err(e.to_string()))?;
+     let base = build(&desc)?;
+-    let policy = Policy { jokers: policy_jokers };
++    let policy = Policy::new(policy_jokers);
+     let mut out = Vec::with_capacity(seeds.len());
+     for seed in seeds {
+         let mut g = base.deep_clone();
+@@ -974,7 +1130,7 @@ fn rollout_strict(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, se
+     if let Some(pools) = &desc.rng_pools {
+         g.rng.pools = pools.clone();
+     }
+-    let policy = Policy { jokers: policy_jokers };
++    let policy = Policy::new(policy_jokers);
+     let no_items = NO_ITEMS();
+     match play_horizon_traced(&mut g, &policy, bosses, 900, None, Some(desc.items.as_ref().unwrap_or(&no_items))) {
+         Ok(rows) => Ok(Some(rows)),
+@@ -990,7 +1146,7 @@ fn rollout_trace(state_json: &str, policy_jokers: Vec<(u8, Option<RuleIn>)>, see
+     let mut g = build(&desc)?;
+     g.seed = seed.clone();
+     g.rng = RunRng::new(seed);
+-    let policy = Policy { jokers: policy_jokers };
++    let policy = Policy::new(policy_jokers);
+     let mut log = Vec::new();
+     let rows = play_horizon_traced(&mut g, &policy, bosses, 600, Some(&mut log), None).map_err(PyRuntimeError::new_err)?;
+     Ok((rows, log))

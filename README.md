@@ -22,8 +22,9 @@ blinds (rollouts) and buys outright when one is clearly better; JEV rates the cl
 rollouts run on rumbot too. Big experiments run in the simulator; see
 [How faithful is the simulator?](#how-faithful-is-the-simulator) for how closely it matches the game.
 
-The bot was written in Python first and ported to Rust line by line (frozen at Python v27, identical
-seed by seed). The Python code was removed afterwards; it is in the git history up to `b146a7a`.
+The bot was written in Python first and ported to Rust line by line (it follows Python v31/v32,
+identical seed by seed). The Python code was removed afterwards; it is in the git history up to
+`4628654`.
 
 ## Setup (one-time)
 
@@ -118,11 +119,19 @@ tested in the simulator first (next section).
   [docs/policy-lab.md](docs/policy-lab.md).
 - **Profiling**: `JEV_PERF=1` prints coarse timers per phase. For a real profile, build with
   `CARGO_PROFILE_RELEASE_DEBUG=line-tables-only` and run `jevlab` under `perf record -g`.
-- **Baseline (v27, 2026-10-16)**, code only (no JEV), arm F on `sim60-a`: Rust 5.93 ± 0.22 ante,
-  6/60 wins (Python v27: 5.90 ± 0.22, 4/60); 41 of 60 games end at antes 5-7, the mid-game scaling
-  wall from [docs/loss-audit.md](docs/loss-audit.md). The last JEV sim benchmark (v23, `sim30-a`,
-  before later sim fixes) reached 6.43. Thirty seeds detect about 0.9 ante, so test changes
-  code-only on 60+ seeds first.
+- **Current baseline (v31, 2026-10-17)**, code only (no JEV), arm F (measured with the Python lab):
+  - `sim60-a`: mean ante **6.50**, 10 wins out of 60 (v27: 5.90, 4 wins); Rust gives the same;
+  - 60 fresh seeds: **6.63**, 10 wins (v27: 6.15, 6 wins);
+  - 200 fresh seeds (after those 60): **6.68**, 40 wins (20%; v28: 6.46, 27 wins);
+  - v28 planets, v29 Negative jokers, v30 Verdant Leaf, v31 auto-buy bar 1 SE: conclusions in
+    [docs/lab-lessons.md](docs/lab-lessons.md), numbers in [docs/policy-lab.md](docs/policy-lab.md)
+    ("Mid-game scaling experiments" and after), every game in `docs/samples/cloud-lab/`;
+  - about a third of runs reach ante 8, where the finisher bosses (Violet Vessel, Crimson Heart,
+    Amber Acorn) take most of them.
+
+  The last JEV sim benchmark (v23, `sim30-a`, before later sim fixes) reached 6.43. Thirty seeds
+  detect about 0.9 ante, so test changes code-only on 60+ seeds first. The experiment arms of the
+  Python lab (planets, vouchers, engines, ...; none shipped) were not ported to `jevlab`.
 
 ## Rust bot
 
@@ -153,12 +162,24 @@ jevlab --set sim30-a --arm E|F --jobs 8 [--limit N] [--name X]
   [docs/rust-port-scope.md](docs/rust-port-scope.md); open items:
   [docs/port-handoff/followups.md](docs/port-handoff/followups.md).
 
-**Identity** (frozen at Python v27). Tests: `cd native && cargo test --release`. Most compare against
-fixtures and traces recorded from the Python bot in `runs/_port` (not in git; `$JEV_PORT_DATA`
-overrides the path). They stay valid without the Python code, but can no longer be regenerated.
+**Identity.** Tests: `cd native && cargo test --release`. Most compare against fixtures and traces
+recorded from the Python bot in `runs/_port` (not in git; `$JEV_PORT_DATA` overrides the path). They
+stay valid without the Python code, but can no longer be regenerated, so a behaviour change makes
+them stale.
 
-- Bot replay: 60/60 games identical. Forecasts: shop 2475/2475, packs pass, items 3193/3193
-  (`fc_items` is slow, ~2-5 min). All-Rust forecast replay: 60/60.
+At Python v31 (references regenerated from v32's Python, see [docs/rust-port-guide.md](docs/rust-port-guide.md)
+"Reference data"):
+
+- Bot replay: 60/60 games identical; CodeJev 2535/2535 requests; every decision fixture identical (jokers,
+  picker, readiness, scorer, hands, odds, dec_shop_a, fc_stats). Forecasts: items 2913/2916, packs
+  2223/2224 (`fc_items` is slow, ~2-9 min); all four misses are one Jackdaw bug (an Arcana pack's tarot
+  duplicating one we hold; [followups](docs/port-handoff/followups.md)).
+- sim60-a, arm F: Rust 6.50 +- 0.20 ante, 10/60 wins, the same as Python v31; 60/60 games end the same.
+
+At Python v27 (before the v28-v31 port):
+
+- Bot replay: 60/60 games identical. Forecasts: shop 2475/2475, packs pass, items 3193/3193.
+  All-Rust forecast replay: 60/60.
 - Engine replay (`engine_replay`, `IGNORE="].id"`): 47/60 games identical. The rest are Jackdaw bugs
   and the Mail-In Rebate rank (followups.md).
 - Live lab, 8 traced seeds: 15/16 calls identical. The one difference (1YJ4DQ2R, arm E) is a Jackdaw

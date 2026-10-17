@@ -44,6 +44,7 @@ fn pred_arg(r: &mut Lcg, kind: u8) -> u32 {
     match kind {
         1 => 1 + r.below(4) as u32,
         2 => (r.next() as u32) & 0x7ffc,
+        6 => (2 + r.below(13) as u32) | ((1 + r.below(4) as u32) << 8),
         _ => 0,
     }
 }
@@ -51,21 +52,21 @@ fn pred_arg(r: &mut Lcg, kind: u8) -> u32 {
 fn rule(r: &mut Lcg) -> RuleIn {
     let mut card = Vec::new();
     for _ in 0..r.below(3) {
-        let kind = r.below(6) as u8;
+        let kind = r.below(7) as u8;
         card.push((kind, pred_arg(r, kind), r.f(&[0.0, 10.0, 31.0]), r.f(&[0.0, 3.0, 4.5]), r.f(&[1.0, 1.5, 2.0])));
     }
     let mut retrigger = Vec::new();
     for _ in 0..r.below(2) {
-        let kind = r.below(6) as u8;
+        let kind = r.below(7) as u8;
         retrigger.push((kind, pred_arg(r, kind), 1 + r.below(2) as i64));
     }
     let mut held = Vec::new();
     for _ in 0..r.below(2) {
-        let kind = r.below(3) as u8;
+        let kind = [0, 1, 2, 6][r.below(4) as usize];
         held.push((kind, pred_arg(r, kind), r.f(&[0.0, 13.0]), r.f(&[1.0, 1.5])));
     }
     let hand = if r.chance(70) {
-        let kind = r.below(11) as u8;
+        let kind = r.below(12) as u8;
         let arg = match kind {
             1 => (r.next() as u32) & 0xfff,
             5 => ((r.next() as u32) & 0xf) << 1,

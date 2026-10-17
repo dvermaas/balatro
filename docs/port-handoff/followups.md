@@ -48,3 +48,8 @@
   `add_random_joker` ignore seen centers (Jackdaw never fills used_jokers); not yet noted in native/rumbot/VENDORED.md.
   Deck/draw pile are re-sorted by uid after a pick (Jackdaw sort_id order). Drop with the other flags once
   Jackdaw is not the reference. fc_packs' describe_lite still skips deck cards, hand levels, joker counters.
+- v31 port (2026-10-17): fc_items 2913/2916 and fc_packs post-option state 2223/2224. All four are Arcana
+  packs: Jackdaw's pack-created tarot can duplicate one we hold (fc_packs row: The Emperor in a pack with
+  The Lovers held makes a second Lovers; rumbot makes The Magician). The game excludes held consumables
+  from the pool (G.GAME.used_jokers), so this is a Jackdaw bug: some acquisition path leaves a held card
+  unflagged. Not fixed (a sim change is a new baseline and needs sim_parity on the main machine).

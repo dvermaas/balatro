@@ -20,8 +20,13 @@ and status: [rust-port-scope.md](rust-port-scope.md) and the README section "Rus
 
 ## Reference data (not in git)
 
-`C:/Users/admin/Documents/Repos/balatro-rust/runs/_port/`:
-- `traces/<arm>/<seed>.jsonl.gz`: 30 sim30-a games per arm, played by the v27 Python bot
+`runs/_port/` of a checkout (Rust tests read `JEV_PORT_DATA`, default
+`C:/Users/admin/Documents/Repos/balatro-rust/runs/_port`). Regenerate it from the current Python bot after
+any Python behaviour change (v31: 60 traces in ~3 min, every fixture in ~10 min on 4 cores):
+`scripts/port/trace_game.py --set sim30-a --count 30 --arm <arm> --out runs/_port/traces/<arm>` for both
+arms, then every `scripts/port/fixtures/*.py` (analytics, panel, typesafe, pycompat and recorder_list read
+or write fixed Windows paths of the main machine).
+- `traces/<arm>/<seed>.jsonl.gz`: 30 sim30-a games per arm, played by the Python bot (v27, then v31)
   (`bot-forecast-items` = arm F, `bot-forecast-long` = arm E). Format: docstring of
   `scripts/port/trace_game.py`. Every game call and result, every JEV request and answer, every
   bot event, and the forecast/Picker calls ("oracles") with their results.
@@ -29,10 +34,9 @@ and status: [rust-port-scope.md](rust-port-scope.md) and the README section "Rus
   `scripts/port/fixtures/<name>.py` (the porting agent writes it). Inputs come from the traces'
   gamestates: `scripts/port/states.py` in Python, `jevbot::trace::states` in Rust.
 
-Python reference: `C:/Users/admin/Documents/Repos/balatro-rust/.venv/Scripts/python.exe` with the
-v27 sources of the main port worktree: `import states` (from `scripts/port/`) puts them on
-`sys.path`, so fixture scripts work from your own worktree, which has no Jackdaw submodule or
-localization. Native modules are installed; they give the same results as pure Python
+Python reference: the checkout's own `src/` (or `JEV_PORT_ROOT`'s): `import states` (from
+`scripts/port/`) puts it on `sys.path`; set `JEV_PORT_ROOT` to a full checkout when your worktree has no
+Jackdaw submodule or localization. Native modules are installed; they give the same results as pure Python
 (`JEV_NATIVE=0` forces pure Python).
 
 ## Protocol for each task

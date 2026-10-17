@@ -48,6 +48,7 @@ pub enum Pred {
     Final,
     Suit(char),
     Ranks(Vec<char>), // sorted, distinct
+    Card(char, char), // v28: one rank of one suit (The Idol)
     All,
 }
 
@@ -60,6 +61,7 @@ pub enum Cond {
     HeldSuits(Vec<Option<char>>), // distinct (a Python set); None = a suit word we don't know
     FourSuits,
     PlayedThisRound,
+    SeeingDouble,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -111,6 +113,7 @@ fn pred_json(p: &Pred) -> Value {
         Pred::Final => json!("final"),
         Pred::Suit(s) => json!(["suit", s.to_string()]),
         Pred::Ranks(r) => json!(["ranks", r.iter().map(|c| c.to_string()).collect::<Vec<_>>()]),
+        Pred::Card(r, s) => json!(["card", r.to_string(), s.to_string()]),
         Pred::All => json!(["all"]),
     }
 }
@@ -138,6 +141,7 @@ impl HandSpec {
                     }
                     Cond::FourSuits => ("four_suits", Value::Null),
                     Cond::PlayedThisRound => ("played_this_round", Value::Null),
+                    Cond::SeeingDouble => ("seeing_double", Value::Null),
                 };
                 json!(["cond", name, arg, eff_json(yes), eff_json(no)])
             }
@@ -193,6 +197,10 @@ fn ranks(s: &str) -> Pred {
 // jokers.py 39-60
 /// Which scoring cards a per-card effect applies to, from e.g. 'face cards', 'Aces', '10 or 4'.
 fn _card_pred(s: &str) -> Option<Pred> {
+    if let Some(m) = rx!(r"\b(Ace|King|Queen|Jack|10|[2-9]) of (Diamond|Heart|Club|Spade)s?\b").captures(s) {
+        // v28: The Idol's one card ("2 of Spades"), not every card of the suit
+        return Some(Pred::Card(word_rank(&m[1]).unwrap(), word_suit(&m[2]).unwrap()));
+    }
     if let Some(suit) = WORD_SUIT.iter().find(|(k, _)| s.contains(k)).map(|(_, v)| *v) {
         return Some(Pred::Suit(suit));
     }
@@ -227,6 +235,9 @@ fn _pred(pred: &Pred, i: &Info) -> bool {
             let mut it = x.chars();
             matches!((it.next(), it.next()), (Some(c), None) if r.contains(&c))
         }),
+        Pred::Card(r, s) => {
+            i.rank.as_deref().is_some_and(|x| x.chars().eq(std::iter::once(*r))) && (suit_eq(&i.suit, *s) || i.enh_is("WILD"))
+        }
         _ => true,
     }
 }
@@ -264,6 +275,15 @@ fn cond_hand(cond: Cond, eff: (f64, f64, f64)) -> Option<Rule> {
 pub fn parse(effect: &str) -> Option<Rule> {
     let e = effect;
     let mut rule = Rule::default();
+    // v28: Bloodstone. A chance-based xMult per scoring card counts at its expected factor
+    if let Some(m) = rx!(concat!(r"^(\d+) in (\d+) chance for played cards with (\w+?) suit to give X", num!(), r" Mult when scored")).captures(e) {
+        if let Some(suit) = word_suit(&m[3]) {
+            let p = (m[1].parse::<i64>().unwrap() as f64 / m[2].parse::<i64>().unwrap() as f64).min(1.0);
+            let x: f64 = m[4].parse().unwrap();
+            rule.card.push((Pred::Suit(suit), 0.0, 0.0, 1.0 + p * (x - 1.0)));
+            return Some(rule);
+        }
+    }
     if rx!(r"1 in \d+ chance").is_match(e) && !rx!(r"^[+X]\d").is_match(e) {
         return None; // chance-based side effects (money, tarots, destruction)
     }
@@ -313,6 +333,17 @@ pub fn parse(effect: &str) -> Option<Rule> {
     if e.starts_with("Adds double the rank of lowest ranked card held in hand") {
         rule.hand = Some(HandSpec::LowestHeld);
         return Some(rule);
+    }
+
+    // v28: Driver's License ("(Currently 2)" is a card count, not +2 Mult)
+    if let Some(m) = rx!(concat!("^X", num!(), r" Mult if you have at least (\d+) Enhanced cards in your full deck \(Currently (\d+)\)")).captures(e) {
+        let x = if m[3].parse::<i64>().unwrap() >= m[2].parse::<i64>().unwrap() { m[1].parse().unwrap() } else { 1.0 };
+        rule.hand = Some(HandSpec::Const((0.0, 0.0, x)));
+        return Some(rule);
+    }
+    // v28: Seeing Double
+    if let Some(m) = rx!(concat!("^X", num!(), " Mult if played hand has a scoring Club card and a scoring card of any other suit")).captures(e) {
+        return cond_hand(Cond::SeeingDouble, (0.0, 0.0, m[1].parse().unwrap()));
     }
 
     let cur = rx!(concat!(r"\(Currently ([+X]?)\$?", num!(), r"(?: (Mult|Chips))?\)")).captures(e);
@@ -435,6 +466,14 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
         None => gs::cards_of(gs_, "jokers"),
     };
     let mut out: Vec<JokerEntry> = cards.iter().map(entry).collect();
+    // v28: Baseball Card gives X1.5 per Uncommon joker; rarity isn't in the gamestate, so look it up by key
+    for (j, c) in cards.iter().enumerate() {
+        if let Some(m) = rx!(concat!("^Uncommon Jokers each give X", num!(), " Mult")).captures(&effect_or_empty(gs::mget(gs::d(gs::get(c, "value")), "effect"))) {
+            let n = cards.iter().enumerate().filter(|&(o, oc)| o != j && _rarity(gs::get(oc, "key")) == Some(2)).count();
+            let x: f64 = m[1].parse().unwrap();
+            out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, 0.0, x.powf(n as f64)))), ..Default::default() });
+        }
+    }
     // Blueprint copies the joker to its right, Brainstorm the leftmost.
     for n in 0..out.len() {
         let label = out[n].label.as_deref();
@@ -459,6 +498,12 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
 }
 
 // jokers.py 188-189
+// jokers.py 247-263
+/// Joker rarity (1 common .. 4 legendary); rumbot's table matches Jackdaw's centers.json key for key.
+fn _rarity(key: &Value) -> Option<u8> {
+    key.as_str().and_then(rumbot_sim::joker_data::joker_row_by_key).map(|r| r.rarity)
+}
+
 pub fn unmodelled(jokers: &[JokerEntry]) -> Vec<Option<String>> {
     jokers.iter().filter(|j| j.rule.is_none() && j.scoring).map(|j| j.label.clone()).collect()
 }
@@ -708,7 +753,7 @@ pub fn score(infos: &[Info], combo: &[usize], name: &str, scoring: &[usize], han
             for (pred, times) in &r.retrigger {
                 if (*pred == Pred::First && k == 0)
                     || (*pred == Pred::Final && hands_left == 1.0)
-                    || (matches!(pred, Pred::Suit(_) | Pred::Ranks(_) | Pred::All) && _pred(pred, c))
+                    || (matches!(pred, Pred::Suit(_) | Pred::Ranks(_) | Pred::Card(..) | Pred::All) && _pred(pred, c))
                 {
                     reps += times;
                 }
@@ -722,7 +767,7 @@ pub fn score(infos: &[Info], combo: &[usize], name: &str, scoring: &[usize], han
             for r in &rules {
                 for (pred, cc, mm, xx) in &r.card {
                     if (*pred == Pred::FirstFace && Some(p) == first_face)
-                        || (matches!(pred, Pred::Suit(_) | Pred::Ranks(_) | Pred::All) && _pred(pred, c))
+                        || (matches!(pred, Pred::Suit(_) | Pred::Ranks(_) | Pred::Card(..) | Pred::All) && _pred(pred, c))
                     {
                         chips += cc;
                         mult = (mult + mm) * xx;
@@ -766,6 +811,8 @@ pub fn score(infos: &[Info], combo: &[usize], name: &str, scoring: &[usize], han
         times_played: hnum("played", 0.0),
         played_this_round: gs::truthy(gs::mget(gs::d(h), "played_this_round")),
         scoring_suits: scoring_suits.len(),
+        club: scoring_suits.contains(&Some("C")),
+        other_suit: scoring_suits.iter().any(|s| *s != Some("C")),
         wild: sc.iter().filter(|&&p| played[p].enh_is("WILD")).count(),
     };
     for j in jokers {
@@ -792,6 +839,8 @@ struct Ctx<'a> {
     times_played: f64,
     played_this_round: bool,
     scoring_suits: usize,
+    club: bool,
+    other_suit: bool,
     wild: usize,
 }
 
@@ -814,6 +863,11 @@ fn _hand(spec: &HandSpec, ctx: &Ctx) -> (f64, f64, f64) {
                 }),
                 Cond::FourSuits => ctx.scoring_suits + ctx.wild >= 4,
                 Cond::PlayedThisRound => ctx.played_this_round,
+                // Wild cards fill Clubs first, then the other suits (joker_main)
+                Cond::SeeingDouble => {
+                    let (c, o, w) = (ctx.club, ctx.other_suit, ctx.wild);
+                    (c || w > 0) && (o || (c && w > 0) || w >= 2)
+                }
             };
             if ok { *yes } else { *no }
         }
