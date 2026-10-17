@@ -367,7 +367,10 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             "bot-items-shop": {"items": True, "shop": True},
             # skip small/big blinds for strong tags when readiness says the blind we then face is safe
             "bot-skip-strong": {"items": True, "skip_tags": "strong", "skip_ratio": 1.3},
-            "bot-skip-wide": {"items": True, "skip_tags": "wide", "skip_ratio": 1.5}}
+            "bot-skip-wide": {"items": True, "skip_tags": "wide", "skip_ratio": 1.5},
+            # the forecast's auto-buy bar (decisions.SURE_SE, production 2) and the item forecast's (best(se=2))
+            "bot-se15": {"items": True, "sure_se": 1.5},
+            "bot-se1": {"items": True, "sure_se": 1.0}}
 SKIP_TAGS = {
     "strong": {"Negative Tag", "Polychrome Tag", "Rare Tag", "Holographic Tag", "Investment Tag", "Orbital Tag",
                "Meteor Tag", "Buffoon Tag", "Uncommon Tag", "Double Tag"},
@@ -528,6 +531,9 @@ def _play_bot(seed, arm_name, t0):
     decisions.FORECAST_BOSSES = opts.get("bosses", 3)
     _DEFAULTS.setdefault("rr", (decisions.MAX_REROLLS, decisions.INTEREST_BUFFER))
     _DEFAULTS.setdefault("weak", decisions._weakest_jokers.__defaults__)
+    _DEFAULTS.setdefault("sure", (decisions.SURE_SE, rollout_items.best.__defaults__))
+    decisions.SURE_SE = opts.get("sure_se", _DEFAULTS["sure"][0])
+    rollout_items.best.__defaults__ = (opts["sure_se"],) if opts.get("sure_se") else _DEFAULTS["sure"][1]
     decisions._weakest_jokers.__defaults__ = (opts["swap_sells"],) if opts.get("swap_sells") else _DEFAULTS["weak"]
     decisions.MAX_REROLLS = opts.get("max_rerolls", _DEFAULTS["rr"][0])
     decisions.INTEREST_BUFFER = opts.get("buffer", _DEFAULTS["rr"][1])
