@@ -33,3 +33,8 @@
 - decisions: `discard_obj` exists twice (shop.rs real, play.rs private `// SHARED?` copy): drop the copy.
   `log_forecast_error` has no traceback, empty run=, and writes runs/_forecast_errors.log under a fixed
   repo path: make the root configurable on JevBot.
+- engine: Mail-In Rebate round rank differs on 4R5NYC8E@56 (Python/Jackdaw rank 10, rumbot 7): find which
+  engine draws the round card like the game (Lua: reset_mail_rank) and fix that one.
+- engine text mirrors two Jackdaw display quirks for identity: Satellite text always shows $0, and Hologram
+  stays X1 after Marble Joker adds a Stone card (the Jackdaw Marble/Hologram bug). Revisit once Jackdaw is
+  no longer the reference (the real game shows the live values).
