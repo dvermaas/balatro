@@ -2559,6 +2559,16 @@ impl GameState {
                 }
             }
         }
+        // end_round (state_events.lua:107) sends end_of_round to every joker
+        // before it looks at game_over, and card.lua:3283-3349 has no game_over
+        // guard: Popcorn is eaten, Rocket/Egg/Gift Card tick, even on the loss.
+        let hooks = self.calculating_hooks("round_end");
+        self.beaten_was_boss = self.blind.as_ref().map(|b| b.kind == BlindKind::Boss).unwrap_or(false);
+        for (joker, spec) in hooks {
+            if let Some(answer) = spec.round_end {
+                answer(&joker, self);
+            }
+        }
         self.phase = Phase::GameOver;
         let name = self.blind.as_ref().map(|b| b.name()).unwrap_or_default();
         self.log(format!("Lost on ante {} {}", self.ante, name));

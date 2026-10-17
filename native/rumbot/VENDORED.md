@@ -20,3 +20,10 @@ Local changes to this copy are listed here, newest last:
   drawn_to_hand in the lovely dump): only the joker it held is released, and the pick is over non-debuffed
   jokers except that one (all of them if none is left). Vanilla re-enabled every joker first
   (Jackdaw: `sim_patches.crimson_heart`). Found by the v25 identity check (9YUMEW2U).
+- Lost round (game.rs `_lose_round`): the end_of_round joker effects now run on the losing play too (when no
+  Mr. Bones saves it). state_events.lua:107 (end_round) calls SMODS.calculate_context({end_of_round}) before
+  it looks at game_over, and card.lua:3283-3349 (Popcorn, ...) has no game_over guard, so Popcorn is eaten,
+  Rocket/Egg/Gift Card tick on a loss. Visible only in the final view (R8ZXJN6L@342). Found by the engine replay.
+- Swashbuckler checked, no rumbot change (KGA553W7@375): card.lua:4609-4617 sums `sell_cost` of every other
+  joker in G.jokers with no debuff test; rumbot matches. Jackdaw (jokers.py `_swashbuckler`) skips debuffed
+  jokers (`and not j.debuff`), so under Crimson Heart it scores less (Mult 8 vs 11: 102 vs 111 x 122).
