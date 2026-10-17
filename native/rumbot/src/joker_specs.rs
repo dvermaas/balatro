@@ -898,7 +898,7 @@ fn perkeo(_j: &JokerRef, game: &mut GameState) {
     // (common_events.lua:2161-2167), so the copy keeps any Gift Card money.
     copy.borrow_mut().extra_sell_value = chosen.borrow().extra_sell_value;
     game.consumables.push(copy);
-    game.log(format!("Perkeo: a negative {}", chosen.borrow().spec.name));
+    glog!(game, "Perkeo: a negative {}", chosen.borrow().spec.name);
 }
 
 // --------------------------------------------------------------------------

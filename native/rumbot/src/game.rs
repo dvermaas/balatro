@@ -715,6 +715,8 @@ pub struct GameState {
     pub preview_trigger: bool,
 
     pub logs: Vec<String>,
+    /// jev (local patch): keep `logs` (off by default: nothing reads them; `verbose` still prints)
+    pub keep_logs: bool,
     pub verbose: bool,
     /// jev (local patch): frozen-build forecast rollouts never shop, so `_open_shop` leaves the
     /// shop empty (no slot, pack or voucher draws) when this is set. Never set for a played game.
@@ -829,6 +831,7 @@ impl GameState {
             preview_expected: 0.0,
             preview_trigger: false,
             logs: Vec::new(),
+            keep_logs: false,
             verbose: false,
             no_shop: false,
         };
@@ -934,11 +937,16 @@ impl GameState {
     }
 
     pub fn log(&mut self, message: impl Into<String>) {
+        if !self.keep_logs && !self.verbose {
+            return;
+        }
         let message = message.into();
         if self.verbose {
             println!("{}", message);
         }
-        self.logs.push(message);
+        if self.keep_logs {
+            self.logs.push(message);
+        }
     }
 
     /// The deck's own config table.
@@ -1748,10 +1756,10 @@ impl GameState {
         self.phase = Phase::Playing;
         let target = self.blind.as_ref().map(|b| b.target).unwrap_or(0);
         let name = self.blind.as_ref().map(|b| b.name()).unwrap_or_default();
-        self.log(format!(
+        glog!(self, 
             "--- Ante {} {}: need {} ---",
             self.ante, name, target
-        ));
+        );
         self._drawn_to_hand();
     }
 
@@ -2084,7 +2092,7 @@ impl GameState {
         for joker in self.jokers.clone() {
             self.set_joker_debuff(&joker, false);
         }
-        self.log(format!("{}: {} is disabled", source, boss.name));
+        glog!(self, "{}: {} is disabled", source, boss.name);
     }
 }
 
@@ -2239,7 +2247,7 @@ impl GameState {
             if boss.zero_money_on_most_played && self._is_most_played(result.hand) {
                 ox_triggered = true;
                 self.money = 0;
-                self.log(format!("{}: money set to $0", boss.name));
+                glog!(self, "{}: money set to $0", boss.name);
             }
         }
 
@@ -2262,11 +2270,11 @@ impl GameState {
 
         let mut ctx_opt: Option<ScoreContext> = None;
         if debuffed {
-            self.log(format!(
+            glog!(self, 
                 "{} debuffed by {}: scores nothing",
                 result.hand.label(),
                 self.boss().map(|b| b.name).unwrap_or("the blind")
-            ));
+            );
             let pairs = calculating_specs(&self.jokers);
             for (spec, source) in pairs {
                 if let Some(answer) = spec.on_debuffed_hand {
@@ -2293,14 +2301,14 @@ impl GameState {
         self.chips_scored += gained;
         self.best_hand = self.best_hand.max(gained);
         if let Some(ctx) = &ctx_opt {
-            self.log(format!(
+            glog!(self, 
                 "{} scored {} ({} x {}) -> {}",
                 result.hand.label(),
                 gained,
                 ctx.chips,
                 ctx.mult,
                 self.chips_scored
-            ));
+            );
             if ctx.money_gained != 0 {
                 let money = ctx.money_gained;
                 self.add_money(money, "cards");
@@ -2317,7 +2325,7 @@ impl GameState {
         };
         for card in shattered {
             self.remove_card(&card, true);
-            self.log(format!("{} shattered", crate::cards::label_of(&card)));
+            glog!(self, "{} shattered", crate::cards::label_of(&card));
         }
 
         for card in played.to_vec() {
@@ -2556,7 +2564,7 @@ impl GameState {
                 };
                 if saves && (self.chips_scored as f64) / (target as f64) >= 0.25 {
                     let name = joker.borrow().name();
-                    self.log(format!("{} saved the run", name));
+                    glog!(self, "{} saved the run", name);
                     self._beat_blind(false);
                     self.destroy_joker(&joker, "");
                     return;
@@ -2575,7 +2583,7 @@ impl GameState {
         }
         self.phase = Phase::GameOver;
         let name = self.blind.as_ref().map(|b| b.name()).unwrap_or_default();
-        self.log(format!("Lost on ante {} {}", self.ante, name));
+        glog!(self, "Lost on ante {} {}", self.ante, name);
     }
 
     /// Close the round and stop on the cash-out screen.
@@ -2670,7 +2678,7 @@ impl GameState {
                 }
             }
             if perishable && tally == 1 {
-                self.log(format!("{} perished", name));
+                glog!(self, "{} perished", name);
             }
         }
     }
@@ -2844,7 +2852,7 @@ impl GameState {
             // *past* WIN_ANTE, not at it.
             if self.ante > WIN_ANTE && !self.endless {
                 self.phase = Phase::Won;
-                self.log(format!("Run won after ante {}", WIN_ANTE));
+                glog!(self, "Run won after ante {}", WIN_ANTE);
                 return;
             }
         }
@@ -3050,14 +3058,14 @@ impl GameState {
         match choice {
             PackChoice::Joker(joker) => {
                 self.gain_joker(&joker);
-                self.log(format!("Pack: took {}", joker.borrow().name()));
+                glog!(self, "Pack: took {}", joker.borrow().name());
             }
             PackChoice::Card(card) => {
                 self.add_card(&card);
-                self.log(format!(
+                glog!(self, 
                     "Pack: added {} to deck",
                     crate::cards::label_of(&card)
-                ));
+                );
             }
             PackChoice::Consumable(spec) => {
                 // A consumable taken from a pack is used there and then.
@@ -3231,12 +3239,12 @@ impl GameState {
             if let Some(joker) = &slot.joker {
                 joker.borrow_mut().edition = edition;
                 let name = joker.borrow().name();
-                self.log(format!(
+                glog!(self, 
                     "{}: {} is {}, free",
                     tag.label(),
                     name,
                     edition.as_str()
-                ));
+                );
             }
             slot.couponed = true;
             break;
@@ -3465,7 +3473,7 @@ impl GameState {
                 if let Some(shop) = &mut self.shop {
                     shop.vouchers.push(v);
                 }
-                self.log(format!("Voucher Tag: {} as well", name));
+                glog!(self, "Voucher Tag: {} as well", name);
             }
         }
 
@@ -3651,7 +3659,7 @@ impl GameState {
             self.using_key = String::new();
             self.playing_tarot = false;
         }
-        self.log(format!("Used {}", spec.name));
+        glog!(self, "Used {}", spec.name);
         if matches!(spec.kind, ConsumableKind::Tarot | ConsumableKind::Planet) {
             self.last_tarot_planet = crate::shop_pool::key_by_consumable_name(spec.name)
                 .unwrap_or("")
@@ -3696,10 +3704,10 @@ impl GameState {
             }
             Some(spec) => {
                 if self.refuses_use(spec) {
-                    self.log(format!(
+                    glog!(self, 
                         "{}: No Room -- bought, used by nothing, lost",
                         spec.name
-                    ));
+                    );
                     return;
                 }
                 self.use_consumable(spec, &[], false);
@@ -4160,7 +4168,7 @@ impl GameState {
                 } else {
                     tag.clone()
                 };
-                self.log(format!("Skipped {}, gained {}", name, reward));
+                glog!(self, "Skipped {}, gained {}", name, reward);
                 self._fire_immediate_tags();
                 self.blind_index += 1;
                 // _next_blind offers the new blind choice, which is the skip's own.

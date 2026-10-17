@@ -456,12 +456,12 @@ pub const SPECS: &[ConsumableSpec] = &[
 /// ```
 fn planet_apply(game: &mut GameState, hand: HandType) {
     game.hand_levels.level_up(hand, 1);
-    game.log(format!(
+    glog!(game, 
         "{}: {} to level {}",
         planet_for_hand(hand),
         hand.label(),
         game.hand_levels.level(hand)
-    ));
+    );
 }
 
 fn pluto(game: &mut GameState, _cards: &[CardRef]) {
@@ -779,11 +779,11 @@ fn the_wheel_of_fortune(game: &mut GameState, _cards: &[CardRef]) {
         crate::shop_pool::poll_edition(&mut game.rng, "wheel_of_fortune", 1.0, true, 1.0, true);
     let edition = edition_from_name(name);
     joker.borrow_mut().edition = edition;
-    game.log(format!(
+    glog!(game, 
         "Wheel of Fortune: {} is now {}",
         joker.borrow().name(),
         edition.as_str()
-    ));
+    );
 }
 // --------------------------------------------------------------------------
 // bespoke spectrals
@@ -981,7 +981,7 @@ fn hex(game: &mut GameState, _cards: &[CardRef]) {
             game.destroy_joker(&joker, "Hex");
         }
     }
-    game.log(format!("Hex: {} is now polychrome", chosen.borrow().name()));
+    glog!(game, "Hex: {} is now polychrome", chosen.borrow().name());
 }
 
 /// The game's `Enum.name.title()` for a rank, which is what Ouija logs.
@@ -1022,7 +1022,7 @@ fn ouija(game: &mut GameState, _cards: &[CardRef]) {
         game.debuff_card(&card); // set_base, card.lua:1256 -> 143
     }
     game.base_hand_size -= 1;
-    game.log(format!("Ouija: the hand is all {}s", rank_title(rank)));
+    glog!(game, "Ouija: the hand is all {}s", rank_title(rank));
 }
 
 /// Every card in hand becomes one random suit.
@@ -1033,7 +1033,7 @@ fn sigil(game: &mut GameState, _cards: &[CardRef]) {
         crate::cards::set_suit(&card, suit);
         game.debuff_card(&card); // set_base, card.lua:1242 -> 143
     }
-    game.log(format!("Sigil: the hand is all {}s", suit_title(suit)));
+    glog!(game, "Sigil: the hand is all {}s", suit_title(suit));
 }
 
 /// Create a Legendary Joker.

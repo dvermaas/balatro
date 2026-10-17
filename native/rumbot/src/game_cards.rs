@@ -395,10 +395,10 @@ impl GameState {
         }
 
         self.tags.push(tag);
-        self.log(format!("gained {}", tag.label()));
+        glog!(self, "gained {}", tag.label());
         for _ in 0..doubles {
             self.tags.push(tag);
-            self.log(format!("Double Tag: and another {}", tag.label()));
+            glog!(self, "Double Tag: and another {}", tag.label());
         }
     }
 
@@ -453,7 +453,7 @@ impl GameState {
                 Tag::Orbital => {
                     let hand = self._orbital_hand();
                     self.hand_levels.level_up(hand, 3);
-                    self.log(format!("Orbital Tag: {} up three levels", hand.label()));
+                    glog!(self, "Orbital Tag: {} up three levels", hand.label());
                 }
                 _ => {}
             }

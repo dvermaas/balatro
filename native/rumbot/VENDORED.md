@@ -57,3 +57,9 @@ Checked game by game on the lab arms (call logs and every recorded decision iden
   for the loops that change jokers while they walk the row.
 - `RunRng::pseudoseed` (rng.rs) advances an existing pool in place instead of allocating its key again.
 - `build_consumable_pool` (shop_pool.rs) matches `c_<key>` without a `format!` per row.
+- `GameState.keep_logs` (default false) and the `glog!` macro (lib.rs): log lines are formatted and kept
+  only when `keep_logs` (or printed when `verbose`). Nothing reads `logs`; formatting them cost several
+  percent of every scored hand in rollouts.
+- `ScoreContext.events` counts chips/mult changes; `held_card_once` (scoring.rs) compares it instead of
+  the length of `ScoreContext.log`, which is now filled only when `keep_log` is set.
+- `RunRng::pseudoseed` hashes a new stream's key and seed without joining them first (`pseudohash2`).
