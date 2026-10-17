@@ -400,7 +400,10 @@ BOT_ARMS = {"bot-forecast-long": {}, "bot-forecast-items": {"items": True}, "bot
             # jokers valued with the best play re-chosen (as v28's planet_gain): pack joker picks, and also the
             # swap candidates' "weakest" ranking
             "bot-jreopt-pick": {"items": True, "joker_reopt": ("pick",)},
-            "bot-jreopt-both": {"items": True, "joker_reopt": ("pick", "weak")}}
+            "bot-jreopt-both": {"items": True, "joker_reopt": ("pick", "weak")},
+            # The Mouth: the first play may only be a hand type the deck makes again in >= `mouth` of sampled hands
+            "bot-mouth60": {"items": True, "mouth": 0.6},
+            "bot-mouth80": {"items": True, "mouth": 0.8}}
 ENGINES = [
     {"Pareidolia", "Photograph", "Smiley Face", "Scary Face", "Sock and Buskin", "Midas Mask", "Business Card",
      "Reserved Parking", "Triboulet", "Faceless Joker"},
@@ -703,6 +706,8 @@ def _play_bot(seed, arm_name, t0):
     tmp = tempfile.mkdtemp(prefix="plab_")
     orig_selecting_hand = decisions.selecting_hand
     _DEFAULTS.setdefault("shop", decisions.shop)
+    _DEFAULTS.setdefault("ba", (decisions.BossAllow.__call__, decisions.BossAllow.native_spec))
+    decisions.BossAllow.__call__, decisions.BossAllow.native_spec = _DEFAULTS["ba"]
     import odds
     _DEFAULTS.setdefault("odds", odds.forecast)
     odds.forecast = _DEFAULTS["odds"]
@@ -799,6 +804,44 @@ def _play_bot(seed, arm_name, t0):
                 return set(ranked[:n])
             import jokers as jokers_mod
             decisions._forecast_fields, decisions._weakest_jokers = ff, weak
+        if opts.get("mouth"):
+            import random
+            import jokers as jk
+            import strategy as strat
+            from hands import best_play, card_info
+            orig_call, orig_spec = _DEFAULTS["ba"]
+            cache = {}
+
+            def repeatable(gs):
+                key = (gs.get("seed"), gs.get("ante_num"), gs.get("round_num"))
+                if key not in cache:
+                    deck = [dict(card_info(c), debuff=False) for c in _cards(gs, "cards") + _cards(gs, "hand")]
+                    deck.sort(key=lambda i: (str(i["suit"]), str(i["rank"]), str(i["enh"])))
+                    size = min(_d(gs.get("hand")).get("limit") or 8, len(deck))
+                    levels = _d(gs.get("hands"))
+                    sc = jk.Scorer(levels, jk.build(gs), {"hands_left": 2, "discards_left": 0})
+                    rng, made = random.Random("MOUTH"), {}
+                    for _ in range(24):
+                        n = best_play(rng.sample(deck, size), levels, sc)[1]
+                        for t in strat.HAND_NAMES:
+                            if n == t or n in strat.CONTAINED_IN.get(t, ()):
+                                made[t] = made.get(t, 0) + 1
+                    ok = {t for t, c in made.items() if c / 24 >= opts["mouth"]} | {"High Card"}
+                    cache.clear()
+                    cache[key] = ok
+                return cache[key]
+
+            def first_mouth(self):
+                return self.boss == "The Mouth" and not any(_d(h).get("played_this_round") for h in self.levels.values())
+
+            def call(self, combo, name):
+                if first_mouth(self):
+                    return name in repeatable(bot.last_state or {})
+                return orig_call(self, combo, name)
+
+            def spec(self):
+                return None if first_mouth(self) else orig_spec(self)  # Python path for the first Mouth play
+            decisions.BossAllow.__call__, decisions.BossAllow.native_spec = call, spec
         if opts.get("guard"):
             import strategy
             orig_ff, k = _DEFAULTS["ff"], opts["guard"]
@@ -885,6 +928,7 @@ def _play_bot(seed, arm_name, t0):
         decisions._forecast_fields = _DEFAULTS["ff"]
         decisions._weakest_jokers = _DEFAULTS["weak_fn"]
         decisions.shop = _DEFAULTS["shop"]
+        decisions.BossAllow.__call__, decisions.BossAllow.native_spec = _DEFAULTS["ba"]
         import odds
         odds.forecast = _DEFAULTS["odds"]
         decisions.blind_select = _DEFAULTS["blind"]
