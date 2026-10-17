@@ -252,10 +252,58 @@ fn probs_of(a: &Value) -> Vec<(String, f64)> {
 }
 
 /// decisions.py 335-452 `selecting_hand(bot, gs)`.
+const LEAF_KEEP: &[&str] = &["Troubadour", "Juggler", "Turtle Bean", "Merry Andy", "Burglar", "Drunkard", "Mr. Bones", "Chicot"];
+
+// decisions.py 339-363
+/// v30: Verdant Leaf debuffs every card until a joker is sold; sell the joker whose loss on recent
+/// hands is smallest (eternal and Negative ones kept) before the first play. False if not applicable.
+fn _leaf_sale(bot: &mut JevBot, gs_: &Value, boss: &str, hand: &[Value]) -> bool {
+    if boss != "Verdant Leaf" || !hand.iter().any(|c| card_info(c).debuff) {
+        return false;
+    }
+    let key = json!([gs::get(gs_, "seed"), gs::get(gs_, "ante_num"), gs::get(gs_, "round_num")]);
+    if bot._leaf_failed == key {
+        return false;
+    }
+    let js = cards_of(gs_, "jokers");
+    // hand size and hands don't show in measured scores: sell those last (TIXQA7PH sold Troubadour)
+    let keep: HashSet<usize> = (0..js.len()).filter(|&j| gs::get(&js[j], "label").as_str().is_some_and(|l| LEAF_KEEP.contains(&l))).collect();
+    let recent = super::recent(bot, gs_);
+    let mut weak: Vec<usize> = super::shop::weakest_jokers(gs_, &recent, js.len()).difference(&keep).copied().collect();
+    if weak.is_empty() {
+        weak = super::shop::weakest_jokers(gs_, &recent, 1).into_iter().collect();
+    }
+    weak.sort();
+    if weak.is_empty() {
+        return false;
+    }
+    let mut best: Option<(f64, f64, usize)> = None;
+    for &k in &weak {
+        let loss = -jokers::gain(gs_, &recent, None, Some(k), None).unwrap_or(0.0);
+        let sell = gs::num(gs::d(gs::get(&js[k], "cost")).get("sell").unwrap_or(&Value::Null));
+        let cand = (loss, sell, k);
+        if best.map_or(true, |b| cand.0 < b.0 || (cand.0 == b.0 && (cand.1 < b.1 || (cand.1 == b.1 && cand.2 < b.2)))) {
+            best = Some(cand);
+        }
+    }
+    let j = best.unwrap().2;
+    let label = gs::get(&js[j], "label").as_str().unwrap_or("None").to_string();
+    bot.emit("auto", json!({"question": "move", "choice": "sell_joker", "desc": format!("sell {label}"),
+        "reason": "Verdant Leaf: every card stays debuffed until a joker is sold"}));
+    if bot.act("sell", Some(&json!({"joker": j}))).is_err() {
+        bot._leaf_failed = key; // the API refused: play on with the debuff
+        return false;
+    }
+    true
+}
+
 pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let hand = cards_of(gs_, "hand");
     let info = super::round_info(gs_);
     let boss = gs::get(&info, "blind").as_str().unwrap_or("").to_string();
+    if _leaf_sale(bot, gs_, &boss, hand) {
+        return Ok(());
+    }
     let rnd = gs::get(gs_, "round");
     let js = crate::prof::time("sh.jokers_build", || jokers::build(gs_, None));
     let base_levels = gs::d(gs::get(gs_, "hands"));

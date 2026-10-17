@@ -1,7 +1,7 @@
 //! rollout_items.py 56-212: `_cards`, `usable`, `synth_plays` and `Picker` (which pack card to take).
 //! `usable` lives in forecast_stats.rs (it uses tarots.rs's key lists); `_cards` is `gs::cards_of`.
 
-use crate::hands::{card_info, classify, rank_index, Info};
+use crate::hands::{best_score, card_info, classify, rank_index, Allowed, Info, ScorerArg};
 use crate::jokers::{self, Rnd};
 use crate::{build, gs, tarots};
 use pycompat::json::pyrepr;
@@ -12,6 +12,8 @@ use std::collections::HashMap;
 
 const MONEY: f64 = 0.01;
 pub const SYNTH_HANDS: usize = 12;
+pub const PLANET_DEALS: usize = 24; // v28: deals for a planet's value (hand size + PLANET_EXTRA cards each)
+pub const PLANET_EXTRA: i64 = 3; // roughly what a discard adds, as in readiness.play_mix
 
 fn flat(key: &str) -> Option<f64> {
     Some(match key {
@@ -63,8 +65,9 @@ fn kernel_card(i: &Info) -> jev_kernel::Card {
     }
 }
 
-/// Recent-play stand-ins: `{"infos", "combo", "rnd"}` dicts (jokers::sample_plays input).
-pub fn synth_plays(pub_: &Value, k: usize, seed: &str) -> Vec<Value> {
+// rollout_items.py 75-80
+/// The deck multiset (cards + hand), canonically sorted so the real draw order is never read.
+fn _deck_infos(pub_: &Value) -> Vec<Info> {
     let mut deck: Vec<Value> = gs::cards_of(pub_, "cards").to_vec();
     deck.extend(gs::cards_of(pub_, "hand").iter().cloned());
     let key = |c: &Value| {
@@ -72,7 +75,53 @@ pub fn synth_plays(pub_: &Value, k: usize, seed: &str) -> Vec<Value> {
         (py_str(gs::get(v, "suit")), py_str(gs::get(v, "rank")), pyrepr(&Value::Object(gs::d(gs::get(c, "modifier")).clone())))
     };
     deck.sort_by_key(key);
-    let infos: Vec<Info> = deck.iter().map(|c| { let mut i = card_info(c); i.debuff = false; i }).collect();
+    deck.iter().map(|c| { let mut i = card_info(c); i.debuff = false; i }).collect()
+}
+
+// rollout_items.py 83-104
+/// v28: mean best-play score ratio - 1 after levelling lv=(hand, chips, mult), with the best play
+/// re-chosen in each deal (Rust kernel), over k deals of hand size + `extra` cards from the deck multiset.
+pub fn planet_gain(pub_: &Value, lv: (&str, i64, i64), k: usize, extra: i64, seed: &str) -> f64 {
+    let infos = _deck_infos(pub_);
+    let lim = gs::get(gs::get(pub_, "hand"), "limit");
+    let size = ((if gs::truthy(lim) { gs::int(lim) } else { 8 }) + extra).min(infos.len() as i64);
+    if size < 1 {
+        return 0.0;
+    }
+    let js = jokers::build(pub_, None);
+    let levels = gs::d(gs::get(pub_, "hands")).clone();
+    let (h, c, m) = lv;
+    let mut new = levels.clone();
+    let mut cur = gs::d(levels.get(h).unwrap_or(&Value::Null)).clone();
+    let chips = add_num(cur.get("chips"), 0, c);
+    let mult = add_num(cur.get("mult"), 1, m);
+    cur.insert("chips".to_string(), chips);
+    cur.insert("mult".to_string(), mult);
+    new.insert(h.to_string(), Value::Object(cur));
+    let rnd = Rnd { hands_left: 2.0, discards_left: 1.0 };
+    let (s0, s1) = (jokers::Scorer::new(levels, js.clone(), rnd), jokers::Scorer::new(new, js, rnd));
+    let mut rng = Random::new_str(seed);
+    let (mut before, mut after) = (0.0f64, 0.0f64);
+    for _ in 0..k {
+        let hand: Vec<Info> = rng.sample_indices(infos.len(), size as usize).into_iter().map(|i| infos[i].clone()).collect();
+        before += best_score(&hand, ScorerArg::Jokers(&s0), Allowed::None) as f64;
+        after += best_score(&hand, ScorerArg::Jokers(&s1), Allowed::None) as f64;
+    }
+    if before != 0.0 { after / before - 1.0 } else { 0.0 }
+}
+
+/// `d.get(k, default) + c`, keeping int or float as Python does.
+fn add_num(cur: Option<&Value>, default: i64, c: i64) -> Value {
+    match cur {
+        None => json!(default + c),
+        Some(Value::Number(n)) if n.is_i64() => json!(n.as_i64().unwrap() + c),
+        Some(v) => json!(gs::num(v) + c as f64),
+    }
+}
+
+/// Recent-play stand-ins: `{"infos", "combo", "rnd"}` dicts (jokers::sample_plays input).
+pub fn synth_plays(pub_: &Value, k: usize, seed: &str) -> Vec<Value> {
+    let infos = _deck_infos(pub_);
     if infos.is_empty() {
         return vec![];
     }
@@ -154,7 +203,8 @@ impl<'a> Picker<'a> {
         if !self.memo.contains_key(&k) {
             let eff = gs::get(gs::get(c, "value"), "effect");
             let lv = jokers::planet_level(if gs::truthy(eff) { gs::s(eff) } else { "" });
-            let g = lv.as_ref().and_then(|(h, a, b)| self.gain(None, Some((h.as_str(), *a, *b))));
+            // v28: planet_gain re-chooses the best play per deal (gain kept each sample's play fixed)
+            let g = lv.as_ref().map(|(h, a, b)| planet_gain(self.pub_, (h.as_str(), *a, *b), PLANET_DEALS, PLANET_EXTRA, "PLANET"));
             let g = g.unwrap_or(0.0); // `g or 0.0`
             let g = if g == 0.0 { 0.0 } else { g };
             self.memo.insert(k.clone(), pmax(g, 0.0) + 0.001);

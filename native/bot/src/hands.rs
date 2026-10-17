@@ -778,6 +778,8 @@ pub mod native {
             jokers::Pred::Final => (5, 0),
             jokers::Pred::Suit(s) => (1, suit_code(Some(&s.to_string())).unwrap() as u32),
             jokers::Pred::Ranks(r) => (2, mask_ranks(r)),
+            // v28: one rank of one suit (The Idol)
+            jokers::Pred::Card(r, s) => (6, rank_code(&r.to_string()).unwrap() as u32 | (suit_code(Some(&s.to_string())).unwrap() as u32) << 8),
             jokers::Pred::All => (0, 0),
         }
     }
@@ -800,6 +802,7 @@ pub mod native {
                     ),
                     Cond::FourSuits => (6, 0),
                     Cond::PlayedThisRound => (7, 0),
+                    Cond::SeeingDouble => (11, 0),
                 };
                 (k, mask, 0.0, *yes, *no)
             }
