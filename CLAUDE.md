@@ -29,6 +29,14 @@ local control panel for watching runs and comparing prompt versions. See README.
 - Panel API: `GET /api/live?since=<event id>`, `/api/runs`, `/api/runs/<run_id>`, `/api/prompts`;
   `POST /api/{run,pause,step,abandon,settings}`.
 
+- Rust bot (`native/bot`, crate `jevbot`; frozen at Python v27 and identical to it seed by seed): build with
+  `export PATH="$HOME/.cargo/bin:$PATH"; cd native/bot && cargo build --release --bins`. Tests:
+  `cargo test --release` in `native/bot`; `fc_items` is slow (~2-5 min); `bot_replay`, and `engine_replay`
+  with `IGNORE="].id"`. Identity bar: `bot_replay` 60/60, `fc_items` 3193/3193, `engine_replay` 47/60 (the rest
+  are known Jackdaw bugs). To check a change against Python, run `jevlab` with `JEVLAB_TRACE=<dir>`, which prints
+  the first call that differs from `runs/_port/traces`. Prompt version = sha1 of the native Rust sources
+  (`recorder::bot_version`), so any edit there is a new version. See README "Rust bot".
+
 ## Architecture
 
 - `jev_bot.JevBot.step()`: fetch gamestate → `on_<state>()` handler → `ask()` one JEV `Choice`

@@ -112,42 +112,61 @@ the simulator first (next section).
   The last JEV sim benchmark (v23, `sim30-a`, before later sim fixes) reached 6.43. Thirty seeds
   detect about 0.9 ante, so test changes code-only on 60+ seeds first.
 
-## Rust port: status and parked plan
+## Rust bot
 
-The goal is an all-Rust lab. It is **parked** at v27 (2026-10-16) because the lab is already fast
-enough for large code-only tests; the work moved back to improving the bot. Every step so far was
-checked for identical per-seed results against the Python path (`JEV_NATIVE=0`), and Python stays
-the fallback.
+The whole bot is in Rust: `native/bot` (crate `jevbot`) holds JevBot, the decisions, the forecasts, the
+recorder, the TypeSafe client, the panel and the policy lab. The game engine is `native/rumbot`
+(rumbot-sim fork). The port is frozen at Python v27: for the same seeds it gives the same results, and
+Python stays the reference (`jevbot panel --legacy` is Python-only: run `src/panel.py --legacy`).
+Porting history and conventions: [docs/rust-port-guide.md](docs/rust-port-guide.md),
+[docs/rust-port-scope.md](docs/rust-port-scope.md); open items: [docs/port-handoff/followups.md](docs/port-handoff/followups.md).
 
-Lab games per minute (no JEV, 12 workers). Done steps are measured; remaining ones are estimates
-from the v27 profile.
+Build (Git Bash, `export PATH="$HOME/.cargo/bin:$PATH"` first):
 
-| Step | Moved to Rust | Games/min | Status |
-|---|---|---:|---|
-| Pure Python | – | ~5 | before v24 |
-| v24 | Hand scorer; joker/planet/voucher forecast rollouts | ~14 | done |
-| v25-v26 | Pack/tarot/spectral forecast rollouts, including the bot's tarot use | ~48 | done |
-| v27 | Rollout policy follows joker removals, so Rust rarely hands back | **~56** | done |
-| Next | Whole pack forecast in Rust: pack opening and the pick (`rollout_items.Picker`) | ~90 | 1-2 sessions |
-| Stage C | The bot's decisions: `decisions`, `hands`, `jokers`, `odds`, `build`, `tarots`, ... | ~140 | 6-10 sessions |
-| Engine swap | rumbot-sim plays whole games instead of Jackdaw: public view, effect text, replay parity | ~200+ | 3-5 sessions |
+```
+cd native/bot && cargo build --release --bins
+target/release/jevbot play [--backend balatrobot|rumbot] [--seed S] [--deck RED] [--stake WHITE]     [--model jev-latest] [--runs N] [--code-jev]
+target/release/jevbot panel [--port 8765] [--backend balatrobot|rumbot] [--code-jev]
+target/release/jevlab --set sim30-a --arm E|F --jobs 8 [--limit N] [--name X]
+```
 
-Where v27 spends its time (profile of 3 games):
+- `play --backend balatrobot` plays the modded game at 127.0.0.1:12346; `rumbot` runs the headless
+  engine and logs under `runs/sim`. `--code-jev` uses CodeJev instead of JEV (no key, no tokens). The
+  JEV key comes from `.env`.
+- `jevlab` is the Rust policy lab, no JEV: arm E (`bot-forecast-long`) or F (`bot-forecast-items`).
+  Rows go to `runs/_policy_lab/<name>/results.jsonl`.
+- `JEV_PERF=1` prints coarse profiling timers. `JEVLAB_TRACE=<dir>` writes each game's calls and
+  prints the first call that differs from the Python trace in `runs/_port/traces`.
+- Sim games need the game's localization in `runs/_loc` (`scripts/extract_localization.py`), as before.
 
-| Part | Share |
-|---|---:|
-| Pack/tarot forecasts | 69% |
-| ↳ Rust rollouts | 17% |
-| ↳ Python pack opening and picks | ~17% |
-| ↳ JSON conversion and snapshot copies | ~19% |
-| Joker forecasts | 9% |
-| Odds forecasts | 6% |
-| Game engine and state serialisation | 7% |
+Identity (frozen at Python v27):
 
-Details: [docs/rust-port-scope.md](docs/rust-port-scope.md). The simulator needs the game's
-localization in `runs/_loc` (`scripts/extract_localization.py`). It is not in git because it is
-the game's own text, so a machine without Balatro (a cloud agent) can build and run tests but
-not sim games or lab runs.
+- Bot replay: 60/60 games identical. Forecasts: shop 2475/2475, packs pass, items 3193/3193. All-Rust
+  forecast replay: 60/60.
+- Live lab, 8 traced seeds: 15/16 calls identical. The one difference (1YJ4DQ2R, arm E) is a Jackdaw
+  Standard-pack bug, not the Rust bot.
+- sim60-a, arm F: Rust 5.93 +- 0.22 ante, 6/60 wins; Python v27 5.90 +- 0.22, 4/60 wins; 54/60 games
+  end the same.
+- Engine replay (`engine_replay`, IGNORE="].id"): 47/60 games identical. The rest are Jackdaw bugs and
+  the Mail-In Rebate rank (followups.md).
+
+Speed (8 seeds, summed per-game seconds, arm E / arm F):
+
+| Path | Arm E | Arm F |
+|---|---:|---:|
+| Pure Python (`JEV_NATIVE=0`) | 887 s | 1030 s |
+| Python + native kernels (v27) | 87 s | 115 s |
+| Rust | 49 s | 58 s |
+
+Rust is about 18x faster than pure Python and about 2x faster than v27.
+
+Live tests (2026-10-17): one real game with CodeJev and one with real JEV, both played through `jevbot play`
+against the modded game.
+
+Jackdaw-mirroring flags: the forecasts and the engine set a few rumbot flags that copy Jackdaw's
+quirks so the results match the Python reference (`fool_always_usable`, `pack_ignores_played`,
+`jackdaw_unmarked_jokers`, `jackdaw_card_pay_unseen`; see `native/rumbot/src/game.rs` and
+`native/rumbot/VENDORED.md`). Drop them once Jackdaw is no longer the reference.
 
 ## How faithful is the simulator?
 

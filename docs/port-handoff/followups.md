@@ -20,8 +20,7 @@
   (shop.py:180 always deals _1; the game and rumbot roll 1-2). Remove once Jackdaw is no longer the
   reference (identical in play).
 - forecast_stats: `usable()` copies tarots.py's TARGETED/SAFE_UNTARGETED keys (`// SHARED?`); point it at
-  tarots.rs once that is merged. Items-forecast assembly (rollout_items._forecast's result dict) still to port
-  (forecast task 9).
+  tarots.rs once that is merged.
 - forecast_apply: selling a ready Invisible Joker (draws RNG) returns Err; untested (not in the sample).
   Campfire/Hologram bumps, negative editions, Juggler/Troubadour/Turtle Bean hand size are coded from
   Jackdaw but may be unexercised by the 400-call fixture.
@@ -39,8 +38,8 @@
   no longer the reference (the real game shows the live values).
 - fc_packs: part 3 compares `describe_lite` (money, names, counts, slots, RNG pools), not the full post-pack
   description; its num_eq treats ints and floats alike. The items end-to-end forecast test covers it.
-- forecast_items sets two rumbot flags that mirror Jackdaw's OpenBooster/PickPackCard shortcuts
-  (`fool_always_usable`, `pack_ignores_played`) for v27 identity; drop them once Jackdaw is not the reference.
+- forecast_items sets rumbot flags that mirror Jackdaw's OpenBooster/PickPackCard shortcuts
+  (`fool_always_usable`, `pack_ignores_played`, `jackdaw_unmarked_jokers`) for v27 identity; drop them once Jackdaw is not the reference.
 - analytics (Python too): run_metrics "progress" never adds the final-blind share (last_move only holds
   discards_left, so target is 0): progress == rounds_won. Ported as-is; fix in both if the share was intended.
 - panel: `--legacy` (v1 bot) is not ported: `jevbot panel --legacy` prints "the v1 bot is Python-only: run

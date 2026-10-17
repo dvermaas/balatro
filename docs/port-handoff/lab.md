@@ -1,7 +1,7 @@
 # lab (jevlab, RustOracle)
 
-- `native/bot/src/oracle.rs`: `RustOracle` (Rust shop forecast, Picker values/pick_pub). `items_forecast` is a stub returning a
-  forecast without a `skip` baseline (the bot treats it like Python's failed forecast); TODO: call `forecast_items::items_forecast`.
+- `native/bot/src/oracle.rs`: `RustOracle` (Rust shop forecast, Picker values/pick_pub). `items_forecast` calls
+  `forecast_items::items_forecast` (the Rust items forecast).
   `CheckedOracle` serves recorded calls and panics if the computed result differs (ignoring `seconds`, `_runs`).
 - Identity: `JEV_REPLAY_ORACLE=rust JEV_REPLAY_GAMES=30 cargo test --release --test bot_replay bot_replay -- --nocapture`
   -> 30/30 arm E games identical with computed forecasts (120 s).
