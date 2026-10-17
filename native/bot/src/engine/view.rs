@@ -390,6 +390,7 @@ pub fn serialize(eng: &mut RumbotGame) -> Value {
     let in_shop = phase == Phase::Shop || (phase == Phase::Pack && eng.pack_from_shop);
     let reroll_cost = match &g.shop {
         Some(s) => s.reroll_cost(g.vouchers.iter().map(|v| v.reroll_discount).sum()) as i64,
+        None if phase == Phase::Playing && g.jokers.iter().any(|j| j.borrow().spec.name == "Chaos the Clown") => 0, // free_rerolls > 0 at round start -> calculate_reroll_cost gives 0
         None if phase == Phase::Playing => (5 - g.vouchers.iter().map(|v| v.reroll_discount).sum::<i32>() as i64).max(0), // round start resets the increase
         None => eng.last_reroll, // Python keeps current_round.reroll_cost after the shop closes
     };

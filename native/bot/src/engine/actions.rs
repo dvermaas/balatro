@@ -182,7 +182,27 @@ fn truthy(v: Option<&Value>) -> bool {
 }
 
 // bridge/backend.py _handle_action + deserializer.rpc_to_action + game.py step
+fn d_size_total(g: &GameState) -> i32 {
+    g.jokers.iter().map(|j| match j.borrow().spec.name { "Drunkard" => 1, "Merry Andy" => 3, _ => 0 }).sum()
+}
+
+// Jackdaw card.py:762-775/835-844 (card.lua:591): add_to_deck/remove_from_deck ease the CURRENT round's discards_left by d_size;
+// rumbot only changes it at blind start, so mirror the delta into the stale-round snapshot outside Playing.
 pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), RpcError> {
+    let before = eng.g.as_ref().map(|g| (g.phase, d_size_total(g)));
+    let r = act_inner(eng, method, params);
+    if let (Some((ph, d0)), Some(g)) = (before, eng.g.as_ref()) {
+        if r.is_ok() && ph != Phase::Playing && g.phase != Phase::Playing {
+            let d1 = d_size_total(g);
+            if d1 != d0 {
+                eng.last_round.1 = (eng.last_round.1 + d1 - d0).max(0);
+            }
+        }
+    }
+    r
+}
+
+fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), RpcError> {
     if method == "rearrange" {
         return rearrange(eng, params);
     }
@@ -344,7 +364,7 @@ pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), Rpc
             let a = Action {
                 r#type: ActionType::UseConsumable,
                 index: i as i32,
-                cards: cards.iter().map(|&c| c as usize).collect(),
+                cards: { let mut v: Vec<usize> = cards.iter().map(|&c| c as usize).collect(); v.sort_unstable(); v }, // Jackdaw targets are hand positions, order-free
             };
             if !g.is_legal(&a) {
                 return Err(cannot(g));
@@ -385,7 +405,7 @@ pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), Rpc
                 let a = Action {
                     r#type: ActionType::PickPack,
                     index: i as i32,
-                    cards: targets.iter().map(|&c| c.max(0) as usize).collect(),
+                    cards: { let mut v: Vec<usize> = targets.iter().map(|&c| c.max(0) as usize).collect(); v.sort_unstable(); v },
                 };
                 if targets.iter().any(|&c| c < 0) || !g.is_legal(&a) {
                     return Err(illegal("Cannot pick that pack card (no room, or wrong targets)"));
