@@ -679,7 +679,7 @@
   "se": 0.035,
   "wins": 428,
   "baseline_wins": 359,
-  "outcome": "promising"
+  "outcome": "shipped v45"
  },
  {
   "experiment": "Skip blinds for 11 tags (adds Polychrome, Charm, Buffoon, Double, Orbital, Coupon, Voucher, Economy)",
@@ -691,5 +691,38 @@
   "wins": 369,
   "baseline_wins": 359,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Skip blinds for Investment/Negative/Rare from ante 2 only",
+  "theme": "Blinds",
+  "baseline": "v44",
+  "games": 2000,
+  "delta_ante": -0.002,
+  "se": 0.022,
+  "wins": 406,
+  "baseline_wins": 359,
+  "outcome": "variant"
+ },
+ {
+  "experiment": "Skip blinds for Investment Tags only (antes 1-3)",
+  "theme": "Blinds",
+  "baseline": "v44",
+  "games": 2000,
+  "delta_ante": 0.03,
+  "se": 0.023,
+  "wins": 404,
+  "baseline_wins": 359,
+  "outcome": "variant"
+ },
+ {
+  "experiment": "Skip blinds for Negative/Rare Tags only (antes 1-3)",
+  "theme": "Blinds",
+  "baseline": "v44",
+  "games": 2000,
+  "delta_ante": -0.076,
+  "se": 0.026,
+  "wins": 388,
+  "baseline_wins": 359,
+  "outcome": "variant"
  }
 ]

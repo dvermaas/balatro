@@ -36,6 +36,9 @@ pub const RECENT_PLAYS: usize = 10;
 pub const NEAR_PACE: f64 = 0.8;
 pub const PACK_SCORE: f64 = 1.5;
 pub const INTEREST_BUFFER: i64 = 25;
+/// v45: tags worth skipping a Small/Big blind for, at antes up to SKIP_ANTE.
+pub const SKIP_TAGS: &[&str] = &["Investment Tag", "Negative Tag", "Rare Tag"];
+pub const SKIP_ANTE: i64 = 3;
 /// v44: never bought. -1 ante makes the forecast's horizon of blinds cleared easier, but a win needs that ante
 /// again with a hand (Petroglyph: a discard) fewer every round.
 pub const NEVER_VOUCHERS: &[&str] = &["Hieroglyph", "Petroglyph"];
@@ -258,11 +261,14 @@ pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         }
         s
     };
+    // v45: skip a Small/Big blind at antes 1-3 for an Investment, Negative or Rare Tag (lab `skip-tags` overrides the list)
     let tag = gs::s(gs::get(&b, "tag_name")).to_string();
     let ante = gs::int(gs::get(gs_, "ante_num"));
     let e = crate::experiment::get();
-    if e.skip_tags.contains(&tag) && ante <= crate::experiment::SKIP_ANTE && ante >= e.skip_min {
-        bot.emit("auto", json!({"question": "blind", "choice": "skip", "desc": format!("skip for {tag}"), "reason": "lab skip-tags"}));
+    let listed = if e.skip_tags.is_empty() { SKIP_TAGS.contains(&tag.as_str()) } else { e.skip_tags.contains(&tag) };
+    if listed && ante <= SKIP_ANTE && ante >= e.skip_min {
+        bot.emit("auto", json!({"question": "blind", "choice": "skip", "desc": format!("skip for {tag}"),
+            "reason": "a skip for this tag early wins more runs than the blind's cash-out and shop (lab: 428 vs 359 wins)"}));
         bot.act("skip", None)?;
         return Ok(());
     }

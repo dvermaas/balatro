@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v45 (Rust only): blind skips. At antes 1-3 the bot skips a Small or Big blind whose tag is Investment, ",
+    "Negative or Rare (a code rule; the lab's top-option JEV never skipped). Fresh 2,000 seeds vs v44: 428 vs 359 ",
+    "wins (z = 4.46); ante-1 deaths 36 -> 80, fewer at every later ante. Skipping for 11 tags: 369 vs 359, mean ante ",
+    "-0.72. Based on: ",
     "v44 (Rust only): Hieroglyph and Petroglyph are never bought. -1 ante makes the forecast's 3-boss horizon of ",
     "blinds cleared easier, but a win needs that ante again with a hand (a discard) fewer every round. 2,000 ",
     "seeds vs v43: 367 vs 347 wins (z = 1.77), +0.023 +- 0.018 ante; the 605 games that bought Hieroglyph won ",

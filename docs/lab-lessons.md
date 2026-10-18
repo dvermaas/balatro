@@ -159,13 +159,15 @@ measured the wrong thing or was never asked:
   wins (z = 1.77), +0.023 +- 0.018 ante; the 605 Hieroglyph games won 135 instead of 115. The same kind of bias
   hits any item whose cost falls after the horizon. Fresh 2,000 seeds: 359 vs 352 wins (z = 0.60); pooled 4,000:
   726 vs 699 wins (z = 1.66). (Mean ante is no fair measure here: Hieroglyph itself lowers the ante reached.)
-- **Skipping blinds for tags (lab flag `skip-tags`, in progress):** the lab's code-top-option JEV always plays, so the
+- **v45, skipping blinds for tags:** the lab's code-top-option JEV always plays, so the
   lab bot never skipped a blind. Skipping a Small/Big blind at antes 1-3 for an Investment, Negative or Rare Tag
   (fresh 2,000 seeds vs v44): **428 vs 359 wins** (only-one-side 154/85, z = 4.46), mean ante -0.073 +- 0.035:
   ante-1 deaths 36 -> 80, every later ante fewer. Adding Polychrome, Charm, Buffoon, Double, Orbital, Coupon,
   Voucher and Economy: 369 vs 359 wins, mean ante -0.72 (a skip costs a cash-out and a shop; most tags don't
   pay for that). rumbot's tags follow the game (Rare/Uncommon put a free joker in the shop, edition tags make
   the next shop joker free, Investment pays $25 at the boss cash-out).
+  Variants (same seeds): from ante 2 only 406 wins (ante-1 deaths back to 36, but less gain); Investment only
+  404 (z = 3.96, +0.030 ante); Negative + Rare only 388 (z = 2.31). The parts add up (+45 and +29 ~ +69).
 - **Crimson Heart re-picks only after a play** (dropped idea): the debuffed joker moves on the draw after a hand
   (`press_play` preps the blind; rumbot `_play_hand`), never after a discard, so discarding to move it only
   wastes discards (lab flag tried on its 55 death seeds: 1 changed). The bot already scores without the

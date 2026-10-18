@@ -13,8 +13,8 @@
 //!   eye-plan      under The Eye the play's hand type is chosen by its value over the round (now + hands
 //!                 left x expected best of a fresh deal without that type)
 //!   late-floor=N  the shop's interest floor (loose buys, rerolls, strong vouchers) drops $N per ante after 4
-//!   skip-tags=A+B skip a Small or Big blind at ante <= SKIP_ANTE when its tag is one of these ("Investment",
-//!                 "Negative", ...; the lab's code-top-option JEV always plays)
+//!   skip-tags=A+B replaces decisions::SKIP_TAGS, the tags a Small/Big blind is skipped for at ante <= SKIP_ANTE
+//!                 ("Investment", "Negative", ...; skip-tags=none skips nothing)
 //!   skip-min=A    skip-tags only from ante A
 //!   money-tail=W  forecast rollouts score blinds cleared + W * BLINDS_PER_DOLLAR[ante] * money at their end
 //!                 (rollouts never shop, so money and prices were worth nothing to the forecast)
@@ -26,7 +26,6 @@ use std::sync::OnceLock;
 pub const PAIR_PLANET: f64 = 0.5;
 pub const PAIR_SE: f64 = 1.0;
 pub const PAIR_PLAY: f64 = 0.85;
-pub const SKIP_ANTE: i64 = 3;
 /// Jokers that pay for playing Pairs (or for repeating one hand, which Pair commitment does).
 pub const PAIR_JOKERS: &[&str] = &["Jolly Joker", "Sly Joker", "The Duo", "Half Joker", "Supernova", "Card Sharp", "Spare Trousers", "Mad Joker", "Clever Joker"];
 
