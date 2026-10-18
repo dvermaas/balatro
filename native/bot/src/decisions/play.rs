@@ -266,6 +266,18 @@ fn _leaf_sale(bot: &mut JevBot, gs_: &Value, boss: &str, hand: &[Value]) -> bool
         return false;
     }
     let js = cards_of(gs_, "jokers");
+    // v38: the bait bought for this boss goes first
+    if let Some(j) = js.iter().position(|c| !bot._leaf_bait.is_null() && gs::get(c, "id") == &bot._leaf_bait) {
+        let label = gs::get(&js[j], "label").as_str().unwrap_or("None").to_string();
+        bot.emit("auto", json!({"question": "move", "choice": "sell_joker", "desc": format!("sell {label}"),
+            "reason": "Verdant Leaf: sell the bait joker bought for it"}));
+        bot._leaf_bait = Value::Null;
+        if bot.act("sell", Some(&json!({"joker": j}))).is_err() {
+            bot._leaf_failed = key;
+            return false;
+        }
+        return true;
+    }
     // hand size and hands don't show in measured scores: sell those last (TIXQA7PH sold Troubadour)
     let keep: HashSet<usize> = (0..js.len()).filter(|&j| gs::get(&js[j], "label").as_str().is_some_and(|l| LEAF_KEEP.contains(&l))).collect();
     let recent = super::recent(bot, gs_);

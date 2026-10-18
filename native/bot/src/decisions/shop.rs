@@ -517,6 +517,26 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     let (mains, mut state) = super::run_context(gs);
     let boss = _d(&g(gs, "blinds")).values().find(|b| g(b, "type") == json!("BOSS")).cloned().unwrap_or_else(|| json!({}));
     state["upcoming_boss"] = json!({"name": g(&boss, "name"), "effect": g(&boss, "effect"), "chip_target": g(&boss, "score")});
+    // v38: Verdant Leaf debuffs every card until a joker is sold. Before it, buy the cheapest sellable joker
+    // as bait (a free slot only) so the sale costs nothing; play::_leaf_sale sells it first.
+    let next_is_boss = _d(&g(gs, "blinds")).values().any(|b| g(b, "type") == json!("BIG") && matches!(g(b, "status").as_str(), Some("DEFEATED") | Some("SKIPPED")));
+    if g(&boss, "name") == json!("Verdant Leaf") && next_is_boss && !jokers_full && bot._shop_actions < crate::jev_bot::SHOP_ACTION_CAP {
+        let held = cards_of(gs, "jokers").iter().any(|c| !bot._leaf_bait.is_null() && g(c, "id") == bot._leaf_bait);
+        if !held {
+            let cheapest = cards_of(gs, "shop").iter().enumerate()
+                .filter(|(_, c)| g(c, "set") == json!("JOKER") && !truthy(_d(&g(c, "modifier")).get("eternal")))
+                .map(|(i, c)| (crate::gs::int(&g(&g(c, "cost"), "buy")), i, c))
+                .filter(|(cost, _, _)| *cost <= money)
+                .min_by_key(|(cost, i, _)| (*cost, *i));
+            if let Some((cost, i, c)) = cheapest {
+                bot._leaf_bait = g(c, "id");
+                let action: Action = ("buy".into(), Some(json!({"card": i})));
+                bot.emit("auto", json!({"question": "shop", "choice": format!("buy_card_{i}"), "action": crate::jev_bot::action_value(&action),
+                    "desc": format!("${cost} {}", crate::gs::s(&g(c, "label"))), "reason": "Verdant Leaf bait: a cheap joker to sell when the boss starts"}));
+                return Ok(shop_act(bot, gs, &action)?);
+            }
+        }
+    }
     let b = crate::prof::time("s.build", || crate::build::decide(gs));
     state["our_build"] = json!(crate::build::describe(&b));
 

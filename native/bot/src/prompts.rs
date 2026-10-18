@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v38 (Rust only): Verdant Leaf bait. In the shop before Verdant Leaf, with a joker slot free, the bot buys ",
+    "the cheapest sellable joker and sells it when the boss starts, instead of selling its weakest real joker ",
+    "(Leaf deaths at ante 8 were near misses: 95-98% of the target). Based on: ",
     "v37 (Rust only): joker text. A money joker's \"(Currently $4)\" (Cloud 9) was read as +4 Mult, and ",
     "Seltzer's \"for the next 10 hands\" as retrigger 10s; now money is not scored and Seltzer retriggers every ",
     "played card. Found by auditing 6,923 plays' estimates against their scores. Based on: ",

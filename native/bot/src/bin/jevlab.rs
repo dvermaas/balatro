@@ -123,7 +123,8 @@ fn snap(g: &Value) -> Value {
         Value::Array(a) => a.clone(),
         _ => vec![],
     };
-    json!({"ante": g["ante_num"], "round": g["round_num"], "money": g["money"],
+    let boss = g["blinds"].as_object().and_then(|b| b.values().find(|x| x["type"] == "BOSS")).map(|x| x["name"].clone()).unwrap_or(Value::Null);
+    json!({"ante": g["ante_num"], "round": g["round_num"], "money": g["money"], "boss": boss,
            "jokers": cards("jokers").iter().map(|c| json!([c["key"], c["modifier"]["edition"]])).collect::<Vec<_>>(),
            "levels": levels, "deck": deck.len(), "enh": enh, "hand_size": g["hand"]["limit"], "vouchers": vouchers})
 }
