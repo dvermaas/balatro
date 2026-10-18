@@ -183,7 +183,13 @@ pub fn m_next_boss(r: &[Value]) -> f64 {
 
 /// rollout.py 632-633: blinds cleared.
 pub fn m_blinds(r: &[Value]) -> f64 {
-    r.iter().filter(|b| gs::truthy(gs::get(b, "cleared"))).count() as f64
+    let n = r.iter().filter(|b| gs::truthy(gs::get(b, "cleared"))).count() as f64;
+    let w = crate::experiment::get().value_tail;
+    if w > 0.0 {
+        // lab: + W * the learned value of the run after the horizon (forecast::tail_value)
+        return n + w * r.last().map_or(0.0, |b| gs::num(gs::get(b, "value")));
+    }
+    n
 }
 
 /// rollout.py 636-641: common-random-numbers mean of fn(a) - fn(b) and its paired standard error.

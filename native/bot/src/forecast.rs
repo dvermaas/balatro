@@ -21,6 +21,16 @@ pub fn policy_of(joker_dicts: &[Value]) -> Policy {
     }
 }
 
+/// Lab (`JEVLAB_EXP=value-tail=W`): the learned tail value of the rollout's end, on its last row.
+pub fn tail_value(rows: &mut [Value], g: &rumbot_sim::game::GameState) {
+    if crate::experiment::get().value_tail > 0.0 {
+        if let Some(last) = rows.last_mut() {
+            let cleared = last["cleared"] == json!(true);
+            last["value"] = json!(crate::value_model::tail(g, cleared));
+        }
+    }
+}
+
 pub fn row_json(r: &Row) -> Value {
     json!({"ante": r.0, "type": r.1, "boss": r.2, "target": r.3, "chips": r.4, "cleared": r.5})
 }
@@ -93,8 +103,13 @@ pub fn forecast_clock(
                     None => crate::prof::time("f.apply_k", || apply_option(pub_, e.opt, &sd)).expect("option applied at seed 0"),
                 };
                 g.seed = sd;
+                if i == 0 && ei == 0 && std::env::var_os("VALUE_CHECK").is_some() {
+                    crate::value_model::check(pub_, &g);
+                }
                 let rows = crate::prof::time("f.play_horizon", || play_horizon(&mut g, &e.pol, bosses_u, 600)).expect("rollout");
-                runs[ei].push(Value::Array(rows.iter().map(row_json).collect()));
+                let mut rj: Vec<Value> = rows.iter().map(row_json).collect();
+                tail_value(&mut rj, &g);
+                runs[ei].push(Value::Array(rj));
             }
         }
         k += step_n;

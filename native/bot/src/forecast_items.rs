@@ -331,7 +331,9 @@ pub fn items_forecast_clock(pub_: &Value, n: usize, bosses: i64, keys: Option<&[
                 }
                 Err(e) => panic!("items rollout: {e}"),
             };
-            let rj = Value::Array(rows.iter().map(crate::forecast::row_json).collect());
+            let mut rv: Vec<Value> = rows.iter().map(crate::forecast::row_json).collect();
+            crate::forecast::tail_value(&mut rv, &g);
+            let rj = Value::Array(rv);
             if std::env::var("FC_ROWS").is_ok() {
                 eprintln!("ROWS {} {} {}", gs::s(gs::get(o, "key")), k, rj);
             }

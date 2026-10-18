@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v34 (Rust only): no behaviour change. Lab-only experiment flags, off unless JEVLAB_EXP is set ",
+    "(experiment.rs: Pair commitment; value_model.rs: a learned P(win) as the forecast rollouts' tail ",
+    "value), and jevlab JEVLAB_SNAPS shop snapshots. Based on: ",
     "v33 (Rust only): speed only, same decisions as v32. The hand scorer kernel no longer allocates per ",
     "play subset and walks flat rule lists; mimalloc is the allocator; rumbot's hand tables are arrays and ",
     "its read-only joker scans no longer copy the row. The play-mix cache is per game (it was process-wide, ",

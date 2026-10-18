@@ -7,6 +7,8 @@
 //!   pair-jokers   Pair jokers clear the auto-buy bar PAIR_SE paired SEs earlier, and win early slot fills
 //!   pair-keep     Pair jokers are never among the weakest jokers (swaps, Verdant Leaf sales)
 //!   pair-play     a play containing a Pair within PAIR_PLAY of the best score is played instead
+//!   value-tail=W  forecast rollouts score blinds cleared + W * P(win) * blinds left at their end
+//!                 (value_model.rs, learned from 5,000 lab games)
 
 use std::sync::OnceLock;
 
@@ -22,6 +24,7 @@ pub struct Exp {
     pub pair_jokers: bool,
     pub pair_keep: bool,
     pub pair_play: bool,
+    pub value_tail: f64,
 }
 
 pub fn get() -> &'static Exp {
@@ -29,7 +32,9 @@ pub fn get() -> &'static Exp {
     E.get_or_init(|| {
         let s = std::env::var("JEVLAB_EXP").unwrap_or_default();
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
-        Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play") }
+        let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
+        Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
+              value_tail: num("value-tail") }
     })
 }
 

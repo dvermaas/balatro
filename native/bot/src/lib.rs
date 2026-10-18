@@ -39,4 +39,5 @@ pub mod recorder;
 pub mod replay;
 pub mod strategy;
 pub mod tarots;
+pub mod value_model;
 pub mod simtext;
