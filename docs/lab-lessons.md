@@ -117,13 +117,13 @@ measured the wrong thing or was never asked:
   almost always full by ante 8 (4 of 128 Leaf-death seeds), so it rarely applies (3 of 128 now win).
 - **Boss death rates when faced** (200 traced games): Violet Vessel 83%, Crimson Heart 47%, Verdant Leaf 39%,
   The Serpent 25%, Cerulean Bell 20% (before v36), The Plant 19%, The Eye 17%; most bosses 2-8%.
-  On 2,000 fresh seeds (v38, , ): Violet Vessel 78%,
+  On 2,000 fresh seeds (v38, `samples/cloud-lab/b2k-v38-snaps.jsonl.gz`, `bossrate.py`): Violet Vessel 78%,
   Crimson Heart 43%, Verdant Leaf 38%, The Serpent 28%, Cerulean Bell 22% (after v36), The Wall 21%, The Mouth
   18%, Amber Acorn 14%, The Water 14%, The Eye 13%; the rest 3-13%.
 - **v39, The Serpent:** it tops the hand up with exactly 3 cards after any play or discard, whatever room there
   is (as in the game), so a one-card discard grows the hand by 2. Until a play clears, the bot and the rollouts
   discard the lowest card outside the best play, one at a time. 2,000 seeds: Serpent deaths 62 -> 15 (28% ->
-  7%), +0.033 +- 0.011 ante, 345 vs 337 wins (); 260 seeds vs v37: +0.015 +- 0.035.
+  7%), +0.033 +- 0.011 ante, 345 vs 337 wins (`b2k-v39-snaps.jsonl.gz`); 260 seeds vs v37: +0.015 +- 0.035.
 
 ## What the stronger bot does differently
 
