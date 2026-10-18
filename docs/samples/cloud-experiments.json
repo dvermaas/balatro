@@ -669,5 +669,27 @@
   "wins": 359,
   "baseline_wins": 352,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Skip Small/Big blinds at antes 1-3 for Investment, Negative or Rare Tags (Rust lab)",
+  "theme": "Blinds",
+  "baseline": "v44",
+  "games": 2000,
+  "delta_ante": -0.073,
+  "se": 0.035,
+  "wins": 428,
+  "baseline_wins": 359,
+  "outcome": "promising"
+ },
+ {
+  "experiment": "Skip blinds for 11 tags (adds Polychrome, Charm, Buffoon, Double, Orbital, Coupon, Voucher, Economy)",
+  "theme": "Blinds",
+  "baseline": "v44",
+  "games": 2000,
+  "delta_ante": -0.716,
+  "se": 0.059,
+  "wins": 369,
+  "baseline_wins": 359,
+  "outcome": "dropped"
  }
 ]

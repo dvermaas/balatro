@@ -15,6 +15,7 @@
 //!   late-floor=N  the shop's interest floor (loose buys, rerolls, strong vouchers) drops $N per ante after 4
 //!   skip-tags=A+B skip a Small or Big blind at ante <= SKIP_ANTE when its tag is one of these ("Investment",
 //!                 "Negative", ...; the lab's code-top-option JEV always plays)
+//!   skip-min=A    skip-tags only from ante A
 //!   money-tail=W  forecast rollouts score blinds cleared + W * BLINDS_PER_DOLLAR[ante] * money at their end
 //!                 (rollouts never shop, so money and prices were worth nothing to the forecast)
 //!   value-tail=W  forecast rollouts score blinds cleared + W * P(win) * blinds left at their end
@@ -41,6 +42,7 @@ pub struct Exp {
     pub eye_plan: bool,
     pub late_floor: i64,
     pub skip_tags: Vec<String>,
+    pub skip_min: i64,
 }
 
 /// Future blinds cleared per $1 held at the first shop of each ante (index = ante; 5,000 lab games, ridge
@@ -56,7 +58,8 @@ pub fn get() -> &'static Exp {
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
               value_tail: num("value-tail"), free_discard: has("free-discard"), money_tail: num("money-tail"), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
-              skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()) };
+              skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
+              skip_min: num("skip-min") as i64 };
         simcore::FREE_DISCARD.store(e.free_discard, std::sync::atomic::Ordering::Relaxed);
         e
     })
