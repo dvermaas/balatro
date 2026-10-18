@@ -526,5 +526,16 @@
   "wins": 51,
   "baseline_wins": 51,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Free discards for discard jokers (Castle, Mail-In, Hit the Road, ...), bot + rollouts (Rust lab)",
+  "theme": "Play",
+  "baseline": "v35 Rust",
+  "games": 260,
+  "delta_ante": 0.008,
+  "se": 0.034,
+  "wins": 48,
+  "baseline_wins": 51,
+  "outcome": "dropped"
  }
 ]

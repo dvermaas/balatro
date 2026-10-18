@@ -283,7 +283,58 @@ pub(crate) fn recent(bot: &JevBot, gs_: &Value) -> Vec<Value> {
     if bot._recent_seed == *gs::get(gs_, "seed") { bot._recent.clone() } else { vec![] }
 }
 
+/// Lab (`JEVLAB_EXP=free-discard`): before a play, the spare cards a held joker pays to have discarded
+/// (simcore::free_discard, the rule the forecast's rollouts follow too). Empty when off or nothing to gain.
+fn discard_goals(gs_: &Value) -> simcore::DiscardGoals {
+    let js: Vec<&Value> = cards_of(gs_, "jokers").iter().filter(|c| !gs::truthy(gs::get(gs::get(c, "state"), "debuff"))).collect();
+    let effect = |label: &str| js.iter().find(|c| gs::get(c, "label").as_str() == Some(label))
+        .map(|c| gs::s(gs::get(gs::get(c, "value"), "effect")).to_string()).unwrap_or_default();
+    let castle = regex::Regex::new(r"per discarded (Club|Diamond|Heart|Spade) card").unwrap().captures(&effect("Castle"))
+        .map(|m| match &m[1] { "Heart" => 1, "Diamond" => 2, "Club" => 3, _ => 4 });
+    let mail = regex::Regex::new(r"for each discarded (Ace|King|Queen|Jack|10|[2-9])\b").unwrap().captures(&effect("Mail-In Rebate"))
+        .map(|m| match &m[1] { "Ace" => 14, "King" => 13, "Queen" => 12, "Jack" => 11, n => n.parse::<u8>().unwrap() });
+    simcore::DiscardGoals::from_names(js.iter().filter_map(|c| gs::get(c, "label").as_str()), castle, mail)
+}
+
+/// Lab (`JEVLAB_EXP=free-discard`): a regular discard as the round's first, cut to one card for Trading Card.
+pub(crate) fn adjust_discard(gs_: &Value, hand: &[Value], cards: Vec<usize>) -> Vec<usize> {
+    if !crate::experiment::get().free_discard {
+        return cards;
+    }
+    let infos: Vec<jev_kernel::Card> = hand.iter().map(|c| crate::picker::kernel_card(&card_info(c))).collect();
+    let first = gs::num(gs::get(gs::get(gs_, "round"), "discards_used")) == 0.0;
+    simcore::first_discard_adjust(cards, &infos, &discard_goals(gs_), first)
+}
+
+fn free_discard(gs_: &Value, hand: &[Value], cards: &[usize]) -> Vec<usize> {
+    if !crate::experiment::get().free_discard {
+        return vec![];
+    }
+    let rnd = gs::get(gs_, "round");
+    if gs::num(gs::get(rnd, "discards_left")) <= 0.0 {
+        return vec![];
+    }
+    let goals = discard_goals(gs_);
+    let infos: Vec<jev_kernel::Card> = hand.iter().map(|c| crate::picker::kernel_card(&card_info(c))).collect();
+    let played: Vec<jev_kernel::Card> = cards.iter().map(|&p| infos[p]).collect();
+    let main = if played.is_empty() { jev_kernel::HAND_NAMES.len() - 1 } else { jev_kernel::classify(&played).0 };
+    let first = gs::num(gs::get(rnd, "discards_used")) == 0.0;
+    let out = simcore::free_discard(&infos, cards, &[], &goals, first, main);
+    if std::env::var_os("FD_DEBUG").is_some() && goals.wants() {
+        eprintln!("FD {} first={first} dl={} keep={cards:?} hand={} goals={goals:?} -> {out:?}", gs::get(gs_, "seed"), gs::get(rnd, "discards_left"), hand.len());
+    }
+    out
+}
+
 pub(crate) fn play(bot: &mut JevBot, gs_: &Value, hand: &[Value], cards: &[usize]) -> Result<(), RpcError> {
+    let toss = free_discard(gs_, hand, cards);
+    if !toss.is_empty() {
+        let names: Vec<String> = toss.iter().map(|&p| hands::describe(&hand[p])).collect();
+        bot.emit("auto", json!({"question": "move", "choice": "free_discard", "desc": format!("discard {}", names.join(", ")),
+            "reason": "lab free-discard: a held joker pays for these; the planned play keeps its cards"}));
+        bot.act("discard", Some(&json!({"cards": toss})))?;
+        return Ok(());
+    }
     remember(bot, gs_, hand, cards);
     bot.act("play", Some(&json!({"cards": cards})))?;
     Ok(())

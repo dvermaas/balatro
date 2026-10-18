@@ -245,6 +245,7 @@ fn play(seed: &str) -> Result<Value, String> {
 }
 
 fn main() {
+    let _ = jevbot::experiment::get(); // JEVLAB_EXP flags, including simcore's FREE_DISCARD for the rollouts
     let a: Vec<String> = std::env::args().skip(1).collect();
     let opt = |k: &str| a.iter().position(|x| x == k).and_then(|i| a.get(i + 1)).cloned();
     let mut seeds: Vec<String> = match (opt("--seeds"), opt("--set")) {
@@ -281,5 +282,8 @@ fn main() {
         }
     });
     jevbot::prof::dump();
+    if jevbot::experiment::get().free_discard {
+        eprintln!("rollout free discards: {}", simcore::FREE_DISCARDS_TAKEN.load(Ordering::SeqCst));
+    }
     println!("{} games, {jobs} threads, {:.1}s wall, {:.2}s/game wall -> {}", seeds.len(), t0.elapsed().as_secs_f64(), t0.elapsed().as_secs_f64() / seeds.len() as f64, out.display());
 }

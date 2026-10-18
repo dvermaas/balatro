@@ -88,7 +88,7 @@ macro_rules! py_note {
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
     "v35 (Rust only): no behaviour change. Lab-only experiment flags, off unless JEVLAB_EXP is set ",
-    "(experiment.rs: Pair commitment; value_model.rs: a learned P(win) as the forecast rollouts' tail ",
+    "(experiment.rs: Pair commitment, free discards for discard jokers in the bot and in simcore's rollouts; value_model.rs: a learned P(win) as the forecast rollouts' tail ",
     "value), and jevlab JEVLAB_SNAPS shop snapshots. Based on: ",
     "v34: speed only, same decisions as v33. Planet values score their deals once for every planet ",
     "(a level changes only its own hand's plays); best_score/best_play skip plays with a kicker when a ",

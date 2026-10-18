@@ -53,7 +53,7 @@ fn candidates(infos: &[Info]) -> Vec<Vec<usize>> {
     simcore::candidates(&cards)
 }
 /// hands.card_info as the kernel's card: rank 0 for none or Stone, suit 1-4 (H, D, C, S).
-fn kernel_card(i: &Info) -> jev_kernel::Card {
+pub(crate) fn kernel_card(i: &Info) -> jev_kernel::Card {
     let stone = i.enh_is("STONE");
     jev_kernel::Card {
         rank: if stone { 0 } else { i.rank_truthy().map_or(0, |r| rank_index(r) as u8 + 2) },

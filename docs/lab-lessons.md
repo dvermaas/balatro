@@ -86,6 +86,15 @@ measured the wrong thing or was never asked:
   Castle -0.45). Offers per game: Mail-In 1.0, Faceless 1.0, Castle 0.3, Trading Card 0.3, Hit the Road
   0.2, Burnt Joker 0.2; bought: Castle 8 of 58, Mail-In 4 of 203, Burnt Joker 0 of 35. The forecast is
   right for how the bot plays; the play leaves free discards unused.
+- **Free discards** (`JEVLAB_EXP=free-discard`; `simcore::free_discard`, used by the bot's `decisions::play` and
+  the rollouts' `Policy::decide`): before a play, spare cards a held joker pays for are discarded (Castle's
+  suit, Mail-In Rebate's rank, Jacks, 3+ face cards, Burnt Joker's hand, Yorick), and Trading Card cuts the
+  round's first discard to one card; skipped with Green Joker, Ramen, Delayed Gratification or Banner. The
+  rollouts take them (46,537 in one game), yet the forecast still rates these jokers below skip (16 seeds:
+  -0.84 -> -0.96 blinds) and buys about as many. Pooled 260 seeds: +0.01 +- 0.03 ante, 48 vs 51 wins; 25 games
+  changed, 13 better, 12 worse. Two reasons: most of these jokers pay money, which the frozen-build forecast
+  values at zero (rollouts never shop), and the scoring ones (Castle, Hit the Road) grow too slowly inside a
+  3-boss horizon to beat the joker a swap would sell. Rows: `samples/cloud-lab/free-discard.jsonl.gz`.
 
 ## What the stronger bot does differently
 

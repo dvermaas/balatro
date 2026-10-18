@@ -501,6 +501,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         do_play(bot, gs_, hand, &idx_list(&cards))?;
     } else {
         let cards = gs::get(disc_opts.iter().find(|(k, _)| *k == best).unwrap().1, "cards").clone();
+        let cards = json!(super::adjust_discard(gs_, hand, idx_list(&cards)));
         let params = json!({"cards": cards});
         bot.record_decision("move", gs_, &json!(best), &json!(["discard", params]), &options, &probs, &conf, &meta, "prob");
         bot.act("discard", Some(&params))?;
