@@ -570,5 +570,16 @@
   "wins": 55,
   "baseline_wins": 53,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "v39: The Serpent, one-card discards grow the hand (Serpent deaths 62 -> 15 of 2,000)",
+  "theme": "Bosses",
+  "baseline": "v38",
+  "games": 2000,
+  "delta_ante": 0.033,
+  "se": 0.011,
+  "wins": 345,
+  "baseline_wins": 337,
+  "outcome": "shipped"
  }
 ]
