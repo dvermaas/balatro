@@ -377,10 +377,10 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         do_play(bot, gs_, hand, &cards)?;
         return Ok(());
     }
-    if crate::experiment::get().mouth_plan && boss == "The Mouth" && plays.len() > 1
+    if boss == "The Mouth" && plays.len() > 1
         && !base_levels.values().any(|h| gs::truthy(gs::get(h, "played_this_round")))
     {
-        // lab: the first play locks The Mouth's hand type for the round. Value each type in our plays as its
+        // v41: the first play locks The Mouth's hand type for the round. Value each type in our plays as its
         // best play now + (hands left - 1) x its expected best score in a fresh deal from the deck (sampled
         // from the draw pile as a multiset, canonically sorted: order-free), and lead with the best type.
         let hl = gs::num(gs::get(&info, "hands_left"));

@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v41 (Rust only): The Mouth's first play. It locks the round's hand type, so the bot values each type in ",
+    "its plays as its best play now + (hands left - 1) x its expected best score in a fresh deal from the deck ",
+    "(16 order-free samples) and leads with the best. 2,000 seeds vs v40: +0.019 +- 0.007 ante, 356 vs 346 ",
+    "wins; Mouth deaths 87 -> 70. Based on: ",
     "v40 (Rust only): The Mouth. It scores only the round's first hand type, but every type played (even one ",
     "that scored 0) counts as played this round, and the bot allowed any played type: after one off-type play it ",
     "kept playing that type for 0 and called it a sure clear. The bot now remembers the first type; the ",
