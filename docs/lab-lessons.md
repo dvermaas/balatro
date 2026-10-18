@@ -56,6 +56,16 @@ measured the wrong thing or was never asked:
   +0.05 per doubling, so a 4,000-game run would likely reach ~0.70-0.75. Rich features (every hand's level
   and play count, deck, enhancements, hand size) add ~0.02-0.03 at antes 4, 6 and 7. Open: whether such a
   model separates shop options from the same position, which is what a decision needs.
+- **5,000 games** (the 1,000 above + 4,000 more, `samples/cloud-lab/v4k-snaps.jsonl.gz`; 16.7% wins).
+  Held-out AUC at ~480 / 960 / 1,900 / 3,800 training games, simple features: ante 3 0.51 / 0.54 / 0.56 /
+  0.59, ante 5 0.57 / 0.61 / 0.65 / 0.68, ante 7 0.58 / 0.64 / 0.69 / 0.70. The gain per doubling falls to
+  +0.02-0.03: the ceiling for these features is near 0.70-0.72 at antes 5-7 and ~0.6 at antes 3-4 (early
+  outcomes are mostly the luck still to come). A weighted sum (logistic regression, rich features) is as
+  good as boosted trees: 0.62 / 0.65 / 0.69 / 0.71 / 0.71 at antes 3-7, so it is cheap to put in the bot.
+  What it values at antes 4-6 (per SD, correlation not cause): hand size +0.26, editions +0.20, money
+  +0.20, Pair level +0.15, Stuntman, Spare Trousers, Burglar, Photograph, Runner, Baseball Card, Castle;
+  against: hands already played at the ante (a struggling build), Turtle Bean, Diet Cola, Shoot the Moon,
+  Sixth Sense, Cloud 9.
 
 ## What the stronger bot does differently
 

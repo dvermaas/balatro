@@ -1,10 +1,10 @@
-"""Learning curve of a P(win) model on our own games (jevlab JEVLAB_SNAPS rows): python vcurve.py results.jsonl"""
+"""Learning curve of a P(win) model on our own games (jevlab JEVLAB_SNAPS rows): python vcurve.py results.jsonl [more.jsonl ...]"""
 import json, sys, random, collections, numpy as np
 from sklearn.model_selection import GroupKFold
 from sklearn.ensemble import HistGradientBoostingClassifier
 from sklearn.metrics import roc_auc_score
 HANDS = ["High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush"]
-games = [r for r in map(json.loads, open(sys.argv[1])) if "snaps" in r]
+games = [r for f in sys.argv[1:] for r in map(json.loads, open(f)) if "snaps" in r]
 rows = []
 for gm in games:
     first = {}
@@ -31,7 +31,7 @@ for name, cols in (("simple", SIMPLE), ("rich", RICH)):
         rs = [r for r in rows if r["ante"] == a]
         Xa, y, g = X(rs, cols), np.array([r["won"] for r in rs]), np.array([r["seed"] for r in rs])
         out = []
-        for frac in (0.125, 0.25, 0.5, 1.0):
+        for frac in (0.125, 0.25, 0.5, 1.0):  # of the 80% training folds
             aucs = []
             for rep in range(1 if frac == 1.0 else 3):
                 for tr, te in GroupKFold(5).split(Xa, y, g):
