@@ -649,8 +649,11 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
                 let v = super::voucher(&bot.dec, crate::gs::s(&g(c, "label")));
                 let mut o = obj(c, cost, "voucher (permanent upgrade for the rest of the run)", None, &format!("buy_voucher_{i}"), vec![]);
                 if let Some((worth, strong)) = v {
+                    let e = crate::experiment::get();
+                    let label_v = g(c, "label"); let label = crate::gs::s(&label_v);
+                    let tbl = super::VOUCHERS.iter().any(|v| v.0 == label && v.2);
                     o["worth"] = json!(worth);
-                    o["_strong"] = json!(strong);
+                    o["_strong"] = json!(strong || (e.strong_vouchers && tbl) || e.buy_vouchers.iter().any(|b| b == label));
                 }
                 items.push(Item { key: format!("buy_voucher_{i}"), desc: crate::jev_bot::item_desc(c, None), obj: o,
                                   action: ("buy".into(), Some(json!({"voucher": i}))), cost });
@@ -868,7 +871,8 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         && crate::gs::s(&g(&find(best).unwrap().obj, "kind")).contains("joker");
     // A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.
     let strong_v: Vec<&Item> = items.iter()
-        .filter(|it| flag(&it.obj, "_strong") && mode != "invest" && money - it.cost >= super::interest_buffer(ante))
+        .filter(|it| flag(&it.obj, "_strong") && mode != "invest"
+            && money - it.cost >= crate::experiment::get().voucher_floor.unwrap_or_else(|| super::interest_buffer(ante)))
         .collect(); // v11: from surplus only, never during the joker phase
     let is_joker_buy = |it: &Item| (it.key.starts_with("buy_card") || it.key.starts_with("replace")) && crate::gs::s(&g(&it.obj, "kind")).contains("joker");
     let mut sure: Vec<&Item> = items.iter()
