@@ -81,7 +81,7 @@ pub fn options(pub_: &Value) -> Vec<Value> {
     }
     for (i, c) in cards(pub_, "vouchers").iter().enumerate() {
         let cost = get_or(gs::d(gs::get(c, "cost")), "buy", json!(0));
-        if gs::num(&cost) <= money_f {
+        if gs::num(&cost) <= money_f && !(crate::experiment::get().no_glyph && matches!(gs::s(gs::get(c, "label")), "Hieroglyph" | "Petroglyph")) {
             out.push(json!({"key": format!("buy_voucher_{i}"),
                 "desc": format!("${} {}", pystr(&cost), pystr(gs::get(c, "label"))),
                 "actions": [["voucher", i]], "supported": true, "cost": cost, "set": "VOUCHER"}));

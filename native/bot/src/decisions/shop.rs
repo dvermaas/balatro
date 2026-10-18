@@ -556,7 +556,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         Some(w) if w >= super::BANK_ABOVE => "bank",
         _ => "normal",
     };
-    let buffer = if mode == "invest" { super::INVEST_FLOOR } else { super::INTEREST_BUFFER };
+    let buffer = if mode == "invest" { super::INVEST_FLOOR } else { super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) };
     if let Some(r) = &ready {
         let blinds: Vec<String> = g(r, "blinds").as_array().cloned().unwrap_or_default().iter()
             .map(|x| format!("{} ({} chips): {}", rep(&g(x, "blind")), rep(&g(x, "target")), rep(&g(x, "ratio")))).collect();
@@ -645,7 +645,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
         for (i, c) in voucher_cards.iter().enumerate() {
             let cost = crate::gs::int(&g(&g(c, "cost"), "buy"));
-            if cost <= money {
+            if cost <= money && !(crate::experiment::get().no_glyph && matches!(crate::gs::s(&g(c, "label")), "Hieroglyph" | "Petroglyph")) {
                 let v = super::voucher(&bot.dec, crate::gs::s(&g(c, "label")));
                 let mut o = obj(c, cost, "voucher (permanent upgrade for the rest of the run)", None, &format!("buy_voucher_{i}"), vec![]);
                 if let Some((worth, strong)) = v {
@@ -729,11 +729,11 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     // v11: back to v9's rule. v10's early rerolls down to $5 cost ~$7.50 a run in ante 1-2, led to a joker
     // buy only 1 time in 5, and left ante 2-3 balances at $7-12 instead of $16-23 (lost interest).
     // v13: when readiness says we're behind, rerolls hunt for power down to a low floor.
-    let mut can_reroll = money - reroll >= (if mode == "invest" { super::INVEST_REROLL_FLOOR } else { super::INTEREST_BUFFER })
+    let mut can_reroll = money - reroll >= (if mode == "invest" { super::INVEST_REROLL_FLOOR } else { super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) })
         && bot._rerolls < super::MAX_REROLLS;
     if fc.is_some() {
         // v19: reroll when nothing here beats buying nothing by 1 SE, from money above the interest floor
-        can_reroll = money - reroll >= super::INTEREST_BUFFER && bot._rerolls < super::MAX_REROLLS
+        can_reroll = money - reroll >= super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) && bot._rerolls < super::MAX_REROLLS
             && !items.iter().any(|it| !flag(&it.obj, "_fc_item")
                 && fnum(&it.obj, "_fc_delta", 0.0) > (super::REROLL_SE as f64) * fnum(&it.obj, "_fc_se", 0.0).max(1e-9));
     }
@@ -868,7 +868,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         && crate::gs::s(&g(&find(best).unwrap().obj, "kind")).contains("joker");
     // A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.
     let strong_v: Vec<&Item> = items.iter()
-        .filter(|it| flag(&it.obj, "_strong") && mode != "invest" && money - it.cost >= super::INTEREST_BUFFER)
+        .filter(|it| flag(&it.obj, "_strong") && mode != "invest" && money - it.cost >= super::interest_buffer(ante))
         .collect(); // v11: from surplus only, never during the joker phase
     let is_joker_buy = |it: &Item| (it.key.starts_with("buy_card") || it.key.starts_with("replace")) && crate::gs::s(&g(&it.obj, "kind")).contains("joker");
     let mut sure: Vec<&Item> = items.iter()

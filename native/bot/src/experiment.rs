@@ -12,6 +12,8 @@
 //!                 Yorick); the forecast's rollouts do the same (simcore::free_discard)
 //!   eye-plan      under The Eye the play's hand type is chosen by its value over the round (now + hands
 //!                 left x expected best of a fresh deal without that type)
+//!   late-floor=N  the shop's interest floor (loose buys, rerolls, strong vouchers) drops $N per ante after 4
+//!   no-glyph      never buy Hieroglyph or Petroglyph (-1 ante looks good to a 3-boss horizon of blinds cleared)
 //!   money-tail=W  forecast rollouts score blinds cleared + W * BLINDS_PER_DOLLAR[ante] * money at their end
 //!                 (rollouts never shop, so money and prices were worth nothing to the forecast)
 //!   value-tail=W  forecast rollouts score blinds cleared + W * P(win) * blinds left at their end
@@ -35,6 +37,8 @@ pub struct Exp {
     pub free_discard: bool,
     pub money_tail: f64,
     pub eye_plan: bool,
+    pub late_floor: i64,
+    pub no_glyph: bool,
 }
 
 /// Future blinds cleared per $1 held at the first shop of each ante (index = ante; 5,000 lab games, ridge
@@ -48,7 +52,8 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: num("value-tail"), free_discard: has("free-discard"), money_tail: num("money-tail"), eye_plan: has("eye-plan") };
+              value_tail: num("value-tail"), free_discard: has("free-discard"), money_tail: num("money-tail"), eye_plan: has("eye-plan"),
+              late_floor: num("late-floor") as i64, no_glyph: has("no-glyph") };
         simcore::FREE_DISCARD.store(e.free_discard, std::sync::atomic::Ordering::Relaxed);
         e
     })

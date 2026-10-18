@@ -36,6 +36,11 @@ pub const RECENT_PLAYS: usize = 10;
 pub const NEAR_PACE: f64 = 0.8;
 pub const PACK_SCORE: f64 = 1.5;
 pub const INTEREST_BUFFER: i64 = 25;
+/// The money kept for interest at this ante: INTEREST_BUFFER (lab `late-floor=N`: $N less per ante after 4).
+pub fn interest_buffer(ante: i64) -> i64 {
+    let n = crate::experiment::get().late_floor;
+    if n > 0 && ante > 4 { (INTEREST_BUFFER - n * (ante - 4)).max(0) } else { INTEREST_BUFFER }
+}
 pub const MAX_REROLLS: i64 = 2;
 pub const INVEST_BELOW: f64 = 0.6;
 pub const BANK_ABOVE: f64 = 1.2;
