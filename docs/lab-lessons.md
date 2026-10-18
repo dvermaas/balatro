@@ -95,6 +95,28 @@ measured the wrong thing or was never asked:
   changed, 13 better, 12 worse. Two reasons: most of these jokers pay money, which the frozen-build forecast
   values at zero (rollouts never shop), and the scoring ones (Castle, Hit the Road) grow too slowly inside a
   3-boss horizon to beat the joker a swap would sell. Rows: `samples/cloud-lab/free-discard.jsonl.gz`.
+- **Money in the forecast** (`JEVLAB_EXP=money-tail=W`): rollouts never shop, so money and prices counted for
+  nothing; each rollout alive at its end adds W x blinds per dollar x money (blinds per $ from 5,000 games with
+  build controls: 0.10 at ante 2, 0.07 at 3, 0.04 at 4-5, 0.03 at 6, 0.02 at 7, 0.01 at 8). W = 0.5 on 260
+  seeds: -0.07 +- 0.06 ante, 46 vs 51 wins (91 games changed). Dropped; W = 1 and 2 were stopped unfinished.
+
+## Bugs found by reading what the bot did (v36-v39, Rust only)
+
+- **Audit of predictions** (`samples/cloud-lab/audit.py`, 6,923 plays in 200 traced games): 1.1% of plays
+  scored under 2/3 of their estimate, but 27% under Cerulean Bell. Cloud 9 (34%) was a parse bug; Seltzer
+  plays scored over 1.5x their estimate 69% of the time (another parse bug); Misprint, Hit the Road, Madness,
+  Pareidolia and Mime are underestimated (not modelled), which costs play choice, not the forecast.
+- **v36, Cerulean Bell:** the game adds the forced card to every play (cut to 5 cards), and the bot did not know
+  which card it was: a planned Straight scored 11,664 against an estimate of 393,120. The view marks the card
+  and plays keep it. Of 108 seeds from the 5,000 games that died to Cerulean Bell, 47 now win (it killed ~2%
+  of all runs). 260 seeds: no game changes before ante 8, wins 51 -> 53.
+- **v37, joker text:** "(Currently $4)" (Cloud 9) was read as +4 Mult; Seltzer's "for the next 10 hands" as
+  "retrigger 10s". 260 seeds: -0.004 +- 0.032 ante, 55 vs 53 wins.
+- **v38, Verdant Leaf bait:** its ante-8 deaths are near misses (95-98% of the target) after selling a real
+  joker; before it the bot now buys the cheapest sellable joker when a slot is free and sells that. Slots are
+  almost always full by ante 8 (4 of 128 Leaf-death seeds), so it rarely applies (3 of 128 now win).
+- **Boss death rates when faced** (200 traced games): Violet Vessel 83%, Crimson Heart 47%, Verdant Leaf 39%,
+  The Serpent 25%, Cerulean Bell 20% (before v36), The Plant 19%, The Eye 17%; most bosses 2-8%.
 
 ## What the stronger bot does differently
 

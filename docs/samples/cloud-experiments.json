@@ -537,5 +537,38 @@
   "wins": 48,
   "baseline_wins": 51,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Money in the forecast: + 0.5 x blinds-per-dollar x money at each rollout's end (Rust lab)",
+  "theme": "Forecast",
+  "baseline": "v35 Rust",
+  "games": 260,
+  "delta_ante": -0.073,
+  "se": 0.055,
+  "wins": 46,
+  "baseline_wins": 51,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "v36: Cerulean Bell plays keep the forced card (108 seeds that died to it: 47 now win)",
+  "theme": "Bosses",
+  "baseline": "v35 Rust",
+  "games": 260,
+  "delta_ante": 0.0,
+  "se": 0.0,
+  "wins": 53,
+  "baseline_wins": 51,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v37: joker text fixes (Cloud 9 is money, Seltzer retriggers every card)",
+  "theme": "Scoring",
+  "baseline": "v36",
+  "games": 260,
+  "delta_ante": -0.004,
+  "se": 0.032,
+  "wins": 55,
+  "baseline_wins": 53,
+  "outcome": "shipped"
  }
 ]
