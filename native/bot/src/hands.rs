@@ -364,16 +364,21 @@ pub fn _boss_allows(combo: &[usize], name: &str, levels: &Levels, boss: &str) ->
 pub struct BossAllow {
     pub levels: Levels,
     pub boss: String,
+    /// v36: Cerulean Bell's forced card (hand position): every play must contain it
+    pub forced: Option<usize>,
 }
 
 impl BossAllow {
     pub fn new(levels: &Levels, boss: &str) -> BossAllow {
-        BossAllow { levels: levels.clone(), boss: boss.to_string() }
+        BossAllow { levels: levels.clone(), boss: boss.to_string(), forced: None }
     }
     pub fn call(&self, combo: &[usize], name: &str) -> bool {
-        _boss_allows(combo, name, &self.levels, &self.boss)
+        self.forced.map_or(true, |f| combo.contains(&f)) && _boss_allows(combo, name, &self.levels, &self.boss)
     }
     pub fn native_spec(&self) -> Option<(u8, u32, bool)> {
+        if self.forced.is_some() {
+            return None; // the kernel has no forced-card rule: the play loop checks `call`
+        }
         native::boss_spec(&self.levels, &self.boss)
     }
 }

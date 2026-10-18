@@ -310,7 +310,8 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let levels = _boss_levels(base_levels, &boss);
     let infos: Vec<Info> = hand.iter().map(card_info).collect();
     let scorer = Scorer::new(levels.clone(), js.clone(), Rnd::from_value(rnd));
-    let allowed = BossAllow::new(base_levels, &boss);
+    let mut allowed = BossAllow::new(base_levels, &boss);
+    allowed.forced = hand.iter().position(|c| gs::truthy(gs::get(gs::get(c, "state"), "forced")));
     let mut plays: Vec<Value> = crate::prof::time("sh.play_candidates", || play_candidates(hand, &levels, 8, ScorerArg::Jokers(&scorer), Allowed::Boss(&allowed)))
         .iter().map(|p| p.to_json()).collect();
     if plays.is_empty() {

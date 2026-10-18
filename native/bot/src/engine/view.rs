@@ -136,7 +136,14 @@ fn playing_card_t(g: &GameState, c: &CardRef, area: &str, live: bool, text: bool
         m.insert("enhancement".into(), json!(enh));
     }
     let key = format!("{}_{}", c.suit.as_str(), c.rank.short());
-    card_json(c.uid, &key, set, &label, value, m, c.debuffed && live, c.face_down || area == "cards", 0, 0)
+    let mut v = card_json(c.uid, &key, set, &label, value, m, c.debuffed && live, c.face_down || area == "cards", 0, 0);
+    // v36: Cerulean Bell's card is shown selected in the game; mark it so the bot keeps it in its plays
+    if area == "hand" && g.forced_card.as_ref().is_some_and(|f| f.borrow().uid == c.uid) {
+        let mut st = v["state"].as_object().cloned().unwrap_or_default();
+        st.insert("forced".into(), json!(true));
+        v["state"] = Value::Object(st);
+    }
+    v
 }
 
 fn effect_value(text: String) -> Map<String, Value> {

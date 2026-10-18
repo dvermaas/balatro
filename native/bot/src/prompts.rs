@@ -87,6 +87,11 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v36 (Rust only): Cerulean Bell. The game always adds the boss's forced card to a play (cutting it to 5 ",
+    "cards); the bot did not know which card it was, so a planned Straight could lose a card and score 3% of ",
+    "its estimate (27% of Cerulean Bell plays scored under 2/3 of the estimate; 103 of 5,000 lab games died to ",
+    "it at ante 8). The view marks the card (state.forced) and every play the bot considers contains it. ",
+    "Based on: ",
     "v35 (Rust only): no behaviour change. Lab-only experiment flags, off unless JEVLAB_EXP is set ",
     "(experiment.rs: Pair commitment, free discards for discard jokers in the bot and in simcore's rollouts; value_model.rs: a learned P(win) as the forecast rollouts' tail ",
     "value), and jevlab JEVLAB_SNAPS shop snapshots. Based on: ",

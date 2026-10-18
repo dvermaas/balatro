@@ -22,12 +22,25 @@ pub fn policy_of(joker_dicts: &[Value]) -> Policy {
 }
 
 /// Lab (`JEVLAB_EXP=value-tail=W`): the learned tail value of the rollout's end, on its last row.
+/// `JEVLAB_EXP=money-tail=W`: + W * blinds per dollar at the end ante * money, for a rollout still alive.
+/// The weighted sum goes on the last row as "value" (forecast_stats::m_blinds adds it).
 pub fn tail_value(rows: &mut [Value], g: &rumbot_sim::game::GameState) {
-    if crate::experiment::get().value_tail > 0.0 {
-        if let Some(last) = rows.last_mut() {
-            let cleared = last["cleared"] == json!(true);
-            last["value"] = json!(crate::value_model::tail(g, cleared));
+    let e = crate::experiment::get();
+    if e.value_tail <= 0.0 && e.money_tail <= 0.0 {
+        return;
+    }
+    if let Some(last) = rows.last_mut() {
+        let cleared = last["cleared"] == json!(true);
+        let mut v = 0.0;
+        if e.value_tail > 0.0 {
+            v += e.value_tail * crate::value_model::tail(g, cleared);
         }
+        let alive = cleared && g.phase != rumbot_sim::game::Phase::Won && g.phase != rumbot_sim::game::Phase::GameOver;
+        if e.money_tail > 0.0 && alive {
+            let a = (g.ante.clamp(0, 9)) as usize;
+            v += e.money_tail * crate::experiment::BLINDS_PER_DOLLAR[a] * (g.money.max(0) as f64);
+        }
+        last["value"] = json!(v);
     }
 }
 
