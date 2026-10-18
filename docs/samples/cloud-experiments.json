@@ -746,5 +746,38 @@
   "wins": 827,
   "baseline_wins": 819,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Vouchers: production's strong-voucher rule in the lab",
+  "theme": "Shop",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": 0.005,
+  "se": 0.009,
+  "wins": 427,
+  "baseline_wins": 431,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Vouchers: strong rule + Blank, $10 floor",
+  "theme": "Shop",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": -0.01,
+  "se": 0.014,
+  "wins": 436,
+  "baseline_wins": 431,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Vouchers: strong rule + Blank, Reroll Surplus, Seed Money, Telescope, Crystal Ball",
+  "theme": "Shop",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": -0.05,
+  "se": 0.018,
+  "wins": 436,
+  "baseline_wins": 431,
+  "outcome": "dropped"
  }
 ]

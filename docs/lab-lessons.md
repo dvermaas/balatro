@@ -173,6 +173,12 @@ measured the wrong thing or was never asked:
   no joker: both ante-1 blinds skipped means no shop before the boss.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
+- **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
+  0.74 vouchers a game: `DecisionCfg::lab` turns off production's strong-voucher rule and rollouts never shop, so
+  Overstock, Clearance Sale, Reroll Surplus and Blank (-> Antimatter) were worth 0 to it. Fresh 2,000 seeds vs v46
+  (431 wins): the strong rule 427 wins (+0.005 +- 0.009 ante, 1.06 vouchers a game); + Blank with a $10 floor 436
+  (-0.010 +- 0.014; Antimatter in 33 games); + Reroll Surplus, Seed Money, Telescope, Crystal Ball 436 (-0.050 +-
+  0.018, 2.0 a game). Buying them changes nothing measurable.
 - **Crimson Heart re-picks only after a play** (dropped idea): the debuffed joker moves on the draw after a hand
   (`press_play` preps the blind; rumbot `_play_hand`), never after a discard, so discarding to move it only
   wastes discards (lab flag tried on its 55 death seeds: 1 changed). The bot already scores without the
