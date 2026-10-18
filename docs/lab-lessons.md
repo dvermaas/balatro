@@ -153,6 +153,11 @@ measured the wrong thing or was never asked:
   for loose buys, rerolls and strong vouchers all game. Dropping the floor $5 per ante after 4 ($20/$15/$10/$5):
   2,000 seeds vs v43 +0.009 +- 0.013 ante, 340 vs 347 wins (523 games changed). Spending the reserve late buys
   nothing that matters; the sure (forecast > 2 SE) buys already ignore the floor.
+- **v44, Hieroglyph and Petroglyph never bought:** v43 bought Hieroglyph (-1 ante, -1 hand every round) in 605 of
+  2,000 games. The forecast applies it as ante - 1 and counts blinds cleared over 3 bosses, where easier blinds
+  look like a gain; a win needs that ante again with a hand fewer to the end. 2,000 seeds vs v43: 367 vs 347
+  wins (z = 1.77), +0.023 +- 0.018 ante; the 605 Hieroglyph games won 135 instead of 115. The same kind of bias
+  hits any item whose cost falls after the horizon.
 - **Crimson Heart re-picks only after a play** (dropped idea): the debuffed joker moves on the draw after a hand
   (`press_play` preps the blind; rumbot `_play_hand`), never after a discard, so discarding to move it only
   wastes discards (lab flag tried on its 55 death seeds: 1 changed). The bot already scores without the

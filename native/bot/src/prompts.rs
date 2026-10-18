@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v44 (Rust only): Hieroglyph and Petroglyph are never bought. -1 ante makes the forecast's 3-boss horizon of ",
+    "blinds cleared easier, but a win needs that ante again with a hand (a discard) fewer every round. 2,000 ",
+    "seeds vs v43: 367 vs 347 wins (z = 1.77), +0.023 +- 0.018 ante; the 605 games that bought Hieroglyph won ",
+    "135 instead of 115. Based on: ",
     "v43 (Rust only): Raised Fist. The scorer took the lowest held card's value with Stone cards as 0 (so any ",
     "held Stone zeroed it) and ignored Mime and the card's Red Seal; it now mirrors the game: the rightmost ",
     "lowest-ranked non-Stone card, nothing when it is debuffed, repeated per held retrigger and Red Seal. ",

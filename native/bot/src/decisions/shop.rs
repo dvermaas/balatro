@@ -645,7 +645,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
         for (i, c) in voucher_cards.iter().enumerate() {
             let cost = crate::gs::int(&g(&g(c, "cost"), "buy"));
-            if cost <= money && !(crate::experiment::get().no_glyph && matches!(crate::gs::s(&g(c, "label")), "Hieroglyph" | "Petroglyph")) {
+            if cost <= money && !super::NEVER_VOUCHERS.contains(&crate::gs::s(&g(c, "label"))) {
                 let v = super::voucher(&bot.dec, crate::gs::s(&g(c, "label")));
                 let mut o = obj(c, cost, "voucher (permanent upgrade for the rest of the run)", None, &format!("buy_voucher_{i}"), vec![]);
                 if let Some((worth, strong)) = v {

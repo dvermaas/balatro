@@ -433,5 +433,20 @@
   "died_ante_1_4": 171,
   "died_ante_5_7": 1127,
   "died_ante_8": 355
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v44",
+  "version_id": "rust",
+  "change": "Hieroglyph and Petroglyph never bought",
+  "games": 2000,
+  "mean_ante": 6.559,
+  "se": 0.036,
+  "wins": 367,
+  "win_rate": 0.183,
+  "mean_round": 19.38,
+  "died_ante_1_4": 180,
+  "died_ante_5_7": 1082,
+  "died_ante_8": 371
  }
 ]

@@ -36,6 +36,9 @@ pub const RECENT_PLAYS: usize = 10;
 pub const NEAR_PACE: f64 = 0.8;
 pub const PACK_SCORE: f64 = 1.5;
 pub const INTEREST_BUFFER: i64 = 25;
+/// v44: never bought. -1 ante makes the forecast's horizon of blinds cleared easier, but a win needs that ante
+/// again with a hand (Petroglyph: a discard) fewer every round.
+pub const NEVER_VOUCHERS: &[&str] = &["Hieroglyph", "Petroglyph"];
 /// The money kept for interest at this ante: INTEREST_BUFFER (lab `late-floor=N`: $N less per ante after 4).
 pub fn interest_buffer(ante: i64) -> i64 {
     let n = crate::experiment::get().late_floor;

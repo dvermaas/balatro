@@ -647,5 +647,16 @@
   "wins": 340,
   "baseline_wins": 347,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "v44: never buy Hieroglyph or Petroglyph (-1 ante fools the 3-boss forecast)",
+  "theme": "Shop",
+  "baseline": "v43",
+  "games": 2000,
+  "delta_ante": 0.023,
+  "se": 0.018,
+  "wins": 367,
+  "baseline_wins": 347,
+  "outcome": "shipped"
  }
 ]
