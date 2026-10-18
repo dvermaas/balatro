@@ -823,5 +823,49 @@
   "wins": 422,
   "baseline_wins": 431,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Polychrome Tags: confirmation on the first 2,000 seeds",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": 0.05,
+  "se": 0.018,
+  "wins": 433,
+  "baseline_wins": 396,
+  "outcome": "promising"
+ },
+ {
+  "experiment": "Also skip blinds for Holographic Tags (on top of v46)",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": 0.071,
+  "se": 0.023,
+  "wins": 466,
+  "baseline_wins": 431,
+  "outcome": "promising"
+ },
+ {
+  "experiment": "Also skip blinds for Foil Tags (on top of v46)",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": 0.052,
+  "se": 0.02,
+  "wins": 476,
+  "baseline_wins": 431,
+  "outcome": "promising"
+ },
+ {
+  "experiment": "Also skip blinds for Orbital Tags (on top of v46)",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": -0.019,
+  "se": 0.012,
+  "wins": 424,
+  "baseline_wins": 431,
+  "outcome": "dropped"
  }
 ]
