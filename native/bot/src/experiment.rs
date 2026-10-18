@@ -16,7 +16,6 @@
 //!   skip-tags=A+B replaces decisions::SKIP_TAGS, the tags a Small/Big blind is skipped for at ante <= SKIP_ANTE
 //!                 ("Investment", "Negative", ...; skip-tags=none skips nothing)
 //!   skip-min=A    skip-tags only from ante A
-//!   skip-need-joker  a Big blind is skipped only while we hold a joker (no boss without a shop and no joker)
 //!   money-tail=W  forecast rollouts score blinds cleared + W * BLINDS_PER_DOLLAR[ante] * money at their end
 //!                 (rollouts never shop, so money and prices were worth nothing to the forecast)
 //!   value-tail=W  forecast rollouts score blinds cleared + W * P(win) * blinds left at their end
@@ -43,7 +42,6 @@ pub struct Exp {
     pub late_floor: i64,
     pub skip_tags: Vec<String>,
     pub skip_min: i64,
-    pub skip_need_joker: bool,
 }
 
 /// Future blinds cleared per $1 held at the first shop of each ante (index = ante; 5,000 lab games, ridge
@@ -60,8 +58,7 @@ pub fn get() -> &'static Exp {
               value_tail: num("value-tail"), free_discard: has("free-discard"), money_tail: num("money-tail"), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
-              skip_min: num("skip-min") as i64,
-              skip_need_joker: has("skip-need-joker") };
+              skip_min: num("skip-min") as i64 };
         simcore::FREE_DISCARD.store(e.free_discard, std::sync::atomic::Ordering::Relaxed);
         e
     })

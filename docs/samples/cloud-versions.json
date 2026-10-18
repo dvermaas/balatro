@@ -508,5 +508,35 @@
   "died_ante_1_4": 240,
   "died_ante_5_7": 993,
   "died_ante_8": 339
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v46",
+  "version_id": "rust",
+  "change": "never skip a Big blind with no joker",
+  "games": 2000,
+  "mean_ante": 6.481,
+  "se": 0.039,
+  "wins": 396,
+  "win_rate": 0.198,
+  "mean_round": 18.45,
+  "died_ante_1_4": 234,
+  "died_ante_5_7": 1002,
+  "died_ante_8": 368
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v46",
+  "version_id": "rust",
+  "change": "never skip a Big blind with no joker",
+  "games": 2000,
+  "mean_ante": 6.469,
+  "se": 0.04,
+  "wins": 431,
+  "win_rate": 0.215,
+  "mean_round": 18.41,
+  "died_ante_1_4": 231,
+  "died_ante_5_7": 1001,
+  "died_ante_8": 337
  }
 ]

@@ -171,6 +171,8 @@ measured the wrong thing or was never asked:
   Confirmation on the first 2,000 seeds: 391 vs 367 wins (z = 1.58), mean ante -0.124 +- 0.034; pooled 4,000:
   819 vs 726 wins (only-one-side 281/188, z = 4.3). The cost is ante-1 boss deaths (25 -> 62), ~30 of them with
   no joker: both ante-1 blinds skipped means no shop before the boss.
+- **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
+  431 vs 428 and 396 vs 391 wins (101 games change).
 - **Crimson Heart re-picks only after a play** (dropped idea): the debuffed joker moves on the draw after a hand
   (`press_play` preps the blind; rumbot `_play_hand`), never after a discard, so discarding to move it only
   wastes discards (lab flag tried on its 55 death seeds: 1 changed). The bot already scores without the

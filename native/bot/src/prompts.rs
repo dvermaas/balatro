@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v46 (Rust only): a Big blind is never skipped while we hold no joker (with the Small blind skipped too, the ",
+    "boss came with no shop and no joker). 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante, ",
+    "431 vs 428 and 396 vs 391 wins. Based on: ",
     "v45 (Rust only): blind skips. At antes 1-3 the bot skips a Small or Big blind whose tag is Investment, ",
     "Negative or Rare (a code rule; the lab's top-option JEV never skipped). Fresh 2,000 seeds vs v44: 428 vs 359 ",
     "wins (z = 4.46); ante-1 deaths 36 -> 80, fewer at every later ante. Skipping for 11 tags: 369 vs 359, mean ante ",

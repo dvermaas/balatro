@@ -266,8 +266,9 @@ pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let ante = gs::int(gs::get(gs_, "ante_num"));
     let e = crate::experiment::get();
     let listed = if e.skip_tags.is_empty() { SKIP_TAGS.contains(&tag.as_str()) } else { e.skip_tags.contains(&tag) };
+    // v46: never skip a Big blind with no joker: after a skipped Small blind that would reach the boss without a shop
     let no_joker = cards_of(gs_, "jokers").is_empty() && gs::get(&b, "type").as_str() == Some("BIG");
-    if listed && ante <= SKIP_ANTE && ante >= e.skip_min && !(e.skip_need_joker && no_joker) {
+    if listed && ante <= SKIP_ANTE && ante >= e.skip_min && !no_joker {
         bot.emit("auto", json!({"question": "blind", "choice": "skip", "desc": format!("skip for {tag}"),
             "reason": "a skip for this tag early wins more runs than the blind's cash-out and shop (lab: 428 vs 359 wins)"}));
         bot.act("skip", None)?;

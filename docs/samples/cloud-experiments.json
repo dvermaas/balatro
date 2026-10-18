@@ -735,5 +735,16 @@
   "wins": 391,
   "baseline_wins": 367,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "v46: never skip a Big blind while holding no joker",
+  "theme": "Blinds",
+  "baseline": "v45",
+  "games": 4000,
+  "delta_ante": 0.035,
+  "se": 0.009,
+  "wins": 827,
+  "baseline_wins": 819,
+  "outcome": "shipped"
  }
 ]
