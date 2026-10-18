@@ -658,5 +658,16 @@
   "wins": 367,
   "baseline_wins": 347,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "v44 confirmation on fresh seeds: never buy Hieroglyph or Petroglyph",
+  "theme": "Shop",
+  "baseline": "v43",
+  "games": 2000,
+  "delta_ante": 0.071,
+  "se": 0.017,
+  "wins": 359,
+  "baseline_wins": 352,
+  "outcome": "shipped"
  }
 ]
