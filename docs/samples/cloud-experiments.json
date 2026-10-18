@@ -724,5 +724,16 @@
   "wins": 388,
   "baseline_wins": 359,
   "outcome": "variant"
+ },
+ {
+  "experiment": "v45 confirmation on the first 2,000 seeds: skip blinds for Investment/Negative/Rare",
+  "theme": "Blinds",
+  "baseline": "v44",
+  "games": 2000,
+  "delta_ante": -0.124,
+  "se": 0.034,
+  "wins": 391,
+  "baseline_wins": 367,
+  "outcome": "shipped"
  }
 ]
