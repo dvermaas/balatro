@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v39 (Rust only): The Serpent. It tops the hand up with exactly 3 cards after any play or discard, ",
+    "whatever room there is, so until a play clears the bot (and the forecast's rollouts) discards the lowest ",
+    "card outside the best play, one at a time: each discard grows the hand by 2. Based on: ",
     "v38 (Rust only): Verdant Leaf bait. In the shop before Verdant Leaf, with a joker slot free, the bot buys ",
     "the cheapest sellable joker and sells it when the boss starts, instead of selling its weakest real joker ",
     "(Leaf deaths at ante 8 were near misses: 95-98% of the target). Based on: ",

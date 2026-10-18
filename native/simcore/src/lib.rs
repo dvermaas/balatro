@@ -520,6 +520,13 @@ impl Policy {
             }
         }
         let (score, combo, name) = best.expect("a non-empty hand has a candidate");
+        // v39: The Serpent draws exactly 3 after any discard: while the best play does not clear, a
+        // one-card discard of the lowest spare card grows the hand by 2 (the bot does the same)
+        if bname == "The Serpent" && discards_left > 0 && score < need as f64 {
+            if let Some(p) = (0..infos.len()).filter(|p| !combo.contains(p) && !forced.contains(p)).min_by_key(|&p| (rv(&infos[p]), p)) {
+                return (true, vec![p]);
+            }
+        }
         let behind = score * (hands_left as f64) < need as f64;
         if discards_left > 0 && hands_left > 1 && behind {
             let toss = discard(&infos, &forced);

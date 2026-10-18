@@ -352,6 +352,21 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         do_play(bot, gs_, hand, &cards)?;
         return Ok(());
     }
+    // v39: The Serpent tops the hand up with exactly 3 cards after any play or discard, whatever room there
+    // is, so a one-card discard grows the hand by 2. Until a play clears, discard the lowest card outside
+    // the best play.
+    let dl = gs::num(gs::get(&info, "discards_left"));
+    if boss == "The Serpent" && dl > 0.0 {
+        let keep = idx_list(gs::get(&plays[0], "cards"));
+        let forced = allowed.forced;
+        let infos_k: Vec<jev_kernel::Card> = infos.iter().map(crate::picker::kernel_card).collect();
+        if let Some(p) = (0..hand.len()).filter(|p| !keep.contains(p) && Some(*p) != forced).min_by_key(|&p| (simcore::rv(&infos_k[p]), p)) {
+            bot.emit("auto", json!({"question": "move", "choice": "serpent_discard", "desc": format!("discard {}", describe(&hand[p])),
+                "reason": "The Serpent draws 3 after a discard: a one-card discard grows the hand by 2"}));
+            bot.act("discard", Some(&json!({"cards": [p]})))?;
+            return Ok(());
+        }
+    }
 
     let plays = crate::prof::time("sh.setup_plays", || setup_plays(gs_, hand, &plays, &levels, &scorer, &allowed, &info, margin));
     let hl = gs::mget(area(gs_, "hand"), "highlighted_limit");
