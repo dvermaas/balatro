@@ -418,5 +418,20 @@
   "died_ante_1_4": 173,
   "died_ante_5_7": 1134,
   "died_ante_8": 343
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v43",
+  "version_id": "rust",
+  "change": "Raised Fist mirrors the game (Stone skipped, Mime and Red Seal repeat it)",
+  "games": 2000,
+  "mean_ante": 6.536,
+  "se": 0.035,
+  "wins": 347,
+  "win_rate": 0.173,
+  "mean_round": 20.4,
+  "died_ante_1_4": 171,
+  "died_ante_5_7": 1127,
+  "died_ante_8": 355
  }
 ]

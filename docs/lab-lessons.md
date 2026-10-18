@@ -143,6 +143,11 @@ measured the wrong thing or was never asked:
   37% of the 632 plays holding it in 200 traced games scored over 1.5x their estimate (without Misprint only
   78 of 5,943 plays did). It now counts its average +11.5 Mult. 2,000 seeds vs v41: +0.015 +- 0.013 ante,
   350 vs 356 wins (neutral; 314 games changed). Kept as a correctness fix.
+- **v43, Raised Fist:** the scorer took the lowest held value with Stone cards as 0 (any held Stone zeroed it)
+  and ignored Mime and the card's Red Seal (the Mime plays the audit flagged: 19 of 40 over 1.5x). It now
+  mirrors rumbot's `lowest_held`. 2,000 seeds vs v42: +0.005 +- 0.008 ante, 347 vs 350 wins (neutral). v42+v43
+  vs v41: +0.019 +- 0.015 ante, 347 vs 356 wins. Estimate errors this size barely change outcomes: the best
+  play is usually the same, and most fixes only move the "clears" check.
 - **Crimson Heart re-picks only after a play** (dropped idea): the debuffed joker moves on the draw after a hand
   (`press_play` preps the blind; rumbot `_play_hand`), never after a discard, so discarding to move it only
   wastes discards (lab flag tried on its 55 death seeds: 1 changed). The bot already scores without the

@@ -625,5 +625,16 @@
   "wins": 350,
   "baseline_wins": 356,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "v43: Raised Fist mirrors the game (Stone skipped, Mime and Red Seal repeat it)",
+  "theme": "Scoring",
+  "baseline": "v42",
+  "games": 2000,
+  "delta_ante": 0.005,
+  "se": 0.008,
+  "wins": 347,
+  "baseline_wins": 350,
+  "outcome": "shipped"
  }
 ]
