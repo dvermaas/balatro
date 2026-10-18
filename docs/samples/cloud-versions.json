@@ -538,5 +538,35 @@
   "died_ante_1_4": 231,
   "died_ante_5_7": 1001,
   "died_ante_8": 337
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v47",
+  "version_id": "rust",
+  "change": "skip blinds for Polychrome, Holographic and Foil Tags too",
+  "games": 2000,
+  "mean_ante": 6.662,
+  "se": 0.04,
+  "wins": 461,
+  "win_rate": 0.231,
+  "mean_round": 18.24,
+  "died_ante_1_4": 197,
+  "died_ante_5_7": 896,
+  "died_ante_8": 446
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v47",
+  "version_id": "rust",
+  "change": "skip blinds for Polychrome, Holographic and Foil Tags too",
+  "games": 2000,
+  "mean_ante": 6.625,
+  "se": 0.041,
+  "wins": 515,
+  "win_rate": 0.258,
+  "mean_round": 18.1,
+  "died_ante_1_4": 209,
+  "died_ante_5_7": 903,
+  "died_ante_8": 373
  }
 ]

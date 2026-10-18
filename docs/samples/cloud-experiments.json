@@ -800,7 +800,7 @@
   "se": 0.021,
   "wins": 472,
   "baseline_wins": 431,
-  "outcome": "promising"
+  "outcome": "shipped v47"
  },
  {
   "experiment": "Also skip blinds for Double Tags (on top of v46)",
@@ -833,7 +833,7 @@
   "se": 0.018,
   "wins": 433,
   "baseline_wins": 396,
-  "outcome": "promising"
+  "outcome": "shipped v47"
  },
  {
   "experiment": "Also skip blinds for Holographic Tags (on top of v46)",
@@ -844,7 +844,7 @@
   "se": 0.023,
   "wins": 466,
   "baseline_wins": 431,
-  "outcome": "promising"
+  "outcome": "shipped v47"
  },
  {
   "experiment": "Also skip blinds for Foil Tags (on top of v46)",
@@ -855,7 +855,7 @@
   "se": 0.02,
   "wins": 476,
   "baseline_wins": 431,
-  "outcome": "promising"
+  "outcome": "shipped v47"
  },
  {
   "experiment": "Also skip blinds for Orbital Tags (on top of v46)",
@@ -867,5 +867,16 @@
   "wins": 424,
   "baseline_wins": 431,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "v47: skip blinds for Polychrome, Holographic and Foil Tags too",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 4000,
+  "delta_ante": 0.167,
+  "se": 0.024,
+  "wins": 976,
+  "baseline_wins": 827,
+  "outcome": "shipped"
  }
 ]

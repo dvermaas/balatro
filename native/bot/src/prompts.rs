@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v47 (Rust only): the blind skips also take Polychrome, Holographic and Foil Tags (each makes the next shop ",
+    "joker free; Foil does as well as Polychrome). 2 x 2,000 seeds vs v46: 515 vs 431 and 461 vs 396 wins ",
+    "(z = 4.83, 3.92), +0.155 +- 0.035 and +0.180 +- 0.032 ante. Uncommon, Orbital, Economy and Double lose. ",
+    "Based on: ",
     "v46 (Rust only): a Big blind is never skipped while we hold no joker (with the Small blind skipped too, the ",
     "boss came with no shop and no joker). 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante, ",
     "431 vs 428 and 396 vs 391 wins. Based on: ",

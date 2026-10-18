@@ -175,6 +175,8 @@ measured the wrong thing or was never asked:
   +0.050 +- 0.021 ante: a free Polychrome joker, like the Negative Tag; first seed set 433 vs 396, z = 3.23);
   Foil 476 (z = 4.09); Holographic 466 (z = 3.16); Uncommon 426, Orbital 424, Economy 422, Double 412. Foil does
   as well as Polychrome: the gain is the free shop joker an edition tag gives, more than the edition.
+- **v47, edition tags:** Polychrome, Holographic and Foil together, 2 x 2,000 seeds vs v46: 515 vs 431 and 461 vs
+  396 wins (z = 4.83, 3.92), +0.155 +- 0.035 and +0.180 +- 0.032 ante; ante 5-7 deaths ~100 fewer on each set.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
