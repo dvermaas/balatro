@@ -581,5 +581,27 @@
   "wins": 345,
   "baseline_wins": 337,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "v40: The Mouth remembers its locked hand type (no more 0-point plays called sure clears)",
+  "theme": "Bosses",
+  "baseline": "v39",
+  "games": 2000,
+  "delta_ante": -0.011,
+  "se": 0.007,
+  "wins": 346,
+  "baseline_wins": 345,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v41: The Mouth's first hand type chosen by value over the round (Mouth deaths 87 -> 70)",
+  "theme": "Bosses",
+  "baseline": "v40",
+  "games": 2000,
+  "delta_ante": 0.019,
+  "se": 0.007,
+  "wins": 356,
+  "baseline_wins": 346,
+  "outcome": "shipped"
  }
 ]

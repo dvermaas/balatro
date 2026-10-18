@@ -124,6 +124,16 @@ measured the wrong thing or was never asked:
   is (as in the game), so a one-card discard grows the hand by 2. Until a play clears, the bot and the rollouts
   discard the lowest card outside the best play, one at a time. 2,000 seeds: Serpent deaths 62 -> 15 (28% ->
   7%), +0.033 +- 0.011 ante, 345 vs 337 wins (`b2k-v39-snaps.jsonl.gz`); 260 seeds vs v37: +0.015 +- 0.035.
+- **v40, The Mouth's lock:** the game scores only the round's first hand type, but every type played (even one
+  that scored 0) counts as played this round, and the bot allowed any played type: after one off-type play it
+  kept playing that type for 0 and called it a sure clear. The bot remembers the first type; the rollouts use
+  the game's lock. Alone it rescues nothing (an off-type play scores 0 either way): 2,000 seeds -0.011 +- 0.007.
+  (The earlier note that later off-type plays were "deliberate card cycling" was wrong.)
+- **v41, The Mouth's first play:** each hand type in the bot's plays is valued as its best play now + (hands left
+  - 1) x its expected best score in a fresh deal (16 order-free samples of the draw pile); the bot leads with
+  the best. 88 Mouth-death seeds: 27 get past it, 11 win. 2,000 seeds vs v40: +0.019 +- 0.007 ante, 356 vs 346
+  wins, Mouth deaths 87 -> 70 (`b2k-v41-snaps.jsonl.gz`). The Python arms that only allowed frequent types
+  (`bot-mouth60/80`) lost because they ignored what each type scores.
 
 ## What the stronger bot does differently
 
