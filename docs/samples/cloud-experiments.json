@@ -493,5 +493,38 @@
   "wins": 8,
   "baseline_wins": 10,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Learned P(win) tail value in forecast rollouts, weight 0.5 (Rust lab)",
+  "theme": "Forecast",
+  "baseline": "v34 Rust",
+  "games": 260,
+  "delta_ante": -0.019,
+  "se": 0.063,
+  "wins": 49,
+  "baseline_wins": 51,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Learned P(win) tail value, weight 1 (Rust lab, sim60-a only)",
+  "theme": "Forecast",
+  "baseline": "v34 Rust",
+  "games": 60,
+  "delta_ante": -0.2,
+  "se": 0.136,
+  "wins": 10,
+  "baseline_wins": 10,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Learned P(win) tail value, weight 2 (Rust lab)",
+  "theme": "Forecast",
+  "baseline": "v34 Rust",
+  "games": 260,
+  "delta_ante": -0.115,
+  "se": 0.073,
+  "wins": 51,
+  "baseline_wins": 51,
+  "outcome": "dropped"
  }
 ]

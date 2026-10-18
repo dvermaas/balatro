@@ -66,6 +66,17 @@ measured the wrong thing or was never asked:
   +0.20, Pair level +0.15, Stuntman, Spare Trousers, Burglar, Photograph, Runner, Baseball Card, Castle;
   against: hands already played at the ante (a struggling build), Turtle Bean, Diet Cola, Shoot the Moon,
   Sixth Sense, Cloud 9.
+- **That model as the forecast's tail value** (`JEVLAB_EXP=value-tail=W`, `native/bot/src/value_model.rs`):
+  each rollout scores blinds cleared + W x P(win) x blinds left at its end. Pooled sim60-a + 200 fresh
+  seeds (none in the training games): W = 0.5 -0.02 +- 0.06 ante (49 vs 51 wins), W = 2 -0.12 +- 0.07 (51
+  vs 51); W = 1 on sim60-a -0.20 +- 0.14. It changes decisions (Mercury buys up) but not outcomes: a model
+  that ranks whole games at AUC 0.7 does not separate shop options from one position, which differ by far
+  less than two random games do. Rows: `samples/cloud-lab/value-tail.jsonl.gz`.
+- **Red Deck advice vs our games** (5,000 lab games, ante 5): Castle wins 32% when held (all runs 18%), so
+  the advice agrees there, but the bot holds it in only 2.3% of runs; the discard jokers (Mail-In Rebate,
+  Faceless, Hit the Road, Burnt, Trading Card, Yorick) are held in under 1% each. Burglar (34%) and Green
+  Joker (24%), which the advice says to avoid on Red, are among our best: this bot gets more from hands
+  than from discards.
 
 ## What the stronger bot does differently
 

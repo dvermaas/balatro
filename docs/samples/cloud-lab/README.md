@@ -20,6 +20,7 @@ Versions in `prompt_version`: 79a88610 v27, cb57eae7 v28, a0adcc12 v29, 9ecfe423
 experiment (`docs/samples/smart-discard.patch`). Experiment arms are defined in `BOT_ARMS` in
 `scripts/policy_lab.py`; any row can be reproduced by re-running its arm on its seed set at its version.
 `v1000-snaps` and `v4k-snaps` are 1,000 and 4,000 fresh Rust-lab games with a `snaps` list (one per shop visit; `vcurve.py`).
+`value-tail` holds the learned tail-value arms (sim60-a and 200 fresh seeds; lab-lessons.md).
 `pair-sim60` holds the Rust Pair-commitment arms (`rust-F` baseline, `rust-pair-*`; lab-lessons.md).
 `rust-v32-sim60` is the Rust bot (`jevlab --set sim60-a --arm F`) after the v28-v31 port (`prompt_version` "rust").
 Some files also hold a copy of the baseline arm's rows they were compared with. `scale-sim60` was
