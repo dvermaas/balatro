@@ -187,3 +187,22 @@ The coach's closing priorities are a clear endgame direction for every tarot edi
 - L473 says to throw away faces while surrounding advice says to hold faces for Parking; it is treated as a transcription/speech inconsistency, not a new rule.
 - Pack generation/blocking, Rebate target selection, and post-submit Blueprint movement are reported as **claims made in the session**, without external verification. In particular, the copy-joker arithmetic is a shortcut, not a complete scoring simulator specification.
 - “NaN”/extreme endless scoring is discussed as a different horizon. Strong late-run outcomes and the reported four-billion played-card demonstration (L3399–3402) illustrate the favorable run, not typical expected results.
+
+## "Balatro has a MASSIVE balance problem" (4,500-hour player, 2026-10-18 upload)
+
+What it says about winning, with how our lab data lines up (docs/lab-lessons.md):
+
+- Pairs win by consistency: about four pairs a round against two flushes, so once a few generic chip and mult
+  jokers are in, the round total favours pairs. Chips are the enabler ("100 times nothing is nothing"). Our
+  data agrees: Pair-leaning decks win ~30%, Flush decks ~11%; the 5k-games teacher levels Pair in 77% of wins.
+  But forcing every planet and joker toward Pair lost in our lab: consistency within a round is the lesson, not
+  committing every resource.
+- Repeatable hands feed Supernova, Green Joker and Ride the Bus; Green Joker discourages discards. Green Joker
+  and Burglar are among the jokers most linked to our wins.
+- Money generators (Delayed Gratification, Faceless, Mail-In Rebate, gold cards, Certificate, Hologram) suit the
+  pair player, who needs no specific suit or rank and keeps more hand space. Our forecast cannot value money
+  (rollouts never shop); a money tail in the forecast did not help.
+- Pair players can ignore most bosses (face-down and debuffed cards, The Water, The Mouth). Our Mouth fixes
+  (v40, v41) came from valuing a hand type over the whole round, which is the same idea.
+- Planets: ~one Celestial pack every two shops, ~1/3 chance to find a given planet: about four levels a run.
+  (Our v28 planet rule reaches ~9 levels by ante 6.)
