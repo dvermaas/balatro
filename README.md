@@ -195,9 +195,15 @@ At Python v27 (before the v28-v31 port):
 | Python + native kernels (v27) | 87 s | 115 s |
 | Rust (port) | 49 s | 58 s |
 
-The profiled speed-up after the port (2026-10-17, 16 seeds, 4 threads, no tracing, same machine):
-arm E 19.4 s → 11.3 s, arm F 23.2 s → 13.5 s wall, with identical games. The allocator had taken
-about a third of the time (now mimalloc), and the scorer kernel no longer allocates per subset.
+Profiled speed-ups since the port (16 seeds, 4 threads, no tracing, same machine, identical games):
+
+- v33 (on v27's bot): arm E 19.4 s → 11.3 s, arm F 23.2 s → 13.5 s wall. The allocator had taken about
+  a third of the time (now mimalloc), and the scorer kernel no longer allocates per subset.
+- v34 (on v31's bot, whose planet values made pack picks the hot spot): CPU time arm E 71.7 s → 31.4 s,
+  arm F 90.6 s → 37.6 s. Planet values share one scoring of their deals, best plays skip plays with a
+  kicker when a kicker cannot matter, rumbot stopped formatting logs nobody reads.
+- Where the time goes now: the rollouts (rumbot's `GameState::step`, ~25%), subset scoring for the odds
+  forecast, play mix and planet values (~25%), and the BalatroBot-shaped JSON views (~15%).
 
 Live tests (2026-10-17): one real game with CodeJev and one with real JEV, both played through `jevbot play`
 against the modded game.
