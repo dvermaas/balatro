@@ -87,6 +87,12 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v34: speed only, same decisions as v33. Planet values score their deals once for every planet ",
+    "(a level changes only its own hand's plays); best_score/best_play skip plays with a kicker when a ",
+    "kicker cannot matter; rumbot formats log lines only when kept and uses bitsets for played hands; ",
+    "the pack-pick view leaves out text the Picker does not read; forecasts build their start state once. ",
+    "Lab E+F, 30 seeds: every game identical to v33 (call logs and decisions); CPU time on 16 seeds, ",
+    "4 threads: 71.7 s -> 31.4 s (E), 90.6 s -> 37.6 s (F). Based on: ",
     "v33 (Rust only): speed only, same decisions as v32. The hand scorer kernel no longer allocates per ",
     "play subset and walks flat rule lists; mimalloc is the allocator; rumbot's hand tables are arrays and ",
     "its read-only joker scans no longer copy the row. The play-mix cache is per game (it was process-wide, ",

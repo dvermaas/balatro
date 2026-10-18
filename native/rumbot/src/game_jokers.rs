@@ -42,7 +42,7 @@ impl GameState {
         self.money += amount;
         if amount != 0 && !source.is_empty() {
             let sign = if amount >= 0 { '+' } else { '-' };
-            self.log(format!("{}: {}${}", source, sign, amount.abs()));
+            glog!(self, "{}: {}${}", source, sign, amount.abs());
         }
     }
 
@@ -63,9 +63,9 @@ impl GameState {
             self._move_joker_counters(&removed, false);
             let name = removed.borrow().name();
             if reason.is_empty() {
-                self.log(format!("{} destroyed", name));
+                glog!(self, "{} destroyed", name);
             } else {
-                self.log(format!("{} destroyed ({})", name, reason));
+                glog!(self, "{} destroyed ({})", name, reason);
             }
         }
     }
@@ -220,7 +220,7 @@ impl GameState {
         // run a draw out of step with the game's.
         let joker = self._made_joker(joker);
         self.gain_joker(&joker);
-        self.log(format!("{}: gained {}", source, spec.name));
+        glog!(self, "{}: gained {}", source, spec.name);
     }
 
     /// Tell the jokers that count sales that one has happened.
@@ -470,7 +470,7 @@ impl GameState {
         self.gain_joker(&clone);
         clone.borrow_mut().hands_at_create = joker.borrow().hands_at_create;
         let name = joker.borrow().name();
-        self.log(format!("{}: copied {}", source, name));
+        glog!(self, "{}: copied {}", source, name);
         clone
     }
 

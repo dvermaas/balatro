@@ -11,6 +11,17 @@
 //!     }
 //! ```
 
+/// jev (local patch): `game.log(format!(...))` that formats only when the log is kept
+/// (`keep_logs` or `verbose`). Nothing reads the log in a played game or a rollout, and the
+/// formatting cost several percent of every scored hand.
+macro_rules! glog {
+    ($g:expr, $($arg:tt)*) => {
+        if $g.keep_logs || $g.verbose {
+            $g.log(format!($($arg)*));
+        }
+    };
+}
+
 pub mod blinds;
 pub mod boss_data;
 pub mod cards;

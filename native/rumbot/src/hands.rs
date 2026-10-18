@@ -96,6 +96,9 @@ impl HandSet {
     pub fn len(&self) -> usize {
         self.0.count_ones() as usize
     }
+    pub fn clear(&mut self) {
+        self.0 = 0;
+    }
 }
 
 impl FromIterator<HandType> for HandSet {

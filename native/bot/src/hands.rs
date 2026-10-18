@@ -908,7 +908,7 @@ pub mod native {
     pub fn best_score(scorer: ScorerArg, infos: &[Info], allowed: Allowed) -> Option<i64> {
         let (ns, cards, allow) = inputs(scorer, infos, allowed)?;
         let mut best: Option<f64> = None;
-        jev_kernel::each_play(ns, &cards, allow, |score, _, _, _| {
+        jev_kernel::each_best_candidate(ns, &cards, allow, |score, _, _, _| {
             if best.map_or(true, |b| score > b) {
                 best = Some(score);
             }
@@ -921,7 +921,7 @@ pub mod native {
     pub fn best_play(scorer: ScorerArg, infos: &[Info], allowed: Allowed) -> Option<(i64, Option<&'static str>)> {
         let (ns, cards, allow) = inputs(scorer, infos, allowed)?;
         let mut best: Option<(f64, usize)> = None;
-        jev_kernel::each_play(ns, &cards, allow, |score, name, _, _| {
+        jev_kernel::each_best_candidate(ns, &cards, allow, |score, name, _, _| {
             let better = match best {
                 None => true,
                 Some((bs, bn)) => score > bs || (score == bs && HAND_NAMES[name] > HAND_NAMES[bn]),

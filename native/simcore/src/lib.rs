@@ -373,17 +373,18 @@ pub fn rv(c: &kernel::Card) -> i32 {
 
 pub fn straight(infos: &[kernel::Card], live: &[usize]) -> Option<Vec<usize>> {
     const ORDER: [u8; 14] = [14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-    let mut by: HashMap<u8, usize> = HashMap::new();
+    // the first live position of each rank
+    let mut by: [Option<usize>; 15] = [None; 15];
     for &p in live {
         let r = infos[p].rank;
-        if r != 0 && infos[p].enh != kernel::STONE {
-            by.entry(r).or_insert(p);
+        if r != 0 && infos[p].enh != kernel::STONE && by[r as usize].is_none() {
+            by[r as usize] = Some(p);
         }
     }
     for top in (4..ORDER.len()).rev() {
         let run = &ORDER[top - 4..=top];
-        if run.iter().all(|r| by.contains_key(r)) {
-            return Some(run.iter().map(|r| by[r]).collect());
+        if run.iter().all(|&r| by[r as usize].is_some()) {
+            return Some(run.iter().map(|&r| by[r as usize].unwrap()).collect());
         }
     }
     None
@@ -454,7 +455,7 @@ impl Policy {
             .map(|i| {
                 let h = hand_type(i);
                 let (chips, mult) = g.hand_levels.values(h);
-                (chips as f64, mult as f64, g.hand_levels.played(h) as f64, g.hands_played_this_round.contains(&h))
+                (chips as f64, mult as f64, g.hand_levels.played(h) as f64, g.hands_played_this_round.contains(h))
             })
             .collect();
         // rnd = {"hands_left": ..., "discards_left": ...}; score() reads `or 1` / `or 0`
@@ -472,7 +473,7 @@ impl Policy {
         let target = g.blind.as_ref().map(|b| b.target).unwrap_or(0);
         let need = (target - g.chips_scored).max(0);
         let played_round: u32 = (0..HAND_NAMES.len())
-            .filter(|&i| g.hands_played_this_round.contains(&hand_type(i)))
+            .filter(|&i| g.hands_played_this_round.contains(hand_type(i)))
             .fold(0, |m, i| m | (1 << i));
         let forced: Vec<usize> = match &g.forced_card {
             Some(f) => {

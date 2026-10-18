@@ -40,6 +40,14 @@ fn cards(v: &Value, area: &str) -> Vec<Value> {
 pub struct ItemCache {
     base: std::collections::HashMap<String, GameState>,
     pack_base: std::collections::HashMap<usize, GameState>,
+    /// `state_json_from_pub(p)`, built at the first option that needs it
+    desc0: Option<Result<Value, String>>,
+}
+
+impl ItemCache {
+    fn desc0(&mut self, p: &Value) -> Result<Value, String> {
+        self.desc0.get_or_insert_with(|| state_json_from_pub(p)).clone()
+    }
 }
 
 pub fn apply_item_option(p: &Value, opt: &Value, seed: &str, picker: &mut Picker) -> Result<Applied, String> {
@@ -56,7 +64,7 @@ pub fn apply_item_option_c(p: &Value, opt: &Value, seed: &str, picker: &mut Pick
             g.rng = RunRng::new(seed);
             return Ok(Applied { g, pack: vec![], taken: vec![], view0: Value::Null });
         }
-        let (d, pools) = crate::forecast_apply::apply_option_json(p, opt, seed)?;
+        let (d, pools) = crate::forecast_apply::apply_option_json_on(cache.desc0(p)?, p, opt, seed)?;
         let desc: StateDesc = serde_json::from_value(d).map_err(|e| format!("desc: {e}"))?;
         let mut g = simcore::build(&desc)?;
         g.rng = RunRng::new(seed);
@@ -74,7 +82,7 @@ pub fn apply_item_option_c(p: &Value, opt: &Value, seed: &str, picker: &mut Pick
     let mut g = if let Some(b) = cache.pack_base.get(&pi) {
         b.deep_clone()
     } else {
-        let mut d = state_json_from_pub(p)?;
+        let mut d = cache.desc0(p)?;
         if cost > d["money"].as_i64().unwrap_or(0) {
             return Err("Cannot afford booster".into());
         }

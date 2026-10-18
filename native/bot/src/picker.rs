@@ -110,6 +110,120 @@ pub fn planet_gain(pub_: &Value, lv: (&str, i64, i64), k: usize, extra: i64, see
     if before != 0.0 { after / before - 1.0 } else { 0.0 }
 }
 
+/// `planet_gain` for many planets at the cost of about one: the deals are scored once at the current
+/// levels, keeping each deal's best score per hand type and its plays grouped by type. Levelling hand h
+/// changes only the scores of plays of type h (the levels row of the played hand is the only one a score
+/// reads, and joker rules do not depend on levels), so a planet's "after" for a deal is the larger of the
+/// other types' best and the rescored type-h plays. Same floats, same order as `planet_gain`; it falls
+/// back to `planet_gain` where the native kernel cannot score (JEV_NATIVE=0, unmodelled joker text).
+pub struct PlanetDeals {
+    native: Option<NativeDeals>,
+    k: usize,
+    extra: i64,
+    seed: String,
+}
+
+struct NativeDeals {
+    js: Vec<jokers::JokerEntry>,
+    levels: crate::hands::Levels,
+    /// sum over deals of the best score at the current levels (`before` in planet_gain)
+    before: f64,
+    deals: Vec<Deal>,
+}
+
+struct Deal {
+    cards: Vec<jev_kernel::Card>,
+    /// best score per hand type at the current levels
+    best: [Option<f64>; 12],
+    /// the plays that can be best, grouped by hand type: (positions, scoring positions)
+    plays: [Vec<(Small, Small)>; 12],
+}
+
+/// Up to 5 positions, inline.
+#[derive(Clone, Copy)]
+struct Small([usize; 5], usize);
+impl Small {
+    fn of(v: &[usize]) -> Small {
+        let mut a = [0; 5];
+        a[..v.len()].copy_from_slice(v);
+        Small(a, v.len())
+    }
+    fn get(&self) -> &[usize] {
+        &self.0[..self.1]
+    }
+}
+
+impl PlanetDeals {
+    pub fn new(pub_: &Value, k: usize, extra: i64, seed: &str) -> PlanetDeals {
+        PlanetDeals { native: Self::native_deals(pub_, k, extra, seed), k, extra, seed: seed.to_string() }
+    }
+
+    fn native_deals(pub_: &Value, k: usize, extra: i64, seed: &str) -> Option<NativeDeals> {
+        let infos = _deck_infos(pub_);
+        let lim = gs::get(gs::get(pub_, "hand"), "limit");
+        let size = ((if gs::truthy(lim) { gs::int(lim) } else { 8 }) + extra).min(infos.len() as i64);
+        if size < 1 {
+            return None;
+        }
+        let js = jokers::build(pub_, None);
+        let levels = gs::d(gs::get(pub_, "hands")).clone();
+        let s0 = jokers::Scorer::new(levels.clone(), js.clone(), Rnd { hands_left: 2.0, discards_left: 1.0 });
+        let ns = s0.native()?;
+        let mut rng = Random::new_str(seed);
+        let (mut before, mut deals) = (0.0f64, Vec::with_capacity(k));
+        for _ in 0..k {
+            let hand: Vec<Info> = rng.sample_indices(infos.len(), size as usize).into_iter().map(|i| infos[i].clone()).collect();
+            let cards = jev_kernel::cards_of(&crate::hands::native::encode_cards(&hand)?);
+            let mut d = Deal { cards: Vec::new(), best: [None; 12], plays: Default::default() };
+            // the best play per type, and the type-h plays a planet rescores, are among these (a kicker never
+            // matters where they are pruned, at either level)
+            jev_kernel::each_best_candidate(ns, &cards, (0, 0, false), |score, name, combo, sc| {
+                if d.best[name].map_or(true, |b| score > b) {
+                    d.best[name] = Some(score);
+                }
+                d.plays[name].push((Small::of(combo), Small::of(sc)));
+            });
+            d.cards = cards;
+            // best_score: max over every play, 0 without one, truncated to an int
+            before += d.best.iter().flatten().fold(None, |m: Option<f64>, &s| Some(m.map_or(s, |m| m.max(s)))).unwrap_or(0.0) as i64 as f64;
+            deals.push(d);
+        }
+        Some(NativeDeals { js, levels, before, deals })
+    }
+
+    /// `planet_gain(pub_, lv, k, extra, seed)`.
+    pub fn gain(&self, pub_: &Value, lv: (&str, i64, i64)) -> f64 {
+        let (h, c, m) = lv;
+        let (Some(nd), Some(hi)) = (self.native.as_ref(), jev_kernel::HAND_NAMES.iter().position(|n| *n == h)) else {
+            return planet_gain(pub_, lv, self.k, self.extra, &self.seed);
+        };
+        let mut new = nd.levels.clone();
+        let mut cur = gs::d(nd.levels.get(h).unwrap_or(&Value::Null)).clone();
+        let chips = add_num(cur.get("chips"), 0, c);
+        let mult = add_num(cur.get("mult"), 1, m);
+        cur.insert("chips".to_string(), chips);
+        cur.insert("mult".to_string(), mult);
+        new.insert(h.to_string(), Value::Object(cur));
+        let s1 = jokers::Scorer::new(new, nd.js.clone(), Rnd { hands_left: 2.0, discards_left: 1.0 });
+        let Some(ns1) = s1.native() else { return planet_gain(pub_, lv, self.k, self.extra, &self.seed) };
+        let mut after = 0.0f64;
+        for d in &nd.deals {
+            let mut best: Option<f64> = None;
+            for (n, b) in d.best.iter().enumerate() {
+                if let Some(&s) = b.as_ref().filter(|_| n != hi) {
+                    best = Some(best.map_or(s, |m: f64| m.max(s)));
+                }
+            }
+            for (combo, sc) in &d.plays[hi] {
+                let s = ns1.score(&d.cards, combo.get(), hi, sc.get());
+                best = Some(best.map_or(s, |m: f64| m.max(s)));
+            }
+            after += best.unwrap_or(0.0) as i64 as f64;
+        }
+        if nd.before != 0.0 { after / nd.before - 1.0 } else { 0.0 }
+    }
+}
+
 /// `d.get(k, default) + c`, keeping int or float as Python does.
 fn add_num(cur: Option<&Value>, default: i64, c: i64) -> Value {
     match cur {
@@ -170,11 +284,13 @@ pub struct Picker<'a> {
     b: Value,
     synth: Vec<Value>,
     memo: HashMap<String, f64>,
+    /// the planet deals, built at the first planet this Picker values
+    planets: Option<PlanetDeals>,
 }
 
 impl<'a> Picker<'a> {
     pub fn new(pub_: &'a Value) -> Picker<'a> {
-        Picker { pub_, b: build::decide(pub_), synth: synth_plays(pub_, SYNTH_HANDS, "SYNTH"), memo: HashMap::new() }
+        Picker { pub_, b: build::decide(pub_), synth: synth_plays(pub_, SYNTH_HANDS, "SYNTH"), memo: HashMap::new(), planets: None }
     }
 
     fn gain(&self, add: Option<&Value>, level_up: Option<(&str, i64, i64)>) -> Option<f64> {
@@ -204,7 +320,10 @@ impl<'a> Picker<'a> {
             let eff = gs::get(gs::get(c, "value"), "effect");
             let lv = jokers::planet_level(if gs::truthy(eff) { gs::s(eff) } else { "" });
             // v28: planet_gain re-chooses the best play per deal (gain kept each sample's play fixed)
-            let g = lv.as_ref().map(|(h, a, b)| planet_gain(self.pub_, (h.as_str(), *a, *b), PLANET_DEALS, PLANET_EXTRA, "PLANET"));
+            let (pub_, planets) = (self.pub_, &mut self.planets);
+            let g = lv.as_ref().map(|(h, a, b)| {
+                planets.get_or_insert_with(|| PlanetDeals::new(pub_, PLANET_DEALS, PLANET_EXTRA, "PLANET")).gain(pub_, (h.as_str(), *a, *b))
+            });
             let g = g.unwrap_or(0.0); // `g or 0.0`
             let g = if g == 0.0 { 0.0 } else { g };
             self.memo.insert(k.clone(), pmax(g, 0.0) + 0.001);

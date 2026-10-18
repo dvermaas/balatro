@@ -227,7 +227,7 @@ fn held_card_once(
     pairs: &[(&'static JokerSpec, JokerRef)],
     game: &mut GameState,
 ) -> bool {
-    let before = (ctx.log.len(), ctx.money_gained);
+    let before = (ctx.events, ctx.money_gained);
     if card.borrow().enhancement == Enhancement::Steel {
         ctx.times_mult(1.5, "steel card");
     }
@@ -236,7 +236,7 @@ fn held_card_once(
             held(source, card, ctx, game);
         }
     }
-    (ctx.log.len(), ctx.money_gained) != before
+    (ctx.events, ctx.money_gained) != before
 }
 
 /// `context.after`: the joker pass every played hand gets, scored or not.

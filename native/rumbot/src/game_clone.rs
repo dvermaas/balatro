@@ -263,6 +263,7 @@ impl GameState {
             preview_trigger: self.preview_trigger,
 
             logs: self.logs.clone(),
+            keep_logs: self.keep_logs,
             verbose: self.verbose,
             no_shop: self.no_shop,
         }
