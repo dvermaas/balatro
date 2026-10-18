@@ -318,7 +318,32 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     }
     let rnd = gs::get(gs_, "round");
     let js = crate::prof::time("sh.jokers_build", || jokers::build(gs_, None));
-    let base_levels = gs::d(gs::get(gs_, "hands"));
+    let mut base_levels = gs::d(gs::get(gs_, "hands")).clone();
+    if boss == "The Mouth" {
+        // v40: The Mouth scores only the round's first hand type, but every played type (even one that scored 0)
+        // counts as played this round: remember the first one and keep only it as "played" for the play rules.
+        let round_key = json!([gs::get(gs_, "seed"), gs::get(gs_, "ante_num"), gs::get(gs_, "round_num")]);
+        let played: Vec<String> = base_levels.iter().filter(|(_, h)| gs::truthy(gs::get(h, "played_this_round"))).map(|(n, _)| n.clone()).collect();
+        let locked = bot._mouth_lock.as_array().filter(|a| a.len() == 4 && json!(a[..3]) == round_key).map(|a| gs::s(&a[3]).to_string());
+        let lock = match locked {
+            Some(l) => Some(l),
+            None if played.len() == 1 => {
+                bot._mouth_lock = json!([round_key[0], round_key[1], round_key[2], played[0]]);
+                Some(played[0].clone())
+            }
+            None => None,
+        };
+        if let Some(lock) = lock {
+            for (n, h) in base_levels.iter_mut() {
+                if *n != lock {
+                    if let Some(m) = h.as_object_mut() {
+                        m.insert("played_this_round".into(), json!(0));
+                    }
+                }
+            }
+        }
+    }
+    let base_levels = &base_levels;
     let levels = _boss_levels(base_levels, &boss);
     let infos: Vec<Info> = hand.iter().map(card_info).collect();
     let scorer = Scorer::new(levels.clone(), js.clone(), Rnd::from_value(rnd));
@@ -351,6 +376,40 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         bot.emit("forced", json!({"question": "move", "choice": "play_1", "desc": desc}));
         do_play(bot, gs_, hand, &cards)?;
         return Ok(());
+    }
+    if crate::experiment::get().mouth_plan && boss == "The Mouth" && plays.len() > 1
+        && !base_levels.values().any(|h| gs::truthy(gs::get(h, "played_this_round")))
+    {
+        // lab: the first play locks The Mouth's hand type for the round. Value each type in our plays as its
+        // best play now + (hands left - 1) x its expected best score in a fresh deal from the deck (sampled
+        // from the draw pile as a multiset, canonically sorted: order-free), and lead with the best type.
+        let hl = gs::num(gs::get(&info, "hands_left"));
+        let mut deck: Vec<Info> = cards_of(gs_, "cards").iter().map(card_info).collect();
+        deck.sort_by_key(|i| (i.suit.clone(), i.rank.clone(), i.enh.clone(), i.edition.clone()));
+        let size = hand.len().min(deck.len());
+        if hl > 1.0 && size > 0 {
+            let mut rng = pycompat::Random::new_str("MOUTH");
+            let deals: Vec<Vec<Info>> = (0..16).map(|_| rng.sample_indices(deck.len(), size).into_iter().map(|i| deck[i].clone()).collect()).collect();
+            let mut seen: Vec<String> = Vec::new();
+            let mut best: Option<(f64, usize)> = None;
+            for (pi, p) in plays.iter().enumerate() {
+                let t = gs::s(gs::get(p, "hand")).to_string();
+                if seen.contains(&t) {
+                    continue;
+                }
+                seen.push(t.clone());
+                let only = |_c: &[usize], n: &str| n == t;
+                let e: f64 = deals.iter().map(|d| crate::hands::best_score(d, ScorerArg::Jokers(&scorer), Allowed::Func(&only)) as f64).sum::<f64>() / deals.len() as f64;
+                let v = gs::num(gs::get(p, "estimate")) + (hl - 1.0) * e;
+                if best.map_or(true, |b| v > b.0) {
+                    best = Some((v, pi));
+                }
+            }
+            if let Some((_, pi)) = best.filter(|b| b.1 != 0) {
+                let p = plays.remove(pi);
+                plays.insert(0, p);
+            }
+        }
     }
     // v39: The Serpent tops the hand up with exactly 3 cards after any play or discard, whatever room there
     // is, so a one-card discard grows the hand by 2. Until a play clears, discard the lowest card outside

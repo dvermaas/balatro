@@ -10,6 +10,8 @@
 //!   free-discard  before a play, discard spare cards a held joker pays for (Castle's suit, Mail-In
 //!                 Rebate's rank, Jacks, 3+ face cards, Trading Card's single card, Burnt Joker's hand,
 //!                 Yorick); the forecast's rollouts do the same (simcore::free_discard)
+//!   mouth-plan    under The Mouth the first play's hand type is chosen by its value over the round (now +
+//!                 hands left x its expected best score in a fresh deal)
 //!   money-tail=W  forecast rollouts score blinds cleared + W * BLINDS_PER_DOLLAR[ante] * money at their end
 //!                 (rollouts never shop, so money and prices were worth nothing to the forecast)
 //!   value-tail=W  forecast rollouts score blinds cleared + W * P(win) * blinds left at their end
@@ -32,6 +34,7 @@ pub struct Exp {
     pub value_tail: f64,
     pub free_discard: bool,
     pub money_tail: f64,
+    pub mouth_plan: bool,
 }
 
 /// Future blinds cleared per $1 held at the first shop of each ante (index = ante; 5,000 lab games, ridge
@@ -45,7 +48,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: num("value-tail"), free_discard: has("free-discard"), money_tail: num("money-tail") };
+              value_tail: num("value-tail"), free_discard: has("free-discard"), money_tail: num("money-tail"), mouth_plan: has("mouth-plan") };
         simcore::FREE_DISCARD.store(e.free_discard, std::sync::atomic::Ordering::Relaxed);
         e
     })

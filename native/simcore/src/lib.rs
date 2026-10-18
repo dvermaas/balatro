@@ -512,7 +512,12 @@ impl Policy {
             let (name, sc) = kernel::classify(&cs);
             let mut s = scorer.score(&infos, &combo, name, &sc);
             let in_round = played_round & (1 << name) != 0;
-            if (bname == "The Eye" && in_round) || (bname == "The Mouth" && played_round != 0 && !in_round) {
+            // v40: The Mouth scores only its locked hand (the round's first type), not every type played
+            let mouth_off = match g.mouth_only_hand {
+                Some(h) => hand_type(name) != h,
+                None => false,
+            };
+            if (bname == "The Eye" && in_round) || (bname == "The Mouth" && mouth_off) {
                 s = -1.0;
             }
             if best.as_ref().map_or(true, |b| s > b.0) {

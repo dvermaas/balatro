@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v40 (Rust only): The Mouth. It scores only the round's first hand type, but every type played (even one ",
+    "that scored 0) counts as played this round, and the bot allowed any played type: after one off-type play it ",
+    "kept playing that type for 0 and called it a sure clear. The bot now remembers the first type; the ",
+    "rollouts use the game's lock. Based on: ",
     "v39 (Rust only): The Serpent. It tops the hand up with exactly 3 cards after any play or discard, ",
     "whatever room there is, so until a play clears the bot (and the forecast's rollouts) discards the lowest ",
     "card outside the best play, one at a time: each discard grows the hand by 2. Based on: ",
