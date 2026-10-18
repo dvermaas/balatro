@@ -77,6 +77,15 @@ measured the wrong thing or was never asked:
   Faceless, Hit the Road, Burnt, Trading Card, Yorick) are held in under 1% each. Burglar (34%) and Green
   Joker (24%), which the advice says to avoid on Red, are among our best: this bot gets more from hands
   than from discards.
+- **Why the bot skips Castle and the discard jokers** (200 fresh seeds traced; `samples/cloud-lab/castle_why.py`,
+  `discards.py`): the bot uses 1.8 of its 4 discards a round (0.9-1.0 at antes 2-3; none at all in 35% of
+  rounds), because it plays as soon as a hand clears and discards only when behind. The forecast's simulated
+  play (`simcore` `Policy::decide`) has the same rule, so a discard joker barely grows in its rollouts: on a
+  free slot it scores +0.00 blinds vs buying nothing, and as a swap (most offers come with full slots) it
+  loses to the joker sold (Mail-In Rebate -1.19, Faceless -1.08, Trading Card -1.11, Burnt Joker -1.02,
+  Castle -0.45). Offers per game: Mail-In 1.0, Faceless 1.0, Castle 0.3, Trading Card 0.3, Hit the Road
+  0.2, Burnt Joker 0.2; bought: Castle 8 of 58, Mail-In 4 of 203, Burnt Joker 0 of 35. The forecast is
+  right for how the bot plays; the play leaves free discards unused.
 
 ## What the stronger bot does differently
 
