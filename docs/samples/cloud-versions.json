@@ -403,5 +403,20 @@
   "died_ante_1_4": 173,
   "died_ante_5_7": 1137,
   "died_ante_8": 334
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v42",
+  "version_id": "rust",
+  "change": "Misprint counts its average +11.5 Mult (was 0)",
+  "games": 2000,
+  "mean_ante": 6.531,
+  "se": 0.035,
+  "wins": 350,
+  "win_rate": 0.175,
+  "mean_round": 20.38,
+  "died_ante_1_4": 173,
+  "died_ante_5_7": 1134,
+  "died_ante_8": 343
  }
 ]

@@ -614,5 +614,16 @@
   "wins": 352,
   "baseline_wins": 356,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "v42: Misprint counts its average +11.5 Mult (was 0)",
+  "theme": "Scoring",
+  "baseline": "v41",
+  "games": 2000,
+  "delta_ante": 0.015,
+  "se": 0.013,
+  "wins": 350,
+  "baseline_wins": 356,
+  "outcome": "shipped"
  }
 ]

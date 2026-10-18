@@ -139,6 +139,10 @@ measured the wrong thing or was never asked:
   type and the types already used. 2,000 seeds vs v41: -0.007 +- 0.004 ante, 352 vs 356 wins, Eye deaths
   54 -> 62. Unlike The Mouth, The Eye's plays already lead with the biggest hand, and saving a strong type
   for later wastes it when the later deals can't make it; the greedy order is better.
+- **v42, Misprint:** its exported effect is only "+" (the real game's too, v16 note), so the scorer counted 0:
+  37% of the 632 plays holding it in 200 traced games scored over 1.5x their estimate (without Misprint only
+  78 of 5,943 plays did). It now counts its average +11.5 Mult. 2,000 seeds vs v41: +0.015 +- 0.013 ante,
+  350 vs 356 wins (neutral; 314 games changed). Kept as a correctness fix.
 - **Crimson Heart re-picks only after a play** (dropped idea): the debuffed joker moves on the draw after a hand
   (`press_play` preps the blind; rumbot `_play_hand`), never after a discard, so discarding to move it only
   wastes discards (lab flag tried on its 55 death seeds: 1 changed). The bot already scores without the
