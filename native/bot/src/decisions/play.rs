@@ -411,6 +411,39 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             }
         }
     }
+    if crate::experiment::get().eye_plan && boss == "The Eye" && plays.len() > 1 {
+        // lab: The Eye bans repeating a hand type this round. Value each type in our plays as its best play now +
+        // (hands left - 1) x the expected best score of a fresh deal without that type (and without the types
+        // already played), so a type that is hard to make again is used while we hold it.
+        let hl = gs::num(gs::get(&info, "hands_left"));
+        let mut deck: Vec<Info> = cards_of(gs_, "cards").iter().map(card_info).collect();
+        deck.sort_by_key(|i| (i.suit.clone(), i.rank.clone(), i.enh.clone(), i.edition.clone()));
+        let size = hand.len().min(deck.len());
+        if hl > 1.0 && size > 0 {
+            let mut rng = pycompat::Random::new_str("EYE");
+            let deals: Vec<Vec<Info>> = (0..16).map(|_| rng.sample_indices(deck.len(), size).into_iter().map(|i| deck[i].clone()).collect()).collect();
+            let used: Vec<String> = base_levels.iter().filter(|(_, h)| gs::truthy(gs::get(h, "played_this_round"))).map(|(n, _)| n.clone()).collect();
+            let mut seen: Vec<String> = Vec::new();
+            let mut best: Option<(f64, usize)> = None;
+            for (pi, p) in plays.iter().enumerate() {
+                let t = gs::s(gs::get(p, "hand")).to_string();
+                if seen.contains(&t) {
+                    continue;
+                }
+                seen.push(t.clone());
+                let rest = |_c: &[usize], n: &str| n != t && !used.iter().any(|u| u == n);
+                let e: f64 = deals.iter().map(|d| crate::hands::best_score(d, ScorerArg::Jokers(&scorer), Allowed::Func(&rest)) as f64).sum::<f64>() / deals.len() as f64;
+                let v = gs::num(gs::get(p, "estimate")) + (hl - 1.0) * e;
+                if best.map_or(true, |b| v > b.0) {
+                    best = Some((v, pi));
+                }
+            }
+            if let Some((_, pi)) = best.filter(|b| b.1 != 0) {
+                let p = plays.remove(pi);
+                plays.insert(0, p);
+            }
+        }
+    }
     // v39: The Serpent tops the hand up with exactly 3 cards after any play or discard, whatever room there
     // is, so a one-card discard grows the hand by 2. Until a play clears, discard the lowest card outside
     // the best play.
