@@ -82,7 +82,7 @@ git history up to `4628654`. See README.md for setup.
 - Rust floats must match the old Python bit for bit where they reach JEV or a record: keep the order
   of float operations, and use `pycompat` for formatting, rounding and `random.Random`.
 - `.env` holds `JEV_API_KEY`; never print it. HTTP 402 from TypeSafe = org has no usable credits.
-- The user's weekly Claude usage is tight: prefer targeted reads and avoid long polling loops.
+- Don't poll running processes or games in loops (repeated status checks, sleeps): wait for them to finish, or run them in the background and check once.
 - Mods live outside the repo in `%APPDATA%\Balatro\Mods`. `mods/jev_tweaks` is the source of truth
   for our mod; copy it there after editing and restart the game. BalatroBot has a local patch in
   `endpoints/start.lua` (viewed_back nil guard) that an update would overwrite.

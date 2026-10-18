@@ -111,6 +111,11 @@ fn card_json(
 
 // sim_backend.serialize_card, playing cards
 fn playing_card(g: &GameState, c: &CardRef, area: &str, live: bool) -> Value {
+    playing_card_t(g, c, area, live, true)
+}
+
+/// `playing_card`, with its effect text left empty unless `text`.
+fn playing_card_t(g: &GameState, c: &CardRef, area: &str, live: bool, text: bool) -> Value {
     let c = c.borrow();
     let (ckey, enh) = enh_key(c.enhancement);
     let set = if c.enhancement != Enhancement::None { "ENHANCED" } else { "DEFAULT" };
@@ -118,7 +123,8 @@ fn playing_card(g: &GameState, c: &CardRef, area: &str, live: bool) -> Value {
     let mut value = Map::new();
     value.insert("suit".into(), json!(c.suit.as_str()));
     value.insert("rank".into(), json!(c.rank.short()));
-    value.insert("effect".into(), json!(super::text::playing_effect(g, &c, ckey, c.debuffed && live)));
+    let effect = if text { super::text::playing_effect(g, &c, ckey, c.debuffed && live) } else { String::new() };
+    value.insert("effect".into(), json!(effect));
     let mut m = Map::new();
     if let Some(s) = seal_str(c.seal) {
         m.insert("seal".into(), json!(s));
@@ -140,6 +146,11 @@ fn effect_value(text: String) -> Map<String, Value> {
 }
 
 fn joker_json(g: &GameState, j: &JokerRef, in_jokers: bool) -> Value {
+    joker_json_t(g, j, in_jokers, true)
+}
+
+/// `joker_json`, with its effect text left empty unless `text`.
+fn joker_json_t(g: &GameState, j: &JokerRef, in_jokers: bool, text: bool) -> Value {
     let jb = j.borrow();
     let name = jb.spec.name;
     let key = joker_row(name).map_or("", |r| r.key);
@@ -165,7 +176,8 @@ fn joker_json(g: &GameState, j: &JokerRef, in_jokers: bool) -> Value {
     let (debuff, hidden, uid) = (jb.debuffed, jb.face_down, jb.uid);
     drop(jb);
     let sell = g.sell_value(j);
-    card_json(uid, key, "JOKER", name, effect_value(super::text::joker_effect(g, j, in_jokers, debuff)), m, debuff, hidden, sell as i64, buy as i64)
+    let effect = if text { super::text::joker_effect(g, j, in_jokers, debuff) } else { String::new() };
+    card_json(uid, key, "JOKER", name, effect_value(effect), m, debuff, hidden, sell as i64, buy as i64)
 }
 
 fn consumable_set(k: ConsumableKind) -> &'static str {
@@ -390,8 +402,9 @@ pub fn serialize_pack_view(eng: &RumbotGame) -> Value {
     let live = g.blind.is_some();
     let mut out = Map::new();
     out.insert("money".into(), json!(g.money));
-    out.insert("jokers".into(), area(g.jokers.iter().map(|j| joker_json(g, j, true)).collect(), g.joker_slots() as i64, 1));
-    out.insert("hand".into(), area(g.hand.iter().map(|c| playing_card(g, c, "hand", live)).collect(), g.hand_size() as i64, 5));
+    // the Picker reads text only from the pack's cards: owned jokers and hand cards go without it
+    out.insert("jokers".into(), area(g.jokers.iter().map(|j| joker_json_t(g, j, true, false)).collect(), g.joker_slots() as i64, 1));
+    out.insert("hand".into(), area(g.hand.iter().map(|c| playing_card_t(g, c, "hand", live, false)).collect(), g.hand_size() as i64, 5));
     if g.phase == Phase::Pack {
         let cards: Vec<Value> = g.pack_options.iter().map(|c| pack_choice_json(g, c)).collect();
         out.insert("pack".into(), area(cards, 2, 1));

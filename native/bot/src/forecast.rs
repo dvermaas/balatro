@@ -2,7 +2,7 @@
 //! shop forecast end to end. Options are applied by `forecast_apply` (RunRng set first), the
 //! rollouts run on simcore, the result is assembled by `forecast_stats::assemble`.
 
-use crate::forecast_apply::{apply_option, apply_option_json};
+use crate::forecast_apply::{apply_option_json_on, game_of};
 use crate::forecast_stats::{assemble, option_jokers, options};
 use crate::{gs, hands, jokers};
 use serde_json::{json, Map, Value};
@@ -69,15 +69,21 @@ pub fn forecast_clock(
     let budget = budget_s.filter(|b| *b != 0.0);
     let bosses_u = bosses as usize;
     // Apply each option once at rollout 0 seed. No RNG drawn: convert once; else apply per rollout seed.
+    // The state description of pub_ is built once and copied for each option.
+    let desc0 = crate::forecast_state::state_json_from_pub(pub_);
+    let apply_json = |o: &Value, sd: &str| match &desc0 {
+        Ok(d) => apply_option_json_on(d.clone(), pub_, o, sd),
+        Err(e) => Err(e.clone()),
+    };
     let mut ents: Vec<Ent> = Vec::new();
     for o in &opts {
         let key = gs::s(gs::get(o, "key")).to_string();
         let pol = policy_of(&option_jokers(pub_, o));
         let s0 = seed(0);
-        let (error, base) = match crate::prof::time("f.apply0", || apply_option_json(pub_, o, &s0)) {
+        let (error, base) = match crate::prof::time("f.apply0", || apply_json(o, &s0)) {
             Err(_) => (true, None),
             Ok((_, Some(_))) => (false, None),
-            Ok((_, None)) => match apply_option(pub_, o, &s0) {
+            Ok((d, None)) => match game_of(d, None, &s0) {
                 Ok(g) => (false, Some(g)),
                 Err(_) => (true, None),
             },
@@ -100,7 +106,8 @@ pub fn forecast_clock(
                         g.rng = rumbot_sim::rng::RunRng::new(sd.clone());
                         g
                     }
-                    None => crate::prof::time("f.apply_k", || apply_option(pub_, e.opt, &sd)).expect("option applied at seed 0"),
+                    None => crate::prof::time("f.apply_k", || apply_json(e.opt, &sd).and_then(|(d, pl)| game_of(d, pl, &sd)))
+                        .expect("option applied at seed 0"),
                 };
                 g.seed = sd;
                 if i == 0 && ei == 0 && std::env::var_os("VALUE_CHECK").is_some() {

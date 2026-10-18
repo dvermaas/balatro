@@ -67,7 +67,17 @@ pub const LUA_ONLY_POOLS: &[&str] = &["wheel"];
 /// latin-1 becomes `?`. Reproducing that keeps the two engines agreeing on
 /// non-ASCII seeds rather than panicking or hashing the UTF-8 bytes.
 pub fn pseudohash(text: &str) -> f64 {
-    let data = latin1_replace(text);
+    pseudohash_bytes(&latin1_replace(text))
+}
+
+/// `pseudohash(a + b)` without building the joined string.
+fn pseudohash2(a: &str, b: &str) -> f64 {
+    let mut data = latin1_replace(a);
+    data.extend(latin1_replace(b));
+    pseudohash_bytes(&data)
+}
+
+fn pseudohash_bytes(data: &[u8]) -> f64 {
     let mut num = 1.0f64;
     for i in (1..=data.len()).rev() {
         num = py_mod(
@@ -202,7 +212,7 @@ impl RunRng {
                 *state
             }
             None => {
-                let state = advance(pseudohash(&format!("{}{}", key, self.seed)));
+                let state = advance(pseudohash2(key, &self.seed));
                 self.pools.insert(key.to_string(), state);
                 state
             }

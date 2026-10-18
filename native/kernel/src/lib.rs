@@ -300,8 +300,10 @@ impl Scorer {
 
         let ctx = Ctx { name, cards, combo, times_played, played_this_round, scoring_suits: 0, wild: 0 };
         let held_reps = 1 + self.held_retrigger;
+        // without held rules only a held Steel card changes anything
+        let only_steel = self.held.is_empty();
         for c in ctx.held() {
-            if c.debuff {
+            if c.debuff || (only_steel && c.enh != STEEL) {
                 continue;
             }
             for _ in 0..(held_reps + c.red as i64).max(0) {
@@ -376,23 +378,82 @@ pub fn allows(allow: (u8, u32, bool), combo_len: usize, name: usize) -> bool {
     }
 }
 
-/// Every allowed subset of 1..=5 cards in itertools.combinations order: f(score, name, combo, scoring).
-pub fn each_play(s: &Scorer, cards: &[Card], allow: (u8, u32, bool), mut f: impl FnMut(f64, usize, &[usize], &[usize])) {
-    let n = cards.len();
+impl Scorer {
+    /// No score reads the cards left in hand: no held rules, and no hand rule on held cards (kinds 5,
+    /// 10 and unknown) or on the number of cards played (kind 2).
+    fn ignores_held(&self) -> bool {
+        self.held.is_empty() && self.hands.iter().flatten().all(|h| matches!(h.0, 0 | 1 | 3 | 4 | 6 | 7 | 8 | 9 | 11))
+    }
+}
+
+/// The plays that can be the best one: `each_play`'s, minus those with a kicker (a played card that
+/// does not score) whenever a kicker cannot matter. Then dropping a play's kickers keeps its hand type
+/// and scoring cards (in the same order), and the score reads nothing else: the scorer ignores held
+/// cards, no Steel card is in hand (held Steel multiplies), and the boss does not count cards (The
+/// Psychic). So the best score, and the best (score, hand) pair, are the same as over every play.
+pub fn each_best_candidate(s: &Scorer, cards: &[Card], allow: (u8, u32, bool), mut f: impl FnMut(f64, usize, &[usize], &[usize])) {
+    let prune = allow.0 != 1 && s.ignores_held() && !cards.iter().any(|c| c.enh == STEEL);
+    if !prune {
+        return each_play(s, cards, allow, f);
+    }
     let mut cs: Vec<Card> = Vec::with_capacity(5);
     let mut sc: Vec<usize> = Vec::with_capacity(5);
+    each_combo(cards.len(), |combo| {
+        cs.clear();
+        cs.extend(combo.iter().map(|&i| cards[i]));
+        if !may_lack_kickers(&cs) {
+            return;
+        }
+        let name = classify_into(&cs, &mut sc);
+        if sc.len() == combo.len() && allows(allow, combo.len(), name) {
+            f(s.score(cards, combo, name, &sc), name, combo, &sc);
+        }
+    });
+}
+
+/// False when `classify` would surely leave a played card unscored: with 2 to 4 ranked cards only
+/// pairs, two pairs, trips and quads score all of them, so a rank seen once means a kicker. (With 0, 1
+/// or 5 ranked cards anything goes: Stones, a lone high card, a flush or a straight.)
+fn may_lack_kickers(cs: &[Card]) -> bool {
+    let mut ranks = [0u8; 5];
+    let mut n = 0;
+    for c in cs.iter().filter(|c| ranked(c)) {
+        ranks[n] = c.rank;
+        n += 1;
+    }
+    let ranks = &ranks[..n];
+    !(2..=4).contains(&n) || ranks.iter().all(|r| ranks.iter().filter(|x| *x == r).count() >= 2)
+}
+
+/// Every allowed subset of 1..=5 cards in itertools.combinations order: f(score, name, combo, scoring).
+pub fn each_play(s: &Scorer, cards: &[Card], allow: (u8, u32, bool), mut f: impl FnMut(f64, usize, &[usize], &[usize])) {
+    each_classified(cards, |name, combo, sc| {
+        if allows(allow, combo.len(), name) {
+            f(s.score(cards, combo, name, sc), name, combo, sc);
+        }
+    });
+}
+
+/// Every subset of 1..=5 cards in itertools.combinations order with its classification: f(name, combo, scoring).
+fn each_classified(cards: &[Card], mut f: impl FnMut(usize, &[usize], &[usize])) {
+    let mut cs: Vec<Card> = Vec::with_capacity(5);
+    let mut sc: Vec<usize> = Vec::with_capacity(5);
+    each_combo(cards.len(), |combo| {
+        cs.clear();
+        cs.extend(combo.iter().map(|&i| cards[i]));
+        let name = classify_into(&cs, &mut sc);
+        f(name, combo, &sc);
+    });
+}
+
+/// Every subset of 1..=5 of `n` positions, in itertools.combinations order.
+fn each_combo(n: usize, mut f: impl FnMut(&[usize])) {
     let mut combo: Vec<usize> = Vec::with_capacity(5);
     for r in 1..=n.min(5) {
         combo.clear();
         combo.extend(0..r);
         loop {
-            cs.clear();
-            cs.extend(combo.iter().map(|&i| cards[i]));
-            let name = classify_into(&cs, &mut sc);
-            if allows(allow, r, name) {
-                let score = s.score(cards, &combo, name, &sc);
-                f(score, name, &combo, &sc);
-            }
+            f(&combo);
             // next combination
             let mut i = r;
             while i > 0 && combo[i - 1] == i - 1 + n - r {

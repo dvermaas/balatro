@@ -67,7 +67,11 @@ fn bump_jokers(d: &mut Value, name: &str, by: f64) {
 /// The state description after `opt` (an entry of `forecast_stats::options`), plus the Jackdaw RNG pools
 /// when the option drew (None: the rollout's streams start fresh from the seed).
 pub fn apply_option_json(p: &Value, opt: &Value, seed: &str) -> Result<(Value, Option<HashMap<String, f64>>), String> {
-    let mut d = state_json_from_pub(p)?;
+    apply_option_json_on(state_json_from_pub(p)?, p, opt, seed)
+}
+
+/// `apply_option_json` from `d = state_json_from_pub(p)`, which the forecasts build once for all their options.
+pub fn apply_option_json_on(mut d: Value, p: &Value, opt: &Value, seed: &str) -> Result<(Value, Option<HashMap<String, f64>>), String> {
     let hp = hands_played(p);
     let next_id = d["cards"].as_array().unwrap().len() + d["jokers"].as_array().unwrap().len() + d["consumables"].as_array().unwrap().len();
     let shop = gs::cards_of(p, "shop");
@@ -197,6 +201,11 @@ fn overstock_pools(d: &Value, n_shop: usize, seed: &str) -> Result<HashMap<Strin
 /// The rumbot game after the option, its RNG at `RunRng::new(seed)` (plus the option's draws).
 pub fn apply_option(p: &Value, opt: &Value, seed: &str) -> Result<rumbot_sim::game::GameState, String> {
     let (d, pools) = apply_option_json(p, opt, seed)?;
+    game_of(d, pools, seed)
+}
+
+/// The rumbot game of an `apply_option_json` result, its RNG at `RunRng::new(seed)` plus the pools.
+pub fn game_of(d: Value, pools: Option<HashMap<String, f64>>, seed: &str) -> Result<rumbot_sim::game::GameState, String> {
     let desc: StateDesc = serde_json::from_value(d).map_err(|e| format!("desc: {e}"))?;
     let mut g = simcore::build(&desc)?;
     g.rng = RunRng::new(seed);

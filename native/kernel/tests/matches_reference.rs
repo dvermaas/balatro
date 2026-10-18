@@ -110,3 +110,54 @@ fn classify_and_score_match_reference() {
     }
     assert!(subsets > 100_000, "only {subsets} subsets");
 }
+
+/// `each_best_candidate` keeps the best score, the best (score, hand name) pair and the best score per
+/// hand type of `each_play`, under every boss filter, with and without held effects and Steel cards.
+#[test]
+fn best_candidates_match_every_play() {
+    use jev_kernel::{each_best_candidate, HAND_NAMES};
+    let mut r = Lcg(0xbe57);
+    let mut pruned = 0usize;
+    for case_i in 0..4000 {
+        let (cards, levels, mut jokers, hl, dl) = case(&mut r);
+        if case_i % 2 == 0 {
+            // prune-friendly half: no held rules, no held- or count-reading hand rules, no Steel
+            for (_, rule) in jokers.iter_mut() {
+                if let Some((_, _, held, _, hand)) = rule {
+                    held.clear();
+                    if matches!(hand, Some((2 | 5 | 10, ..))) {
+                        *hand = None;
+                    }
+                }
+            }
+        }
+        let cards: Vec<Card> = if case_i % 4 == 0 { cards.into_iter().map(|c| if c.enh == 6 { Card { enh: 0, ..c } } else { c }).collect() } else { cards };
+        let s = Scorer::new(levels, jokers, hl, dl).unwrap();
+        let allow = match r.below(4) {
+            0 => (0, 0, false),
+            1 => (1, 0, false),
+            2 => (2, (r.next() as u32) & 0xfff, true),
+            _ => (3, (r.next() as u32) & 0xfff, r.chance(50)),
+        };
+        let summarize = |each: &dyn Fn(&mut dyn FnMut(f64, usize, &[usize], &[usize]))| {
+            let (mut best, mut pair, mut per) = (None::<f64>, None::<(f64, usize)>, [None::<f64>; 12]);
+            let mut n = 0usize;
+            each(&mut |score: f64, name: usize, _: &[usize], _: &[usize]| {
+                n += 1;
+                best = Some(best.map_or(score, |b| b.max(score)));
+                if pair.map_or(true, |(bs, bn)| score > bs || (score == bs && HAND_NAMES[name] > HAND_NAMES[bn])) {
+                    pair = Some((score, name));
+                }
+                per[name] = Some(per[name].map_or(score, |b: f64| b.max(score)));
+            });
+            (best.map(f64::to_bits), pair.map(|(s, n)| (s.to_bits(), n)), per.map(|x| x.map(f64::to_bits)), n)
+        };
+        let all = summarize(&|f| each_play(&s, &cards, allow, |a, b, c, d| f(a, b, c, d)));
+        let few = summarize(&|f| each_best_candidate(&s, &cards, allow, |a, b, c, d| f(a, b, c, d)));
+        assert_eq!((all.0, all.1, all.2), (few.0, few.1, few.2), "case {case_i}");
+        if few.3 < all.3 {
+            pruned += 1;
+        }
+    }
+    assert!(pruned > 500, "pruning applied in only {pruned} cases");
+}

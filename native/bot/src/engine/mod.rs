@@ -83,7 +83,7 @@ impl RumbotGame {
         actions::act(self, method, params)
     }
 
-    /// Light gamestate for the forecasts' pack loop: money, jokers, hand, pack only.
+    /// Light gamestate for the forecasts' pack loop: money, jokers, hand, pack only (card text on the pack only).
     pub fn pack_view(&self) -> Value {
         view::serialize_pack_view(self)
     }

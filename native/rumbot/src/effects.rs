@@ -54,6 +54,11 @@ pub struct ScoreContext {
     /// that scores wrong is a question about the total at each step -- which
     /// joker took it away from what the real game reached.
     pub log: Vec<String>,
+    /// jev (local patch): fill `log` (off by default: only debugging reads the text)
+    pub keep_log: bool,
+    /// jev (local patch): one per chips/mult change, logged or not (`held_card_once` asks whether a
+    /// held card did anything; it counted `log` lines)
+    pub events: usize,
 }
 
 impl ScoreContext {
@@ -83,6 +88,8 @@ impl ScoreContext {
             chance_paid: 0,
             chance_expected: 0.0,
             log: Vec::new(),
+            keep_log: false,
+            events: 0,
         }
     }
 
@@ -111,20 +118,20 @@ impl ScoreContext {
     pub fn add_chips(&mut self, amount: f64, source: &str) {
         if amount != 0.0 {
             self.chips += amount;
-            self.log.push(format!(
-                "{}: +{} chips -> {} x {}",
-                source, amount, self.chips, self.mult
-            ));
+            self.events += 1;
+            if self.keep_log {
+                self.log.push(format!("{}: +{} chips -> {} x {}", source, amount, self.chips, self.mult));
+            }
         }
     }
 
     pub fn add_mult(&mut self, amount: f64, source: &str) {
         if amount != 0.0 {
             self.mult += amount;
-            self.log.push(format!(
-                "{}: +{} mult -> {} x {}",
-                source, amount, self.chips, self.mult
-            ));
+            self.events += 1;
+            if self.keep_log {
+                self.log.push(format!("{}: +{} mult -> {} x {}", source, amount, self.chips, self.mult));
+            }
         }
     }
 
@@ -134,10 +141,10 @@ impl ScoreContext {
             // (Scoring_Parameter mult:modify), which BalatroBot's game runs; the last bit can
             // flip floor(chips * mult) (sim_patches.smods_xmult_arithmetic).
             self.mult = self.mult + self.mult * (factor - 1.0);
-            self.log.push(format!(
-                "{}: x{} mult -> {} x {}",
-                source, factor, self.chips, self.mult
-            ));
+            self.events += 1;
+            if self.keep_log {
+                self.log.push(format!("{}: x{} mult -> {} x {}", source, factor, self.chips, self.mult));
+            }
         }
     }
 
