@@ -13,6 +13,8 @@
 //!   eye-plan      under The Eye the play's hand type is chosen by its value over the round (now + hands
 //!                 left x expected best of a fresh deal without that type)
 //!   late-floor=N  the shop's interest floor (loose buys, rerolls, strong vouchers) drops $N per ante after 4
+//!   skip-tags=A+B skip a Small or Big blind at ante <= SKIP_ANTE when its tag is one of these ("Investment",
+//!                 "Negative", ...; the lab's code-top-option JEV always plays)
 //!   money-tail=W  forecast rollouts score blinds cleared + W * BLINDS_PER_DOLLAR[ante] * money at their end
 //!                 (rollouts never shop, so money and prices were worth nothing to the forecast)
 //!   value-tail=W  forecast rollouts score blinds cleared + W * P(win) * blinds left at their end
@@ -23,6 +25,7 @@ use std::sync::OnceLock;
 pub const PAIR_PLANET: f64 = 0.5;
 pub const PAIR_SE: f64 = 1.0;
 pub const PAIR_PLAY: f64 = 0.85;
+pub const SKIP_ANTE: i64 = 3;
 /// Jokers that pay for playing Pairs (or for repeating one hand, which Pair commitment does).
 pub const PAIR_JOKERS: &[&str] = &["Jolly Joker", "Sly Joker", "The Duo", "Half Joker", "Supernova", "Card Sharp", "Spare Trousers", "Mad Joker", "Clever Joker"];
 
@@ -37,6 +40,7 @@ pub struct Exp {
     pub money_tail: f64,
     pub eye_plan: bool,
     pub late_floor: i64,
+    pub skip_tags: Vec<String>,
 }
 
 /// Future blinds cleared per $1 held at the first shop of each ante (index = ante; 5,000 lab games, ridge
@@ -51,7 +55,8 @@ pub fn get() -> &'static Exp {
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
               value_tail: num("value-tail"), free_discard: has("free-discard"), money_tail: num("money-tail"), eye_plan: has("eye-plan"),
-              late_floor: num("late-floor") as i64 };
+              late_floor: num("late-floor") as i64,
+              skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()) };
         simcore::FREE_DISCARD.store(e.free_discard, std::sync::atomic::Ordering::Relaxed);
         e
     })

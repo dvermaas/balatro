@@ -258,6 +258,12 @@ pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         }
         s
     };
+    let tag = gs::s(gs::get(&b, "tag_name")).to_string();
+    if crate::experiment::get().skip_tags.contains(&tag) && gs::int(gs::get(gs_, "ante_num")) <= crate::experiment::SKIP_ANTE {
+        bot.emit("auto", json!({"question": "blind", "choice": "skip", "desc": format!("skip for {tag}"), "reason": "lab skip-tags"}));
+        bot.act("skip", None)?;
+        return Ok(());
+    }
     let opts = vec![
         opt("play", fmt(option_tpl("blind_play")), "select", None),
         opt("skip", fmt(option_tpl("blind_skip")), "skip", None),
