@@ -779,5 +779,49 @@
   "wins": 436,
   "baseline_wins": 431,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Uncommon Tags (on top of v46)",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": -0.069,
+  "se": 0.022,
+  "wins": 426,
+  "baseline_wins": 431,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Polychrome Tags (on top of v46)",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": 0.05,
+  "se": 0.021,
+  "wins": 472,
+  "baseline_wins": 431,
+  "outcome": "promising"
+ },
+ {
+  "experiment": "Also skip blinds for Double Tags (on top of v46)",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": -0.121,
+  "se": 0.022,
+  "wins": 412,
+  "baseline_wins": 431,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Economy Tags (on top of v46)",
+  "theme": "Blinds",
+  "baseline": "v46",
+  "games": 2000,
+  "delta_ante": -0.071,
+  "se": 0.019,
+  "wins": 422,
+  "baseline_wins": 431,
+  "outcome": "dropped"
  }
 ]
