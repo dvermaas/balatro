@@ -603,5 +603,16 @@
   "wins": 356,
   "baseline_wins": 346,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "The Eye: hand type chosen by value over the round (Eye deaths 54 -> 62)",
+  "theme": "Bosses",
+  "baseline": "v41",
+  "games": 2000,
+  "delta_ante": -0.007,
+  "se": 0.004,
+  "wins": 352,
+  "baseline_wins": 356,
+  "outcome": "dropped"
  }
 ]

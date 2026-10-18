@@ -134,6 +134,11 @@ measured the wrong thing or was never asked:
   the best. 88 Mouth-death seeds: 27 get past it, 11 win. 2,000 seeds vs v40: +0.019 +- 0.007 ante, 356 vs 346
   wins, Mouth deaths 87 -> 70 (`b2k-v41-snaps.jsonl.gz`). The Python arms that only allowed frequent types
   (`bot-mouth60/80`) lost because they ignored what each type scores.
+- **The Eye plan (dropped, lab flag `eye-plan`):** the same valuation for The Eye (no hand type twice in the
+  round): each type is its best play now + (hands left - 1) x the expected best of a fresh deal without that
+  type and the types already used. 2,000 seeds vs v41: -0.007 +- 0.004 ante, 352 vs 356 wins, Eye deaths
+  54 -> 62. Unlike The Mouth, The Eye's plays already lead with the biggest hand, and saving a strong type
+  for later wastes it when the later deals can't make it; the greedy order is better.
 
 ## What the stronger bot does differently
 
