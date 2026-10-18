@@ -290,7 +290,9 @@ pub fn parse(effect: &str) -> Option<Rule> {
 
     // Retriggers
     if let Some(m) = rx!(concat!(r"^Retrigger (.+?)(?: used in scoring)?(?: (\d+) additional times?)?", end!())).captures(e) {
-        let subj = m.get(1).unwrap().as_str();
+        // v37: Seltzer's "for the next 10 hands" is a duration, not the rank 10
+        let subj_owned = rx!(r" for the next \d+ hands?").replace(m.get(1).unwrap().as_str(), "").to_string();
+        let subj = subj_owned.as_str();
         let times: i64 = m.get(2).map_or(1, |t| t.as_str().parse().unwrap());
         if subj.contains("first played card") {
             rule.retrigger.push((Pred::First, times));
@@ -346,6 +348,10 @@ pub fn parse(effect: &str) -> Option<Rule> {
         return cond_hand(Cond::SeeingDouble, (0.0, 0.0, m[1].parse().unwrap()));
     }
 
+    // v37: "(Currently $4)" is money (Cloud 9, Rocket...), not +4 Mult
+    if rx!(r"\(Currently \$").is_match(e) {
+        return None;
+    }
     let cur = rx!(concat!(r"\(Currently ([+X]?)\$?", num!(), r"(?: (Mult|Chips))?\)")).captures(e);
     let unit_guess = rx!(r"(Mult|Chips)").captures(e).map_or("Mult", |m| m.get(1).unwrap().as_str());
 

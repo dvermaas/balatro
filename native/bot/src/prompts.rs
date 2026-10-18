@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v37 (Rust only): joker text. A money joker's \"(Currently $4)\" (Cloud 9) was read as +4 Mult, and ",
+    "Seltzer's \"for the next 10 hands\" as retrigger 10s; now money is not scored and Seltzer retriggers every ",
+    "played card. Found by auditing 6,923 plays' estimates against their scores. Based on: ",
     "v36 (Rust only): Cerulean Bell. The game always adds the boss's forced card to a play (cutting it to 5 ",
     "cards); the bot did not know which card it was, so a planned Straight could lose a card and score 3% of ",
     "its estimate (27% of Cerulean Bell plays scored under 2/3 of the estimate; 103 of 5,000 lab games died to ",
