@@ -148,6 +148,11 @@ measured the wrong thing or was never asked:
   mirrors rumbot's `lowest_held`. 2,000 seeds vs v42: +0.005 +- 0.008 ante, 347 vs 350 wins (neutral). v42+v43
   vs v41: +0.019 +- 0.015 ante, 347 vs 356 wins. Estimate errors this size barely change outcomes: the best
   play is usually the same, and most fixes only move the "clears" check.
+- **Late interest floor (dropped, lab flag `late-floor=N`):** 1,127 of 2,000 runs die at antes 5-7, mostly near
+  misses (80-100% of the target: 521), and the bot enters those shops with ~$36 because it keeps a $25 floor
+  for loose buys, rerolls and strong vouchers all game. Dropping the floor $5 per ante after 4 ($20/$15/$10/$5):
+  2,000 seeds vs v43 +0.009 +- 0.013 ante, 340 vs 347 wins (523 games changed). Spending the reserve late buys
+  nothing that matters; the sure (forecast > 2 SE) buys already ignore the floor.
 - **Crimson Heart re-picks only after a play** (dropped idea): the debuffed joker moves on the draw after a hand
   (`press_play` preps the blind; rumbot `_play_hand`), never after a discard, so discarding to move it only
   wastes discards (lab flag tried on its 55 death seeds: 1 changed). The bot already scores without the

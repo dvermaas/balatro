@@ -636,5 +636,16 @@
   "wins": 347,
   "baseline_wins": 350,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Late interest floor: $25 floor drops $5 per ante after 4 (Rust lab)",
+  "theme": "Economy",
+  "baseline": "v43",
+  "games": 2000,
+  "delta_ante": 0.009,
+  "se": 0.013,
+  "wins": 340,
+  "baseline_wins": 347,
+  "outcome": "dropped"
  }
 ]
