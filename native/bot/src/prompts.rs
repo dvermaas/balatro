@@ -87,6 +87,13 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v43 (Rust only): Raised Fist. The scorer took the lowest held card's value with Stone cards as 0 (so any ",
+    "held Stone zeroed it) and ignored Mime and the card's Red Seal; it now mirrors the game: the rightmost ",
+    "lowest-ranked non-Stone card, nothing when it is debuffed, repeated per held retrigger and Red Seal. ",
+    "Based on: ",
+    "v42 (Rust only): Misprint. Its exported effect is only \"+\" (random dynatext), so the scorer counted it ",
+    "as 0 and 37% of plays holding it scored over 1.5x their estimate; it now counts its average +11.5 Mult. ",
+    "Based on: ",
     "v41 (Rust only): The Mouth's first play. It locks the round's hand type, so the bot values each type in ",
     "its plays as its best play now + (hands left - 1) x its expected best score in a fresh deal from the deck ",
     "(16 order-free samples) and leads with the best. 2,000 seeds vs v40: +0.019 +- 0.007 ante, 356 vs 346 ",

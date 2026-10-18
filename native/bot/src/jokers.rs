@@ -480,6 +480,14 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
             out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, 0.0, x.powf(n as f64)))), ..Default::default() });
         }
     }
+    // v42: Misprint's exported effect is only "+" (its text is a random dynatext, v16 note), so it scored 0; count
+    // the average of its +0-23 Mult
+    for (j, c) in cards.iter().enumerate() {
+        if gs::get(c, "key").as_str() == Some("j_misprint") && !gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")) {
+            out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, 11.5, 1.0))), ..Default::default() });
+            out[j].scoring = true;
+        }
+    }
     // Blueprint copies the joker to its right, Brainstorm the leftmost.
     for n in 0..out.len() {
         let label = out[n].label.as_deref();
@@ -820,6 +828,7 @@ pub fn score(infos: &[Info], combo: &[usize], name: &str, scoring: &[usize], han
         club: scoring_suits.contains(&Some("C")),
         other_suit: scoring_suits.iter().any(|s| *s != Some("C")),
         wild: sc.iter().filter(|&&p| played[p].enh_is("WILD")).count(),
+        held_retrigger: held_reps - 1,
     };
     for j in jokers {
         let ed = j.edition.as_deref();
@@ -848,6 +857,7 @@ struct Ctx<'a> {
     club: bool,
     other_suit: bool,
     wild: usize,
+    held_retrigger: i64,
 }
 
 // jokers.py 361-392
@@ -880,14 +890,22 @@ fn _hand(spec: &HandSpec, ctx: &Ctx) -> (f64, f64, f64) {
         HandSpec::TimesPlayed => (0.0, ctx.times_played + 1.0, 1.0),
         HandSpec::PerDiscard(v) => (v * ctx.discards_left, 0.0, 1.0),
         HandSpec::LowestHeld => {
-            let mut m: Option<f64> = None;
-            for i in ctx.held {
-                let n = _nominal(i);
-                if m.map_or(true, |x| n < x) {
-                    m = Some(n);
+            // v42 Raised Fist (rumbot lowest_held): the rightmost held card of the lowest rank, Stone cards skipped;
+            // nothing when it is debuffed, and it repeats with held retriggers (Mime) and its Red Seal
+            let order = |i: &Info| "23456789TJQKA".find(i.rank_truthy().unwrap_or("")).unwrap_or(0);
+            let mut low: Option<&Info> = None;
+            for &i in ctx.held {
+                if i.rank_truthy().is_some() && !i.enh_is("STONE") && low.map_or(true, |b| order(i) <= order(b)) {
+                    low = Some(i);
                 }
             }
-            (0.0, 2.0 * m.unwrap_or(0.0), 1.0)
+            match low {
+                Some(i) if !i.debuff => {
+                    let reps = 1 + ctx.held_retrigger + i.seal.as_deref().is_some_and(|s| s == "RED") as i64;
+                    (0.0, 2.0 * _nominal(i) * reps as f64, 1.0)
+                }
+                _ => (0.0, 0.0, 1.0),
+            }
         }
     }
 }

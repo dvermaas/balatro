@@ -247,8 +247,16 @@ impl Scorer {
                 cond((c || w > 0) && (o || (c && w > 0) || w >= 2))
             }
             _ => {
-                let low = ctx.held().map(nominal).fold(None, |m: Option<f64>, x| Some(m.map_or(x, |m| m.min(x))));
-                (0.0, 2.0 * low.unwrap_or(0.0), 1.0)
+                // Raised Fist (v42, rumbot lowest_held): the rightmost held card of the lowest rank, Stone cards
+                // skipped; nothing when it is debuffed, and it repeats with held retriggers (Mime) and its Red Seal
+                let low = ctx.held().filter(|c| c.enh != STONE && c.rank != 0).fold(None, |m: Option<&Card>, c| match m {
+                    Some(b) if c.rank > b.rank => Some(b),
+                    _ => Some(c),
+                });
+                match low {
+                    Some(c) if !c.debuff => (0.0, 2.0 * nominal(c) * (1 + self.held_retrigger + c.red as i64) as f64, 1.0),
+                    _ => (0.0, 0.0, 1.0),
+                }
             }
         }
     }

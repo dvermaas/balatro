@@ -139,6 +139,10 @@ measured the wrong thing or was never asked:
   type and the types already used. 2,000 seeds vs v41: -0.007 +- 0.004 ante, 352 vs 356 wins, Eye deaths
   54 -> 62. Unlike The Mouth, The Eye's plays already lead with the biggest hand, and saving a strong type
   for later wastes it when the later deals can't make it; the greedy order is better.
+- **Crimson Heart re-picks only after a play** (dropped idea): the debuffed joker moves on the draw after a hand
+  (`press_play` preps the blind; rumbot `_play_hand`), never after a discard, so discarding to move it only
+  wastes discards (lab flag tried on its 55 death seeds: 1 changed). The bot already scores without the
+  debuffed joker; Crimson Heart deaths are a strength check like Violet Vessel's.
 
 ## What the stronger bot does differently
 
