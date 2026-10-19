@@ -186,6 +186,13 @@ measured the wrong thing or was never asked:
   first seed set 478 vs 461 (z = 1.37), pooled z ~ 1.5, mean ante flat. Hone / Glow Up (more editions in later
   shops) bought in 358 games: 507 vs 515 wins; it is the free early edition joker that pays, not editions later. A skip pays only for a free joker or $25; packs, rerolls and coupons don't cover the lost
   cash-out and shop. (The sim's view names tag_skip "Skip Tag" (tables.json); the game's is "Speed Tag".)
+- **Real game vs rumbot (v50, 2026-10-19, `jevbot play --lab` + `sync_check.py`, docs/real-game-sync.md):** 7 seeds
+  (RZSTXX2S G6MTPMNN Q5RLLNT9 XKJN7TMN DUQVNM87 FAXCVJ5M D424YXQH) play identically on the real game and on rumbot,
+  state by state, after three BalatroBot patches (`mods/balatrobot-patches/`): `cash_out` now waits for the game's
+  queued events (a fast client was paid last round's total and saw the shop before tags applied, so the tag
+  skips' free jokers could be missed in the real game), `buy` counts slots like the game (Negative jokers), and
+  `gamestate` reports Cerulean Bell's forced card (v36 only worked on rumbot before). v50 fixes the one bot-side
+  split: a tag-freed joker's cost 0 read as extra sell value in forecasts.
 - **Forecast compute, retested on 2,000 seeds (lab flags `fc-n`, `fc-bosses`; v48 = 525 wins):** 32 rollouts per
   option instead of the lab's 16: **576 wins** (z = 2.50), +0.076 +- 0.032 ante, 1,024 games changed. A 4-boss
   horizon: 520 (neutral). The 2026-10-16 "more compute does not help" came from 128-200 seeds; with 16 rollouts
