@@ -878,5 +878,49 @@
   "wins": 976,
   "baseline_wins": 827,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Also skip blinds for Charm Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.022,
+  "se": 0.02,
+  "wins": 495,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Buffoon Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.029,
+  "se": 0.013,
+  "wins": 497,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Coupon Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.018,
+  "se": 0.019,
+  "wins": 504,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Voucher Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.123,
+  "se": 0.023,
+  "wins": 488,
+  "baseline_wins": 515,
+  "outcome": "dropped"
  }
 ]
