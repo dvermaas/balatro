@@ -1109,5 +1109,16 @@
   "wins": 576,
   "baseline_wins": 525,
   "outcome": "promising"
+ },
+ {
+  "experiment": "Forecast: 32 rollouts per option, confirmation on the first seed set",
+  "theme": "Forecast",
+  "baseline": "v48",
+  "games": 2000,
+  "delta_ante": 0.112,
+  "se": 0.032,
+  "wins": 585,
+  "baseline_wins": 478,
+  "outcome": "promising"
  }
 ]
