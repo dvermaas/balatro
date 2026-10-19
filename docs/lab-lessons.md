@@ -182,7 +182,9 @@ measured the wrong thing or was never asked:
   sweep covered every tag; v47's six (a free joker or $25) are the ones worth a skip.
   Why it pays: at ante 5 the bot holds as many jokers as without skips (5.07) but twice the editioned ones (0.73 ->
   1.36): skips trade a shop the cautious shop logic barely uses for joker quality it rarely finds otherwise.
-  How late (`skip-max`, v47 = ante 3): up to ante 2 491 wins, 4 525 (z = 0.79), 5 515. A skip pays only for a free joker or $25; packs, rerolls and coupons don't cover the lost
+  How late (`skip-max`, v47 = ante 3): up to ante 2 491 wins, 4 525 (z = 0.79), 5 515. **v48** skips through ante 4:
+  first seed set 478 vs 461 (z = 1.37), pooled z ~ 1.5, mean ante flat. Hone / Glow Up (more editions in later
+  shops) bought in 358 games: 507 vs 515 wins; it is the free early edition joker that pays, not editions later. A skip pays only for a free joker or $25; packs, rerolls and coupons don't cover the lost
   cash-out and shop. (The sim's view names tag_skip "Skip Tag" (tables.json); the game's is "Speed Tag".)
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).

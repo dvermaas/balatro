@@ -87,6 +87,8 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v48 (Rust only): blind skips for tags run through ante 4 (was 3). 2 x 2,000 seeds vs v47: 525 vs 515 and ",
+    "478 vs 461 wins (pooled z ~ 1.5), mean ante flat; through ante 2 491, through ante 5 515. Based on: ",
     "v47 (Rust only): the blind skips also take Polychrome, Holographic and Foil Tags (each makes the next shop ",
     "joker free; Foil does as well as Polychrome). 2 x 2,000 seeds vs v46: 515 vs 431 and 461 vs 396 wins ",
     "(z = 4.83, 3.92), +0.155 +- 0.035 and +0.180 +- 0.032 ante. Uncommon, Orbital, Economy and Double lose. ",

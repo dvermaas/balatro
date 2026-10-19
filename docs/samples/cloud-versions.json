@@ -568,5 +568,35 @@
   "died_ante_1_4": 209,
   "died_ante_5_7": 903,
   "died_ante_8": 373
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v48",
+  "version_id": "rust",
+  "change": "blind skips for tags through ante 4",
+  "games": 2000,
+  "mean_ante": 6.654,
+  "se": 0.04,
+  "wins": 478,
+  "win_rate": 0.239,
+  "mean_round": 17.75,
+  "died_ante_1_4": 207,
+  "died_ante_5_7": 878,
+  "died_ante_8": 437
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v48",
+  "version_id": "rust",
+  "change": "blind skips for tags through ante 4",
+  "games": 2000,
+  "mean_ante": 6.614,
+  "se": 0.041,
+  "wins": 525,
+  "win_rate": 0.263,
+  "mean_round": 17.63,
+  "died_ante_1_4": 220,
+  "died_ante_5_7": 895,
+  "died_ante_8": 360
  }
 ]

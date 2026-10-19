@@ -1053,7 +1053,7 @@
   "se": 0.017,
   "wins": 525,
   "baseline_wins": 515,
-  "outcome": "variant"
+  "outcome": "shipped v48"
  },
  {
   "experiment": "Blind skips for tags up to ante 5 (v47: ante 3)",
@@ -1065,5 +1065,27 @@
   "wins": 515,
   "baseline_wins": 515,
   "outcome": "variant"
+ },
+ {
+  "experiment": "v48: blind skips for tags through ante 4 (confirmation, first seed set)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.007,
+  "se": 0.016,
+  "wins": 478,
+  "baseline_wins": 461,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "Buy Hone / Glow Up vouchers (more editions in the shop)",
+  "theme": "Shop",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.005,
+  "se": 0.007,
+  "wins": 507,
+  "baseline_wins": 515,
+  "outcome": "dropped"
  }
 ]

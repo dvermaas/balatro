@@ -39,7 +39,7 @@ pub const INTEREST_BUFFER: i64 = 25;
 /// v45: tags worth skipping a Small/Big blind for, at antes up to SKIP_ANTE (v47: + the edition tags, whose next
 /// shop joker is free).
 pub const SKIP_TAGS: &[&str] = &["Investment Tag", "Negative Tag", "Rare Tag", "Polychrome Tag", "Holographic Tag", "Foil Tag"];
-pub const SKIP_ANTE: i64 = 3;
+pub const SKIP_ANTE: i64 = 4; // v48 (was 3)
 /// v44: never bought. -1 ante makes the forecast's horizon of blinds cleared easier, but a win needs that ante
 /// again with a hand (Petroglyph: a discard) fewer every round.
 pub const NEVER_VOUCHERS: &[&str] = &["Hieroglyph", "Petroglyph"];
@@ -262,7 +262,7 @@ pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         }
         s
     };
-    // v45: skip a Small/Big blind at antes 1-3 for a tag in SKIP_TAGS (lab `skip-tags` overrides the list)
+    // v45: skip a Small/Big blind at antes up to SKIP_ANTE for a tag in SKIP_TAGS (lab `skip-tags` overrides the list)
     let tag = gs::s(gs::get(&b, "tag_name")).to_string();
     let ante = gs::int(gs::get(gs_, "ante_num"));
     let e = crate::experiment::get();
