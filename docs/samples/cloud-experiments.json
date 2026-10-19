@@ -1032,5 +1032,38 @@
   "wins": 507,
   "baseline_wins": 515,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Blind skips for tags up to ante 2 (v47: ante 3)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.025,
+  "se": 0.019,
+  "wins": 491,
+  "baseline_wins": 515,
+  "outcome": "variant"
+ },
+ {
+  "experiment": "Blind skips for tags up to ante 4 (v47: ante 3)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.01,
+  "se": 0.017,
+  "wins": 525,
+  "baseline_wins": 515,
+  "outcome": "variant"
+ },
+ {
+  "experiment": "Blind skips for tags up to ante 5 (v47: ante 3)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.009,
+  "se": 0.019,
+  "wins": 515,
+  "baseline_wins": 515,
+  "outcome": "variant"
  }
 ]
