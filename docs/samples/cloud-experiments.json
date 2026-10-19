@@ -1208,5 +1208,16 @@
   "wins": 566,
   "baseline_wins": 635,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Value tail 0.5 (learned P(win) after the horizon), retested at 64 rollouts",
+  "theme": "Forecast",
+  "baseline": "v52",
+  "games": 2000,
+  "delta_ante": 0.018,
+  "se": 0.017,
+  "wins": 659,
+  "baseline_wins": 635,
+  "outcome": "promising"
  }
 ]

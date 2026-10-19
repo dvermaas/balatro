@@ -210,6 +210,7 @@ measured the wrong thing or was never asked:
   The pack Picker with 4x samples (48 synthetic hands, 96 planet deals): 630 wins (z = -0.30). The forecast's
   rollout count was the noise that mattered.
   Auto-buy bar 0.5 SE (was 1): 630 wins (-0.042 +- 0.027 ante); 2 SE: 566 wins (z = -3.23). 1 SE stays.
+  Value tail 0.5 (lost at 16 rollouts: -0.02 ante): 659 wins (z = 1.39, +0.018 +- 0.017 ante).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
