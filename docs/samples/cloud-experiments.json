@@ -1087,5 +1087,27 @@
   "wins": 507,
   "baseline_wins": 515,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Forecast: 4-boss horizon (lab: 3)",
+  "theme": "Forecast",
+  "baseline": "v48",
+  "games": 2000,
+  "delta_ante": 0.028,
+  "se": 0.016,
+  "wins": 520,
+  "baseline_wins": 525,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Forecast: 32 rollouts per option (lab: 16)",
+  "theme": "Forecast",
+  "baseline": "v48",
+  "games": 2000,
+  "delta_ante": 0.076,
+  "se": 0.032,
+  "wins": 576,
+  "baseline_wins": 525,
+  "outcome": "promising"
  }
 ]
