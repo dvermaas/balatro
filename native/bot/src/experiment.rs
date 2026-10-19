@@ -21,6 +21,7 @@
 //!   fc-n=N        jevlab's forecasts play N rollouts per option (DecisionCfg::lab: 64)
 //!   max-rerolls=N / swap-sells=N / synth=N / planet-deals=N  override decisions::MAX_REROLLS, SWAP_SELLS and
 //!                 picker::SYNTH_HANDS, PLANET_DEALS (the pack Picker's sample sizes)
+//!   sure-se=X     the forecasts' auto-buy bar in paired SEs over buying nothing (decisions::SURE_SE)
 //!   strong-vouchers  the production rule in the lab: decisions::VOUCHERS marked strong are bought from money
 //!                 above the interest floor (DecisionCfg::lab turns it off)
 //!   buy-vouchers=A+B more vouchers treated as strong ("Blank+Clearance_Sale"; _ for a space)
@@ -58,6 +59,7 @@ pub struct Exp {
     pub swap_sells: Option<usize>,
     pub synth: Option<usize>,
     pub planet_deals: Option<usize>,
+    pub sure_se: Option<f64>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -85,6 +87,7 @@ pub fn get() -> &'static Exp {
               swap_sells: s.split(',').find_map(|x| x.trim().strip_prefix("swap-sells=")?.parse().ok()),
               synth: s.split(',').find_map(|x| x.trim().strip_prefix("synth=")?.parse().ok()),
               planet_deals: s.split(',').find_map(|x| x.trim().strip_prefix("planet-deals=")?.parse().ok()),
+              sure_se: s.split(',').find_map(|x| x.trim().strip_prefix("sure-se=")?.parse().ok()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               voucher_floor: s.split(',').find_map(|x| x.trim().strip_prefix("voucher-floor=")?.parse().ok()) };

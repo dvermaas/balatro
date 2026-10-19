@@ -764,7 +764,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         // v20: a clear forecast winner is bought by code (policy lab arm C); JEV gets the close calls
         let mut auto: Vec<usize> = (0..items.len()).filter(|&i| {
             let o = &items[i].obj;
-            _d(o).contains_key("_fc_delta") && eff(i) > (super::SURE_SE as f64) * fnum(o, "_fc_se", 0.0).max(1e-9)
+            _d(o).contains_key("_fc_delta") && eff(i) > crate::experiment::get().sure_se.unwrap_or(super::SURE_SE as f64) * fnum(o, "_fc_se", 0.0).max(1e-9)
         }).collect();
         // v21: jokers/vouchers/planets first (arm F's order), then packs, tarots and spectrals
         let non_item: Vec<usize> = auto.iter().cloned().filter(|&i| !flag(&items[i].obj, "_fc_item")).collect();
@@ -883,7 +883,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         // v19: sure = beats buying nothing by more than 2 SE in blinds cleared over the horizon
         sure = items.iter()
             .filter(|it| _d(&it.obj).contains_key("_fc_delta")
-                && fnum(&it.obj, "_fc_delta", 0.0) > (super::SURE_SE as f64) * fnum(&it.obj, "_fc_se", 0.0).max(1e-9) && sc(&it.key) >= 1.0)
+                && fnum(&it.obj, "_fc_delta", 0.0) > crate::experiment::get().sure_se.unwrap_or(super::SURE_SE as f64) * fnum(&it.obj, "_fc_se", 0.0).max(1e-9) && sc(&it.key) >= 1.0)
             .collect();
     }
     let mut loose_ok = money - cost >= buffer || early_joker;

@@ -1175,5 +1175,16 @@
   "wins": 622,
   "baseline_wins": 635,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Pack Picker with 4x samples (48 synthetic hands, 96 planet deals)",
+  "theme": "Packs",
+  "baseline": "v52",
+  "games": 2000,
+  "delta_ante": 0.026,
+  "se": 0.021,
+  "wins": 630,
+  "baseline_wins": 635,
+  "outcome": "dropped"
  }
 ]
