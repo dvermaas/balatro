@@ -290,7 +290,7 @@ pub struct Picker<'a> {
 
 impl<'a> Picker<'a> {
     pub fn new(pub_: &'a Value) -> Picker<'a> {
-        Picker { pub_, b: build::decide(pub_), synth: synth_plays(pub_, SYNTH_HANDS, "SYNTH"), memo: HashMap::new(), planets: None }
+        Picker { pub_, b: build::decide(pub_), synth: synth_plays(pub_, crate::experiment::get().synth.unwrap_or(SYNTH_HANDS), "SYNTH"), memo: HashMap::new(), planets: None }
     }
 
     fn gain(&self, add: Option<&Value>, level_up: Option<(&str, i64, i64)>) -> Option<f64> {
@@ -322,7 +322,7 @@ impl<'a> Picker<'a> {
             // v28: planet_gain re-chooses the best play per deal (gain kept each sample's play fixed)
             let (pub_, planets) = (self.pub_, &mut self.planets);
             let g = lv.as_ref().map(|(h, a, b)| {
-                planets.get_or_insert_with(|| PlanetDeals::new(pub_, PLANET_DEALS, PLANET_EXTRA, "PLANET")).gain(pub_, (h.as_str(), *a, *b))
+                planets.get_or_insert_with(|| PlanetDeals::new(pub_, crate::experiment::get().planet_deals.unwrap_or(PLANET_DEALS), PLANET_EXTRA, "PLANET")).gain(pub_, (h.as_str(), *a, *b))
             });
             let g = g.unwrap_or(0.0); // `g or 0.0`
             let g = if g == 0.0 { 0.0 } else { g };
