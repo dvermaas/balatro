@@ -1120,5 +1120,16 @@
   "wins": 585,
   "baseline_wins": 478,
   "outcome": "promising"
+ },
+ {
+  "experiment": "Forecast: 64 rollouts per option (lab: 16)",
+  "theme": "Forecast",
+  "baseline": "v48",
+  "games": 2000,
+  "delta_ante": 0.133,
+  "se": 0.034,
+  "wins": 635,
+  "baseline_wins": 525,
+  "outcome": "promising"
  }
 ]
