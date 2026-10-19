@@ -1164,5 +1164,16 @@
   "wins": 615,
   "baseline_wins": 635,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Swaps consider the 4 weakest jokers (was 2)",
+  "theme": "Shop",
+  "baseline": "v52",
+  "games": 2000,
+  "delta_ante": 0.037,
+  "se": 0.019,
+  "wins": 622,
+  "baseline_wins": 635,
+  "outcome": "dropped"
  }
 ]
