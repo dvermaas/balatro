@@ -922,5 +922,38 @@
   "wins": 488,
   "baseline_wins": 515,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Boss Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.138,
+  "se": 0.021,
+  "wins": 464,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Juggle Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.082,
+  "se": 0.019,
+  "wins": 477,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for D6 Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.112,
+  "se": 0.021,
+  "wins": 487,
+  "baseline_wins": 515,
+  "outcome": "dropped"
  }
 ]

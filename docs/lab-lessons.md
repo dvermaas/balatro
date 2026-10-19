@@ -177,7 +177,9 @@ measured the wrong thing or was never asked:
   as well as Polychrome: the gain is the free shop joker an edition tag gives, more than the edition.
 - **v47, edition tags:** Polychrome, Holographic and Foil together, 2 x 2,000 seeds vs v46: 515 vs 431 and 461 vs
   396 wins (z = 4.83, 3.92), +0.155 +- 0.035 and +0.180 +- 0.032 ante; ante 5-7 deaths ~100 fewer on each set.
-  On top of v47 (515 wins) every other tag tried loses: Coupon 504, Buffoon 497, Charm 495, Voucher 488.
+  On top of v47 (515 wins) every other tag tried loses: Coupon 504, Buffoon 497, Charm 495, Voucher 488, D6 487,
+  Juggle 477, Boss 464. A skip pays only for a free joker or $25; packs, rerolls and coupons don't cover the lost
+  cash-out and shop. (The sim's view names tag_skip "Skip Tag" (tables.json); the game's is "Speed Tag".)
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
