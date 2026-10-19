@@ -209,6 +209,7 @@ measured the wrong thing or was never asked:
   Swaps over the 4 weakest jokers (was 2): 622 wins (+0.037 +- 0.019 ante, z = -0.74).
   The pack Picker with 4x samples (48 synthetic hands, 96 planet deals): 630 wins (z = -0.30). The forecast's
   rollout count was the noise that mattered.
+  Auto-buy bar 0.5 SE (was 1): 630 wins (-0.042 +- 0.027 ante).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

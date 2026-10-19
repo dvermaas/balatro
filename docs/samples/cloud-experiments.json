@@ -1186,5 +1186,16 @@
   "wins": 630,
   "baseline_wins": 635,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Forecast auto-buy bar 0.5 SE (was 1)",
+  "theme": "Shop",
+  "baseline": "v52",
+  "games": 2000,
+  "delta_ante": -0.042,
+  "se": 0.027,
+  "wins": 630,
+  "baseline_wins": 635,
+  "outcome": "dropped"
  }
 ]
