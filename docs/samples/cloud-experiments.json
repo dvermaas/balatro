@@ -955,5 +955,49 @@
   "wins": 487,
   "baseline_wins": 515,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Speed Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.068,
+  "se": 0.021,
+  "wins": 502,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Top-up Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.007,
+  "se": 0.012,
+  "wins": 502,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Handy Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.036,
+  "se": 0.011,
+  "wins": 503,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Garbage Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.044,
+  "se": 0.014,
+  "wins": 506,
+  "baseline_wins": 515,
+  "outcome": "dropped"
  }
 ]
