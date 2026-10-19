@@ -999,5 +999,38 @@
   "wins": 506,
   "baseline_wins": 515,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Meteor Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.02,
+  "se": 0.013,
+  "wins": 505,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Ethereal Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.043,
+  "se": 0.012,
+  "wins": 495,
+  "baseline_wins": 515,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Standard Tags (on top of v47)",
+  "theme": "Blinds",
+  "baseline": "v47",
+  "games": 2000,
+  "delta_ante": -0.02,
+  "se": 0.012,
+  "wins": 507,
+  "baseline_wins": 515,
+  "outcome": "dropped"
  }
 ]
