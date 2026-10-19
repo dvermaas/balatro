@@ -204,6 +204,8 @@ measured the wrong thing or was never asked:
   hit a crash (2 of 1,000 games): a tarot targeting the best/held card with every hand card debuffed aborted the
   rollout twice (Python fell back to Jackdaw there); **v51** makes it wait instead (400 of 400 games unchanged).
   v52 on the first seed set: 605 vs 478 wins for v48 (z = 5.8), 605 vs 585 for 32 rollouts (z = 0.97).
+- **On v52 (64 rollouts; second seed set, v52 = 635 wins):** up to 5 rerolls a shop (was 2): 615 wins (z = -1.77);
+  rerolls only went 8.51 -> 8.58 a game, the interest floor binds first.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

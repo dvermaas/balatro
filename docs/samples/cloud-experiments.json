@@ -1153,5 +1153,16 @@
   "wins": 605,
   "baseline_wins": 478,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Up to 5 rerolls per shop (was 2)",
+  "theme": "Shop",
+  "baseline": "v52",
+  "games": 2000,
+  "delta_ante": -0.024,
+  "se": 0.009,
+  "wins": 615,
+  "baseline_wins": 635,
+  "outcome": "dropped"
  }
 ]
