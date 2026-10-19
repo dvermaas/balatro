@@ -613,5 +613,20 @@
   "died_ante_1_4": 220,
   "died_ante_5_7": 772,
   "died_ante_8": 373
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v52",
+  "version_id": "rust",
+  "change": "forecasts play 64 rollouts per option (lab was 16)",
+  "games": 2000,
+  "mean_ante": 6.734,
+  "se": 0.041,
+  "wins": 605,
+  "win_rate": 0.302,
+  "mean_round": 18.03,
+  "died_ante_1_4": 222,
+  "died_ante_5_7": 779,
+  "died_ante_8": 394
  }
 ]
