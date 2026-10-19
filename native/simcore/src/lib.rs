@@ -852,8 +852,10 @@ pub fn plan(kind: &str, n: usize, arg: Option<&str>, hand: &[CardRef], suit: Opt
                 _ => Ok(None),
             }
         }
-        "best" => order.first().map(|&i| Some(vec![i])).ok_or(()),
-        "held" => order.last().map(|&i| Some(vec![i])).ok_or(()),
+        // v51: every hand card debuffed leaves no target: wait (Python raised here and fell back to Jackdaw,
+        // which no longer exists, so a rollout reaching it twice crashed the forecast)
+        "best" => Ok(order.first().map(|&i| vec![i])),
+        "held" => Ok(order.last().map(|&i| vec![i])),
         _ => Ok(None),
     }
 }

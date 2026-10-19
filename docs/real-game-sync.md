@@ -5,7 +5,7 @@ lab gains only hold if rumbot plays a seed the way the real game does. This chec
 JEV and no credits.
 
 `jevbot play --lab` plays exactly as `jevlab --arm F` does: the code stand-in for JEV (CodeJev with item picks)
-and the lab's forecasts (16 rollouts, no time budget), so decisions do not depend on machine speed. The same seed
+and the lab's forecasts (64 rollouts since v52, no time budget), so decisions do not depend on machine speed. The same seed
 played on the real game and on rumbot should then go step for step the same.
 
 ## Steps

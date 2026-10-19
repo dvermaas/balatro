@@ -1108,7 +1108,7 @@
   "se": 0.032,
   "wins": 576,
   "baseline_wins": 525,
-  "outcome": "promising"
+  "outcome": "shipped v52"
  },
  {
   "experiment": "Forecast: 32 rollouts per option, confirmation on the first seed set",
@@ -1119,7 +1119,7 @@
   "se": 0.032,
   "wins": 585,
   "baseline_wins": 478,
-  "outcome": "promising"
+  "outcome": "shipped v52"
  },
  {
   "experiment": "Forecast: 64 rollouts per option (lab: 16)",
@@ -1130,6 +1130,17 @@
   "se": 0.034,
   "wins": 635,
   "baseline_wins": 525,
-  "outcome": "promising"
+  "outcome": "shipped v52"
+ },
+ {
+  "experiment": "Forecast: 128 rollouts per option (first 1,000 seeds, vs 64)",
+  "theme": "Forecast",
+  "baseline": "64 rollouts",
+  "games": 1000,
+  "delta_ante": 0.002,
+  "se": 0.042,
+  "wins": 308,
+  "baseline_wins": 326,
+  "outcome": "dropped"
  }
 ]

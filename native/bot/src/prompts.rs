@@ -87,6 +87,11 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v52 (Rust only): forecasts play 64 rollouts per option (production was 24, the lab 16). On 2,000 seeds 16 -> 32 ",
+    "-> 64 rollouts won 525 -> 576 -> 635 (32 vs 16 confirmed on the other seed set: 585 vs 478, z = 5.0); 128 won ",
+    "no more. The old 'more compute does not help' came from 128-200 seeds. Based on: ",
+    "v51 (Rust only): a forecast rollout holding a tarot that targets the best or the held card, with every hand card ",
+    "debuffed, waits instead of aborting (with 128 rollouts 2 of 1,000 games crashed there). Based on: ",
     "v50 (Rust only): real game only, rumbot games unchanged. A joker a tag made free shows cost 0 once owned; ",
     "the forecast read that as $2+ of extra sell value (Swashbuckler and selling looked better), so D424YXQH split ",
     "from rumbot at its round-8 shop. Cost 0 now means no extra sell value. Based on: ",

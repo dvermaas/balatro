@@ -142,7 +142,7 @@ fn play(seed: &str) -> Result<Value, String> {
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
     let e = jevbot::experiment::get();
-    bot.dec = jevbot::decisions::DecisionCfg::lab_with(e.fc_n.unwrap_or(16), e.fc_bosses.unwrap_or(3));
+    bot.dec = jevbot::decisions::DecisionCfg::lab_with(e.fc_n.unwrap_or(64), e.fc_bosses.unwrap_or(3));
     bot.recorder.raw_states = want_trace; // only decisions.jsonl is read back
     bot.act("start", Some(&json!({"seed": seed, "deck": "RED", "stake": "WHITE"}))).map_err(|e| format!("start: {e:?}"))?;
     let mut engine_won = false;

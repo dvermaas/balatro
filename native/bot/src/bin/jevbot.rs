@@ -8,7 +8,7 @@
 //! from `.env` (JEV_API_KEY or TYPESAFE_API_KEY, already set in the environment wins). `--code-jev`
 //! uses CodeJev instead: no key, no tokens. `--seed` starts the first run with that seed; later runs
 //! take the game's own seeds. The bot keeps its recorder and events as in Python. `--lab` plays exactly as
-//! `jevlab --arm F` does (CodeJev with item picks, DecisionCfg::lab: 16 rollouts, no time budget), so a seed played
+//! `jevlab --arm F` does (CodeJev with item picks, DecisionCfg::lab: 64 rollouts, no time budget), so a seed played
 //! on the real game can be compared decision by decision with the same seed on rumbot
 //! (docs/samples/cloud-lab/sync_check.py).
 

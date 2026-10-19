@@ -79,10 +79,11 @@ pub struct DecisionCfg {
 
 impl DecisionCfg {
     pub fn production() -> Self {
-        DecisionCfg { forecast_n: 24, forecast_budget: Some(4.0), forecast_bosses: 3, strong_vouchers: true }
+        // v52: 64 rollouts (was 24; 16 -> 32 -> 64 won 525 -> 576 -> 635 of 2,000, 128 no better)
+        DecisionCfg { forecast_n: 64, forecast_budget: Some(4.0), forecast_bosses: 3, strong_vouchers: true }
     }
     pub fn lab() -> Self {
-        Self::lab_with(16, 3)
+        Self::lab_with(64, 3) // v52 (was 16)
     }
     /// A lab arm with `n` / `bosses` options (BOT_ARMS "n" / "bosses").
     pub fn lab_with(n: i64, bosses: i64) -> Self {

@@ -18,7 +18,7 @@
 //!   skip-min=A    skip-tags only from ante A
 //!   skip-max=A    skip-tags up to ante A (default decisions::SKIP_ANTE)
 //!   fc-bosses=B   jevlab's shop/item forecasts look B bosses ahead (DecisionCfg::lab: 3)
-//!   fc-n=N        jevlab's forecasts play N rollouts per option (DecisionCfg::lab: 16)
+//!   fc-n=N        jevlab's forecasts play N rollouts per option (DecisionCfg::lab: 64)
 //!   strong-vouchers  the production rule in the lab: decisions::VOUCHERS marked strong are bought from money
 //!                 above the interest floor (DecisionCfg::lab turns it off)
 //!   buy-vouchers=A+B more vouchers treated as strong ("Blank+Clearance_Sale"; _ for a space)

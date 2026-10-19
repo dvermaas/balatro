@@ -199,6 +199,10 @@ measured the wrong thing or was never asked:
   the forecast's noise picks wrong buys. (Production plays 24 rollouts within a 4 s budget.) First seed set:
   585 vs 478 wins (z = 5.0), +0.112 +- 0.032 ante; pooled 1,161 vs 1,003.
   64 rollouts (second seed set): 635 wins (16: 525, 32: 576; 64 vs 32 z = 2.84), 9.2 s a game (16: 3.8, 32: 5.5).
+  128 rollouts (first 1,000 seeds): 308 vs 326 wins for 64, no better. **v52** plays 64 everywhere (production was 24
+  within its 4 s budget, the lab 16), so lab numbers from v52 on are not comparable with earlier ones. 128 rollouts
+  hit a crash (2 of 1,000 games): a tarot targeting the best/held card with every hand card debuffed aborted the
+  rollout twice (Python fell back to Jackdaw there); **v51** makes it wait instead (400 of 400 games unchanged).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
