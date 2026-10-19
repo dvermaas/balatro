@@ -17,6 +17,8 @@
 //!                 ("Investment", "Negative", ...; skip-tags=none skips nothing)
 //!   skip-min=A    skip-tags only from ante A
 //!   skip-max=A    skip-tags up to ante A (default decisions::SKIP_ANTE)
+//!   fc-bosses=B   jevlab's shop/item forecasts look B bosses ahead (DecisionCfg::lab: 3)
+//!   fc-n=N        jevlab's forecasts play N rollouts per option (DecisionCfg::lab: 16)
 //!   strong-vouchers  the production rule in the lab: decisions::VOUCHERS marked strong are bought from money
 //!                 above the interest floor (DecisionCfg::lab turns it off)
 //!   buy-vouchers=A+B more vouchers treated as strong ("Blank+Clearance_Sale"; _ for a space)
@@ -48,6 +50,8 @@ pub struct Exp {
     pub skip_tags: Vec<String>,
     pub skip_min: i64,
     pub skip_max: Option<i64>,
+    pub fc_bosses: Option<i64>,
+    pub fc_n: Option<i64>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -69,6 +73,8 @@ pub fn get() -> &'static Exp {
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,
               skip_max: s.split(',').find_map(|x| x.trim().strip_prefix("skip-max=")?.parse().ok()),
+              fc_bosses: s.split(',').find_map(|x| x.trim().strip_prefix("fc-bosses=")?.parse().ok()),
+              fc_n: s.split(',').find_map(|x| x.trim().strip_prefix("fc-n=")?.parse().ok()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               voucher_floor: s.split(',').find_map(|x| x.trim().strip_prefix("voucher-floor=")?.parse().ok()) };

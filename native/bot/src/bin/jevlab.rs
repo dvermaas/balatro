@@ -141,7 +141,8 @@ fn play(seed: &str) -> Result<Value, String> {
         "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(RumbotGame::new()), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
-    bot.dec = jevbot::decisions::DecisionCfg::lab();
+    let e = jevbot::experiment::get();
+    bot.dec = jevbot::decisions::DecisionCfg::lab_with(e.fc_n.unwrap_or(16), e.fc_bosses.unwrap_or(3));
     bot.recorder.raw_states = want_trace; // only decisions.jsonl is read back
     bot.act("start", Some(&json!({"seed": seed, "deck": "RED", "stake": "WHITE"}))).map_err(|e| format!("start: {e:?}"))?;
     let mut engine_won = false;
