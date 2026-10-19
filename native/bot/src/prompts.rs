@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v50 (Rust only): real game only, rumbot games unchanged. A joker a tag made free shows cost 0 once owned; ",
+    "the forecast read that as $2+ of extra sell value (Swashbuckler and selling looked better), so D424YXQH split ",
+    "from rumbot at its round-8 shop. Cost 0 now means no extra sell value. Based on: ",
     "v49 (Rust only): no play change. `jevbot play --lab` plays as jevlab --arm F does (CodeJev with item picks, ",
     "lab forecasts), to check the real game against rumbot seed by seed. Based on: ",
     "v48 (Rust only): blind skips for tags run through ante 4 (was 3). 2 x 2,000 seeds vs v47: 525 vs 515 and ",

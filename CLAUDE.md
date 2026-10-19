@@ -86,6 +86,10 @@ git history up to `4628654`. See README.md for setup.
 - Mods live outside the repo in `%APPDATA%\Balatro\Mods`. `mods/jev_tweaks` is the source of truth
   for our mod; copy it there after editing and restart the game. BalatroBot has a local patch in
   `endpoints/start.lua` (viewed_back nil guard) that an update would overwrite.
+- More BalatroBot patches (copies plus `.orig` in `mods/balatrobot-patches/`; copy them back over
+  `Mods\balatrobot\src\lua` after a BalatroBot update): `cash_out.lua` waits for the game's queued events
+  (without it, fast clients got last round's payout and a shop from before tags applied), `buy.lua` counts
+  slots like the game does (Negative jokers fit full slots), and `gamestate.lua` reports `state.forced` (Cerulean Bell).
 - Balatro's patched Lua source is dumped to `%APPDATA%\Balatro\Mods\lovely\dump`: read it to
   understand game behaviour. Logs: `Mods\lovely\log`.
 - Sim fidelity: the reference is the modded game's Lua in `Mods\lovely\dump` (SMODS rewrites some
