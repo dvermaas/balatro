@@ -1351,5 +1351,16 @@
   "wins": 794,
   "baseline_wins": 659,
   "outcome": "promising"
+ },
+ {
+  "experiment": "Play more readily: play if >= 0.75x the modeled next play",
+  "theme": "Play",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": 0.401,
+  "se": 0.037,
+  "wins": 852,
+  "baseline_wins": 659,
+  "outcome": "promising"
  }
 ]

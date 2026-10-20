@@ -241,7 +241,11 @@ measured the wrong thing or was never asked:
   hinge on the model's accuracy. The v32-trained model stays.
 - **Play vs discard (`play-now-ratio`, CodeJev plays if its best play >= R x the best discard's modeled next play):**
   R = 1.15 (discard more): 592 vs 659 wins (z = -5.25). **R = 0.9 (play more readily): 794 vs 659 wins (z = 6.6),
-  +0.297 +- 0.033 ante**: the discard's modeled next play is optimistic.
+  +0.297 +- 0.033 ante**; R = 0.75: **852 wins** (+0.401 +- 0.037; vs 0.9 z = 3.28). The modeled next play is not
+  optimistic (2,730 discards in 200 traced v54 games: the next play scored 1.33x its prediction on average, 1.15x
+  median, and beat the hand given up 92% of the time). The rule was wrong, not the forecast: it treated play-now
+  vs discard-then-play as either/or with discards free, but a play also replaces its cards, and a discard kept is
+  worth a lot later in the round. Discard only for a clear gain.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
