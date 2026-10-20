@@ -1406,5 +1406,16 @@
   "wins": 874,
   "baseline_wins": 862,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Forecast rollouts discard only when further behind (rollout-behind 0.6)",
+  "theme": "Forecast",
+  "baseline": "v55",
+  "games": 1000,
+  "delta_ante": 0.001,
+  "se": 0.039,
+  "wins": 427,
+  "baseline_wins": 419,
+  "outcome": "neutral"
  }
 ]

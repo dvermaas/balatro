@@ -252,6 +252,8 @@ measured the wrong thing or was never asked:
   R = 0.4: 809 vs 862 (z = -2.56); 0.6 stays.
   A looser 0.8 while discards left >= hands left (`play-now-spare=0.8`): 874 vs 862 wins (z = 0.69, -0.017 +- 0.020
   ante): neutral, not shipped.
+  Rollouts that discard only when further behind (`rollout-behind=0.6`, the rollouts' own play-vs-discard rule):
+  first 1,000 seeds 427 vs 419 wins (+0.001 +- 0.039 ante, 392 games changed): neutral, dropped.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

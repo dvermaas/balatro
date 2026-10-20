@@ -507,9 +507,17 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             o.insert("gain_percent".into(), json!(gain));
         }
         // Order the alternatives by measured survival value, not suit enumeration or build preference.
+        let dkey = crate::experiment::get().discard_key.as_deref();
         let key = |d: &Value| -> (f64, f64) {
             let (c, e) = (gs::num(gs::get(d, "chance_to_clear")), gs::num(gs::get(d, "expected_score")));
-            if hands_left <= 1.0 { (c, e) } else { (e, c) }
+            match dkey {
+                // lab (`discard-key=pace`): with hands to spare, the discard most likely to make pace next play
+                Some("pace") if hands_left > 1.0 => (gs::num(gs::get(d, "chance_to_meet_pace")), e),
+                // lab (`discard-key=low`): the best poor draw (20th percentile), then the mean
+                Some("low") if hands_left > 1.0 => (gs::num(gs::get(d, "low_score")), e),
+                _ if hands_left <= 1.0 => (c, e),
+                _ => (e, c),
+            }
         };
         discards.sort_by(|x, y| key(y).partial_cmp(&key(x)).unwrap()); // reverse=True, stable
     }
