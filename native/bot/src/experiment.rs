@@ -26,6 +26,8 @@
 //!   rollout-nodiscard  forecast rollouts never discard (a probe: how much do their discards matter?)
 //!   rollout-discard2=S  rollouts discard toward the keep set (old rule, flush draw, straight draw, pairs, best
 //!                 play) with the best mean score over S order-free redraws (simcore::SMART_DISCARD)
+//!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
+//!                 play (default 1; a discard keeps the hand, so R > 1 discards more)
 //!   boss-reroll=A+B  at blind select, reroll the ante's boss when it is one of these ("Violet_Vessel+The_Wall")
 //!                 with Retcon, or Director's Cut once per ante, and $10 (sim view only: BalatroBot has no endpoint)
 //!   strong-vouchers  the production rule in the lab: decisions::VOUCHERS marked strong are bought from money
@@ -72,6 +74,7 @@ pub struct Exp {
     pub boss_reroll: Vec<String>,
     pub rollout_nodiscard: bool,
     pub rollout_discard2: usize,
+    pub play_now_ratio: Option<f64>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -102,6 +105,7 @@ pub fn get() -> &'static Exp {
               sure_se: s.split(',').find_map(|x| x.trim().strip_prefix("sure-se=")?.parse().ok()),
               rollout_nodiscard: has("rollout-nodiscard"),
               rollout_discard2: num("rollout-discard2") as usize,
+              play_now_ratio: s.split(',').find_map(|x| x.trim().strip_prefix("play-now-ratio=")?.parse().ok()),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

@@ -173,7 +173,8 @@ impl Jev for CodeJev {
                     let bd = gs::get(state, "best_draw_by_measurement");
                     let play = gs::truthy(gs::get(sp, "clears_blind_alone"))
                         || gs::d(bd).get("modeled_average_next_play").is_none()
-                        || gs::num(gs::get(sp, "estimated_score")) >= gs::num(gs::get(bd, "modeled_average_next_play"));
+                        || gs::num(gs::get(sp, "estimated_score"))
+                            >= crate::experiment::get().play_now_ratio.unwrap_or(1.0) * gs::num(gs::get(bd, "modeled_average_next_play"));
                     json!({"type": "noul", "noul": if play { 1.0 } else { 0.0 }})
                 }
                 _ => {
