@@ -1274,5 +1274,16 @@
   "wins": 601,
   "baseline_wins": 659,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Boss rerolls (Director's Cut/Retcon) for the 5 deadliest bosses",
+  "theme": "Bosses",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": -0.002,
+  "se": 0.005,
+  "wins": 661,
+  "baseline_wins": 659,
+  "outcome": "dropped"
  }
 ]
