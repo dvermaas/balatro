@@ -249,6 +249,7 @@ measured the wrong thing or was never asked:
   R = 0.6: 862 wins (vs 0.75 z = 0.55): flattening. First seed set: 825 vs 640 (z = 8.4). **v55** makes 0.6 the
   default of the code stand-in for JEV (codejev::PLAY_NOW_RATIO; the lab, `jevbot play --lab/--code-jev`, the panel
   with `--code-jev`). With real JEV the play_now answer is JEV's own; its prompt would need the same lesson.
+  R = 0.4: 809 vs 862 (z = -2.56); 0.6 stays.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

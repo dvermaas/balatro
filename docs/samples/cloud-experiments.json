@@ -1384,5 +1384,16 @@
   "wins": 825,
   "baseline_wins": 640,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Play now unless a discard beats it by 1/0.4 (v55: 1/0.6)",
+  "theme": "Play",
+  "baseline": "v55",
+  "games": 2000,
+  "delta_ante": -0.059,
+  "se": 0.03,
+  "wins": 809,
+  "baseline_wins": 862,
+  "outcome": "dropped"
  }
 ]

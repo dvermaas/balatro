@@ -28,6 +28,7 @@
 //!                 play) with the best mean score over S order-free redraws (simcore::SMART_DISCARD)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
+//!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
 //!   boss-reroll=A+B  at blind select, reroll the ante's boss when it is one of these ("Violet_Vessel+The_Wall")
 //!                 with Retcon, or Director's Cut once per ante, and $10 (sim view only: BalatroBot has no endpoint)
 //!   strong-vouchers  the production rule in the lab: decisions::VOUCHERS marked strong are bought from money
@@ -75,6 +76,7 @@ pub struct Exp {
     pub rollout_nodiscard: bool,
     pub rollout_discard2: usize,
     pub play_now_ratio: Option<f64>,
+    pub play_now_spare: Option<f64>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -106,6 +108,7 @@ pub fn get() -> &'static Exp {
               rollout_nodiscard: has("rollout-nodiscard"),
               rollout_discard2: num("rollout-discard2") as usize,
               play_now_ratio: s.split(',').find_map(|x| x.trim().strip_prefix("play-now-ratio=")?.parse().ok()),
+              play_now_spare: s.split(',').find_map(|x| x.trim().strip_prefix("play-now-spare=")?.parse().ok()),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

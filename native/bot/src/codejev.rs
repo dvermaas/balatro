@@ -176,10 +176,16 @@ impl Jev for CodeJev {
                 "noul" => {
                     let sp = gs::get(state, "strongest_play");
                     let bd = gs::get(state, "best_draw_by_measurement");
+                    let e = crate::experiment::get();
+                    let rnd = gs::get(state, "round");
+                    let spare = gs::num(gs::get(rnd, "discards_left")) >= gs::num(gs::get(rnd, "hands_left"));
+                    let ratio = match e.play_now_spare {
+                        Some(r) if spare => r,
+                        _ => e.play_now_ratio.unwrap_or(PLAY_NOW_RATIO),
+                    };
                     let play = gs::truthy(gs::get(sp, "clears_blind_alone"))
                         || gs::d(bd).get("modeled_average_next_play").is_none()
-                        || gs::num(gs::get(sp, "estimated_score"))
-                            >= crate::experiment::get().play_now_ratio.unwrap_or(PLAY_NOW_RATIO) * gs::num(gs::get(bd, "modeled_average_next_play"));
+                        || gs::num(gs::get(sp, "estimated_score")) >= ratio * gs::num(gs::get(bd, "modeled_average_next_play"));
                     json!({"type": "noul", "noul": if play { 1.0 } else { 0.0 }})
                 }
                 _ => {
