@@ -1252,5 +1252,16 @@
   "wins": 644,
   "baseline_wins": 659,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Also skip blinds for Uncommon Tags, retested at 64 rollouts",
+  "theme": "Blinds",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": -0.088,
+  "se": 0.023,
+  "wins": 648,
+  "baseline_wins": 659,
+  "outcome": "dropped"
  }
 ]

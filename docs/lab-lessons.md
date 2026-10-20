@@ -216,6 +216,8 @@ measured the wrong thing or was never asked:
   Weight 1.0: 648 vs 658 wins (z = -0.81); 0.5 stays. v54 (Cerulean Bell discard fix + rumbot forced-card fix):
   all 2,000 games of the second seed set identical to v53.
   Money tail 0.5 retested on v54: 644 vs 659 wins (z = -1.02); money is still not the bottleneck.
+  Uncommon Tag skips retested on v54: 648 wins (-0.088 +- 0.023 ante). Where v54 dies (second seed set): ante 1 85
+  (v44 36: Big 29, boss 54; 31 with no joker), ante 8 377 (Violet Vessel 128, Crimson Heart 77, Verdant Leaf 62).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
