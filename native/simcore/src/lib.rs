@@ -533,7 +533,7 @@ impl Policy {
             }
         }
         let behind = score * (hands_left as f64) < need as f64;
-        if discards_left > 0 && hands_left > 1 && behind {
+        if discards_left > 0 && hands_left > 1 && behind && !NO_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
             let toss = discard(&infos, &forced);
             if !toss.is_empty() {
                 if FREE_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
@@ -583,6 +583,8 @@ impl Policy {
 // (Policy::decide) use the same choice, so the forecast values discard jokers the way the bot plays them.
 
 pub static FREE_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab (`rollout-nodiscard`): rollouts never discard when behind (to measure how much their discards matter).
+pub static NO_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Free discards the rollouts took (lab diagnostics).
 pub static FREE_DISCARDS_TAKEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 

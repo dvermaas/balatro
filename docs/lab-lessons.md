@@ -222,6 +222,11 @@ measured the wrong thing or was never asked:
   Boss rerolls (lab flag `boss-reroll`; buy Director's Cut/Retcon, reroll Violet Vessel, Crimson Heart, Verdant
   Leaf, The Wall, The Needle): owned in 319 games, 661 vs 659 wins, Violet Vessel deaths 128 -> 123. A rerolled
   finisher is mostly another hard finisher.
+- **Forecast calibration (v54, 200 traced games, `samples/cloud-lab/calib.py`):** the rollouts are pessimistic. Predicted
+  P(clear the next boss) vs actual: ante 6 68% vs 85%, ante 7 52% vs 78%, ante 8 37% vs 63%; forecasts under 50%
+  come true 64% of the time even from the shop right before the boss (no shop skipped), so it is the rollouts'
+  play, not only the frozen build: they play the best hand now and discard only when behind, keeping a 4-card
+  suit, else pairs, else the 2 highest cards (no straights, no joker goals).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
