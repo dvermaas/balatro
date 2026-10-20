@@ -534,7 +534,8 @@ impl Policy {
         }
         let behind = score * (hands_left as f64) < need as f64;
         if discards_left > 0 && hands_left > 1 && behind && !NO_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
-            let toss = discard(&infos, &forced);
+            let smart = SMART_DISCARD.load(std::sync::atomic::Ordering::Relaxed);
+            let toss = if smart > 0 { smart_discard(g, &scorer, &infos, &forced, &combo, smart) } else { discard(&infos, &forced) };
             if !toss.is_empty() {
                 if FREE_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
                     return (true, first_discard_adjust(toss, &infos, &rollout_goals(g), g.discards_used == 0));
@@ -583,6 +584,9 @@ impl Policy {
 // (Policy::decide) use the same choice, so the forecast values discard jokers the way the bot plays them.
 
 pub static FREE_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab (`rollout-discard2=S`): when behind, the rollout's discard compares a few keep sets (the old rule, the best
+/// flush draw, the best straight draw, pairs, the best play) by their mean best score over S order-free redraws.
+pub static SMART_DISCARD: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 /// Lab (`rollout-nodiscard`): rollouts never discard when behind (to measure how much their discards matter).
 pub static NO_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Free discards the rollouts took (lab diagnostics).
@@ -746,6 +750,112 @@ pub fn discard(infos: &[kernel::Card], forced: &[usize]) -> Vec<usize> {
         }
     }
     toss
+}
+
+/// Positions to toss for keeping `keep`: the rest, lowest first, at most 5, with the forced card (always selected).
+fn toss_for(infos: &[kernel::Card], keep: &[usize], forced: &[usize]) -> Vec<usize> {
+    let mut toss: Vec<usize> = (0..infos.len()).filter(|p| !keep.contains(p)).collect();
+    toss.sort_by_key(|&p| (!infos[p].debuff, rv(&infos[p])));
+    toss.truncate(5);
+    for &f in forced {
+        if !toss.contains(&f) {
+            toss.truncate(4);
+            toss.push(f);
+        }
+    }
+    toss
+}
+
+/// The best score among rollout candidates for a hand (no boss rules: an estimate for the discard choice).
+fn best_candidate_score(scorer: &kernel::Scorer, infos: &[kernel::Card]) -> f64 {
+    let mut best = 0.0f64;
+    for combo in candidates(infos) {
+        let mut combo = combo;
+        combo.sort_unstable();
+        combo.dedup();
+        let cs: Vec<kernel::Card> = combo.iter().map(|&p| infos[p]).collect();
+        let (name, sc) = kernel::classify(&cs);
+        best = best.max(scorer.score(infos, &combo, name, &sc));
+    }
+    best
+}
+
+/// `SMART_DISCARD`: the keep set whose order-free redraws score best on average (deterministic per hand).
+fn smart_discard(g: &GameState, scorer: &kernel::Scorer, infos: &[kernel::Card], forced: &[usize], best_play: &[usize], samples: usize) -> Vec<usize> {
+    let n = infos.len();
+    let live: Vec<usize> = (0..n).filter(|&p| !infos[p].debuff && infos[p].rank != 0 && infos[p].enh != kernel::STONE).collect();
+    let mut keeps: Vec<Vec<usize>> = Vec::new();
+    let old = discard(infos, forced);
+    keeps.push((0..n).filter(|p| !old.contains(p)).collect());
+    // best flush draw: the suit with the most live cards (3+), Wild cards count for every suit
+    if let Some((_, cards)) = (1u8..=4).map(|s| (s, live.iter().copied().filter(|&p| infos[p].suit == s || infos[p].enh == kernel::WILD).collect::<Vec<_>>()))
+        .filter(|(_, c)| c.len() >= 3).max_by_key(|(_, c)| c.len()) {
+        keeps.push(cards);
+    }
+    // best straight draw: the 5-rank window (A low or high) holding the most distinct ranks (3+), highest first
+    const ORDER: [u8; 14] = [14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+    let mut best_w: Option<Vec<usize>> = None;
+    for top in (4..ORDER.len()).rev() {
+        let mut w: Vec<usize> = Vec::new();
+        for &r in &ORDER[top - 4..=top] {
+            if let Some(&p) = live.iter().find(|&&p| infos[p].rank == r) {
+                w.push(p);
+            }
+        }
+        if w.len() >= 3 && best_w.as_ref().map_or(true, |b| w.len() > b.len()) {
+            best_w = Some(w);
+        }
+    }
+    if let Some(w) = best_w {
+        keeps.push(w);
+    }
+    let mut cnt = [0usize; 15];
+    for &p in &live {
+        cnt[infos[p].rank as usize] += 1;
+    }
+    let pairs: Vec<usize> = live.iter().copied().filter(|&p| cnt[infos[p].rank as usize] >= 2).collect();
+    if !pairs.is_empty() {
+        keeps.push(pairs);
+    }
+    keeps.push(best_play.to_vec());
+    let pile: Vec<kernel::Card> = g.draw_pile.iter().map(info).collect();
+    if pile.is_empty() {
+        return old;
+    }
+    // a fixed per-hand stream: the forecast stays reproducible and the game's own RNG is untouched
+    let mut h: u64 = 0x9E37_79B9_7F4A_7C15 ^ (g.draw_pile.len() as u64);
+    for c in &g.hand {
+        h = h.wrapping_mul(6364136223846793005).wrapping_add(cards::uid_of(c) as u64);
+    }
+    let mut next = || {
+        h = h.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        (h >> 33) as usize
+    };
+    let mut best: Option<(f64, Vec<usize>)> = None;
+    for keep in keeps {
+        let toss = toss_for(infos, &keep, forced);
+        if toss.is_empty() {
+            continue;
+        }
+        let kept: Vec<kernel::Card> = (0..n).filter(|p| !toss.contains(p)).map(|p| infos[p]).collect();
+        let draw = toss.len().min(pile.len());
+        let mut total = 0.0;
+        for _ in 0..samples {
+            let mut idx: Vec<usize> = (0..pile.len()).collect();
+            let mut hand = kept.clone();
+            for k in 0..draw {
+                let j = k + next() % (idx.len() - k);
+                idx.swap(k, j);
+                hand.push(pile[idx[k]]);
+            }
+            total += best_candidate_score(scorer, &hand);
+        }
+        let mean = total / samples as f64;
+        if best.as_ref().map_or(true, |b| mean > b.0) {
+            best = Some((mean, toss));
+        }
+    }
+    best.map(|b| b.1).unwrap_or(old)
 }
 
 // ---------------------------------------------------------------------------

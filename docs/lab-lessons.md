@@ -227,6 +227,7 @@ measured the wrong thing or was never asked:
   come true 64% of the time even from the shop right before the boss (no shop skipped), so it is the rollouts'
   play, not only the frozen build: they play the best hand now and discard only when behind, keeping a 4-card
   suit, else pairs, else the 2 highest cards (no straights, no joker goals).
+  Probe: rollouts that never discard: 541 vs 659 wins (z = -5.3). The rollouts' discards matter a lot to the forecast.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

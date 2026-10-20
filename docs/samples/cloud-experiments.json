@@ -1285,5 +1285,16 @@
   "wins": 661,
   "baseline_wins": 659,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Probe: forecast rollouts never discard",
+  "theme": "Forecast",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": -0.076,
+  "se": 0.035,
+  "wins": 541,
+  "baseline_wins": 659,
+  "outcome": "probe"
  }
 ]
