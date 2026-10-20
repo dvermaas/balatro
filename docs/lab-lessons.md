@@ -250,6 +250,8 @@ measured the wrong thing or was never asked:
   default of the code stand-in for JEV (codejev::PLAY_NOW_RATIO; the lab, `jevbot play --lab/--code-jev`, the panel
   with `--code-jev`). With real JEV the play_now answer is JEV's own; its prompt would need the same lesson.
   R = 0.4: 809 vs 862 (z = -2.56); 0.6 stays.
+  A looser 0.8 while discards left >= hands left (`play-now-spare=0.8`): 874 vs 862 wins (z = 0.69, -0.017 +- 0.020
+  ante): neutral, not shipped.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

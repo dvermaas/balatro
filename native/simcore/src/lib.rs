@@ -533,7 +533,9 @@ impl Policy {
             }
         }
         let behind = score * (hands_left as f64) < need as f64;
-        if discards_left > 0 && hands_left > 1 && behind && !NO_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
+        let k = f64::from_bits(ROLLOUT_BEHIND.load(std::sync::atomic::Ordering::Relaxed));
+        let behind_d = if k == 1.0 { behind } else { score * (hands_left as f64) * k < need as f64 };
+        if discards_left > 0 && hands_left > 1 && behind_d && !NO_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
             let smart = SMART_DISCARD.load(std::sync::atomic::Ordering::Relaxed);
             let toss = if smart > 0 { smart_discard(g, &scorer, &infos, &forced, &combo, smart) } else { discard(&infos, &forced) };
             if !toss.is_empty() {
@@ -589,6 +591,9 @@ pub static FREE_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::Atom
 pub static SMART_DISCARD: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 /// Lab (`rollout-nodiscard`): rollouts never discard when behind (to measure how much their discards matter).
 pub static NO_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab (`rollout-behind=K`): rollouts discard only while K x (best play x hands left) < chips needed (default 1;
+/// stored as f64 bits). K < 1 discards less.
+pub static ROLLOUT_BEHIND: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0x3FF0000000000000);
 /// Free discards the rollouts took (lab diagnostics).
 pub static FREE_DISCARDS_TAKEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 

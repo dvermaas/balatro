@@ -26,6 +26,7 @@
 //!   rollout-nodiscard  forecast rollouts never discard (a probe: how much do their discards matter?)
 //!   rollout-discard2=S  rollouts discard toward the keep set (old rule, flush draw, straight draw, pairs, best
 //!                 play) with the best mean score over S order-free redraws (simcore::SMART_DISCARD)
+//!   rollout-behind=K  forecast rollouts discard only while K x best play x hands left < chips needed (default 1)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -77,6 +78,7 @@ pub struct Exp {
     pub rollout_discard2: usize,
     pub play_now_ratio: Option<f64>,
     pub play_now_spare: Option<f64>,
+    pub rollout_behind: Option<f64>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -109,6 +111,7 @@ pub fn get() -> &'static Exp {
               rollout_discard2: num("rollout-discard2") as usize,
               play_now_ratio: s.split(',').find_map(|x| x.trim().strip_prefix("play-now-ratio=")?.parse().ok()),
               play_now_spare: s.split(',').find_map(|x| x.trim().strip_prefix("play-now-spare=")?.parse().ok()),
+              rollout_behind: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-behind=")?.parse().ok()),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
@@ -116,6 +119,9 @@ pub fn get() -> &'static Exp {
         simcore::FREE_DISCARD.store(e.free_discard, std::sync::atomic::Ordering::Relaxed);
         simcore::NO_DISCARD.store(e.rollout_nodiscard, std::sync::atomic::Ordering::Relaxed);
         simcore::SMART_DISCARD.store(e.rollout_discard2, std::sync::atomic::Ordering::Relaxed);
+        if let Some(k) = e.rollout_behind {
+            simcore::ROLLOUT_BEHIND.store(k.to_bits(), std::sync::atomic::Ordering::Relaxed);
+        }
         e
     })
 }

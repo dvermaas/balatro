@@ -1395,5 +1395,16 @@
   "wins": 809,
   "baseline_wins": 862,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "A looser 0.8 play-now ratio while discards left >= hands left",
+  "theme": "Play",
+  "baseline": "v55",
+  "games": 2000,
+  "delta_ante": -0.017,
+  "se": 0.02,
+  "wins": 874,
+  "baseline_wins": 862,
+  "outcome": "neutral"
  }
 ]
