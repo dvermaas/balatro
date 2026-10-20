@@ -1241,5 +1241,16 @@
   "wins": 648,
   "baseline_wins": 658,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Money tail 0.5, retested at 64 rollouts",
+  "theme": "Forecast",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": 0.013,
+  "se": 0.016,
+  "wins": 644,
+  "baseline_wins": 659,
+  "outcome": "dropped"
  }
 ]
