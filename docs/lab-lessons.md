@@ -246,6 +246,7 @@ measured the wrong thing or was never asked:
   median, and beat the hand given up 92% of the time). The rule was wrong, not the forecast: it treated play-now
   vs discard-then-play as either/or with discards free, but a play also replaces its cards, and a discard kept is
   worth a lot later in the round. Discard only for a clear gain.
+  R = 0.6: 862 wins (vs 0.75 z = 0.55): flattening.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
