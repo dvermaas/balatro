@@ -369,7 +369,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             plays.insert(0, p);
         }
     }
-    let margin = if !js.is_empty() { CLEAR_MARGIN } else { 1.0 };
+    let margin = if !js.is_empty() { crate::experiment::get().clear_margin.unwrap_or(CLEAR_MARGIN) } else { 1.0 };
     if let Some(c) = plays.iter().find(|p| clears(p, &info, margin)) {
         let desc = format!("{} ({}) clears the blind", gs::s(gs::get(c, "hand")), gs::int(gs::get(c, "estimate")));
         let cards = idx_list(gs::get(c, "cards"));

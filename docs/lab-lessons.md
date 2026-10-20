@@ -254,6 +254,8 @@ measured the wrong thing or was never asked:
   ante): neutral, not shipped.
   Rollouts that discard only when further behind (`rollout-behind=0.6`, the rollouts' own play-vs-discard rule):
   first 1,000 seeds 427 vs 419 wins (+0.001 +- 0.039 ante, 392 games changed): neutral, dropped.
+  Discards ranked by the chance the next play makes pace (`discard-key=pace`, was: the mean next play): first
+  1,000 seeds 413 vs 419 wins, -0.090 +- 0.048 ante: dropped. The mean next play stays.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

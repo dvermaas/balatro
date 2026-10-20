@@ -29,6 +29,8 @@
 //!   rollout-behind=K  forecast rollouts discard only while K x best play x hands left < chips needed (default 1)
 //!   discard-key=K  with hands to spare, CodeJev's discards are ranked by K: pace (chance the next play makes the
 //!                 pace) or low (20th-percentile next play), then the mean (default: the mean next play)
+//!   clear-margin=M  a play counts as clearing the blind when its estimate >= M x chips needed (with jokers;
+//!                 default decisions::play::CLEAR_MARGIN = 1.1)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -82,6 +84,7 @@ pub struct Exp {
     pub play_now_spare: Option<f64>,
     pub rollout_behind: Option<f64>,
     pub discard_key: Option<String>,
+    pub clear_margin: Option<f64>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -116,6 +119,7 @@ pub fn get() -> &'static Exp {
               play_now_spare: s.split(',').find_map(|x| x.trim().strip_prefix("play-now-spare=")?.parse().ok()),
               rollout_behind: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-behind=")?.parse().ok()),
               discard_key: s.split(',').find_map(|x| x.trim().strip_prefix("discard-key=")).map(String::from),
+              clear_margin: s.split(',').find_map(|x| x.trim().strip_prefix("clear-margin=")?.parse().ok()),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

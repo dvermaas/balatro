@@ -1417,5 +1417,16 @@
   "wins": 427,
   "baseline_wins": 419,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Rank discards by the chance the next play makes pace (was: mean next play)",
+  "theme": "Play",
+  "baseline": "v55",
+  "games": 1000,
+  "delta_ante": -0.09,
+  "se": 0.048,
+  "wins": 413,
+  "baseline_wins": 419,
+  "outcome": "dropped"
  }
 ]
