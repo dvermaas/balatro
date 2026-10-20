@@ -1,5 +1,6 @@
 //! Lab experiments that are not production policy (scripts/policy_lab.py BOT_ARMS, in Rust). Read once from
-//! `JEVLAB_EXP` (comma-separated flags); unset = production behaviour. Used by jevlab only.
+//! `JEVLAB_EXP` (comma-separated flags); unset = production behaviour. Set only by jevlab runs; the defaults here
+//! (VALUE_TAIL since v53) apply everywhere.
 //!
 //! Pair commitment (docs/lab-lessons.md "Open ideas"): the 5k-games teacher's highest hand at ante 6 is Pair
 //! in 77% of its wins, with Pair jokers and Pair levels together. Flags:
@@ -28,7 +29,8 @@
 //!   voucher-floor=F a strong voucher is bought while $F stays (default: the interest floor)
 //!   money-tail=W  forecast rollouts score blinds cleared + W * BLINDS_PER_DOLLAR[ante] * money at their end
 //!                 (rollouts never shop, so money and prices were worth nothing to the forecast)
-//!   value-tail=W  forecast rollouts score blinds cleared + W * P(win) * blinds left at their end
+//!   value-tail=W  forecast rollouts score blinds cleared + W * P(win) * blinds left at their end (v53: default
+//!                 VALUE_TAIL, also in production; value-tail=0 turns it off)
 //!                 (value_model.rs, learned from 5,000 lab games)
 
 use std::sync::OnceLock;
@@ -36,6 +38,8 @@ use std::sync::OnceLock;
 pub const PAIR_PLANET: f64 = 0.5;
 pub const PAIR_SE: f64 = 1.0;
 pub const PAIR_PLAY: f64 = 0.85;
+/// v53: the forecasts' value tail by default (production and lab); `value-tail=0` turns it off.
+pub const VALUE_TAIL: f64 = 0.5;
 /// Jokers that pay for playing Pairs (or for repeating one hand, which Pair commitment does).
 pub const PAIR_JOKERS: &[&str] = &["Jolly Joker", "Sly Joker", "The Duo", "Half Joker", "Supernova", "Card Sharp", "Spare Trousers", "Mad Joker", "Clever Joker"];
 
@@ -76,7 +80,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: num("value-tail"), free_discard: has("free-discard"), money_tail: num("money-tail"), eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,

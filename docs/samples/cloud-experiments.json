@@ -1218,6 +1218,17 @@
   "se": 0.017,
   "wins": 659,
   "baseline_wins": 635,
-  "outcome": "promising"
+  "outcome": "shipped v53"
+ },
+ {
+  "experiment": "v53: value tail 0.5, confirmation on the first seed set",
+  "theme": "Forecast",
+  "baseline": "v52",
+  "games": 2000,
+  "delta_ante": 0.024,
+  "se": 0.016,
+  "wins": 640,
+  "baseline_wins": 605,
+  "outcome": "shipped"
  }
 ]

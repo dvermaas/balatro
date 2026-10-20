@@ -1,7 +1,7 @@
 //! Learned P(win) of a rumbot position: per-ante logistic regressions on the first shop of each ante,
-//! trained on 5,000 lab games (docs/lab-lessons.md, docs/samples/cloud-lab/vcurve.py). Lab only:
-//! `JEVLAB_EXP=value-tail=<w>` adds `w * P(win) * blinds left` to each forecast rollout's blinds
-//! cleared (forecast_stats::m_blinds), a value for the run after the forecast's horizon.
+//! trained on 5,000 lab games (docs/lab-lessons.md, docs/samples/cloud-lab/vcurve.py). Since v53 every
+//! forecast adds `experiment::VALUE_TAIL * P(win) * blinds left` to each rollout's blinds cleared
+//! (forecast_stats::m_blinds), a value for the run after the forecast's horizon (`value-tail=<w>` overrides).
 
 use rumbot_sim::cards::{Edition, Enhancement};
 use rumbot_sim::game::{GameState, Phase};

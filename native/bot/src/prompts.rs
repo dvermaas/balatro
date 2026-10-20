@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v53 (Rust only): forecast rollouts that end alive add 0.5 x P(win) x blinds left (value_model.rs, learned ",
+    "from 5,000 lab games) to their blinds cleared: a value for the run after the 3-boss horizon. It lost at 16 ",
+    "rollouts; at 64, 2 x 2,000 seeds vs v52: 659 vs 635 and 640 vs 605 wins (pooled z ~ 2.45). Based on: ",
     "v52 (Rust only): forecasts play 64 rollouts per option (production was 24, the lab 16). On 2,000 seeds 16 -> 32 ",
     "-> 64 rollouts won 525 -> 576 -> 635 (32 vs 16 confirmed on the other seed set: 585 vs 478, z = 5.0); 128 won ",
     "no more. The old 'more compute does not help' came from 128-200 seeds. Based on: ",
