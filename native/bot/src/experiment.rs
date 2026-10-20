@@ -23,6 +23,8 @@
 //!   max-rerolls=N / swap-sells=N / synth=N / planet-deals=N  override decisions::MAX_REROLLS, SWAP_SELLS and
 //!                 picker::SYNTH_HANDS, PLANET_DEALS (the pack Picker's sample sizes)
 //!   sure-se=X     the forecasts' auto-buy bar in paired SEs over buying nothing (decisions::SURE_SE)
+//!   boss-reroll=A+B  at blind select, reroll the ante's boss when it is one of these ("Violet_Vessel+The_Wall")
+//!                 with Retcon, or Director's Cut once per ante, and $10 (sim view only: BalatroBot has no endpoint)
 //!   strong-vouchers  the production rule in the lab: decisions::VOUCHERS marked strong are bought from money
 //!                 above the interest floor (DecisionCfg::lab turns it off)
 //!   buy-vouchers=A+B more vouchers treated as strong ("Blank+Clearance_Sale"; _ for a space)
@@ -64,6 +66,7 @@ pub struct Exp {
     pub synth: Option<usize>,
     pub planet_deals: Option<usize>,
     pub sure_se: Option<f64>,
+    pub boss_reroll: Vec<String>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -92,6 +95,7 @@ pub fn get() -> &'static Exp {
               synth: s.split(',').find_map(|x| x.trim().strip_prefix("synth=")?.parse().ok()),
               planet_deals: s.split(',').find_map(|x| x.trim().strip_prefix("planet-deals=")?.parse().ok()),
               sure_se: s.split(',').find_map(|x| x.trim().strip_prefix("sure-se=")?.parse().ok()),
+              boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               voucher_floor: s.split(',').find_map(|x| x.trim().strip_prefix("voucher-floor=")?.parse().ok()) };

@@ -252,6 +252,26 @@ pub(crate) fn run_context(gs_: &Value) -> (Vec<String>, Value) {
 // decisions.py 143-155
 pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let b = current_blind(gs_);
+    let e = crate::experiment::get();
+    if !e.boss_reroll.is_empty() {
+        // lab: reroll a killer boss with Retcon, or Director's Cut once per ante, while $10 is there
+        let boss = gs::d(gs::get(gs_, "blinds")).values().find(|x| gs::get(x, "type").as_str() == Some("BOSS"))
+            .map(|x| gs::s(gs::get(x, "name")).to_string()).unwrap_or_default();
+        let owned = |k: &str| match gs::get(gs_, "used_vouchers") {
+            Value::Object(m) => m.contains_key(k),
+            Value::Array(a) => a.iter().any(|v| v.as_str() == Some(k)),
+            _ => false,
+        };
+        let key = json!([gs::get(gs_, "seed"), gs::get(gs_, "ante_num")]);
+        let can = owned("v_retcon") || (owned("v_directors_cut") && bot._boss_reroll != key);
+        if e.boss_reroll.contains(&boss) && can && gs::num(gs::get(gs_, "money")) >= 10.0 {
+            bot.emit("auto", json!({"question": "blind", "choice": "reroll_boss", "desc": format!("reroll {boss}"),
+                "reason": "lab boss-reroll"}));
+            bot._boss_reroll = key;
+            bot.act("reroll_boss", None)?;
+            return Ok(());
+        }
+    }
     if gs::get(&b, "type").as_str() == Some("BOSS") {
         bot.act("select", None)?;
         return Ok(());

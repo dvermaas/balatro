@@ -371,6 +371,14 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
             }
             g.step(&a);
         }
+        "reroll_boss" => {
+            phase_check(g, &[Phase::BlindSelect])?;
+            let a = Action::new(ActionType::RerollBoss);
+            if !g.is_legal(&a) {
+                return Err(illegal("Cannot reroll the boss"));
+            }
+            g.step(&a);
+        }
         "reroll" => {
             phase_check(g, &[Phase::Shop])?;
             let a = Action::new(ActionType::Reroll);

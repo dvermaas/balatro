@@ -307,6 +307,8 @@ pub struct JevBot {
     pub _leaf_bait: Value,
     /// v40: The Mouth's locked hand this round: [seed, ante, round, hand name], or None (Null).
     pub _mouth_lock: Value,
+    /// lab boss-reroll: [seed, ante] of the last Director's Cut reroll (once per ante), or None (Null).
+    pub _boss_reroll: Value,
     /// `_recent`: list of dicts; `_recent_seed` None (Null) or the seed.
     pub _recent: Vec<Value>,
     pub _recent_seed: Value,
@@ -345,7 +347,7 @@ impl JevBot {
             bench_name: String::new(), prompts_dir, runs_root: PathBuf::from("runs"), _auto_failed: HashSet::new(), _round_blind: Value::Null,
             _round_had_bones: false, _error_streak: 0, _finished_seed: Value::Null,
             stats: Stats::default(), last_state: None,
-            _shop_key: Value::Null, _shop_actions: 0, _failed: HashSet::new(), _rerolls: 0, _leaf_failed: Value::Null, _leaf_bait: Value::Null, _mouth_lock: Value::Null,
+            _shop_key: Value::Null, _shop_actions: 0, _failed: HashSet::new(), _rerolls: 0, _leaf_failed: Value::Null, _leaf_bait: Value::Null, _mouth_lock: Value::Null, _boss_reroll: Value::Null,
             _recent: vec![], _recent_seed: Value::Null, _forecast_cache: None, _item_forecast_cache: None,
             auto_actions: true, dec: crate::decisions::DecisionCfg::production(), event_hook: None,
         }

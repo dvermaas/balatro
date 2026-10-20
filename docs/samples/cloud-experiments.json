@@ -1263,5 +1263,16 @@
   "wins": 648,
   "baseline_wins": 659,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "No blind skips in ante 1 (retested on v54)",
+  "theme": "Blinds",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": 0.024,
+  "se": 0.037,
+  "wins": 601,
+  "baseline_wins": 659,
+  "outcome": "dropped"
  }
 ]
