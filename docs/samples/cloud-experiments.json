@@ -1307,5 +1307,16 @@
   "wins": 306,
   "baseline_wins": 332,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Value tail with the model retrained on v52-v54 games (weight 0.5)",
+  "theme": "Forecast",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": 0.001,
+  "se": 0.015,
+  "wins": 624,
+  "baseline_wins": 640,
+  "outcome": "dropped"
  }
 ]
