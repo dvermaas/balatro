@@ -1230,5 +1230,16 @@
   "wins": 640,
   "baseline_wins": 605,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Value tail weight 1.0 (v53: 0.5)",
+  "theme": "Forecast",
+  "baseline": "v53",
+  "games": 2000,
+  "delta_ante": -0.012,
+  "se": 0.012,
+  "wins": 648,
+  "baseline_wins": 658,
+  "outcome": "dropped"
  }
 ]
