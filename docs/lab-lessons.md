@@ -246,7 +246,9 @@ measured the wrong thing or was never asked:
   median, and beat the hand given up 92% of the time). The rule was wrong, not the forecast: it treated play-now
   vs discard-then-play as either/or with discards free, but a play also replaces its cards, and a discard kept is
   worth a lot later in the round. Discard only for a clear gain.
-  R = 0.6: 862 wins (vs 0.75 z = 0.55): flattening.
+  R = 0.6: 862 wins (vs 0.75 z = 0.55): flattening. First seed set: 825 vs 640 (z = 8.4). **v55** makes 0.6 the
+  default of the code stand-in for JEV (codejev::PLAY_NOW_RATIO; the lab, `jevbot play --lab/--code-jev`, the panel
+  with `--code-jev`). With real JEV the play_now answer is JEV's own; its prompt would need the same lesson.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

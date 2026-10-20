@@ -27,7 +27,7 @@
 //!   rollout-discard2=S  rollouts discard toward the keep set (old rule, flush draw, straight draw, pairs, best
 //!                 play) with the best mean score over S order-free redraws (simcore::SMART_DISCARD)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
-//!                 play (default 1; a discard keeps the hand, so R > 1 discards more)
+//!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   boss-reroll=A+B  at blind select, reroll the ante's boss when it is one of these ("Violet_Vessel+The_Wall")
 //!                 with Retcon, or Director's Cut once per ante, and $10 (sim view only: BalatroBot has no endpoint)
 //!   strong-vouchers  the production rule in the lab: decisions::VOUCHERS marked strong are bought from money

@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v55 (Rust only): the code stand-in for JEV plays now unless the best discard's modeled next play beats the ",
+    "best play by 1/0.6 (was: by anything). A play also replaces its cards and a kept discard is worth a lot later ",
+    "in the round. 2 x 2,000 seeds vs v54: 862 vs 659 and 825 vs 640 wins (z = 8.9, 8.4). Based on: ",
     "v54 (Rust only): under Cerulean Bell a discard includes the forced card (always selected; the game refuses a ",
     "discard without it). rumbot: a forced card no longer in the hand (a tarot made a new card of it) forces nothing ",
     "until the next draw, as in the game; before, every discard was refused and the lab game stopped. Based on: ",

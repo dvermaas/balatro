@@ -54,6 +54,11 @@ pub struct CodeJevStats {
     pub pack_picks: Vec<Value>,
 }
 
+/// v55: play now unless the best discard's modeled next play beats the best play by 1 / PLAY_NOW_RATIO (was: by
+/// anything). A play also replaces its cards, and a discard kept is worth a lot later in the round; the modeled
+/// next play itself is not optimistic (docs/lab-lessons.md). 2 x 2,000 seeds: 862 vs 659 and 825 vs 640 wins.
+pub const PLAY_NOW_RATIO: f64 = 0.6;
+
 /// policy_lab `_code_jev(bot_ref, items)`. `last` is the bot's `last_state` (set through `Jev::observe`).
 pub struct CodeJev {
     pub items: bool,
@@ -174,7 +179,7 @@ impl Jev for CodeJev {
                     let play = gs::truthy(gs::get(sp, "clears_blind_alone"))
                         || gs::d(bd).get("modeled_average_next_play").is_none()
                         || gs::num(gs::get(sp, "estimated_score"))
-                            >= crate::experiment::get().play_now_ratio.unwrap_or(1.0) * gs::num(gs::get(bd, "modeled_average_next_play"));
+                            >= crate::experiment::get().play_now_ratio.unwrap_or(PLAY_NOW_RATIO) * gs::num(gs::get(bd, "modeled_average_next_play"));
                     json!({"type": "noul", "noul": if play { 1.0 } else { 0.0 }})
                 }
                 _ => {

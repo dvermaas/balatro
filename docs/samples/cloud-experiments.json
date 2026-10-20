@@ -1350,7 +1350,7 @@
   "se": 0.033,
   "wins": 794,
   "baseline_wins": 659,
-  "outcome": "promising"
+  "outcome": "shipped v55"
  },
  {
   "experiment": "Play more readily: play if >= 0.75x the modeled next play",
@@ -1361,7 +1361,7 @@
   "se": 0.037,
   "wins": 852,
   "baseline_wins": 659,
-  "outcome": "promising"
+  "outcome": "shipped v55"
  },
  {
   "experiment": "Play more readily: play if >= 0.6x the modeled next play (vs 0.75)",
@@ -1372,6 +1372,17 @@
   "se": 0.023,
   "wins": 862,
   "baseline_wins": 852,
-  "outcome": "promising"
+  "outcome": "shipped v55"
+ },
+ {
+  "experiment": "v55: play now unless a discard beats it by 1/0.6, confirmation on the first seed set",
+  "theme": "Play",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": 0.417,
+  "se": 0.035,
+  "wins": 825,
+  "baseline_wins": 640,
+  "outcome": "shipped"
  }
 ]
