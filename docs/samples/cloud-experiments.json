@@ -1318,5 +1318,16 @@
   "wins": 624,
   "baseline_wins": 640,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Value tail with the retrained model at weight 0.25",
+  "theme": "Forecast",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": 0.003,
+  "se": 0.015,
+  "wins": 641,
+  "baseline_wins": 640,
+  "outcome": "dropped"
  }
 ]

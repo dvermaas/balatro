@@ -237,6 +237,8 @@ measured the wrong thing or was never asked:
   The v32-trained model was badly pessimistic for today's bot (ante 2: 19% predicted, 33% actual).
   In the lab (first seed set, held out from training) at weight 0.5: 624 vs 640 wins (z = -1.06). It predicts
   higher P(win), so the tail weighs about twice as much (like weight 1.0, also slightly worse).
+  At weight 0.25: 641 vs 640. A better-calibrated, better-ranking model changes nothing: the tail's gain does not
+  hinge on the model's accuracy. The v32-trained model stays.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
