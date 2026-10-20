@@ -27,6 +27,10 @@ Local changes to this copy are listed here, newest last:
 - Swashbuckler checked, no rumbot change (KGA553W7@375): card.lua:4609-4617 sums `sell_cost` of every other
   joker in G.jokers with no debuff test; rumbot matches. Jackdaw (jokers.py `_swashbuckler`) skips debuffed
   jokers (`and not j.debuff`), so under Crimson Heart it scores less (Mult 8 vs 11: 102 vs 111 x 122).
+- Cerulean Bell (game.rs `_restriction_ok`): a forced card no longer in the hand forces nothing. The game marks the card
+  itself (`ability.forced_selection`, blind.lua drawn_to_hand) and only nominates again on a draw; rumbot kept the old
+  card, so after a tarot made a new card of it (new uid) every discard was illegal until the next draw (the bot's
+  discards were refused 5 times and the lab game stopped: SGWJTLJ6, value-tail=1).
 
 - shop_pool.rs `soulable`: a Spectral Soul hit still makes the Black Hole roll (common_events.lua:2088-2100).
   `Tarot_Planet` pool (interleaved by `order`) + `random_consumables_set`; The Fool with nothing to copy draws from it

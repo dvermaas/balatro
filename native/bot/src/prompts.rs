@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v54 (Rust only): under Cerulean Bell a discard includes the forced card (always selected; the game refuses a ",
+    "discard without it). rumbot: a forced card no longer in the hand (a tarot made a new card of it) forces nothing ",
+    "until the next draw, as in the game; before, every discard was refused and the lab game stopped. Based on: ",
     "v53 (Rust only): forecast rollouts that end alive add 0.5 x P(win) x blinds left (value_model.rs, learned ",
     "from 5,000 lab games) to their blinds cleared: a value for the run after the 3-boss horizon. It lost at 16 ",
     "rollouts; at 64, 2 x 2,000 seeds vs v52: 659 vs 635 and 640 vs 605 wins (pooled z ~ 2.45). Based on: ",
