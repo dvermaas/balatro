@@ -1296,5 +1296,16 @@
   "wins": 541,
   "baseline_wins": 659,
   "outcome": "probe"
+ },
+ {
+  "experiment": "Smarter rollout discards (keep sets scored by order-free redraws), first 1,000 seeds",
+  "theme": "Forecast",
+  "baseline": "v54",
+  "games": 1000,
+  "delta_ante": -0.135,
+  "se": 0.053,
+  "wins": 306,
+  "baseline_wins": 332,
+  "outcome": "dropped"
  }
 ]

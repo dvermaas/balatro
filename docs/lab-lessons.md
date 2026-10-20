@@ -228,6 +228,13 @@ measured the wrong thing or was never asked:
   play, not only the frozen build: they play the best hand now and discard only when behind, keeping a 4-card
   suit, else pairs, else the 2 highest cards (no straights, no joker goals).
   Probe: rollouts that never discard: 541 vs 659 wins (z = -5.3). The rollouts' discards matter a lot to the forecast.
+  Smarter rollout discards (`rollout-discard2=4`: the old rule, flush draw, straight draw, pairs or the best play,
+  whichever scores best over 4 order-free redraws; 2x slower): first 1,000 seeds 306 vs 332 wins, -0.135 +- 0.053
+  ante. The bot's own discard works much the same way (odds over 32 draws), so "copy the bot" is not the fix; better
+  rollout play shifts the forecast's comparisons in ways that did not help. Dropped for now.
+- **Value model retrained (`samples/cloud-lab/vtrain.py`)** on v52-v54 games of the second seed set (7 runs), tested on
+  the first set: lower log loss at every ante (ante 6 0.569 vs 0.625) and AUC 0.70-0.76 at antes 5-8 (old 0.69-0.73).
+  The v32-trained model was badly pessimistic for today's bot (ante 2: 19% predicted, 33% actual).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
