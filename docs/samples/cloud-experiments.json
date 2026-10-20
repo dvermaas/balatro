@@ -1329,5 +1329,16 @@
   "wins": 641,
   "baseline_wins": 640,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Discard more: play only if 1.15x the modeled next play",
+  "theme": "Play",
+  "baseline": "v54",
+  "games": 2000,
+  "delta_ante": -0.135,
+  "se": 0.019,
+  "wins": 592,
+  "baseline_wins": 659,
+  "outcome": "dropped"
  }
 ]

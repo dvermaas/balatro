@@ -239,6 +239,8 @@ measured the wrong thing or was never asked:
   higher P(win), so the tail weighs about twice as much (like weight 1.0, also slightly worse).
   At weight 0.25: 641 vs 640. A better-calibrated, better-ranking model changes nothing: the tail's gain does not
   hinge on the model's accuracy. The v32-trained model stays.
+- **Play vs discard (`play-now-ratio`, CodeJev plays if its best play >= R x the best discard's modeled next play):**
+  R = 1.15 (discard more): 592 vs 659 wins (z = -5.25).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
