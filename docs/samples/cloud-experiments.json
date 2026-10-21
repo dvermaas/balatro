@@ -1604,5 +1604,27 @@
   "wins": 450,
   "baseline_wins": 457,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Scorer counts jokers updated before scoring (Obelisk, Green Joker, Ride the Bus; Blueprint)",
+  "theme": "Jokers",
+  "baseline": "v57",
+  "games": 2000,
+  "delta_ante": 0.019,
+  "se": 0.011,
+  "wins": 911,
+  "baseline_wins": 895,
+  "outcome": "shipped v58"
+ },
+ {
+  "experiment": "Scorer fixes, first seeds",
+  "theme": "Jokers",
+  "baseline": "v57",
+  "games": 2000,
+  "delta_ante": 0.009,
+  "se": 0.012,
+  "wins": 890,
+  "baseline_wins": 886,
+  "outcome": "shipped v58"
  }
 ]

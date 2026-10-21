@@ -50,9 +50,8 @@
 //!   planet-floor=N  the shop's planet rule (top hand's planet, else a Celestial pack) buys while $N stays (default
 //!                 decisions::PLANET_FLOOR = 4)
 //!   toss-plain    discard plans throw plain cards before enhanced, editioned or sealed ones (rank order otherwise)
-//!   scorer-fix    the scorer counts what jokers gain or reset before the hand scores (Obelisk, Green Joker, Ride the
-//!                 Bus), and a rightmost Blueprint copies nothing (implies blueprint-fix)
-//!   blueprint-fix  the scorer's rightmost Blueprint copies nothing (it copied the leftmost joker, like Brainstorm)
+//!   no-scorer-fix  v57's scorer: jokers read at their shown value even when the game updates them before the
+//!                 hand scores (Obelisk, Green Joker, Ride the Bus), and a rightmost Blueprint copying the leftmost joker
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -111,7 +110,6 @@ pub struct Exp {
     pub setup_play: Option<String>,
     pub cj_fc_n: Option<i64>,
     pub no_order_search: bool,
-    pub blueprint_fix: bool,
     pub card_order: bool,
     pub tarot_measure: bool,
     pub fc_order: bool,
@@ -119,7 +117,7 @@ pub struct Exp {
     pub early_ante: Option<i64>,
     pub planet_floor: Option<i64>,
     pub toss_plain: bool,
-    pub scorer_fix: bool,
+    pub no_scorer_fix: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -159,7 +157,6 @@ pub fn get() -> &'static Exp {
               setup_play: s.split(',').find_map(|x| x.trim().strip_prefix("setup-play=")).map(String::from),
               cj_fc_n: s.split(',').find_map(|x| x.trim().strip_prefix("cj-fc-n=")?.parse().ok()),
               no_order_search: has("no-order-search"),
-              blueprint_fix: has("blueprint-fix"),
               card_order: has("card-order"),
               tarot_measure: has("tarot-measure"),
               fc_order: has("fc-order"),
@@ -167,7 +164,7 @@ pub fn get() -> &'static Exp {
               early_ante: s.split(',').find_map(|x| x.trim().strip_prefix("early-ante=")?.parse().ok()),
               planet_floor: s.split(',').find_map(|x| x.trim().strip_prefix("planet-floor=")?.parse().ok()),
               toss_plain: has("toss-plain"),
-              scorer_fix: has("scorer-fix"),
+              no_scorer_fix: has("no-scorer-fix"),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

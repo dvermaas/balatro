@@ -310,6 +310,9 @@ measured the wrong thing or was never asked:
   `scorer-fix` (with the Blueprint fix): Obelisk 220 of 267 exact, Green Joker 623 of 776, all plays 86%.
   In the lab (Obelisk, Green Joker, Blueprint): first 1,000 seeds of the second set 474 vs 457 wins (34/17, z = 2.38),
   +0.039 +- 0.013 ante, 63 games changed. Ride the Bus added (kernel hand cond 12: no face card scored).
+  With Ride the Bus, second half: 437 vs 438. Second set 911 vs 895 (62/46), first set 890 vs 886 (56/52, +0.009 +-
+  0.012 ante); pooled 118/98 (z = 1.36). **v58** ships the fixes (lab and production; `no-scorer-fix` restores v57's
+  scorer): small, but they are the game's rules and the bot's numbers are what every decision reads.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,

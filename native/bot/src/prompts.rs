@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v58: the scorer counts what jokers gain or lose before the hand scores, as the game does: Obelisk gains X0.2 or ",
+    "resets to X1 when the hand (counted with this play) is the most played, Green Joker gains +1, Ride the Bus gains ",
+    "+1 or resets when a face card scores; a rightmost Blueprint copies nothing. Plays estimated exactly: 73% -> 86%. ",
+    "Lab: 911 vs 895 and 890 vs 886 wins. Based on: ",
     "v57: jokers are ordered in the shop by the best mean best-play score over 12 sampled deals (pairwise swaps ",
     "from the current order while one gains 0.1%), not 'xMult jokers to the right, nothing around a copier': joker ",
     "editions apply at their joker's place (a Polychrome joker multiplies wherever it sits) and per-card effects run ",
