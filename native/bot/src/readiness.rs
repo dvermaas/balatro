@@ -200,9 +200,90 @@ thread_local! {
     static MIX_CACHE: RefCell<HashMap<String, Value>> = RefCell::new(HashMap::new());
 }
 
+thread_local! {
+    static ORDER_CACHE: RefCell<HashMap<String, Option<Vec<usize>>>> = RefCell::new(HashMap::new());
+}
+
 /// Forget every cached play mix (a new game starts).
 pub fn reset_mix_cache() {
     MIX_CACHE.with(|c| c.borrow_mut().clear());
+    ORDER_CACHE.with(|c| c.borrow_mut().clear());
+}
+
+/// Lab (`order-search`): the joker order with the best mean best-play score over `samples` order-free deals of
+/// hand size + MIX_EXTRA from the deck (the scorer models Blueprint, Brainstorm and effect order), or None when
+/// no pairwise swap gains over 0.1% (hill-climbing from the current order). Up to 8 jokers; cached per game.
+pub fn best_joker_order(g: &Value, samples: usize) -> Option<Vec<usize>> {
+    let js_cards = gs::cards_of(g, "jokers");
+    let n = js_cards.len();
+    if n < 2 || n > 8 {
+        return None;
+    }
+    let levels: Levels = gs::area(g, "hands").clone();
+    let mut lv: Vec<(&String, &Value)> = levels.iter().collect();
+    lv.sort_by(|a, b| a.0.cmp(b.0));
+    let sig = serde_json::to_string(&json!([
+        gs::get(g, "ante_num"),
+        // labels and editions only: a scaling joker's growing value rarely changes the best order
+        js_cards.iter().map(|c| json!([gs::get(c, "label"), gs::get(gs::get(c, "modifier"), "edition")])).collect::<Vec<Value>>(),
+        lv.iter().map(|(k, v)| json!([k, gs::get(v, "level")])).collect::<Vec<Value>>(),
+    ]))
+    .expect("sig");
+    if let Some(v) = ORDER_CACHE.with(|c| c.borrow().get(&sig).cloned()) {
+        return v;
+    }
+    let deck = sorted_deck(g);
+    let size = hand_size(g) + MIX_EXTRA;
+    let result = if deck.len() < size {
+        None
+    } else {
+        let mut rng = Random::new_int(16016);
+        let deals: Vec<Vec<Info>> = (0..samples)
+            .map(|_| rng.sample_indices(deck.len(), size).iter().map(|&i| deck[i].clone()).collect())
+            .collect();
+        let mean = |order: &[usize]| -> f64 {
+            let cards: Vec<Value> = order.iter().map(|&i| js_cards[i].clone()).collect();
+            let js = jokers::build(g, Some(&cards));
+            let scorer = jokers::Scorer::new(levels.clone(), js, jokers::Rnd { hands_left: 2.0, discards_left: 1.0 });
+            deals.iter().map(|d| hands::best_score(d, ScorerArg::Jokers(&scorer), Allowed::None) as f64).sum::<f64>() / deals.len() as f64
+        };
+        let ident: Vec<usize> = (0..n).collect();
+        let base = mean(&ident);
+        // hill-climb from the current order: apply the best pairwise swap while it gains over 0.1%
+        let mut best = (base, ident.clone());
+        for _ in 0..12 {
+            let mut step: Option<(f64, Vec<usize>)> = None;
+            for i in 0..n {
+                for j in i + 1..n {
+                    let mut o = best.1.clone();
+                    o.swap(i, j);
+                    let m = mean(&o);
+                    if m > best.0 * 1.001 && step.as_ref().map_or(true, |s| m > s.0) {
+                        step = Some((m, o));
+                    }
+                }
+            }
+            match step {
+                Some(s) => best = s,
+                None => break,
+            }
+        }
+        if best.0 > base * 1.001 && std::env::var("ORDER_DEBUG").is_ok() {
+            let l = |o: &[usize]| o.iter().map(|&i| format!("{}", gs::get(&js_cards[i], "label").as_str().unwrap_or("?"))).collect::<Vec<_>>().join(" | ");
+            eprintln!("ORDER {:.0} -> {:.0} ({:+.1}%): {}  ==>  {}", base, best.0, 100.0 * (best.0 / base - 1.0), l(&ident), l(&best.1));
+            for o in [&ident, &best.1] {
+                let cards: Vec<Value> = o.iter().map(|&i| js_cards[i].clone()).collect();
+                let js = jokers::build(g, Some(&cards));
+                let scorer = jokers::Scorer::new(levels.clone(), js.clone(), jokers::Rnd { hands_left: 2.0, discards_left: 1.0 });
+                let d0: Vec<f64> = deals.iter().take(4).map(|d| hands::best_score(d, ScorerArg::Jokers(&scorer), Allowed::None) as f64).collect();
+                eprintln!("   native={} {:?} {:?}", scorer.native().is_some(), d0,
+                    js.iter().map(|j| (j.label.clone().unwrap_or_default(), j.rule.is_some(), j.scoring)).collect::<Vec<_>>());
+            }
+        }
+        if best.0 > base * 1.001 { Some(best.1) } else { None }
+    };
+    ORDER_CACHE.with(|c| c.borrow_mut().insert(sig, result.clone()));
+    result
 }
 
 // readiness.py 103-150: {hand name: share of sampled best-play score}

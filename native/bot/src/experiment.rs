@@ -37,6 +37,10 @@
 //!                 or the best chance the two plays clear, then the average (clear); default: the best score now
 //!   cj-fc-n=N     CodeJev's own item forecast (shop tarots, spectrals, packs it is asked about) plays N rollouts
 //!                 (default codejev::FORECAST_N = 16)
+//!   order-search  in the shop, jokers are ordered by the best sampled best-play score (pairwise swaps from the
+//!                 current order; readiness::best_joker_order) instead of "xMult to the right, never around a
+//!                 copier" (editions apply at their joker's place, and per-card effects in joker order)
+//!   order-search-copier  the same, only while Blueprint or Brainstorm is held
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -94,6 +98,8 @@ pub struct Exp {
     pub clear_risky: Option<f64>,
     pub setup_play: Option<String>,
     pub cj_fc_n: Option<i64>,
+    pub order_search: bool,
+    pub order_search_copier: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -132,6 +138,8 @@ pub fn get() -> &'static Exp {
               clear_risky: s.split(',').find_map(|x| x.trim().strip_prefix("clear-risky=")?.parse().ok()),
               setup_play: s.split(',').find_map(|x| x.trim().strip_prefix("setup-play=")).map(String::from),
               cj_fc_n: s.split(',').find_map(|x| x.trim().strip_prefix("cj-fc-n=")?.parse().ok()),
+              order_search: has("order-search"),
+              order_search_copier: has("order-search-copier"),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

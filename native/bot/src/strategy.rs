@@ -237,6 +237,17 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
     }
     if matches!(state, Some("SHOP") | Some("SELECTING_HAND")) {
         let jokers = _cards(gs_, "jokers");
+        let copier = jokers.iter().any(|j| COPIERS.contains(&gs::get(j, "label").as_str().unwrap_or("\u{0}")));
+        let e = crate::experiment::get();
+        if e.order_search || (e.order_search_copier && copier) {
+            // lab: in the shop, the order with the best sampled score (copiers included); else keep the order
+            if gs::get(gs_, "state").as_str() != Some("SHOP") {
+                return None;
+            }
+            return crate::readiness::best_joker_order(gs_, 12).map(|order| {
+                ("rearrange".to_string(), json!({"jokers": order}), "joker order with the best sampled best-play score".to_string())
+            });
+        }
         if jokers.iter().any(|j| COPIERS.contains(&gs::get(j, "label").as_str().unwrap_or("\u{0}"))) {
             return None;
         }
