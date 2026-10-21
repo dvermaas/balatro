@@ -277,7 +277,7 @@ measured the wrong thing or was never asked:
   the mean best play over 12 order-free deals by 0.1%): the fixed rule (xMult jokers right, nothing around a copier)
   misses joker editions, which apply at their joker's place (a Polychrome joker is an xMult wherever it sits), and
   per-card effects, which run in joker order (Gluttonous Joker before Photograph). Second seed set 895 vs 877 wins
-  (98/80), +0.042 +- 0.013 ante (231 games changed). All 720 orders: same picks, 7x slower.
+  (98/80), +0.042 +- 0.013 ante (231 games changed). Trying all 720 orders gave the same 24-seed results, 7x slower.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
