@@ -1428,5 +1428,27 @@
   "wins": 413,
   "baseline_wins": 419,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "No 10% safety margin on a sure clear (clear-margin 1.0), fresh seeds",
+  "theme": "Play",
+  "baseline": "v55",
+  "games": 2000,
+  "delta_ante": 0.001,
+  "se": 0.009,
+  "wins": 882,
+  "baseline_wins": 862,
+  "outcome": "promising"
+ },
+ {
+  "experiment": "No 10% safety margin on a sure clear (clear-margin 1.0), first seeds",
+  "theme": "Play",
+  "baseline": "v55",
+  "games": 2000,
+  "delta_ante": 0.01,
+  "se": 0.008,
+  "wins": 828,
+  "baseline_wins": 825,
+  "outcome": "promising"
  }
 ]

@@ -256,6 +256,9 @@ measured the wrong thing or was never asked:
   first 1,000 seeds 427 vs 419 wins (+0.001 +- 0.039 ante, 392 games changed): neutral, dropped.
   Discards ranked by the chance the next play makes pace (`discard-key=pace`, was: the mean next play): first
   1,000 seeds 413 vs 419 wins, -0.090 +- 0.048 ante: dropped. The mean next play stays.
+  No clear margin (`clear-margin=1.0`; a play with jokers counted as clearing only at 1.1 x chips needed, so a
+  play that clears by under 10% could be passed up for a discard, even on the last hand): second seed set 882 vs
+  862 wins (52/32, z = 2.18), first set 828 vs 825 (38/35); pooled 90/67 (z = 1.84), +0.005 +- 0.006 ante.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
