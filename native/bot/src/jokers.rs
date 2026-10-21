@@ -62,6 +62,8 @@ pub enum Cond {
     FourSuits,
     PlayedThisRound,
     SeeingDouble,
+    /// no face card (not debuffed) among the scoring cards
+    NoFaceScored,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -142,6 +144,7 @@ impl HandSpec {
                     Cond::FourSuits => ("four_suits", Value::Null),
                     Cond::PlayedThisRound => ("played_this_round", Value::Null),
                     Cond::SeeingDouble => ("seeing_double", Value::Null),
+                    Cond::NoFaceScored => ("no_face_scored", Value::Null),
                 };
                 json!(["cond", name, arg, eff_json(yes), eff_json(no)])
             }
@@ -510,6 +513,20 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
                         out[j].scoring = true;
                     }
                 }
+                Some("j_ride_the_bus") => {
+                    // +1 first when no face card scores, else it resets to 0 (Pareidolia: every card is a face)
+                    if let Some(m) = rx!(r"Currently \+(\d+(?:\.\d+)?) Mult").captures(&eff) {
+                        let cur: f64 = m[1].parse().unwrap();
+                        let pareidolia = cards.iter().any(|o| gs::get(o, "key").as_str() == Some("j_pareidolia"));
+                        let spec = if pareidolia {
+                            HandSpec::Const((0.0, 0.0, 1.0))
+                        } else {
+                            HandSpec::Cond { cond: Cond::NoFaceScored, yes: (0.0, cur + 1.0, 1.0), no: (0.0, 0.0, 1.0) }
+                        };
+                        out[j].rule = Some(Rule { hand: Some(spec), ..Default::default() });
+                        out[j].scoring = true;
+                    }
+                }
                 Some("j_green_joker") => {
                     // +1 Mult for this hand before it scores
                     if let Some(m) = rx!(r"Currently \+(\d+(?:\.\d+)?) Mult").captures(&eff) {
@@ -866,6 +883,7 @@ pub fn score(infos: &[Info], combo: &[usize], name: &str, scoring: &[usize], han
         other_suit: scoring_suits.iter().any(|s| *s != Some("C")),
         wild: sc.iter().filter(|&&p| played[p].enh_is("WILD")).count(),
         held_retrigger: held_reps - 1,
+        face_scored: first_face.is_some(),
     };
     for j in jokers {
         let ed = j.edition.as_deref();
@@ -895,6 +913,7 @@ struct Ctx<'a> {
     other_suit: bool,
     wild: usize,
     held_retrigger: i64,
+    face_scored: bool,
 }
 
 // jokers.py 361-392
@@ -921,6 +940,7 @@ fn _hand(spec: &HandSpec, ctx: &Ctx) -> (f64, f64, f64) {
                     let (c, o, w) = (ctx.club, ctx.other_suit, ctx.wild);
                     (c || w > 0) && (o || (c && w > 0) || w >= 2)
                 }
+                Cond::NoFaceScored => !ctx.face_scored,
             };
             if ok { *yes } else { *no }
         }

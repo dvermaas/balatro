@@ -50,8 +50,8 @@
 //!   planet-floor=N  the shop's planet rule (top hand's planet, else a Celestial pack) buys while $N stays (default
 //!                 decisions::PLANET_FLOOR = 4)
 //!   toss-plain    discard plans throw plain cards before enhanced, editioned or sealed ones (rank order otherwise)
-//!   scorer-fix    the scorer counts Obelisk's gain or reset and Green Joker's +1 before the hand scores, and a
-//!                 rightmost Blueprint copies nothing (implies blueprint-fix)
+//!   scorer-fix    the scorer counts what jokers gain or reset before the hand scores (Obelisk, Green Joker, Ride the
+//!                 Bus), and a rightmost Blueprint copies nothing (implies blueprint-fix)
 //!   blueprint-fix  the scorer's rightmost Blueprint copies nothing (it copied the leftmost joker, like Brainstorm)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)

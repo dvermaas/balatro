@@ -820,6 +820,7 @@ pub mod native {
                     Cond::FourSuits => (6, 0),
                     Cond::PlayedThisRound => (7, 0),
                     Cond::SeeingDouble => (11, 0),
+                    Cond::NoFaceScored => (12, 0),
                 };
                 (k, mask, 0.0, *yes, *no)
             }
