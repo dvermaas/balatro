@@ -10,7 +10,7 @@ played on the real game and on rumbot should then go step for step the same.
 
 ## Steps
 
-1. `git checkout claude/friendly-bell-l7ywvt`, then `cd native && cargo build --release`.
+1. `git checkout main && git pull`, then `cd native && cargo build --release`.
 2. The game: close Balatro, run `scripts/launch_fast.cmd`, check `curl -X POST 127.0.0.1:12346 -d
    '{"jsonrpc":"2.0","method":"health","id":1}'`. The profile must have every item unlocked (the sim assumes it).
 3. For each seed (any of `docs/samples/cloud-lab/seeds-c2k.txt`, e.g. `RZSTXX2S`):
