@@ -200,16 +200,23 @@ pub struct Scorer {
     held_retrigger: i64,
     hands_left: f64,
     discards_left: f64,
+    /// Splash: every played card scores
+    splash: bool,
 }
 
 impl Scorer {
+    /// Splash held: every played card counts in scoring (and kickers are worth trying).
+    pub fn set_splash(&mut self, on: bool) {
+        self.splash = on;
+    }
+
     pub fn new(levels: Vec<(f64, f64, f64, bool)>, jokers: Vec<(u8, Option<RuleIn>)>, hands_left: f64, discards_left: f64) -> Result<Self, &'static str> {
         if levels.len() != HAND_NAMES.len() {
             return Err("levels must have one row per hand name");
         }
         let mut s = Scorer {
             levels, editions: Vec::new(), hands: Vec::new(), card: Vec::new(), retrigger: Vec::new(), held: Vec::new(),
-            held_retrigger: 0, hands_left, discards_left,
+            held_retrigger: 0, hands_left, discards_left, splash: false,
         };
         for (edition, rule) in jokers {
             s.editions.push(edition);
@@ -266,6 +273,8 @@ impl Scorer {
 
     /// jokers.score for hand positions `combo`; `sc` = scoring positions into combo. Truncated like int().
     pub fn score(&self, cards: &[Card], combo: &[usize], name: usize, sc: &[usize]) -> f64 {
+        let all: [usize; 8] = [0, 1, 2, 3, 4, 5, 6, 7];
+        let sc: &[usize] = if self.splash && combo.len() <= all.len() { &all[..combo.len()] } else { sc };
         let (lchips, lmult, times_played, played_this_round) = self.levels[name];
         let mut chips = lchips;
         let mut mult = lmult;
@@ -405,7 +414,7 @@ impl Scorer {
 /// cards, no Steel card is in hand (held Steel multiplies), and the boss does not count cards (The
 /// Psychic). So the best score, and the best (score, hand) pair, are the same as over every play.
 pub fn each_best_candidate(s: &Scorer, cards: &[Card], allow: (u8, u32, bool), mut f: impl FnMut(f64, usize, &[usize], &[usize])) {
-    let prune = allow.0 != 1 && s.ignores_held() && !cards.iter().any(|c| c.enh == STEEL);
+    let prune = allow.0 != 1 && s.ignores_held() && !s.splash && !cards.iter().any(|c| c.enh == STEEL);
     if !prune {
         return each_play(s, cards, allow, f);
     }

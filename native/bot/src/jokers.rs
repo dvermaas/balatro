@@ -92,6 +92,11 @@ pub struct JokerEntry {
     pub scoring: bool,
 }
 
+/// Lab (`splash`): Splash is held, so every played card scores.
+pub fn splash(jokers: &[JokerEntry]) -> bool {
+    crate::experiment::get().splash && jokers.iter().any(|j| j.label.as_deref() == Some("Splash"))
+}
+
 /// The round dict: hands_left `or 1`, discards_left `or 0`.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Rnd {
@@ -805,7 +810,7 @@ pub fn score(infos: &[Info], combo: &[usize], name: &str, scoring: &[usize], han
     let (mut chips, mut mult) = (hnum("chips", 0.0), hnum("mult", 1.0));
     let played: Vec<&Info> = combo.iter().map(|&i| &infos[i]).collect();
     let held: Vec<&Info> = (0..infos.len()).filter(|i| !combo.contains(i)).map(|i| &infos[i]).collect();
-    let mut sc: Vec<usize> = scoring.to_vec();
+    let mut sc: Vec<usize> = if splash(jokers) { (0..combo.len()).collect() } else { scoring.to_vec() };
     sc.sort();
     let hands_left = rnd.hands_left;
     let rules: Vec<&Rule> = jokers.iter().filter_map(|j| j.rule.as_ref()).collect();

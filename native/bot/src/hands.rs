@@ -879,7 +879,9 @@ pub mod native {
             levels.push((g("chips", 0.0)?, g("mult", 1.0)?, g("played", 0.0)?, gs::truthy(gs::get(h, "played_this_round"))));
         }
         let js = jokers.iter().map(|j| (edition_code(j.edition.as_deref()), rule(&j.rule))).collect();
-        jev_kernel::Scorer::new(levels, js, rnd.hands_left, rnd.discards_left).ok()
+        let mut s = jev_kernel::Scorer::new(levels, js, rnd.hands_left, rnd.discards_left).ok()?;
+        s.set_splash(jokers::splash(jokers));
+        Some(s)
     }
 
     // native.py 136-142
