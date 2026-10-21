@@ -364,16 +364,21 @@ pub fn _boss_allows(combo: &[usize], name: &str, levels: &Levels, boss: &str) ->
 pub struct BossAllow {
     pub levels: Levels,
     pub boss: String,
+    /// v36: Cerulean Bell's forced card (hand position): every play must contain it
+    pub forced: Option<usize>,
 }
 
 impl BossAllow {
     pub fn new(levels: &Levels, boss: &str) -> BossAllow {
-        BossAllow { levels: levels.clone(), boss: boss.to_string() }
+        BossAllow { levels: levels.clone(), boss: boss.to_string(), forced: None }
     }
     pub fn call(&self, combo: &[usize], name: &str) -> bool {
-        _boss_allows(combo, name, &self.levels, &self.boss)
+        self.forced.map_or(true, |f| combo.contains(&f)) && _boss_allows(combo, name, &self.levels, &self.boss)
     }
     pub fn native_spec(&self) -> Option<(u8, u32, bool)> {
+        if self.forced.is_some() {
+            return None; // the kernel has no forced-card rule: the play loop checks `call`
+        }
         native::boss_spec(&self.levels, &self.boss)
     }
 }
@@ -598,6 +603,11 @@ fn rank_set(ranks: impl Iterator<Item = Option<String>>) -> Vec<Option<String>> 
 // hands.py 201-250
 /// Discard plans. Debuffed cards (boss effects) count as junk: never kept for a draw, tossed first.
 /// Each plan carries a goal for odds.annotate().
+/// `not x` for an optional string field (None or "").
+fn falsy(o: &Option<String>) -> bool {
+    o.as_deref().map_or(true, str::is_empty)
+}
+
 pub fn discard_candidates(hand_cards: &[Value], max_discard: usize) -> Vec<DiscardPlan> {
     let infos: Vec<Info> = hand_cards.iter().map(card_info).collect();
     let allidx: Vec<usize> = (0..infos.len()).collect();
@@ -605,7 +615,14 @@ pub fn discard_candidates(hand_cards: &[Value], max_discard: usize) -> Vec<Disca
 
     let toss = |keep: &[usize], label: String, goal: Goal| -> (String, Vec<usize>, Goal) {
         let mut others: Vec<usize> = allidx.iter().copied().filter(|i| !keep.contains(i)).collect();
-        others.sort_by_key(|&i| (!infos[i].debuff, _rank_value(&infos[i])));
+        if crate::experiment::get().toss_plain {
+            // lab (`toss-plain`): plain cards go before enhanced, editioned or sealed ones (a Steel or Gold card
+            // pays while held; the rank-only order threw a Steel 2 first)
+            let special = |c: &Info| (!falsy(&c.enh) && !c.enh_is("STONE")) || !falsy(&c.edition) || !falsy(&c.seal);
+            others.sort_by_key(|&i| (!infos[i].debuff, special(&infos[i]), _rank_value(&infos[i])));
+        } else {
+            others.sort_by_key(|&i| (!infos[i].debuff, _rank_value(&infos[i])));
+        }
         others.truncate(max_discard);
         (label, others, goal)
     };
@@ -803,6 +820,7 @@ pub mod native {
                     Cond::FourSuits => (6, 0),
                     Cond::PlayedThisRound => (7, 0),
                     Cond::SeeingDouble => (11, 0),
+                    Cond::NoFaceScored => (12, 0),
                 };
                 (k, mask, 0.0, *yes, *no)
             }

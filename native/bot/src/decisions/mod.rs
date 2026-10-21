@@ -31,11 +31,30 @@ pub const BUY_SCORE: f64 = 2.5;
 pub const BUY_SCORE_LOOSE: i64 = 2;
 pub const EARLY_JOKERS: i64 = 4;
 pub const EARLY_ANTE: i64 = 3;
+/// EARLY_JOKERS / EARLY_ANTE, or the lab's `early-jokers=N` / `early-ante=A`.
+pub fn early_jokers() -> i64 {
+    crate::experiment::get().early_jokers.unwrap_or(EARLY_JOKERS)
+}
+pub fn early_ante() -> i64 {
+    crate::experiment::get().early_ante.unwrap_or(EARLY_ANTE)
+}
 pub const SURE_GAIN: f64 = 0.5;
 pub const RECENT_PLAYS: usize = 10;
 pub const NEAR_PACE: f64 = 0.8;
 pub const PACK_SCORE: f64 = 1.5;
 pub const INTEREST_BUFFER: i64 = 25;
+/// v45: tags worth skipping a Small/Big blind for, at antes up to SKIP_ANTE (v47: + the edition tags, whose next
+/// shop joker is free).
+pub const SKIP_TAGS: &[&str] = &["Investment Tag", "Negative Tag", "Rare Tag", "Polychrome Tag", "Holographic Tag", "Foil Tag"];
+pub const SKIP_ANTE: i64 = 4; // v48 (was 3)
+/// v44: never bought. -1 ante makes the forecast's horizon of blinds cleared easier, but a win needs that ante
+/// again with a hand (Petroglyph: a discard) fewer every round.
+pub const NEVER_VOUCHERS: &[&str] = &["Hieroglyph", "Petroglyph"];
+/// The money kept for interest at this ante: INTEREST_BUFFER (lab `late-floor=N`: $N less per ante after 4).
+pub fn interest_buffer(ante: i64) -> i64 {
+    let n = crate::experiment::get().late_floor;
+    if n > 0 && ante > 4 { (INTEREST_BUFFER - n * (ante - 4)).max(0) } else { INTEREST_BUFFER }
+}
 pub const MAX_REROLLS: i64 = 2;
 pub const INVEST_BELOW: f64 = 0.6;
 pub const BANK_ABOVE: f64 = 1.2;
@@ -49,6 +68,10 @@ pub const REROLL_SE: i64 = 1;
 pub const ITEM_MIN_BUDGET: f64 = 1.0;
 pub const PICK_CLEAR: f64 = 1.25;
 pub const PLANET_FLOOR: i64 = 4; // v28: shop planets for the deck's top hand and Celestial packs are bought while $4 stays
+/// PLANET_FLOOR, or the lab's `planet-floor=N`.
+pub fn planet_floor() -> i64 {
+    crate::experiment::get().planet_floor.unwrap_or(PLANET_FLOOR)
+}
 /// Forecast exceptions are appended to `<JevBot.runs_root>/_forecast_errors.log` (default root "runs").
 pub const FORECAST_ERROR_LOG: &str = "_forecast_errors.log";
 
@@ -67,10 +90,11 @@ pub struct DecisionCfg {
 
 impl DecisionCfg {
     pub fn production() -> Self {
-        DecisionCfg { forecast_n: 24, forecast_budget: Some(4.0), forecast_bosses: 3, strong_vouchers: true }
+        // v52: 64 rollouts (was 24; 16 -> 32 -> 64 won 525 -> 576 -> 635 of 2,000, 128 no better)
+        DecisionCfg { forecast_n: 64, forecast_budget: Some(4.0), forecast_bosses: 3, strong_vouchers: true }
     }
     pub fn lab() -> Self {
-        Self::lab_with(16, 3)
+        Self::lab_with(64, 3) // v52 (was 16)
     }
     /// A lab arm with `n` / `bosses` options (BOT_ARMS "n" / "bosses").
     pub fn lab_with(n: i64, bosses: i64) -> Self {
@@ -239,6 +263,26 @@ pub(crate) fn run_context(gs_: &Value) -> (Vec<String>, Value) {
 // decisions.py 143-155
 pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let b = current_blind(gs_);
+    let e = crate::experiment::get();
+    if !e.boss_reroll.is_empty() {
+        // lab: reroll a killer boss with Retcon, or Director's Cut once per ante, while $10 is there
+        let boss = gs::d(gs::get(gs_, "blinds")).values().find(|x| gs::get(x, "type").as_str() == Some("BOSS"))
+            .map(|x| gs::s(gs::get(x, "name")).to_string()).unwrap_or_default();
+        let owned = |k: &str| match gs::get(gs_, "used_vouchers") {
+            Value::Object(m) => m.contains_key(k),
+            Value::Array(a) => a.iter().any(|v| v.as_str() == Some(k)),
+            _ => false,
+        };
+        let key = json!([gs::get(gs_, "seed"), gs::get(gs_, "ante_num")]);
+        let can = owned("v_retcon") || (owned("v_directors_cut") && bot._boss_reroll != key);
+        if e.boss_reroll.contains(&boss) && can && gs::num(gs::get(gs_, "money")) >= 10.0 {
+            bot.emit("auto", json!({"question": "blind", "choice": "reroll_boss", "desc": format!("reroll {boss}"),
+                "reason": "lab boss-reroll"}));
+            bot._boss_reroll = key;
+            bot.act("reroll_boss", None)?;
+            return Ok(());
+        }
+    }
     if gs::get(&b, "type").as_str() == Some("BOSS") {
         bot.act("select", None)?;
         return Ok(());
@@ -250,6 +294,19 @@ pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         }
         s
     };
+    // v45: skip a Small/Big blind at antes up to SKIP_ANTE for a tag in SKIP_TAGS (lab `skip-tags` overrides the list)
+    let tag = gs::s(gs::get(&b, "tag_name")).to_string();
+    let ante = gs::int(gs::get(gs_, "ante_num"));
+    let e = crate::experiment::get();
+    let listed = if e.skip_tags.is_empty() { SKIP_TAGS.contains(&tag.as_str()) } else { e.skip_tags.contains(&tag) };
+    // v46: never skip a Big blind with no joker: after a skipped Small blind that would reach the boss without a shop
+    let no_joker = cards_of(gs_, "jokers").is_empty() && gs::get(&b, "type").as_str() == Some("BIG");
+    if listed && ante <= e.skip_max.unwrap_or(SKIP_ANTE) && ante >= e.skip_min && !no_joker {
+        bot.emit("auto", json!({"question": "blind", "choice": "skip", "desc": format!("skip for {tag}"),
+            "reason": "a skip for this tag early wins more runs than the blind's cash-out and shop (lab: 428 vs 359 wins)"}));
+        bot.act("skip", None)?;
+        return Ok(());
+    }
     let opts = vec![
         opt("play", fmt(option_tpl("blind_play")), "select", None),
         opt("skip", fmt(option_tpl("blind_skip")), "skip", None),
@@ -283,8 +340,123 @@ pub(crate) fn recent(bot: &JevBot, gs_: &Value) -> Vec<Value> {
     if bot._recent_seed == *gs::get(gs_, "seed") { bot._recent.clone() } else { vec![] }
 }
 
+/// Lab (`JEVLAB_EXP=free-discard`): before a play, the spare cards a held joker pays to have discarded
+/// (simcore::free_discard, the rule the forecast's rollouts follow too). Empty when off or nothing to gain.
+fn discard_goals(gs_: &Value) -> simcore::DiscardGoals {
+    let js: Vec<&Value> = cards_of(gs_, "jokers").iter().filter(|c| !gs::truthy(gs::get(gs::get(c, "state"), "debuff"))).collect();
+    let effect = |label: &str| js.iter().find(|c| gs::get(c, "label").as_str() == Some(label))
+        .map(|c| gs::s(gs::get(gs::get(c, "value"), "effect")).to_string()).unwrap_or_default();
+    let castle = regex::Regex::new(r"per discarded (Club|Diamond|Heart|Spade) card").unwrap().captures(&effect("Castle"))
+        .map(|m| match &m[1] { "Heart" => 1, "Diamond" => 2, "Club" => 3, _ => 4 });
+    let mail = regex::Regex::new(r"for each discarded (Ace|King|Queen|Jack|10|[2-9])\b").unwrap().captures(&effect("Mail-In Rebate"))
+        .map(|m| match &m[1] { "Ace" => 14, "King" => 13, "Queen" => 12, "Jack" => 11, n => n.parse::<u8>().unwrap() });
+    simcore::DiscardGoals::from_names(js.iter().filter_map(|c| gs::get(c, "label").as_str()), castle, mail)
+}
+
+/// Lab (`JEVLAB_EXP=free-discard`): a regular discard as the round's first, cut to one card for Trading Card.
+pub(crate) fn adjust_discard(gs_: &Value, hand: &[Value], cards: Vec<usize>) -> Vec<usize> {
+    if !crate::experiment::get().free_discard {
+        return cards;
+    }
+    let infos: Vec<jev_kernel::Card> = hand.iter().map(|c| crate::picker::kernel_card(&card_info(c))).collect();
+    let first = gs::num(gs::get(gs::get(gs_, "round"), "discards_used")) == 0.0;
+    simcore::first_discard_adjust(cards, &infos, &discard_goals(gs_), first)
+}
+
+fn free_discard(gs_: &Value, hand: &[Value], cards: &[usize]) -> Vec<usize> {
+    if !crate::experiment::get().free_discard {
+        return vec![];
+    }
+    let rnd = gs::get(gs_, "round");
+    if gs::num(gs::get(rnd, "discards_left")) <= 0.0 {
+        return vec![];
+    }
+    let goals = discard_goals(gs_);
+    let infos: Vec<jev_kernel::Card> = hand.iter().map(|c| crate::picker::kernel_card(&card_info(c))).collect();
+    let played: Vec<jev_kernel::Card> = cards.iter().map(|&p| infos[p]).collect();
+    let main = if played.is_empty() { jev_kernel::HAND_NAMES.len() - 1 } else { jev_kernel::classify(&played).0 };
+    let first = gs::num(gs::get(rnd, "discards_used")) == 0.0;
+    let out = simcore::free_discard(&infos, cards, &[], &goals, first, main);
+    if std::env::var_os("FD_DEBUG").is_some() && goals.wants() {
+        eprintln!("FD {} first={first} dl={} keep={cards:?} hand={} goals={goals:?} -> {out:?}", gs::get(gs_, "seed"), gs::get(rnd, "discards_left"), hand.len());
+    }
+    out
+}
+
 pub(crate) fn play(bot: &mut JevBot, gs_: &Value, hand: &[Value], cards: &[usize]) -> Result<(), RpcError> {
+    let toss = free_discard(gs_, hand, cards);
+    if !toss.is_empty() {
+        let names: Vec<String> = toss.iter().map(|&p| hands::describe(&hand[p])).collect();
+        bot.emit("auto", json!({"question": "move", "choice": "free_discard", "desc": format!("discard {}", names.join(", ")),
+            "reason": "lab free-discard: a held joker pays for these; the planned play keeps its cards"}));
+        bot.act("discard", Some(&json!({"cards": toss})))?;
+        return Ok(());
+    }
     remember(bot, gs_, hand, cards);
+    if crate::experiment::get().card_order {
+        if let Some(order) = best_card_order(gs_, hand, cards) {
+            // lab (`card-order`): the played cards first, in the order that scores most, then the held cards
+            bot.act("rearrange", Some(&json!({"hand": order})))?;
+            let first: Vec<usize> = (0..cards.len()).collect();
+            bot.act("play", Some(&json!({"cards": first})))?;
+            return Ok(());
+        }
+    }
     bot.act("play", Some(&json!({"cards": cards})))?;
     Ok(())
+}
+
+/// Lab (`card-order`): played cards score left to right, each card's effects in turn (a Mult card before a Glass
+/// card, a joker's +Mult on one card before its xMult on the next). The hand order (played cards first in the
+/// best of their orders, held cards after in their order) when it scores over 0.5% more than playing in place.
+fn best_card_order(gs_: &Value, hand: &[Value], cards: &[usize]) -> Option<Vec<usize>> {
+    card_order_scored(gs_, hand, cards).and_then(|(base, best, order)| (best as f64 > base as f64 * 1.005).then_some(order))
+}
+
+/// (score in place, best score, the hand order that gives it) for playing `cards`; see best_card_order.
+pub(crate) fn card_order_scored(gs_: &Value, hand: &[Value], cards: &[usize]) -> Option<(i64, i64, Vec<usize>)> {
+    let k = cards.len();
+    if k < 2 || k > 5 {
+        return None;
+    }
+    let info = round_info(gs_);
+    let boss = gs::get(&info, "blind").as_str().unwrap_or("").to_string();
+    let levels = hands::_boss_levels(gs::area(gs_, "hands"), &boss);
+    let scorer = crate::jokers::Scorer::new(levels, crate::jokers::build(gs_, None), crate::jokers::Rnd::from_value(gs::get(gs_, "round")));
+    let infos: Vec<hands::Info> = hand.iter().map(card_info).collect();
+    let mut combo: Vec<usize> = cards.to_vec();
+    combo.sort_unstable();
+    let score_of = |infos: &[hands::Info], combo: &[usize]| -> i64 {
+        let sel: Vec<hands::Info> = combo.iter().map(|&i| infos[i].clone()).collect();
+        let (name, sc) = hands::classify(&sel);
+        scorer.call(infos, combo, name, &sc)
+    };
+    let base = score_of(&infos, &combo);
+    let held: Vec<usize> = (0..hand.len()).filter(|i| !combo.contains(i)).collect();
+    let first: Vec<usize> = (0..k).collect();
+    let mut best: Option<(i64, Vec<usize>)> = None;
+    let mut perm = combo.clone();
+    let mut c = vec![0usize; k];
+    let try_perm = |perm: &[usize], best: &mut Option<(i64, Vec<usize>)>| {
+        let order: Vec<usize> = perm.iter().chain(held.iter()).copied().collect();
+        let re: Vec<hands::Info> = order.iter().map(|&i| infos[i].clone()).collect();
+        let s = score_of(&re, &first);
+        if best.as_ref().map_or(true, |b| s > b.0) {
+            *best = Some((s, order));
+        }
+    };
+    try_perm(&perm, &mut best);
+    let mut i = 0;
+    while i < k {
+        if c[i] < i {
+            if i % 2 == 0 { perm.swap(0, i) } else { perm.swap(c[i], i) }
+            try_perm(&perm, &mut best);
+            c[i] += 1;
+            i = 0;
+        } else {
+            c[i] = 0;
+            i += 1;
+        }
+    }
+    best.map(|b| (base, b.0, b.1))
 }

@@ -237,6 +237,17 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
     }
     if matches!(state, Some("SHOP") | Some("SELECTING_HAND")) {
         let jokers = _cards(gs_, "jokers");
+        if !crate::experiment::get().no_order_search {
+            // v57: in the shop, the joker order with the best sampled score (editions apply at their joker's place,
+            // per-card effects run in joker order, copiers copy by place); elsewhere keep the order
+            if gs::get(gs_, "state").as_str() != Some("SHOP") {
+                return None;
+            }
+            return crate::readiness::best_joker_order(gs_, 12).map(|order| {
+                ("rearrange".to_string(), json!({"jokers": order}), "joker order with the best sampled best-play score".to_string())
+            });
+        }
+        // lab (`no-order-search`): the v56 rule, xMult jokers to the right and nothing around a copier
         if jokers.iter().any(|j| COPIERS.contains(&gs::get(j, "label").as_str().unwrap_or("\u{0}"))) {
             return None;
         }

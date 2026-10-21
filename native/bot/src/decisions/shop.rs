@@ -153,6 +153,9 @@ pub fn weakest_jokers(gs: &Value, recent: &[Value], n: usize) -> HashSet<usize> 
         if truthy(m.get("eternal")) || m.get("edition") == Some(&json!("NEGATIVE")) {
             continue;
         }
+        if crate::experiment::get().pair_keep && crate::experiment::is_pair_joker(g(c, "label").as_str()) {
+            continue; // lab: Pair commitment keeps its Pair jokers
+        }
         let gain = jokers::gain(gs, recent, None, Some(j), None).unwrap_or(0.0);
         let cost = g(c, "cost");
         let sell = _d(&cost).get("sell").map(num).unwrap_or(0.0);
@@ -221,7 +224,7 @@ fn joker_forecast(bot: &mut JevBot, gs: &Value, weak: &HashSet<usize>) -> Result
 
 // decisions.py 499-526: rollout.forecast result or None on failure; cached on bot._forecast_cache
 pub fn shop_forecast(bot: &mut JevBot, gs: &Value, recent: &[Value], jokers_full: bool) -> Option<Value> {
-    let weak = if jokers_full { weakest_jokers(gs, recent, SWAP_SELLS) } else { HashSet::new() };
+    let weak = if jokers_full { weakest_jokers(gs, recent, crate::experiment::get().swap_sells.unwrap_or(SWAP_SELLS)) } else { HashSet::new() };
     let (sig, f) = match joker_forecast(bot, gs, &weak) {
         Ok(x) => x,
         Err((t, m)) => {
@@ -470,10 +473,12 @@ fn planet_rule(gs: &Value, items: &[Item], money: i64) -> Option<usize> {
     }
     let (shop, packs) = (cards_of(gs, "shop"), cards_of(gs, "packs"));
     let idx = |k: &str| k.rsplit('_').next().unwrap().parse::<usize>().unwrap();
-    if let Some((top, _)) = top {
+    // lab: JEVLAB_EXP=pair-planets commits every shop planet to Pair
+    let top: Option<String> = if crate::experiment::get().pair_planets { Some("Pair".into()) } else { top.map(|(k, _)| k.clone()) };
+    if let Some(top) = top {
         let needle = format!("Level up {top} ");
         for (n, it) in items.iter().enumerate() {
-            if it.key.starts_with("buy_card_") && money - it.cost >= super::PLANET_FLOOR {
+            if it.key.starts_with("buy_card_") && money - it.cost >= super::planet_floor() {
                 let c = &shop[idx(&it.key)];
                 let eff = g(&g(c, "value"), "effect");
                 if g(c, "set") == json!("PLANET") && eff.as_str().unwrap_or("").contains(&needle) {
@@ -484,7 +489,7 @@ fn planet_rule(gs: &Value, items: &[Item], money: i64) -> Option<usize> {
     }
     let mut best: Option<usize> = None;
     for (n, it) in items.iter().enumerate() {
-        if it.key.starts_with("buy_pack_") && money - it.cost >= super::PLANET_FLOOR
+        if it.key.starts_with("buy_pack_") && money - it.cost >= super::planet_floor()
             && g(&packs[idx(&it.key)], "label").as_str().unwrap_or("").contains("Celestial")
             && best.map_or(true, |b| it.cost > items[b].cost)
         {
@@ -512,6 +517,26 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     let (mains, mut state) = super::run_context(gs);
     let boss = _d(&g(gs, "blinds")).values().find(|b| g(b, "type") == json!("BOSS")).cloned().unwrap_or_else(|| json!({}));
     state["upcoming_boss"] = json!({"name": g(&boss, "name"), "effect": g(&boss, "effect"), "chip_target": g(&boss, "score")});
+    // v38: Verdant Leaf debuffs every card until a joker is sold. Before it, buy the cheapest sellable joker
+    // as bait (a free slot only) so the sale costs nothing; play::_leaf_sale sells it first.
+    let next_is_boss = _d(&g(gs, "blinds")).values().any(|b| g(b, "type") == json!("BIG") && matches!(g(b, "status").as_str(), Some("DEFEATED") | Some("SKIPPED")));
+    if g(&boss, "name") == json!("Verdant Leaf") && next_is_boss && !jokers_full && bot._shop_actions < crate::jev_bot::SHOP_ACTION_CAP {
+        let held = cards_of(gs, "jokers").iter().any(|c| !bot._leaf_bait.is_null() && g(c, "id") == bot._leaf_bait);
+        if !held {
+            let cheapest = cards_of(gs, "shop").iter().enumerate()
+                .filter(|(_, c)| g(c, "set") == json!("JOKER") && !truthy(_d(&g(c, "modifier")).get("eternal")))
+                .map(|(i, c)| (crate::gs::int(&g(&g(c, "cost"), "buy")), i, c))
+                .filter(|(cost, _, _)| *cost <= money)
+                .min_by_key(|(cost, i, _)| (*cost, *i));
+            if let Some((cost, i, c)) = cheapest {
+                bot._leaf_bait = g(c, "id");
+                let action: Action = ("buy".into(), Some(json!({"card": i})));
+                bot.emit("auto", json!({"question": "shop", "choice": format!("buy_card_{i}"), "action": crate::jev_bot::action_value(&action),
+                    "desc": format!("${cost} {}", crate::gs::s(&g(c, "label"))), "reason": "Verdant Leaf bait: a cheap joker to sell when the boss starts"}));
+                return Ok(shop_act(bot, gs, &action)?);
+            }
+        }
+    }
     let b = crate::prof::time("s.build", || crate::build::decide(gs));
     state["our_build"] = json!(crate::build::describe(&b));
 
@@ -531,7 +556,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         Some(w) if w >= super::BANK_ABOVE => "bank",
         _ => "normal",
     };
-    let buffer = if mode == "invest" { super::INVEST_FLOOR } else { super::INTEREST_BUFFER };
+    let buffer = if mode == "invest" { super::INVEST_FLOOR } else { super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) };
     if let Some(r) = &ready {
         let blinds: Vec<String> = g(r, "blinds").as_array().cloned().unwrap_or_default().iter()
             .map(|x| format!("{} ({} chips): {}", rep(&g(x, "blind")), rep(&g(x, "target")), rep(&g(x, "ratio")))).collect();
@@ -620,12 +645,15 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
         for (i, c) in voucher_cards.iter().enumerate() {
             let cost = crate::gs::int(&g(&g(c, "cost"), "buy"));
-            if cost <= money {
+            if cost <= money && !super::NEVER_VOUCHERS.contains(&crate::gs::s(&g(c, "label"))) {
                 let v = super::voucher(&bot.dec, crate::gs::s(&g(c, "label")));
                 let mut o = obj(c, cost, "voucher (permanent upgrade for the rest of the run)", None, &format!("buy_voucher_{i}"), vec![]);
                 if let Some((worth, strong)) = v {
+                    let e = crate::experiment::get();
+                    let label_v = g(c, "label"); let label = crate::gs::s(&label_v);
+                    let tbl = super::VOUCHERS.iter().any(|v| v.0 == label && v.2);
                     o["worth"] = json!(worth);
-                    o["_strong"] = json!(strong);
+                    o["_strong"] = json!(strong || (e.strong_vouchers && tbl) || e.buy_vouchers.iter().any(|b| b == label));
                 }
                 items.push(Item { key: format!("buy_voucher_{i}"), desc: crate::jev_bot::item_desc(c, None), obj: o,
                                   action: ("buy".into(), Some(json!({"voucher": i}))), cost });
@@ -704,11 +732,11 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     // v11: back to v9's rule. v10's early rerolls down to $5 cost ~$7.50 a run in ante 1-2, led to a joker
     // buy only 1 time in 5, and left ante 2-3 balances at $7-12 instead of $16-23 (lost interest).
     // v13: when readiness says we're behind, rerolls hunt for power down to a low floor.
-    let mut can_reroll = money - reroll >= (if mode == "invest" { super::INVEST_REROLL_FLOOR } else { super::INTEREST_BUFFER })
-        && bot._rerolls < super::MAX_REROLLS;
+    let mut can_reroll = money - reroll >= (if mode == "invest" { super::INVEST_REROLL_FLOOR } else { super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) })
+        && bot._rerolls < crate::experiment::get().max_rerolls.unwrap_or(super::MAX_REROLLS);
     if fc.is_some() {
         // v19: reroll when nothing here beats buying nothing by 1 SE, from money above the interest floor
-        can_reroll = money - reroll >= super::INTEREST_BUFFER && bot._rerolls < super::MAX_REROLLS
+        can_reroll = money - reroll >= super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) && bot._rerolls < crate::experiment::get().max_rerolls.unwrap_or(super::MAX_REROLLS)
             && !items.iter().any(|it| !flag(&it.obj, "_fc_item")
                 && fnum(&it.obj, "_fc_delta", 0.0) > (super::REROLL_SE as f64) * fnum(&it.obj, "_fc_se", 0.0).max(1e-9));
     }
@@ -720,10 +748,23 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
 
     let ante = { let a = g(gs, "ante_num"); if truthy(Some(&a)) { crate::gs::int(&a) } else { 1 } };
     if fc.is_some() || fci.is_some() {
+        // lab: JEVLAB_EXP=pair-jokers moves Pair jokers PAIR_SE paired SEs up (bar and ranking)
+        let eff = |i: usize| -> f64 {
+            let o = &items[i].obj;
+            let d = fnum(o, "_fc_delta", 0.0);
+            let k = &items[i].key;
+            if crate::experiment::get().pair_jokers && (k.starts_with("buy_card_") || k.starts_with("replace_"))
+                && crate::experiment::is_pair_joker(g(&shop_cards[k.rsplit('_').next().unwrap().parse::<usize>().unwrap()], "label").as_str())
+            {
+                d + crate::experiment::PAIR_SE * fnum(o, "_fc_se", 0.0).max(1e-9)
+            } else {
+                d
+            }
+        };
         // v20: a clear forecast winner is bought by code (policy lab arm C); JEV gets the close calls
         let mut auto: Vec<usize> = (0..items.len()).filter(|&i| {
             let o = &items[i].obj;
-            _d(o).contains_key("_fc_delta") && fnum(o, "_fc_delta", 0.0) > (super::SURE_SE as f64) * fnum(o, "_fc_se", 0.0).max(1e-9)
+            _d(o).contains_key("_fc_delta") && eff(i) > crate::experiment::get().sure_se.unwrap_or(super::SURE_SE as f64) * fnum(o, "_fc_se", 0.0).max(1e-9)
         }).collect();
         // v21: jokers/vouchers/planets first (arm F's order), then packs, tarots and spectrals
         let non_item: Vec<usize> = auto.iter().cloned().filter(|&i| !flag(&items[i].obj, "_fc_item")).collect();
@@ -731,20 +772,20 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             auto = non_item;
         }
         let mut why = "forecast";
-        if auto.is_empty() && ante <= super::EARLY_ANTE && jok_count < super::EARLY_JOKERS {
+        if auto.is_empty() && ante <= super::early_ante() && jok_count < super::early_jokers() {
             // v23: early slots are filled by code. Ante-1/2 blinds are easy enough that no single joker
             // clears the 2 SE bar, so every early joker was a close call, and the code-only bot (top
             // option = buy nothing) died with empty slots on seeds where JEV filled them and went deep.
             auto = (0..items.len()).filter(|&i| {
                 let it = &items[i];
-                it.key.starts_with("buy_card") && crate::gs::s(&g(&it.obj, "kind")).contains("joker") && fnum(&it.obj, "_fc_delta", 0.0) > 0.0
+                it.key.starts_with("buy_card") && crate::gs::s(&g(&it.obj, "kind")).contains("joker") && eff(i) > 0.0
             }).collect();
             why = "early slot fill";
         }
         if !auto.is_empty() {
             let mut k = auto[0];
             for &i in &auto[1..] {
-                if fnum(&items[i].obj, "_fc_delta", 0.0) > fnum(&items[k].obj, "_fc_delta", 0.0) {
+                if eff(i) > eff(k) {
                     k = i;
                 }
             }
@@ -825,12 +866,13 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
     }
     let (s, cost) = if !best.is_empty() { (sc(best), find(best).unwrap().cost) } else { (-1.0, 0) };
-    let early = ante <= super::EARLY_ANTE && jok_count < super::EARLY_JOKERS;
+    let early = ante <= super::early_ante() && jok_count < super::early_jokers();
     let early_joker = early && (best.starts_with("buy_card") || best.starts_with("replace"))
         && crate::gs::s(&g(&find(best).unwrap().obj, "kind")).contains("joker");
     // A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.
     let strong_v: Vec<&Item> = items.iter()
-        .filter(|it| flag(&it.obj, "_strong") && mode != "invest" && money - it.cost >= super::INTEREST_BUFFER)
+        .filter(|it| flag(&it.obj, "_strong") && mode != "invest"
+            && money - it.cost >= crate::experiment::get().voucher_floor.unwrap_or_else(|| super::interest_buffer(ante)))
         .collect(); // v11: from surplus only, never during the joker phase
     let is_joker_buy = |it: &Item| (it.key.starts_with("buy_card") || it.key.starts_with("replace")) && crate::gs::s(&g(&it.obj, "kind")).contains("joker");
     let mut sure: Vec<&Item> = items.iter()
@@ -841,7 +883,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         // v19: sure = beats buying nothing by more than 2 SE in blinds cleared over the horizon
         sure = items.iter()
             .filter(|it| _d(&it.obj).contains_key("_fc_delta")
-                && fnum(&it.obj, "_fc_delta", 0.0) > (super::SURE_SE as f64) * fnum(&it.obj, "_fc_se", 0.0).max(1e-9) && sc(&it.key) >= 1.0)
+                && fnum(&it.obj, "_fc_delta", 0.0) > crate::experiment::get().sure_se.unwrap_or(super::SURE_SE as f64) * fnum(&it.obj, "_fc_se", 0.0).max(1e-9) && sc(&it.key) >= 1.0)
             .collect();
     }
     let mut loose_ok = money - cost >= buffer || early_joker;

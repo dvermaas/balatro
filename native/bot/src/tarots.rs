@@ -320,7 +320,9 @@ pub fn auto_use(gs_: &Value) -> Option<(&'static str, Value, String)> {
         }
         if targeted(key).is_some() && state == "SELECTING_HAND" {
             let bv = b.get_or_insert_with(|| build::decide(gs_));
-            if let Some((pick, text)) = plan(key, gs::cards_of(gs_, "hand"), bv) {
+            let hand = gs::cards_of(gs_, "hand");
+            let measured = if crate::experiment::get().tarot_measure { crate::readiness::measured_plan(gs_, key, hand) } else { None };
+            if let Some((pick, text)) = measured.or_else(|| plan(key, hand, bv)) {
                 return Some(("use", json!({"consumable": i, "cards": pick}), format!("use {label}: {text}")));
             }
         }

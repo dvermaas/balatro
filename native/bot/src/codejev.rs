@@ -54,6 +54,11 @@ pub struct CodeJevStats {
     pub pack_picks: Vec<Value>,
 }
 
+/// v55: play now unless the best discard's modeled next play beats the best play by 1 / PLAY_NOW_RATIO (was: by
+/// anything). A play also replaces its cards, and a discard kept is worth a lot later in the round; the modeled
+/// next play itself is not optimistic (docs/lab-lessons.md). 2 x 2,000 seeds: 862 vs 659 and 825 vs 640 wins.
+pub const PLAY_NOW_RATIO: f64 = 0.6;
+
 /// policy_lab `_code_jev(bot_ref, items)`. `last` is the bot's `last_state` (set through `Jev::observe`).
 pub struct CodeJev {
     pub items: bool,
@@ -101,7 +106,8 @@ impl CodeJev {
             return vec![];
         }
         keys.sort();
-        let fc = self.oracle.borrow_mut().items_forecast(&g, FORECAST_N, 3, &keys, None);
+        let n = crate::experiment::get().cj_fc_n.unwrap_or(FORECAST_N);
+        let fc = self.oracle.borrow_mut().items_forecast(&g, n, 3, &keys, None);
         self.stats.item_forecasts += 1;
         // rollout_items.best(fc): the option beating skip by more than 1 paired SE (v31; was 2) in blinds cleared
         // (largest gain, first on ties).
@@ -148,6 +154,29 @@ impl CodeJev {
     }
 }
 
+/// Lab (`setup-play=avg|clear`): out of discards with hands to spare, the plays carry a next-hand outlook; pick the
+/// best two-play average (`avg`), or the best chance that the two plays clear, then the average
+/// (`clear`). Default: the best immediate score (the first option).
+fn setup_pick(q: &Value) -> Option<String> {
+    let mode = crate::experiment::get().setup_play.as_deref()?;
+    let crit = gs::d(gs::get(q, "criteria"));
+    let mut best: Option<(&String, (f64, f64, f64))> = None;
+    for (k, o) in crit {
+        let ol = gs::get(o, "next_hand_outlook");
+        if !gs::truthy(ol) {
+            continue;
+        }
+        let avg = gs::num(gs::get(ol, "average_two_play_total"));
+        let poor = gs::num(gs::get(ol, "poor_draw_two_play_total"));
+        let clear: f64 = gs::s(gs::get(ol, "chance_two_plays_clear")).trim_end_matches('%').parse().unwrap_or(0.0);
+        let key = if mode == "clear" { (clear, avg, poor) } else { (avg, poor, 0.0) };
+        if best.map_or(true, |(_, b)| key > b) {
+            best = Some((k, key));
+        }
+    }
+    best.map(|(k, _)| k.clone())
+}
+
 impl Jev for CodeJev {
     fn observe(&mut self, last_state: &Value) {
         self.last = last_state.clone();
@@ -162,6 +191,11 @@ impl Jev for CodeJev {
                     let keys = criteria_keys(q);
                     let has_cs = keys.iter().any(|k| k == "continue_shopping");
                     let mut c = if has_cs { "continue_shopping".to_string() } else { keys[0].clone() };
+                    if qid == "best_play" {
+                        if let Some(k) = setup_pick(q) {
+                            c = k;
+                        }
+                    }
                     let cash: Vec<&String> = picks.iter().map(|p| &p.0).filter(|k| keys.contains(k)).collect();
                     if has_cs && !cash.is_empty() {
                         c = cash[0].clone();
@@ -171,9 +205,16 @@ impl Jev for CodeJev {
                 "noul" => {
                     let sp = gs::get(state, "strongest_play");
                     let bd = gs::get(state, "best_draw_by_measurement");
+                    let e = crate::experiment::get();
+                    let rnd = gs::get(state, "round");
+                    let spare = gs::num(gs::get(rnd, "discards_left")) >= gs::num(gs::get(rnd, "hands_left"));
+                    let ratio = match e.play_now_spare {
+                        Some(r) if spare => r,
+                        _ => e.play_now_ratio.unwrap_or(PLAY_NOW_RATIO),
+                    };
                     let play = gs::truthy(gs::get(sp, "clears_blind_alone"))
                         || gs::d(bd).get("modeled_average_next_play").is_none()
-                        || gs::num(gs::get(sp, "estimated_score")) >= gs::num(gs::get(bd, "modeled_average_next_play"));
+                        || gs::num(gs::get(sp, "estimated_score")) >= ratio * gs::num(gs::get(bd, "modeled_average_next_play"));
                     json!({"type": "noul", "noul": if play { 1.0 } else { 0.0 }})
                 }
                 _ => {

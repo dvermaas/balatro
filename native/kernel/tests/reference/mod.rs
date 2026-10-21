@@ -182,8 +182,17 @@ impl OldScorer {
                 cond((c || w > 0) && (o || (c && w > 0) || w >= 2))
             }
             _ => {
-                let low = ctx.held.iter().map(nominal).fold(None, |m: Option<f64>, x| Some(m.map_or(x, |m| m.min(x))));
-                (0.0, 2.0 * low.unwrap_or(0.0), 1.0)
+                // v42 Raised Fist: rightmost lowest rank, Stone skipped, 0 when debuffed, x (held retriggers + Red Seal)
+                let mut low: Option<&Card> = None;
+                for c in ctx.held.iter().filter(|c| c.enh != STONE && c.rank != 0) {
+                    if low.map_or(true, |b| c.rank <= b.rank) {
+                        low = Some(c);
+                    }
+                }
+                match low {
+                    Some(c) if !c.debuff => (0.0, 2.0 * nominal(c) * (1 + self.held_retrigger + c.red as i64) as f64, 1.0),
+                    _ => (0.0, 0.0, 1.0),
+                }
             }
         }
     }

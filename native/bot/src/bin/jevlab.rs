@@ -110,6 +110,25 @@ fn diff_trace(seed: &str, log: &[Value]) -> String {
     if py.len() > log.len() { format!("rust ended at call {} of {}", log.len(), py.len()) } else { "identical".into() }
 }
 
+/// JEVLAB_SNAPS=1: one snapshot per shop visit (value-model training data): money, jokers [key, edition],
+/// hand levels {hand: [level, played]}, deck size and enhanced cards, hand size, vouchers.
+fn snap(g: &Value) -> Value {
+    let cards = |a: &str| g[a]["cards"].as_array().cloned().unwrap_or_default();
+    let deck: Vec<Value> = cards("cards").into_iter().chain(cards("hand")).collect();
+    let enh = deck.iter().filter(|c| c["modifier"]["enhancement"].as_str().is_some_and(|e| !e.is_empty())).count();
+    let levels: Map<String, Value> = g["hands"].as_object().map(|h| h.iter()
+        .map(|(k, v)| (k.clone(), json!([v["level"], v["played"]]))).collect()).unwrap_or_default();
+    let vouchers: Vec<Value> = match &g["used_vouchers"] {
+        Value::Object(m) => m.keys().map(|k| json!(k)).collect(),
+        Value::Array(a) => a.clone(),
+        _ => vec![],
+    };
+    let boss = g["blinds"].as_object().and_then(|b| b.values().find(|x| x["type"] == "BOSS")).map(|x| x["name"].clone()).unwrap_or(Value::Null);
+    json!({"ante": g["ante_num"], "round": g["round_num"], "money": g["money"], "boss": boss,
+           "jokers": cards("jokers").iter().map(|c| json!([c["key"], c["modifier"]["edition"]])).collect::<Vec<_>>(),
+           "levels": levels, "deck": deck.len(), "enh": enh, "hand_size": g["hand"]["limit"], "vouchers": vouchers})
+}
+
 fn play(seed: &str) -> Result<Value, String> {
     let t0 = std::time::Instant::now();
     let tmp = std::env::temp_dir().join(format!("plab_{}_{}", seed, std::process::id()));
@@ -122,11 +141,21 @@ fn play(seed: &str) -> Result<Value, String> {
         "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(RumbotGame::new()), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
-    bot.dec = jevbot::decisions::DecisionCfg::lab();
+    let e = jevbot::experiment::get();
+    bot.dec = jevbot::decisions::DecisionCfg::lab_with(e.fc_n.unwrap_or(64), e.fc_bosses.unwrap_or(3));
     bot.recorder.raw_states = want_trace; // only decisions.jsonl is read back
     bot.act("start", Some(&json!({"seed": seed, "deck": "RED", "stake": "WHITE"}))).map_err(|e| format!("start: {e:?}"))?;
     let mut engine_won = false;
+    let want_snaps = std::env::var_os("JEVLAB_SNAPS").is_some();
+    let (mut snaps, mut snapped) = (Vec::new(), std::collections::HashSet::new());
     for _ in 0..20000 {
+        if want_snaps {
+            if let Some(g) = bot.last_state.as_ref().filter(|g| g["state"] == "SHOP") {
+                if snapped.insert(g["round_num"].to_string()) {
+                    snaps.push(snap(g));
+                }
+            }
+        }
         match bot.step() {
             Ok(_) => {}
             Err(Stop::BenchmarkComplete) => break,
@@ -200,6 +229,9 @@ fn play(seed: &str) -> Result<Value, String> {
     put("prompt_version", summ["prompt_version"].clone());
     put("item_fc", json!(ifs.len()));
     put("item_fc_s", json!(r1(ifs.iter().sum())));
+    if want_snaps {
+        put("snaps", Value::Array(snaps));
+    }
     if !want_trace { let _ = std::fs::remove_dir_all(&tmp); }
     if want_trace {
         let log = calls.borrow();
@@ -215,6 +247,7 @@ fn play(seed: &str) -> Result<Value, String> {
 }
 
 fn main() {
+    let _ = jevbot::experiment::get(); // JEVLAB_EXP flags, including simcore's FREE_DISCARD for the rollouts
     let a: Vec<String> = std::env::args().skip(1).collect();
     let opt = |k: &str| a.iter().position(|x| x == k).and_then(|i| a.get(i + 1)).cloned();
     let mut seeds: Vec<String> = match (opt("--seeds"), opt("--set")) {
@@ -251,5 +284,8 @@ fn main() {
         }
     });
     jevbot::prof::dump();
+    if jevbot::experiment::get().free_discard {
+        eprintln!("rollout free discards: {}", simcore::FREE_DISCARDS_TAKEN.load(Ordering::SeqCst));
+    }
     println!("{} games, {jobs} threads, {:.1}s wall, {:.2}s/game wall -> {}", seeds.len(), t0.elapsed().as_secs_f64(), t0.elapsed().as_secs_f64() / seeds.len() as f64, out.display());
 }

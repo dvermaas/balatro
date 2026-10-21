@@ -161,7 +161,11 @@ pub fn joker_value(src: &Value, hands_played: i64, sort_id: u64) -> Value {
     let perishable = m.get("perishable").filter(|v| truthy(v)).map(py_int);
     let value = d(src.get("value").unwrap_or(&Value::Null));
     let text = value.get("effect").and_then(Value::as_str).unwrap_or("");
-    let extra_sell = (sell - 1.max(buy.div_euclid(2))).max(0);
+    // A joker a tag made free keeps cost 0 once bought: Card:set_cost (card.lua) prices its sell value from the
+    // full cost, then zeroes the cost for a couponed card in the shop. Anything that adds sell value calls
+    // set_cost again, which restores the cost (no longer in the shop), so cost 0 means no extra sell value.
+    // Every other joker costs at least 1.
+    let extra_sell = if buy == 0 { 0 } else { (sell - 1.max(buy.div_euclid(2))).max(0) };
     let (counter, secondary, hands_at_create, named_hand) = running(key, text, hands_played);
 
     let mut o = Map::new();

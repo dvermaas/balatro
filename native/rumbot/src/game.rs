@@ -2495,7 +2495,9 @@ impl GameState {
             None => return true,
         };
         if boss.forces_a_card {
-            if let Some(forced) = &self.forced_card {
+            // jev fork: the game marks the card itself (ability.forced_selection, blind.lua drawn_to_hand), so a forced
+            // card that left the hand (Death/Sigil/... made a new card of it) forces nothing until the next draw.
+            if let Some(forced) = self.forced_card.as_ref().filter(|f| self.hand.iter().any(|c| uid_of(c) == uid_of(f))) {
                 let holds = cards
                     .iter()
                     .any(|&i| i < self.hand.len() && uid_of(&self.hand[i]) == uid_of(forced));

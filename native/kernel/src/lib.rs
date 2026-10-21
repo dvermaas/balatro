@@ -246,9 +246,18 @@ impl Scorer {
                 let w = ctx.wild;
                 cond((c || w > 0) && (o || (c && w > 0) || w >= 2))
             }
+            12 => cond(!ctx.face_scored), // no face card scores (Ride the Bus)
             _ => {
-                let low = ctx.held().map(nominal).fold(None, |m: Option<f64>, x| Some(m.map_or(x, |m| m.min(x))));
-                (0.0, 2.0 * low.unwrap_or(0.0), 1.0)
+                // Raised Fist (v42, rumbot lowest_held): the rightmost held card of the lowest rank, Stone cards
+                // skipped; nothing when it is debuffed, and it repeats with held retriggers (Mime) and its Red Seal
+                let low = ctx.held().filter(|c| c.enh != STONE && c.rank != 0).fold(None, |m: Option<&Card>, c| match m {
+                    Some(b) if c.rank > b.rank => Some(b),
+                    _ => Some(c),
+                });
+                match low {
+                    Some(c) if !c.debuff => (0.0, 2.0 * nominal(c) * (1 + self.held_retrigger + c.red as i64) as f64, 1.0),
+                    _ => (0.0, 0.0, 1.0),
+                }
             }
         }
     }
@@ -298,7 +307,7 @@ impl Scorer {
             }
         }
 
-        let ctx = Ctx { name, cards, combo, times_played, played_this_round, scoring_suits: 0, wild: 0 };
+        let ctx = Ctx { name, cards, combo, times_played, played_this_round, scoring_suits: 0, wild: 0, face_scored: first_face.is_some() };
         let held_reps = 1 + self.held_retrigger;
         // without held rules only a held Steel card changes anything
         let only_steel = self.held.is_empty();
@@ -353,6 +362,8 @@ struct Ctx<'a> {
     played_this_round: bool,
     scoring_suits: u32,
     wild: usize,
+    /// a face card (not debuffed) is among the scoring cards
+    face_scored: bool,
 }
 
 impl<'a> Ctx<'a> {

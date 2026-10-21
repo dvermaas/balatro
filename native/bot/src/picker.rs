@@ -53,7 +53,7 @@ fn candidates(infos: &[Info]) -> Vec<Vec<usize>> {
     simcore::candidates(&cards)
 }
 /// hands.card_info as the kernel's card: rank 0 for none or Stone, suit 1-4 (H, D, C, S).
-fn kernel_card(i: &Info) -> jev_kernel::Card {
+pub(crate) fn kernel_card(i: &Info) -> jev_kernel::Card {
     let stone = i.enh_is("STONE");
     jev_kernel::Card {
         rank: if stone { 0 } else { i.rank_truthy().map_or(0, |r| rank_index(r) as u8 + 2) },
@@ -290,7 +290,7 @@ pub struct Picker<'a> {
 
 impl<'a> Picker<'a> {
     pub fn new(pub_: &'a Value) -> Picker<'a> {
-        Picker { pub_, b: build::decide(pub_), synth: synth_plays(pub_, SYNTH_HANDS, "SYNTH"), memo: HashMap::new(), planets: None }
+        Picker { pub_, b: build::decide(pub_), synth: synth_plays(pub_, crate::experiment::get().synth.unwrap_or(SYNTH_HANDS), "SYNTH"), memo: HashMap::new(), planets: None }
     }
 
     fn gain(&self, add: Option<&Value>, level_up: Option<(&str, i64, i64)>) -> Option<f64> {
@@ -322,11 +322,13 @@ impl<'a> Picker<'a> {
             // v28: planet_gain re-chooses the best play per deal (gain kept each sample's play fixed)
             let (pub_, planets) = (self.pub_, &mut self.planets);
             let g = lv.as_ref().map(|(h, a, b)| {
-                planets.get_or_insert_with(|| PlanetDeals::new(pub_, PLANET_DEALS, PLANET_EXTRA, "PLANET")).gain(pub_, (h.as_str(), *a, *b))
+                planets.get_or_insert_with(|| PlanetDeals::new(pub_, crate::experiment::get().planet_deals.unwrap_or(PLANET_DEALS), PLANET_EXTRA, "PLANET")).gain(pub_, (h.as_str(), *a, *b))
             });
             let g = g.unwrap_or(0.0); // `g or 0.0`
             let g = if g == 0.0 { 0.0 } else { g };
-            self.memo.insert(k.clone(), pmax(g, 0.0) + 0.001);
+            // lab: JEVLAB_EXP=pair-planets takes Mercury over other planets
+            let bonus = if crate::experiment::get().pair_planets && lv.as_ref().is_some_and(|l| l.0 == "Pair") { crate::experiment::PAIR_PLANET } else { 0.0 };
+            self.memo.insert(k.clone(), pmax(g, 0.0) + 0.001 + bonus);
         }
         self.memo[&k]
     }

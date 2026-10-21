@@ -444,6 +444,13 @@ pub struct Policy {
     pub jokers: Vec<(u8, Option<RuleIn>)>,
 }
 
+/// The held (not debuffed) jokers' DiscardGoals in a rumbot game.
+pub fn rollout_goals(g: &GameState) -> DiscardGoals {
+    let suit = |s: Suit| match s { Suit::Hearts => 1, Suit::Diamonds => 2, Suit::Clubs => 3, Suit::Spades => 4 };
+    let names: Vec<&str> = g.jokers.iter().filter(|j| !j.borrow().debuffed).map(|j| j.borrow().spec.name).collect();
+    DiscardGoals::from_names(names.into_iter(), g.castle_suit.map(suit), g.mail_rank.map(|r| r as u8))
+}
+
 /// kernel hand index (HAND_NAMES order) -> rumbot-sim HandType
 pub fn hand_type(i: usize) -> HandType {
     hand_of(HAND_NAMES[i]).expect("kernel hand names are rumbot-sim labels")
@@ -505,7 +512,12 @@ impl Policy {
             let (name, sc) = kernel::classify(&cs);
             let mut s = scorer.score(&infos, &combo, name, &sc);
             let in_round = played_round & (1 << name) != 0;
-            if (bname == "The Eye" && in_round) || (bname == "The Mouth" && played_round != 0 && !in_round) {
+            // v40: The Mouth scores only its locked hand (the round's first type), not every type played
+            let mouth_off = match g.mouth_only_hand {
+                Some(h) => hand_type(name) != h,
+                None => false,
+            };
+            if (bname == "The Eye" && in_round) || (bname == "The Mouth" && mouth_off) {
                 s = -1.0;
             }
             if best.as_ref().map_or(true, |b| s > b.0) {
@@ -513,15 +525,35 @@ impl Policy {
             }
         }
         let (score, combo, name) = best.expect("a non-empty hand has a candidate");
+        // v39: The Serpent draws exactly 3 after any discard: while the best play does not clear, a
+        // one-card discard of the lowest spare card grows the hand by 2 (the bot does the same)
+        if bname == "The Serpent" && discards_left > 0 && score < need as f64 {
+            if let Some(p) = (0..infos.len()).filter(|p| !combo.contains(p) && !forced.contains(p)).min_by_key(|&p| (rv(&infos[p]), p)) {
+                return (true, vec![p]);
+            }
+        }
         let behind = score * (hands_left as f64) < need as f64;
-        if discards_left > 0 && hands_left > 1 && behind {
-            let toss = discard(&infos, &forced);
+        let k = f64::from_bits(ROLLOUT_BEHIND.load(std::sync::atomic::Ordering::Relaxed));
+        let behind_d = if k == 1.0 { behind } else { score * (hands_left as f64) * k < need as f64 };
+        if discards_left > 0 && hands_left > 1 && behind_d && !NO_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
+            let smart = SMART_DISCARD.load(std::sync::atomic::Ordering::Relaxed);
+            let toss = if smart > 0 { smart_discard(g, &scorer, &infos, &forced, &combo, smart) } else { discard(&infos, &forced) };
             if !toss.is_empty() {
+                if FREE_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
+                    return (true, first_discard_adjust(toss, &infos, &rollout_goals(g), g.discards_used == 0));
+                }
                 return (true, toss);
             }
         }
         if discards_left == 0 && hands_left > 1 && behind && combo.len() < 5 {
             return (false, self.cycle(&scorer, &infos, combo, name, score));
+        }
+        if discards_left > 0 && FREE_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
+            let toss = free_discard(&infos, &combo, &forced, &rollout_goals(g), g.discards_used == 0, name);
+            if !toss.is_empty() {
+                FREE_DISCARDS_TAKEN.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                return (true, toss);
+            }
         }
         (false, combo)
     }
@@ -546,6 +578,129 @@ impl Policy {
         }
         out
     }
+}
+
+// ---------------------------------------------------------------------------
+// Lab (`JEVLAB_EXP=free-discard`, set by jevbot): spend discards the play does not need when a held joker
+// pays for them. Off unless FREE_DISCARD is set; the bot (decisions/play.rs) and the forecast's rollouts
+// (Policy::decide) use the same choice, so the forecast values discard jokers the way the bot plays them.
+
+pub static FREE_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab (`rollout-discard2=S`): when behind, the rollout's discard compares a few keep sets (the old rule, the best
+/// flush draw, the best straight draw, pairs, the best play) by their mean best score over S order-free redraws.
+pub static SMART_DISCARD: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+/// Lab (`rollout-nodiscard`): rollouts never discard when behind (to measure how much their discards matter).
+pub static NO_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab (`rollout-behind=K`): rollouts discard only while K x (best play x hands left) < chips needed (default 1;
+/// stored as f64 bits). K < 1 discards less.
+pub static ROLLOUT_BEHIND: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0x3FF0000000000000);
+/// Free discards the rollouts took (lab diagnostics).
+pub static FREE_DISCARDS_TAKEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// What the held jokers want discarded (kernel codes: suit 1-4 = H D C S, rank 2-14).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct DiscardGoals {
+    /// Castle: cards of this suit
+    pub suit: Option<u8>,
+    /// Mail-In Rebate: cards of this rank
+    pub rank: Option<u8>,
+    /// Hit the Road: Jacks
+    pub jacks: bool,
+    /// Faceless Joker: 3+ face cards at once
+    pub faces3: bool,
+    /// Trading Card: a single card as the round's first discard
+    pub single_first: bool,
+    /// Burnt Joker: the round's first discard levels its poker hand
+    pub burnt_first: bool,
+    /// Yorick: any discarded card counts
+    pub any: bool,
+    /// a held joker loses value on discards (Green Joker, Ramen, Delayed Gratification, Banner)
+    pub blocked: bool,
+}
+
+impl DiscardGoals {
+    /// From joker names (the game's labels) and Castle's suit / Mail-In Rebate's rank.
+    pub fn from_names<'a>(names: impl Iterator<Item = &'a str>, castle_suit: Option<u8>, mail_rank: Option<u8>) -> DiscardGoals {
+        let mut d = DiscardGoals::default();
+        for n in names {
+            match n {
+                "Castle" => d.suit = castle_suit,
+                "Mail-In Rebate" => d.rank = mail_rank,
+                "Hit the Road" => d.jacks = true,
+                "Faceless Joker" => d.faces3 = true,
+                "Trading Card" => d.single_first = true,
+                "Burnt Joker" => d.burnt_first = true,
+                "Yorick" => d.any = true,
+                "Green Joker" | "Ramen" | "Delayed Gratification" | "Banner" => d.blocked = true,
+                _ => {}
+            }
+        }
+        d
+    }
+    pub fn wants(&self) -> bool {
+        !self.blocked && (self.suit.is_some() || self.rank.is_some() || self.jacks || self.faces3 || self.single_first || self.burnt_first || self.any)
+    }
+}
+
+/// The free discard: up to 5 hand positions outside `keep` (the play we are about to make) and `forced`
+/// that the jokers in `goals` pay for, or empty. `first` = no discard used yet this round. `main` = the
+/// kernel hand index Burnt Joker should level when it can (the play's hand).
+pub fn free_discard(infos: &[kernel::Card], keep: &[usize], forced: &[usize], goals: &DiscardGoals, first: bool, main: usize) -> Vec<usize> {
+    if !goals.wants() {
+        return vec![];
+    }
+    let mut spare: Vec<usize> = (0..infos.len()).filter(|p| !keep.contains(p) && !forced.contains(p) && !infos[*p].debuff).collect();
+    spare.sort_by_key(|&p| rv(&infos[p])); // lowest first
+    if spare.is_empty() {
+        return vec![];
+    }
+    if first && goals.burnt_first {
+        // the strongest poker hand the spares make, the play's own hand first; High Card is not worth a discard
+        let sinfos: Vec<kernel::Card> = spare.iter().map(|&p| infos[p]).collect();
+        let mut best: Option<(bool, usize, Vec<usize>)> = None;
+        for c in candidates(&sinfos) {
+            let mut c = c;
+            c.sort_unstable();
+            c.dedup();
+            let cs: Vec<kernel::Card> = c.iter().map(|&q| sinfos[q]).collect();
+            let (name, _) = kernel::classify(&cs);
+            if HAND_NAMES[name] == "High Card" {
+                continue;
+            }
+            let key = (name == main, usize::MAX - name);
+            if best.as_ref().map_or(true, |b| key > (b.0, usize::MAX - b.1)) {
+                best = Some((name == main, name, c));
+            }
+        }
+        if let Some((_, _, c)) = best {
+            return c.into_iter().map(|q| spare[q]).collect();
+        }
+    }
+    if first && goals.single_first {
+        return vec![spare[0]]; // Trading Card destroys it: the lowest spare
+    }
+    let face = |c: &kernel::Card| (11..=13).contains(&c.rank) && c.enh != kernel::STONE;
+    let faces: Vec<usize> = spare.iter().copied().filter(|&p| face(&infos[p])).collect();
+    let mut out: Vec<usize> = spare.iter().copied().filter(|&p| {
+        let c = &infos[p];
+        let stone = c.enh == kernel::STONE;
+        goals.any
+            || goals.suit.is_some_and(|s| !stone && (c.suit == s || c.enh == kernel::WILD))
+            || goals.rank.is_some_and(|r| !stone && c.rank == r)
+            || (goals.jacks && !stone && c.rank == 11)
+            || (goals.faces3 && faces.len() >= 3 && face(c))
+    }).collect();
+    out.truncate(5);
+    out
+}
+
+/// A planned regular discard, adjusted for Trading Card: as the round's first discard it is cut to its
+/// lowest card (destroyed for $3); the rest can go in the next discard.
+pub fn first_discard_adjust(toss: Vec<usize>, infos: &[kernel::Card], goals: &DiscardGoals, first: bool) -> Vec<usize> {
+    if first && goals.single_first && !goals.blocked && toss.len() > 1 {
+        return vec![*toss.iter().min_by_key(|&&p| rv(&infos[p])).unwrap()];
+    }
+    toss
 }
 
 /// rollout.Policy.discard
@@ -600,6 +755,112 @@ pub fn discard(infos: &[kernel::Card], forced: &[usize]) -> Vec<usize> {
         }
     }
     toss
+}
+
+/// Positions to toss for keeping `keep`: the rest, lowest first, at most 5, with the forced card (always selected).
+fn toss_for(infos: &[kernel::Card], keep: &[usize], forced: &[usize]) -> Vec<usize> {
+    let mut toss: Vec<usize> = (0..infos.len()).filter(|p| !keep.contains(p)).collect();
+    toss.sort_by_key(|&p| (!infos[p].debuff, rv(&infos[p])));
+    toss.truncate(5);
+    for &f in forced {
+        if !toss.contains(&f) {
+            toss.truncate(4);
+            toss.push(f);
+        }
+    }
+    toss
+}
+
+/// The best score among rollout candidates for a hand (no boss rules: an estimate for the discard choice).
+fn best_candidate_score(scorer: &kernel::Scorer, infos: &[kernel::Card]) -> f64 {
+    let mut best = 0.0f64;
+    for combo in candidates(infos) {
+        let mut combo = combo;
+        combo.sort_unstable();
+        combo.dedup();
+        let cs: Vec<kernel::Card> = combo.iter().map(|&p| infos[p]).collect();
+        let (name, sc) = kernel::classify(&cs);
+        best = best.max(scorer.score(infos, &combo, name, &sc));
+    }
+    best
+}
+
+/// `SMART_DISCARD`: the keep set whose order-free redraws score best on average (deterministic per hand).
+fn smart_discard(g: &GameState, scorer: &kernel::Scorer, infos: &[kernel::Card], forced: &[usize], best_play: &[usize], samples: usize) -> Vec<usize> {
+    let n = infos.len();
+    let live: Vec<usize> = (0..n).filter(|&p| !infos[p].debuff && infos[p].rank != 0 && infos[p].enh != kernel::STONE).collect();
+    let mut keeps: Vec<Vec<usize>> = Vec::new();
+    let old = discard(infos, forced);
+    keeps.push((0..n).filter(|p| !old.contains(p)).collect());
+    // best flush draw: the suit with the most live cards (3+), Wild cards count for every suit
+    if let Some((_, cards)) = (1u8..=4).map(|s| (s, live.iter().copied().filter(|&p| infos[p].suit == s || infos[p].enh == kernel::WILD).collect::<Vec<_>>()))
+        .filter(|(_, c)| c.len() >= 3).max_by_key(|(_, c)| c.len()) {
+        keeps.push(cards);
+    }
+    // best straight draw: the 5-rank window (A low or high) holding the most distinct ranks (3+), highest first
+    const ORDER: [u8; 14] = [14, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
+    let mut best_w: Option<Vec<usize>> = None;
+    for top in (4..ORDER.len()).rev() {
+        let mut w: Vec<usize> = Vec::new();
+        for &r in &ORDER[top - 4..=top] {
+            if let Some(&p) = live.iter().find(|&&p| infos[p].rank == r) {
+                w.push(p);
+            }
+        }
+        if w.len() >= 3 && best_w.as_ref().map_or(true, |b| w.len() > b.len()) {
+            best_w = Some(w);
+        }
+    }
+    if let Some(w) = best_w {
+        keeps.push(w);
+    }
+    let mut cnt = [0usize; 15];
+    for &p in &live {
+        cnt[infos[p].rank as usize] += 1;
+    }
+    let pairs: Vec<usize> = live.iter().copied().filter(|&p| cnt[infos[p].rank as usize] >= 2).collect();
+    if !pairs.is_empty() {
+        keeps.push(pairs);
+    }
+    keeps.push(best_play.to_vec());
+    let pile: Vec<kernel::Card> = g.draw_pile.iter().map(info).collect();
+    if pile.is_empty() {
+        return old;
+    }
+    // a fixed per-hand stream: the forecast stays reproducible and the game's own RNG is untouched
+    let mut h: u64 = 0x9E37_79B9_7F4A_7C15 ^ (g.draw_pile.len() as u64);
+    for c in &g.hand {
+        h = h.wrapping_mul(6364136223846793005).wrapping_add(cards::uid_of(c) as u64);
+    }
+    let mut next = || {
+        h = h.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+        (h >> 33) as usize
+    };
+    let mut best: Option<(f64, Vec<usize>)> = None;
+    for keep in keeps {
+        let toss = toss_for(infos, &keep, forced);
+        if toss.is_empty() {
+            continue;
+        }
+        let kept: Vec<kernel::Card> = (0..n).filter(|p| !toss.contains(p)).map(|p| infos[p]).collect();
+        let draw = toss.len().min(pile.len());
+        let mut total = 0.0;
+        for _ in 0..samples {
+            let mut idx: Vec<usize> = (0..pile.len()).collect();
+            let mut hand = kept.clone();
+            for k in 0..draw {
+                let j = k + next() % (idx.len() - k);
+                idx.swap(k, j);
+                hand.push(pile[idx[k]]);
+            }
+            total += best_candidate_score(scorer, &hand);
+        }
+        let mean = total / samples as f64;
+        if best.as_ref().map_or(true, |b| mean > b.0) {
+            best = Some((mean, toss));
+        }
+    }
+    best.map(|b| b.1).unwrap_or(old)
 }
 
 // ---------------------------------------------------------------------------
@@ -708,8 +969,10 @@ pub fn plan(kind: &str, n: usize, arg: Option<&str>, hand: &[CardRef], suit: Opt
                 _ => Ok(None),
             }
         }
-        "best" => order.first().map(|&i| Some(vec![i])).ok_or(()),
-        "held" => order.last().map(|&i| Some(vec![i])).ok_or(()),
+        // v51: every hand card debuffed leaves no target: wait (Python raised here and fell back to Jackdaw,
+        // which no longer exists, so a rollout reaching it twice crashed the forecast)
+        "best" => Ok(order.first().map(|&i| vec![i])),
+        "held" => Ok(order.last().map(|&i| vec![i])),
         _ => Ok(None),
     }
 }

@@ -24,7 +24,7 @@ use std::collections::HashSet;
 #[allow(unused_imports)]
 pub(crate) use crate::hands::{BossAllow, _boss_allows, _boss_levels};
 
-// decisions.py 158-159
+// decisions.py 158-159; v56: only where the estimate is uncertain
 pub(crate) const CLEAR_MARGIN: f64 = 1.1;
 pub(crate) const PLAY_NOW_UNDER_PACE: f64 = 0.85;
 
@@ -266,6 +266,18 @@ fn _leaf_sale(bot: &mut JevBot, gs_: &Value, boss: &str, hand: &[Value]) -> bool
         return false;
     }
     let js = cards_of(gs_, "jokers");
+    // v38: the bait bought for this boss goes first
+    if let Some(j) = js.iter().position(|c| !bot._leaf_bait.is_null() && gs::get(c, "id") == &bot._leaf_bait) {
+        let label = gs::get(&js[j], "label").as_str().unwrap_or("None").to_string();
+        bot.emit("auto", json!({"question": "move", "choice": "sell_joker", "desc": format!("sell {label}"),
+            "reason": "Verdant Leaf: sell the bait joker bought for it"}));
+        bot._leaf_bait = Value::Null;
+        if bot.act("sell", Some(&json!({"joker": j}))).is_err() {
+            bot._leaf_failed = key;
+            return false;
+        }
+        return true;
+    }
     // hand size and hands don't show in measured scores: sell those last (TIXQA7PH sold Troubadour)
     let keep: HashSet<usize> = (0..js.len()).filter(|&j| gs::get(&js[j], "label").as_str().is_some_and(|l| LEAF_KEEP.contains(&l))).collect();
     let recent = super::recent(bot, gs_);
@@ -306,11 +318,37 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     }
     let rnd = gs::get(gs_, "round");
     let js = crate::prof::time("sh.jokers_build", || jokers::build(gs_, None));
-    let base_levels = gs::d(gs::get(gs_, "hands"));
+    let mut base_levels = gs::d(gs::get(gs_, "hands")).clone();
+    if boss == "The Mouth" {
+        // v40: The Mouth scores only the round's first hand type, but every played type (even one that scored 0)
+        // counts as played this round: remember the first one and keep only it as "played" for the play rules.
+        let round_key = json!([gs::get(gs_, "seed"), gs::get(gs_, "ante_num"), gs::get(gs_, "round_num")]);
+        let played: Vec<String> = base_levels.iter().filter(|(_, h)| gs::truthy(gs::get(h, "played_this_round"))).map(|(n, _)| n.clone()).collect();
+        let locked = bot._mouth_lock.as_array().filter(|a| a.len() == 4 && json!(a[..3]) == round_key).map(|a| gs::s(&a[3]).to_string());
+        let lock = match locked {
+            Some(l) => Some(l),
+            None if played.len() == 1 => {
+                bot._mouth_lock = json!([round_key[0], round_key[1], round_key[2], played[0]]);
+                Some(played[0].clone())
+            }
+            None => None,
+        };
+        if let Some(lock) = lock {
+            for (n, h) in base_levels.iter_mut() {
+                if *n != lock {
+                    if let Some(m) = h.as_object_mut() {
+                        m.insert("played_this_round".into(), json!(0));
+                    }
+                }
+            }
+        }
+    }
+    let base_levels = &base_levels;
     let levels = _boss_levels(base_levels, &boss);
     let infos: Vec<Info> = hand.iter().map(card_info).collect();
     let scorer = Scorer::new(levels.clone(), js.clone(), Rnd::from_value(rnd));
-    let allowed = BossAllow::new(base_levels, &boss);
+    let mut allowed = BossAllow::new(base_levels, &boss);
+    allowed.forced = hand.iter().position(|c| gs::truthy(gs::get(gs::get(c, "state"), "forced")));
     let mut plays: Vec<Value> = crate::prof::time("sh.play_candidates", || play_candidates(hand, &levels, 8, ScorerArg::Jokers(&scorer), Allowed::Boss(&allowed)))
         .iter().map(|p| p.to_json()).collect();
     if plays.is_empty() {
@@ -321,13 +359,131 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             v
         }).collect();
     }
-    let margin = if !js.is_empty() { CLEAR_MARGIN } else { 1.0 };
+    if crate::experiment::get().pair_play && !plays.is_empty() {
+        // lab: JEVLAB_EXP=pair-play plays a Pair scoring within PAIR_PLAY of the best play
+        let top = gs::num(gs::get(&plays[0], "estimate"));
+        if let Some(i) = plays.iter().position(|p| gs::get(p, "hand").as_str() == Some("Pair")
+            && gs::num(gs::get(p, "estimate")) >= crate::experiment::PAIR_PLAY * top)
+        {
+            let p = plays.remove(i);
+            plays.insert(0, p);
+        }
+    }
+    // v56: the margin only covers estimates that can be wrong (a random or unmodelled joker, a Lucky card); the
+    // rest are exact, and a 10% margin there passed up plays that clear for a discard, even on the last hand
+    let risky = !jokers::unmodelled(&js).is_empty()
+        || js.iter().any(|j| matches!(j.label.as_deref(), Some("Misprint") | Some("Bloodstone")))
+        || infos.iter().any(|i| i.enh_is("LUCKY"));
+    let e = crate::experiment::get();
+    if crate::experiment::get().card_order && !js.is_empty() {
+        // lab (`card-order`): each play's estimate in its best card order (the play reorders the hand to match)
+        for p in plays.iter_mut() {
+            let cards = idx_list(gs::get(p, "cards"));
+            // scale the estimate by the reorder's gain, so boss rules already in it (a banned hand's 0) stay
+            let est = gs::int(gs::get(p, "estimate"));
+            if let Some((base, best, _)) = super::card_order_scored(gs_, hand, &cards) {
+                if est > 0 && base > 0 && best > base {
+                    p.as_object_mut().unwrap().insert("estimate".into(), json!((est as f64 * best as f64 / base as f64) as i64));
+                }
+            }
+        }
+        plays.sort_by(|a, b| gs::int(gs::get(b, "estimate")).cmp(&gs::int(gs::get(a, "estimate"))));
+    }
+    let margin = if js.is_empty() {
+        1.0
+    } else if risky {
+        e.clear_risky.unwrap_or(CLEAR_MARGIN)
+    } else {
+        e.clear_margin.unwrap_or(1.0)
+    };
     if let Some(c) = plays.iter().find(|p| clears(p, &info, margin)) {
         let desc = format!("{} ({}) clears the blind", gs::s(gs::get(c, "hand")), gs::int(gs::get(c, "estimate")));
         let cards = idx_list(gs::get(c, "cards"));
         bot.emit("forced", json!({"question": "move", "choice": "play_1", "desc": desc}));
         do_play(bot, gs_, hand, &cards)?;
         return Ok(());
+    }
+    if boss == "The Mouth" && plays.len() > 1
+        && !base_levels.values().any(|h| gs::truthy(gs::get(h, "played_this_round")))
+    {
+        // v41: the first play locks The Mouth's hand type for the round. Value each type in our plays as its
+        // best play now + (hands left - 1) x its expected best score in a fresh deal from the deck (sampled
+        // from the draw pile as a multiset, canonically sorted: order-free), and lead with the best type.
+        let hl = gs::num(gs::get(&info, "hands_left"));
+        let mut deck: Vec<Info> = cards_of(gs_, "cards").iter().map(card_info).collect();
+        deck.sort_by_key(|i| (i.suit.clone(), i.rank.clone(), i.enh.clone(), i.edition.clone()));
+        let size = hand.len().min(deck.len());
+        if hl > 1.0 && size > 0 {
+            let mut rng = pycompat::Random::new_str("MOUTH");
+            let deals: Vec<Vec<Info>> = (0..16).map(|_| rng.sample_indices(deck.len(), size).into_iter().map(|i| deck[i].clone()).collect()).collect();
+            let mut seen: Vec<String> = Vec::new();
+            let mut best: Option<(f64, usize)> = None;
+            for (pi, p) in plays.iter().enumerate() {
+                let t = gs::s(gs::get(p, "hand")).to_string();
+                if seen.contains(&t) {
+                    continue;
+                }
+                seen.push(t.clone());
+                let only = |_c: &[usize], n: &str| n == t;
+                let e: f64 = deals.iter().map(|d| crate::hands::best_score(d, ScorerArg::Jokers(&scorer), Allowed::Func(&only)) as f64).sum::<f64>() / deals.len() as f64;
+                let v = gs::num(gs::get(p, "estimate")) + (hl - 1.0) * e;
+                if best.map_or(true, |b| v > b.0) {
+                    best = Some((v, pi));
+                }
+            }
+            if let Some((_, pi)) = best.filter(|b| b.1 != 0) {
+                let p = plays.remove(pi);
+                plays.insert(0, p);
+            }
+        }
+    }
+    if crate::experiment::get().eye_plan && boss == "The Eye" && plays.len() > 1 {
+        // lab: The Eye bans repeating a hand type this round. Value each type in our plays as its best play now +
+        // (hands left - 1) x the expected best score of a fresh deal without that type (and without the types
+        // already played), so a type that is hard to make again is used while we hold it.
+        let hl = gs::num(gs::get(&info, "hands_left"));
+        let mut deck: Vec<Info> = cards_of(gs_, "cards").iter().map(card_info).collect();
+        deck.sort_by_key(|i| (i.suit.clone(), i.rank.clone(), i.enh.clone(), i.edition.clone()));
+        let size = hand.len().min(deck.len());
+        if hl > 1.0 && size > 0 {
+            let mut rng = pycompat::Random::new_str("EYE");
+            let deals: Vec<Vec<Info>> = (0..16).map(|_| rng.sample_indices(deck.len(), size).into_iter().map(|i| deck[i].clone()).collect()).collect();
+            let used: Vec<String> = base_levels.iter().filter(|(_, h)| gs::truthy(gs::get(h, "played_this_round"))).map(|(n, _)| n.clone()).collect();
+            let mut seen: Vec<String> = Vec::new();
+            let mut best: Option<(f64, usize)> = None;
+            for (pi, p) in plays.iter().enumerate() {
+                let t = gs::s(gs::get(p, "hand")).to_string();
+                if seen.contains(&t) {
+                    continue;
+                }
+                seen.push(t.clone());
+                let rest = |_c: &[usize], n: &str| n != t && !used.iter().any(|u| u == n);
+                let e: f64 = deals.iter().map(|d| crate::hands::best_score(d, ScorerArg::Jokers(&scorer), Allowed::Func(&rest)) as f64).sum::<f64>() / deals.len() as f64;
+                let v = gs::num(gs::get(p, "estimate")) + (hl - 1.0) * e;
+                if best.map_or(true, |b| v > b.0) {
+                    best = Some((v, pi));
+                }
+            }
+            if let Some((_, pi)) = best.filter(|b| b.1 != 0) {
+                let p = plays.remove(pi);
+                plays.insert(0, p);
+            }
+        }
+    }
+    // v39: The Serpent tops the hand up with exactly 3 cards after any play or discard, whatever room there
+    // is, so a one-card discard grows the hand by 2. Until a play clears, discard the lowest card outside
+    // the best play.
+    let dl = gs::num(gs::get(&info, "discards_left"));
+    if boss == "The Serpent" && dl > 0.0 {
+        let keep = idx_list(gs::get(&plays[0], "cards"));
+        let forced = allowed.forced;
+        let infos_k: Vec<jev_kernel::Card> = infos.iter().map(crate::picker::kernel_card).collect();
+        if let Some(p) = (0..hand.len()).filter(|p| !keep.contains(p) && Some(*p) != forced).min_by_key(|&p| (simcore::rv(&infos_k[p]), p)) {
+            bot.emit("auto", json!({"question": "move", "choice": "serpent_discard", "desc": format!("discard {}", describe(&hand[p])),
+                "reason": "The Serpent draws 3 after a discard: a one-card discard grows the hand by 2"}));
+            bot.act("discard", Some(&json!({"cards": [p]})))?;
+            return Ok(());
+        }
     }
 
     let plays = crate::prof::time("sh.setup_plays", || setup_plays(gs_, hand, &plays, &levels, &scorer, &allowed, &info, margin));
@@ -377,9 +533,17 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             o.insert("gain_percent".into(), json!(gain));
         }
         // Order the alternatives by measured survival value, not suit enumeration or build preference.
+        let dkey = crate::experiment::get().discard_key.as_deref();
         let key = |d: &Value| -> (f64, f64) {
             let (c, e) = (gs::num(gs::get(d, "chance_to_clear")), gs::num(gs::get(d, "expected_score")));
-            if hands_left <= 1.0 { (c, e) } else { (e, c) }
+            match dkey {
+                // lab (`discard-key=pace`): with hands to spare, the discard most likely to make pace next play
+                Some("pace") if hands_left > 1.0 => (gs::num(gs::get(d, "chance_to_meet_pace")), e),
+                // lab (`discard-key=low`): the best poor draw (20th percentile), then the mean
+                Some("low") if hands_left > 1.0 => (gs::num(gs::get(d, "low_score")), e),
+                _ if hands_left <= 1.0 => (c, e),
+                _ => (e, c),
+            }
         };
         discards.sort_by(|x, y| key(y).partial_cmp(&key(x)).unwrap()); // reverse=True, stable
     }
@@ -491,6 +655,13 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         do_play(bot, gs_, hand, &idx_list(&cards))?;
     } else {
         let cards = gs::get(disc_opts.iter().find(|(k, _)| *k == best).unwrap().1, "cards").clone();
+        let mut cards = super::adjust_discard(gs_, hand, idx_list(&cards));
+        if let Some(f) = allowed.forced.filter(|f| !cards.contains(f)) {
+            // v54: Cerulean Bell's card is always selected, so it goes with any discard (the game refuses one
+            // without it; the rollouts' discard does the same)
+            cards.truncate(4);
+            cards.push(f);
+        }
         let params = json!({"cards": cards});
         bot.record_decision("move", gs_, &json!(best), &json!(["discard", params]), &options, &probs, &conf, &meta, "prob");
         bot.act("discard", Some(&params))?;

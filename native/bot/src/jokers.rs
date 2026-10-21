@@ -62,6 +62,8 @@ pub enum Cond {
     FourSuits,
     PlayedThisRound,
     SeeingDouble,
+    /// no face card (not debuffed) among the scoring cards
+    NoFaceScored,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -142,6 +144,7 @@ impl HandSpec {
                     Cond::FourSuits => ("four_suits", Value::Null),
                     Cond::PlayedThisRound => ("played_this_round", Value::Null),
                     Cond::SeeingDouble => ("seeing_double", Value::Null),
+                    Cond::NoFaceScored => ("no_face_scored", Value::Null),
                 };
                 json!(["cond", name, arg, eff_json(yes), eff_json(no)])
             }
@@ -290,7 +293,9 @@ pub fn parse(effect: &str) -> Option<Rule> {
 
     // Retriggers
     if let Some(m) = rx!(concat!(r"^Retrigger (.+?)(?: used in scoring)?(?: (\d+) additional times?)?", end!())).captures(e) {
-        let subj = m.get(1).unwrap().as_str();
+        // v37: Seltzer's "for the next 10 hands" is a duration, not the rank 10
+        let subj_owned = rx!(r" for the next \d+ hands?").replace(m.get(1).unwrap().as_str(), "").to_string();
+        let subj = subj_owned.as_str();
         let times: i64 = m.get(2).map_or(1, |t| t.as_str().parse().unwrap());
         if subj.contains("first played card") {
             rule.retrigger.push((Pred::First, times));
@@ -346,6 +351,10 @@ pub fn parse(effect: &str) -> Option<Rule> {
         return cond_hand(Cond::SeeingDouble, (0.0, 0.0, m[1].parse().unwrap()));
     }
 
+    // v37: "(Currently $4)" is money (Cloud 9, Rocket...), not +4 Mult
+    if rx!(r"\(Currently \$").is_match(e) {
+        return None;
+    }
     let cur = rx!(concat!(r"\(Currently ([+X]?)\$?", num!(), r"(?: (Mult|Chips))?\)")).captures(e);
     let unit_guess = rx!(r"(Mult|Chips)").captures(e).map_or("Mult", |m| m.get(1).unwrap().as_str());
 
@@ -474,12 +483,71 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
             out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, 0.0, x.powf(n as f64)))), ..Default::default() });
         }
     }
+    // v42: Misprint's exported effect is only "+" (its text is a random dynatext, v16 note), so it scored 0; count
+    // the average of its +0-23 Mult
+    for (j, c) in cards.iter().enumerate() {
+        if gs::get(c, "key").as_str() == Some("j_misprint") && !gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")) {
+            out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, 11.5, 1.0))), ..Default::default() });
+            out[j].scoring = true;
+        }
+    }
+    if crate::experiment::get().scorer_fix {
+        // lab (`scorer-fix`): jokers the game updates before the hand scores (rumbot update_before_scoring)
+        let played = |h: &str| gs::num(gs::mget(gs::d(gs::get(gs::get(gs_, "hands"), h)), "played"));
+        for (j, c) in cards.iter().enumerate() {
+            if gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")) {
+                continue;
+            }
+            let eff = effect_or_empty(gs::mget(gs::d(gs::get(c, "value")), "effect"));
+            match gs::get(c, "key").as_str() {
+                Some("j_obelisk") => {
+                    // gains X0.2 first, or resets to X1 when the hand (counted with this play) is the most played
+                    if let Some(m) = rx!(r"Currently X(\d+(?:\.\d+)?)").captures(&eff) {
+                        let cur: f64 = m[1].parse().unwrap();
+                        let names: Vec<String> = HAND_NAMES.iter().map(|s| s.to_string()).collect();
+                        let reset: Vec<String> = names.iter().filter(|h| {
+                            let mine = played(h) + 1.0;
+                            names.iter().all(|o| o == *h || played(o) < mine)
+                        }).cloned().collect();
+                        out[j].rule = Some(Rule { hand: Some(HandSpec::Cond { cond: Cond::Names(reset), yes: (0.0, 0.0, 1.0), no: (0.0, 0.0, cur + 0.2) }), ..Default::default() });
+                        out[j].scoring = true;
+                    }
+                }
+                Some("j_ride_the_bus") => {
+                    // +1 first when no face card scores, else it resets to 0 (Pareidolia: every card is a face)
+                    if let Some(m) = rx!(r"Currently \+(\d+(?:\.\d+)?) Mult").captures(&eff) {
+                        let cur: f64 = m[1].parse().unwrap();
+                        let pareidolia = cards.iter().any(|o| gs::get(o, "key").as_str() == Some("j_pareidolia"));
+                        let spec = if pareidolia {
+                            HandSpec::Const((0.0, 0.0, 1.0))
+                        } else {
+                            HandSpec::Cond { cond: Cond::NoFaceScored, yes: (0.0, cur + 1.0, 1.0), no: (0.0, 0.0, 1.0) }
+                        };
+                        out[j].rule = Some(Rule { hand: Some(spec), ..Default::default() });
+                        out[j].scoring = true;
+                    }
+                }
+                Some("j_green_joker") => {
+                    // +1 Mult for this hand before it scores
+                    if let Some(m) = rx!(r"Currently \+(\d+(?:\.\d+)?) Mult").captures(&eff) {
+                        let cur: f64 = m[1].parse().unwrap();
+                        out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, cur + 1.0, 1.0))), ..Default::default() });
+                        out[j].scoring = true;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
     // Blueprint copies the joker to its right, Brainstorm the leftmost.
     for n in 0..out.len() {
         let label = out[n].label.as_deref();
         if label == Some("Blueprint") || label == Some("Brainstorm") {
             let src = if label == Some("Blueprint") && n + 1 < out.len() {
                 Some(n + 1)
+            } else if label == Some("Blueprint") && (crate::experiment::get().blueprint_fix || crate::experiment::get().scorer_fix) {
+                // lab (`blueprint-fix`): the rightmost Blueprint copies nothing (card.lua: G.jokers.cards[i+1] is nil)
+                None
             } else if n > 0 {
                 Some(0)
             } else {
@@ -814,6 +882,8 @@ pub fn score(infos: &[Info], combo: &[usize], name: &str, scoring: &[usize], han
         club: scoring_suits.contains(&Some("C")),
         other_suit: scoring_suits.iter().any(|s| *s != Some("C")),
         wild: sc.iter().filter(|&&p| played[p].enh_is("WILD")).count(),
+        held_retrigger: held_reps - 1,
+        face_scored: first_face.is_some(),
     };
     for j in jokers {
         let ed = j.edition.as_deref();
@@ -842,6 +912,8 @@ struct Ctx<'a> {
     club: bool,
     other_suit: bool,
     wild: usize,
+    held_retrigger: i64,
+    face_scored: bool,
 }
 
 // jokers.py 361-392
@@ -868,20 +940,29 @@ fn _hand(spec: &HandSpec, ctx: &Ctx) -> (f64, f64, f64) {
                     let (c, o, w) = (ctx.club, ctx.other_suit, ctx.wild);
                     (c || w > 0) && (o || (c && w > 0) || w >= 2)
                 }
+                Cond::NoFaceScored => !ctx.face_scored,
             };
             if ok { *yes } else { *no }
         }
         HandSpec::TimesPlayed => (0.0, ctx.times_played + 1.0, 1.0),
         HandSpec::PerDiscard(v) => (v * ctx.discards_left, 0.0, 1.0),
         HandSpec::LowestHeld => {
-            let mut m: Option<f64> = None;
-            for i in ctx.held {
-                let n = _nominal(i);
-                if m.map_or(true, |x| n < x) {
-                    m = Some(n);
+            // v42 Raised Fist (rumbot lowest_held): the rightmost held card of the lowest rank, Stone cards skipped;
+            // nothing when it is debuffed, and it repeats with held retriggers (Mime) and its Red Seal
+            let order = |i: &Info| "23456789TJQKA".find(i.rank_truthy().unwrap_or("")).unwrap_or(0);
+            let mut low: Option<&Info> = None;
+            for &i in ctx.held {
+                if i.rank_truthy().is_some() && !i.enh_is("STONE") && low.map_or(true, |b| order(i) <= order(b)) {
+                    low = Some(i);
                 }
             }
-            (0.0, 2.0 * m.unwrap_or(0.0), 1.0)
+            match low {
+                Some(i) if !i.debuff => {
+                    let reps = 1 + ctx.held_retrigger + i.seal.as_deref().is_some_and(|s| s == "RED") as i64;
+                    (0.0, 2.0 * _nominal(i) * reps as f64, 1.0)
+                }
+                _ => (0.0, 0.0, 1.0),
+            }
         }
     }
 }

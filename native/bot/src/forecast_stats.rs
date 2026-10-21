@@ -81,7 +81,7 @@ pub fn options(pub_: &Value) -> Vec<Value> {
     }
     for (i, c) in cards(pub_, "vouchers").iter().enumerate() {
         let cost = get_or(gs::d(gs::get(c, "cost")), "buy", json!(0));
-        if gs::num(&cost) <= money_f {
+        if gs::num(&cost) <= money_f && !crate::decisions::NEVER_VOUCHERS.contains(&gs::s(gs::get(c, "label"))) {
             out.push(json!({"key": format!("buy_voucher_{i}"),
                 "desc": format!("${} {}", pystr(&cost), pystr(gs::get(c, "label"))),
                 "actions": [["voucher", i]], "supported": true, "cost": cost, "set": "VOUCHER"}));
@@ -183,7 +183,13 @@ pub fn m_next_boss(r: &[Value]) -> f64 {
 
 /// rollout.py 632-633: blinds cleared.
 pub fn m_blinds(r: &[Value]) -> f64 {
-    r.iter().filter(|b| gs::truthy(gs::get(b, "cleared"))).count() as f64
+    let n = r.iter().filter(|b| gs::truthy(gs::get(b, "cleared"))).count() as f64;
+    let e = crate::experiment::get();
+    if e.value_tail > 0.0 || e.money_tail > 0.0 {
+        // lab: + the weighted value of the run after the horizon (forecast::tail_value)
+        return n + r.last().map_or(0.0, |b| gs::num(gs::get(b, "value")));
+    }
+    n
 }
 
 /// rollout.py 636-641: common-random-numbers mean of fn(a) - fn(b) and its paired standard error.

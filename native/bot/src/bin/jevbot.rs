@@ -1,13 +1,16 @@
 //! `jevbot play`: the Rust bot (JevBot) on a real backend, with TypeSafe JEV or the code stand-in.
 //!
 //!   jevbot play [--backend balatrobot|rumbot] [--seed S] [--deck RED] [--stake WHITE]
-//!               [--model jev-latest] [--runs N] [--code-jev] [--env PATH] [--root DIR]
+//!               [--model jev-latest] [--runs N] [--code-jev] [--lab] [--env PATH] [--root DIR]
 //!
 //! balatrobot plays the modded game at 127.0.0.1:12346 (logs under <root>/runs); rumbot plays the
 //! headless simulator (logs under <root>/runs/sim, like Python's JEV_BACKEND=sim). JEV's key comes
 //! from `.env` (JEV_API_KEY or TYPESAFE_API_KEY, already set in the environment wins). `--code-jev`
 //! uses CodeJev instead: no key, no tokens. `--seed` starts the first run with that seed; later runs
-//! take the game's own seeds. The bot keeps its recorder and events as in Python.
+//! take the game's own seeds. The bot keeps its recorder and events as in Python. `--lab` plays exactly as
+//! `jevlab --arm F` does (CodeJev with item picks, DecisionCfg::lab: 64 rollouts, no time budget), so a seed played
+//! on the real game can be compared decision by decision with the same seed on rumbot
+//! (docs/samples/cloud-lab/sync_check.py).
 
 use jevbot::balatro::Balatro;
 use jevbot::codejev::CodeJev;
@@ -36,6 +39,7 @@ struct Args {
     model: String,
     runs: i64,
     code_jev: bool,
+    lab: bool,
     env: PathBuf,
     root: PathBuf,
 }
@@ -43,7 +47,7 @@ struct Args {
 fn usage() -> ! {
     eprintln!(
         "usage: jevbot play [--backend balatrobot|rumbot] [--seed S] [--deck RED] [--stake WHITE] \
-         [--model jev-latest] [--runs N] [--code-jev] [--env PATH] [--root DIR]
+         [--model jev-latest] [--runs N] [--code-jev] [--lab] [--env PATH] [--root DIR]
        jevbot panel [--port 8765] [--backend balatrobot|rumbot] [--code-jev] [--model M] [--root DIR] [--env PATH]
        jevbot sim (--set NAME | --seeds A,B) [--jobs N] [--code-jev] [--model M] [--deck RED] [--stake WHITE] [--root DIR] [--env PATH]
        jevbot extract-loc [--exe Balatro.exe] [--smods DIR] [--out DIR]"
@@ -64,14 +68,16 @@ fn parse(a: &[String]) -> Args {
         model: "jev-latest".into(),
         runs: 1,
         code_jev: false,
+        lab: false,
         env: repo.join(".env"),
         root: repo.clone(),
     };
     let mut i = 1;
     while i < a.len() {
         let flag = a[i].as_str();
-        if flag == "--code-jev" {
+        if flag == "--code-jev" || flag == "--lab" {
             out.code_jev = true;
+            out.lab |= flag == "--lab";
             i += 1;
             continue;
         }
@@ -112,7 +118,9 @@ fn main() {
     let oracle: SharedOracle = Rc::new(RefCell::new(RustOracle));
     let sim = a.backend == "rumbot";
     let game: Box<dyn Game> = if sim { Box::new(RumbotGame::new()) } else { Box::new(Balatro::new()) };
-    let (jev, model): (Box<dyn Jev>, String) = if a.code_jev {
+    let (jev, model): (Box<dyn Jev>, String) = if a.lab {
+        (Box::new(CodeJev::new(true, oracle.clone())), "code-top-option".into())
+    } else if a.code_jev {
         (Box::new(CodeJev::new(false, oracle.clone())), "code-jev".into())
     } else {
         let key = api_key_from_env().unwrap_or_else(|| {
@@ -130,7 +138,7 @@ fn main() {
         &a.deck, &a.stake, &model, log_dir, game, jev, oracle, Box::new(RealClock::new()), &version(), &version(), &version(),
         Box::new(SystemClock),
     );
-    bot.dec = DecisionCfg::production();
+    bot.dec = if a.lab { DecisionCfg::lab() } else { DecisionCfg::production() };
     jevbot::recorder::snapshot_prompts(&a.root.join("runs").join("_prompts"), &version(), SystemClock.time());
     if let Some(seed) = &a.seed {
         if let Err(e) = bot.act("start", Some(&json!({"deck": a.deck, "stake": a.stake, "seed": seed}))) {
