@@ -327,6 +327,8 @@ measured the wrong thing or was never asked:
 - **Pack jokers through the shop forecast** (`pack-forecast`; the Picker valued them by measured gain on recent hands,
   shop jokers by rollouts): the pack's jokers shown to the forecast as $0 shop jokers, the best beating nothing by
   1 SE taken. Second seed set 905 vs 908 wins, +0.000 +- 0.017 ante, 181 games changed: neutral, dropped.
+  The three rare-joker scorer fixes together (`extra-chips,splash,baseball-fix`): first 1,000 seeds of the first set
+  447 vs 449 wins, +0.019 +- 0.012 ante, 35 games changed: neutral; kept as lab flags.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
