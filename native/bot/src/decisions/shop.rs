@@ -478,7 +478,7 @@ fn planet_rule(gs: &Value, items: &[Item], money: i64) -> Option<usize> {
     if let Some(top) = top {
         let needle = format!("Level up {top} ");
         for (n, it) in items.iter().enumerate() {
-            if it.key.starts_with("buy_card_") && money - it.cost >= super::PLANET_FLOOR {
+            if it.key.starts_with("buy_card_") && money - it.cost >= super::planet_floor() {
                 let c = &shop[idx(&it.key)];
                 let eff = g(&g(c, "value"), "effect");
                 if g(c, "set") == json!("PLANET") && eff.as_str().unwrap_or("").contains(&needle) {
@@ -489,7 +489,7 @@ fn planet_rule(gs: &Value, items: &[Item], money: i64) -> Option<usize> {
     }
     let mut best: Option<usize> = None;
     for (n, it) in items.iter().enumerate() {
-        if it.key.starts_with("buy_pack_") && money - it.cost >= super::PLANET_FLOOR
+        if it.key.starts_with("buy_pack_") && money - it.cost >= super::planet_floor()
             && g(&packs[idx(&it.key)], "label").as_str().unwrap_or("").contains("Celestial")
             && best.map_or(true, |b| it.cost > items[b].cost)
         {

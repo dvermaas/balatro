@@ -1571,5 +1571,16 @@
   "wins": 455,
   "baseline_wins": 457,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Value tail weight 0.75 (0.5), on v57",
+  "theme": "Forecast",
+  "baseline": "v57",
+  "games": 1000,
+  "delta_ante": 0.003,
+  "se": 0.01,
+  "wins": 460,
+  "baseline_wins": 457,
+  "outcome": "neutral"
  }
 ]

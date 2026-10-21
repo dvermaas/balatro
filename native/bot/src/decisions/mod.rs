@@ -68,6 +68,10 @@ pub const REROLL_SE: i64 = 1;
 pub const ITEM_MIN_BUDGET: f64 = 1.0;
 pub const PICK_CLEAR: f64 = 1.25;
 pub const PLANET_FLOOR: i64 = 4; // v28: shop planets for the deck's top hand and Celestial packs are bought while $4 stays
+/// PLANET_FLOOR, or the lab's `planet-floor=N`.
+pub fn planet_floor() -> i64 {
+    crate::experiment::get().planet_floor.unwrap_or(PLANET_FLOOR)
+}
 /// Forecast exceptions are appended to `<JevBot.runs_root>/_forecast_errors.log` (default root "runs").
 pub const FORECAST_ERROR_LOG: &str = "_forecast_errors.log";
 

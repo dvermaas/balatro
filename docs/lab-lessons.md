@@ -296,6 +296,7 @@ measured the wrong thing or was never asked:
   had to be stocked, `no_shop`): 0 of 24 games change; every option's rollouts get the same planets. Not kept.
   Skips for tags up to ante 5 on v57 (`skip-max=5`; v48: 4): first 1,000 seeds 455 vs 457 wins, -0.009 +- 0.016
   ante, 407 games changed: neutral; 4 stays.
+  Value tail 0.75 on v57 (0.5): first 1,000 seeds 460 vs 457 wins, +0.003 +- 0.010 ante, 56 games changed: neutral.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
