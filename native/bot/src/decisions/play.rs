@@ -379,9 +379,11 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         // lab (`card-order`): each play's estimate in its best card order (the play reorders the hand to match)
         for p in plays.iter_mut() {
             let cards = idx_list(gs::get(p, "cards"));
-            if let Some((_, best, _)) = super::card_order_scored(gs_, hand, &cards) {
-                if best > gs::int(gs::get(p, "estimate")) {
-                    p.as_object_mut().unwrap().insert("estimate".into(), json!(best));
+            // scale the estimate by the reorder's gain, so boss rules already in it (a banned hand's 0) stay
+            let est = gs::int(gs::get(p, "estimate"));
+            if let Some((base, best, _)) = super::card_order_scored(gs_, hand, &cards) {
+                if est > 0 && base > 0 && best > base {
+                    p.as_object_mut().unwrap().insert("estimate".into(), json!((est as f64 * best as f64 / base as f64) as i64));
                 }
             }
         }
