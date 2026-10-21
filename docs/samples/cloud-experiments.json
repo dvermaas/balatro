@@ -1582,5 +1582,16 @@
   "wins": 460,
   "baseline_wins": 457,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Planet rule only from money above $25 (planet-floor 25; was $4)",
+  "theme": "Money",
+  "baseline": "v57",
+  "games": 1000,
+  "delta_ante": 0.003,
+  "se": 0.015,
+  "wins": 460,
+  "baseline_wins": 457,
+  "outcome": "neutral"
  }
 ]

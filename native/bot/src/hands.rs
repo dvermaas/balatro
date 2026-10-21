@@ -603,6 +603,11 @@ fn rank_set(ranks: impl Iterator<Item = Option<String>>) -> Vec<Option<String>> 
 // hands.py 201-250
 /// Discard plans. Debuffed cards (boss effects) count as junk: never kept for a draw, tossed first.
 /// Each plan carries a goal for odds.annotate().
+/// `not x` for an optional string field (None or "").
+fn falsy(o: &Option<String>) -> bool {
+    o.as_deref().map_or(true, str::is_empty)
+}
+
 pub fn discard_candidates(hand_cards: &[Value], max_discard: usize) -> Vec<DiscardPlan> {
     let infos: Vec<Info> = hand_cards.iter().map(card_info).collect();
     let allidx: Vec<usize> = (0..infos.len()).collect();
@@ -610,7 +615,14 @@ pub fn discard_candidates(hand_cards: &[Value], max_discard: usize) -> Vec<Disca
 
     let toss = |keep: &[usize], label: String, goal: Goal| -> (String, Vec<usize>, Goal) {
         let mut others: Vec<usize> = allidx.iter().copied().filter(|i| !keep.contains(i)).collect();
-        others.sort_by_key(|&i| (!infos[i].debuff, _rank_value(&infos[i])));
+        if crate::experiment::get().toss_plain {
+            // lab (`toss-plain`): plain cards go before enhanced, editioned or sealed ones (a Steel or Gold card
+            // pays while held; the rank-only order threw a Steel 2 first)
+            let special = |c: &Info| (!falsy(&c.enh) && !c.enh_is("STONE")) || !falsy(&c.edition) || !falsy(&c.seal);
+            others.sort_by_key(|&i| (!infos[i].debuff, special(&infos[i]), _rank_value(&infos[i])));
+        } else {
+            others.sort_by_key(|&i| (!infos[i].debuff, _rank_value(&infos[i])));
+        }
         others.truncate(max_discard);
         (label, others, goal)
     };
