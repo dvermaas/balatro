@@ -35,6 +35,8 @@
 //!                 joker, a Lucky card in hand; default decisions::play::CLEAR_MARGIN = 1.1)
 //!   setup-play=M  out of discards with hands to spare, CodeJev picks the play with the best two-play average (avg)
 //!                 or the best chance the two plays clear, then the average (clear); default: the best score now
+//!   cj-fc-n=N     CodeJev's own item forecast (shop tarots, spectrals, packs it is asked about) plays N rollouts
+//!                 (default codejev::FORECAST_N = 16)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -91,6 +93,7 @@ pub struct Exp {
     pub clear_margin: Option<f64>,
     pub clear_risky: Option<f64>,
     pub setup_play: Option<String>,
+    pub cj_fc_n: Option<i64>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -128,6 +131,7 @@ pub fn get() -> &'static Exp {
               clear_margin: s.split(',').find_map(|x| x.trim().strip_prefix("clear-margin=")?.parse().ok()),
               clear_risky: s.split(',').find_map(|x| x.trim().strip_prefix("clear-risky=")?.parse().ok()),
               setup_play: s.split(',').find_map(|x| x.trim().strip_prefix("setup-play=")).map(String::from),
+              cj_fc_n: s.split(',').find_map(|x| x.trim().strip_prefix("cj-fc-n=")?.parse().ok()),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

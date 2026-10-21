@@ -106,7 +106,8 @@ impl CodeJev {
             return vec![];
         }
         keys.sort();
-        let fc = self.oracle.borrow_mut().items_forecast(&g, FORECAST_N, 3, &keys, None);
+        let n = crate::experiment::get().cj_fc_n.unwrap_or(FORECAST_N);
+        let fc = self.oracle.borrow_mut().items_forecast(&g, n, 3, &keys, None);
         self.stats.item_forecasts += 1;
         // rollout_items.best(fc): the option beating skip by more than 1 paired SE (v31; was 2) in blinds cleared
         // (largest gain, first on ties).

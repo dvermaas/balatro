@@ -269,6 +269,8 @@ measured the wrong thing or was never asked:
   own item forecast decide planets first). Removed. Check that a new flag changes games on ~20 seeds first.
   Out of discards, CodeJev picks the play with the best two-play average (`setup-play=avg`; the outlook JEV is shown,
   default: best score now): first 1,000 seeds 432 vs 430 wins, +0.029 +- 0.020 ante, 27 games changed. Rare; parked.
+  A 4-boss forecast horizon at 64 rollouts (16 rollouts: neutral): first 1,000 seeds 439 vs 430 wins (69/60),
+  -0.007 +- 0.021 ante: neutral; 3 stays.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

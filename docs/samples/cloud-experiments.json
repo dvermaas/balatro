@@ -1472,5 +1472,16 @@
   "wins": 432,
   "baseline_wins": 430,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "4-boss forecast horizon at 64 rollouts (fc-bosses 4)",
+  "theme": "Forecast",
+  "baseline": "v56",
+  "games": 1000,
+  "delta_ante": -0.007,
+  "se": 0.021,
+  "wins": 439,
+  "baseline_wins": 430,
+  "outcome": "neutral"
  }
 ]
