@@ -494,6 +494,9 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
         if label == Some("Blueprint") || label == Some("Brainstorm") {
             let src = if label == Some("Blueprint") && n + 1 < out.len() {
                 Some(n + 1)
+            } else if label == Some("Blueprint") && crate::experiment::get().blueprint_fix {
+                // lab (`blueprint-fix`): the rightmost Blueprint copies nothing (card.lua: G.jokers.cards[i+1] is nil)
+                None
             } else if n > 0 {
                 Some(0)
             } else {
