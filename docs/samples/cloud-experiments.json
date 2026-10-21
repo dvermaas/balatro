@@ -1461,5 +1461,16 @@
   "wins": 430,
   "baseline_wins": 419,
   "outcome": "shipped v56"
+ },
+ {
+  "experiment": "Out of discards, play for the best two-play average (setup-play avg)",
+  "theme": "Play",
+  "baseline": "v56",
+  "games": 1000,
+  "delta_ante": 0.029,
+  "se": 0.02,
+  "wins": 432,
+  "baseline_wins": 430,
+  "outcome": "neutral"
  }
 ]
