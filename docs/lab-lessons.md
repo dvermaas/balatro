@@ -263,6 +263,8 @@ measured the wrong thing or was never asked:
   joker, a Lucky card in hand): first 1,000 seeds of the second set 430 vs 419 (20/9, +0.016 +- 0.010 ante), 16
   games differ from plain 1.0. **v56** ships that rule (production and lab): a small gain, but the margin protected
   nothing where the estimate is exact.
+  v56 itself: second seed set 877 vs 862 wins (37/22), first set 834 vs 825 (34/25, +0.015 +- 0.007 ante); pooled
+  71/47 (z = 2.21).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
