@@ -1637,5 +1637,16 @@
   "wins": 469,
   "baseline_wins": 471,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Scorer: Baseball Card's X1.5 at each Uncommon joker (baseball-fix)",
+  "theme": "Jokers",
+  "baseline": "v58",
+  "games": 1000,
+  "delta_ante": 0.0,
+  "se": 0.001,
+  "wins": 470,
+  "baseline_wins": 471,
+  "outcome": "neutral"
  }
 ]

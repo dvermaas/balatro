@@ -318,8 +318,8 @@ measured the wrong thing or was never asked:
   chips" text minus Bonus's 30; kernel Card.extra): Hiker plays exact 38/142 -> 86/118, lab 469 vs 471 (10 games
   changed). Splash (`splash`, every played card scores; kernel set_splash, no kicker pruning): Splash plays exact 63/168
   -> 169/193; with extra-chips 469 vs 471, -0.013 +- 0.010 ante (29 changed). Baseball Card (`baseball-fix`, X1.5 at
-  each Uncommon joker's place, after its effect; it was all at Baseball's place): 141/208 -> 168/193 exact.
-  Rare jokers: right, but too few games turn on them to show in 1,000 seeds.
+  each Uncommon joker's place, after its effect; it was all at Baseball's place): 141/208 -> 168/193 exact; lab 470 vs
+  471 (2 games changed). Rare jokers: right, but too few games turn on them to show; kept as lab flags, not shipped.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
