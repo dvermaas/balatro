@@ -54,6 +54,7 @@
 //!                 hand scores (Obelisk, Green Joker, Ride the Bus), and a rightmost Blueprint copying the leftmost joker
 //!   extra-chips   cards carry their permanent bonus chips (Hiker) into the bot's scorer and the rollouts' choices
 //!   splash        with Splash held, the scorer counts every played card (it scored only the poker hand's cards)
+//!   baseball-fix  Baseball Card's X1.5 applies at each Uncommon joker's place, after its effect (was all at once)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -122,6 +123,7 @@ pub struct Exp {
     pub no_scorer_fix: bool,
     pub extra_chips: bool,
     pub splash: bool,
+    pub baseball_fix: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -171,6 +173,7 @@ pub fn get() -> &'static Exp {
               no_scorer_fix: has("no-scorer-fix"),
               extra_chips: has("extra-chips"),
               splash: has("splash"),
+              baseball_fix: has("baseball-fix"),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

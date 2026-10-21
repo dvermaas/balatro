@@ -481,7 +481,37 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
     };
     let mut out: Vec<JokerEntry> = cards.iter().map(entry).collect();
     // v28: Baseball Card gives X1.5 per Uncommon joker; rarity isn't in the gamestate, so look it up by key
+    if crate::experiment::get().baseball_fix {
+        // lab (`baseball-fix`): the game applies each X1.5 right after that Uncommon joker's own effect (other_joker
+        // context, in joker order), not all at Baseball Card's place: fold it into each Uncommon joker's rule
+        for (j, c) in cards.iter().enumerate() {
+            let live = |c: &Value| !gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff"));
+            if !live(c) || !rx!(concat!("^Uncommon Jokers each give X", num!(), " Mult")).is_match(&effect_or_empty(gs::mget(gs::d(gs::get(c, "value")), "effect"))) {
+                continue;
+            }
+            out[j].rule = None; // Baseball Card itself scores nothing
+            out[j].scoring = false;
+            for (o, oc) in cards.iter().enumerate() {
+                if o == j || !live(oc) || _rarity(gs::get(oc, "key")) != Some(2) {
+                    continue;
+                }
+                let times = |e: (f64, f64, f64)| (e.0, e.1, e.2 * 1.5);
+                let mut rule = out[o].rule.clone().unwrap_or_default();
+                rule.hand = match rule.hand {
+                    None => Some(HandSpec::Const((0.0, 0.0, 1.5))),
+                    Some(HandSpec::Const(e)) => Some(HandSpec::Const(times(e))),
+                    Some(HandSpec::Cond { cond, yes, no }) => Some(HandSpec::Cond { cond, yes: times(yes), no: times(no) }),
+                    other => other, // per-hand counters: left as they were (rare among Uncommons)
+                };
+                out[o].rule = Some(rule);
+                out[o].scoring = true;
+            }
+        }
+    }
     for (j, c) in cards.iter().enumerate() {
+        if crate::experiment::get().baseball_fix {
+            break;
+        }
         if let Some(m) = rx!(concat!("^Uncommon Jokers each give X", num!(), " Mult")).captures(&effect_or_empty(gs::mget(gs::d(gs::get(c, "value")), "effect"))) {
             let n = cards.iter().enumerate().filter(|&(o, oc)| o != j && _rarity(gs::get(oc, "key")) == Some(2)).count();
             let x: f64 = m[1].parse().unwrap();
