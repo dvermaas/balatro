@@ -718,5 +718,35 @@
   "died_ante_1_4": 117,
   "died_ante_5_7": 603,
   "died_ante_8": 446
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v57",
+  "version_id": "rust",
+  "change": "Joker order by sampled score",
+  "games": 2000,
+  "mean_ante": 7.245,
+  "se": 0.032,
+  "wins": 895,
+  "win_rate": 0.448,
+  "mean_round": 19.58,
+  "died_ante_1_4": 102,
+  "died_ante_5_7": 579,
+  "died_ante_8": 424
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v57",
+  "version_id": "rust",
+  "change": "Joker order by sampled score",
+  "games": 2000,
+  "mean_ante": 7.207,
+  "se": 0.034,
+  "wins": 886,
+  "win_rate": 0.443,
+  "mean_round": 19.49,
+  "died_ante_1_4": 118,
+  "died_ante_5_7": 567,
+  "died_ante_8": 429
  }
 ]
