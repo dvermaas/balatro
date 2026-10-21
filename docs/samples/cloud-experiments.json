@@ -1483,5 +1483,16 @@
   "wins": 439,
   "baseline_wins": 430,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "CodeJev's item forecast at 64 rollouts (was 16)",
+  "theme": "Forecast",
+  "baseline": "v56",
+  "games": 1000,
+  "delta_ante": 0.002,
+  "se": 0.024,
+  "wins": 420,
+  "baseline_wins": 430,
+  "outcome": "dropped"
  }
 ]

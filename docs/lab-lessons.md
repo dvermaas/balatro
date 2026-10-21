@@ -271,6 +271,8 @@ measured the wrong thing or was never asked:
   default: best score now): first 1,000 seeds 432 vs 430 wins, +0.029 +- 0.020 ante, 27 games changed. Rare; parked.
   A 4-boss forecast horizon at 64 rollouts (16 rollouts: neutral): first 1,000 seeds 439 vs 430 wins (69/60),
   -0.007 +- 0.021 ante: neutral; 3 stays.
+  CodeJev's own item forecast (shop tarots, spectrals, packs) ran 16 rollouts, not the lab's 64; at 64 (`cj-fc-n=64`):
+  first 1,000 seeds 420 vs 430 wins (79/89), +0.002 +- 0.024 ante, 248 games changed: no gain; 16 stays.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
