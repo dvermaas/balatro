@@ -1626,5 +1626,16 @@
   "wins": 890,
   "baseline_wins": 886,
   "outcome": "shipped v58"
+ },
+ {
+  "experiment": "Scorer: Hiker chips on cards and Splash (extra-chips, splash)",
+  "theme": "Jokers",
+  "baseline": "v58",
+  "games": 1000,
+  "delta_ante": -0.013,
+  "se": 0.01,
+  "wins": 469,
+  "baseline_wins": 471,
+  "outcome": "neutral"
  }
 ]

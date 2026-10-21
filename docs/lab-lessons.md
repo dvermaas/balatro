@@ -314,6 +314,12 @@ measured the wrong thing or was never asked:
   0.012 ante); pooled 118/98 (z = 1.36). **v58** ships the fixes (lab and production; `no-scorer-fix` restores v57's
   scorer): small, but they are the game's rules and the bot's numbers are what every decision reads.
   v58 itself (Ride the Bus included throughout): second set 908 vs 895 (66/53), +0.017 +- 0.011 ante; first set 890.
+  More scorer gaps (lab flags): Hiker's permanent chips on cards (`extra-chips`, read from the card's "+N extra
+  chips" text minus Bonus's 30; kernel Card.extra): Hiker plays exact 38/142 -> 86/118, lab 469 vs 471 (10 games
+  changed). Splash (`splash`, every played card scores; kernel set_splash, no kicker pruning): Splash plays exact 63/168
+  -> 169/193; with extra-chips 469 vs 471, -0.013 +- 0.010 ante (29 changed). Baseball Card (`baseball-fix`, X1.5 at
+  each Uncommon joker's place, after its effect; it was all at Baseball's place): 141/208 -> 168/193 exact.
+  Rare jokers: right, but too few games turn on them to show in 1,000 seeds.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
