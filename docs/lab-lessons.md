@@ -273,6 +273,13 @@ measured the wrong thing or was never asked:
   -0.007 +- 0.021 ante: neutral; 3 stays.
   CodeJev's own item forecast (shop tarots, spectrals, packs) ran 16 rollouts, not the lab's 64; at 64 (`cj-fc-n=64`):
   first 1,000 seeds 420 vs 430 wins (79/89), +0.002 +- 0.024 ante, 248 games changed: no gain; 16 stays.
+  Joker order by sampled score (`order-search`; in the shop, pairwise swaps from the current order while one raises
+  the mean best play over 12 order-free deals by 0.1%): the fixed rule (xMult jokers right, nothing around a copier)
+  misses joker editions, which apply at their joker's place (a Polychrome joker is an xMult wherever it sits), and
+  per-card effects, which run in joker order (Gluttonous Joker before Photograph). Second seed set 895 vs 877 wins
+  (98/80), +0.042 +- 0.013 ante (231 games changed). All 720 orders: same picks, 7x slower.
+  The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
+  (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought

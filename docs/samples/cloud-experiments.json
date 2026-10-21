@@ -1494,5 +1494,16 @@
   "wins": 420,
   "baseline_wins": 430,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Joker order by sampled score (order-search: editions and per-card effects)",
+  "theme": "Jokers",
+  "baseline": "v56",
+  "games": 2000,
+  "delta_ante": 0.042,
+  "se": 0.013,
+  "wins": 895,
+  "baseline_wins": 877,
+  "outcome": "promising"
  }
 ]
