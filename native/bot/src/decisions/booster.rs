@@ -54,6 +54,17 @@ pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
          not whether we should have bought the pack. A temporary sellable joker can help while slots are \
          empty; account for harmful effects, rental costs and permanent slot commitments."
     );
+    if crate::experiment::get().pack_forecast {
+        if let Some((i, d, se)) = pack_joker_forecast(bot, gs_, jokers_full) {
+            let se = fixed(se, 2);
+            let label = gs::get(&cards_of(gs_, "pack")[i], "label").as_str().unwrap_or("?").to_string();
+            bot.emit("auto", json!({"question": "pack", "choice": format!("take_{i}"), "desc": label,
+                "reason": format!("pack forecast: beats skipping by {} blinds (> {} x SE {se})", fixed(d, 2), super::SURE_SE)}));
+            if bot.act("pack", Some(&json!({"card": i}))).is_ok() {
+                return Ok(());
+            }
+        }
+    }
     let hand = cards_of(gs_, "hand"); // only arcana/spectral packs deal a hand to target
     if !hand.is_empty() {
         state["cards_in_hand"] = json!(hand.iter().map(hands::describe).collect::<Vec<_>>());
@@ -332,4 +343,48 @@ pub(crate) fn gain(gs_: &Value, recent: &[Value], c: &Value, remove: Option<usiz
         "measured_gain": format!("{sign}{}% score on {basis}", pyround_int(100.0 * g)),
         "_gain": g,
     })
+}
+
+/// Lab (`pack-forecast`): the pack's jokers through the shop forecast (rollouts, as shop jokers are judged) instead
+/// of the Picker's measured gain on recent hands. The pack's jokers are shown to the forecast as a shop of $0 jokers;
+/// the best one beating buying nothing by more than SURE_SE paired SEs is taken: (pack index, delta, se).
+fn pack_joker_forecast(bot: &mut JevBot, gs_: &Value, jokers_full: bool) -> Option<(usize, f64, f64)> {
+    let pack = cards_of(gs_, "pack");
+    let idx: Vec<usize> = (0..pack.len())
+        .filter(|&i| gs::get(&pack[i], "set").as_str() == Some("JOKER")
+            && (!jokers_full || gs::get(gs::get(&pack[i], "modifier"), "edition").as_str() == Some("NEGATIVE")))
+        .collect();
+    if idx.is_empty() {
+        return None;
+    }
+    let mut g = gs_.clone();
+    let shop: Vec<Value> = idx.iter().map(|&i| {
+        let mut c = pack[i].clone();
+        let mut cost = gs::d(gs::get(&c, "cost")).clone();
+        cost.insert("buy".into(), json!(0));
+        c["cost"] = Value::Object(cost);
+        c
+    }).collect();
+    let o = g.as_object_mut()?;
+    o.insert("state".into(), json!("SHOP"));
+    o.insert("shop".into(), json!({"cards": shop, "count": idx.len(), "limit": idx.len()}));
+    o.insert("packs".into(), json!({"cards": [], "count": 0}));
+    o.insert("vouchers".into(), json!({"cards": [], "count": 0}));
+    let keys: Vec<String> = (0..idx.len()).map(|k| format!("buy_card_{k}")).collect();
+    let (n, bosses) = (bot.dec.forecast_n, bot.dec.forecast_bosses);
+    let f = bot.oracle.borrow_mut().forecast(&g, n, bosses, &keys, None);
+    let options = gs::get(&f, "options");
+    let mut best: Option<(usize, f64, f64)> = None;
+    for (k, &i) in idx.iter().enumerate() {
+        let r = gs::get(options, &format!("buy_card_{k}"));
+        let pair = gs::list(gs::get(gs::get(r, "vs_skip"), "blinds"));
+        if pair.len() < 2 {
+            continue;
+        }
+        let (d, se) = (gs::num(&pair[0]), gs::num(&pair[1]));
+        if d > super::SURE_SE as f64 * se.max(1e-9) && best.map_or(true, |b| d > b.1) {
+            best = Some((i, d, se));
+        }
+    }
+    best
 }
