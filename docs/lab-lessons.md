@@ -320,6 +320,10 @@ measured the wrong thing or was never asked:
   -> 169/193; with extra-chips 469 vs 471, -0.013 +- 0.010 ante (29 changed). Baseball Card (`baseball-fix`, X1.5 at
   each Uncommon joker's place, after its effect; it was all at Baseball's place): 141/208 -> 168/193 exact; lab 470 vs
   471 (2 games changed). Rare jokers: right, but too few games turn on them to show; kept as lab flags, not shipped.
+- **Value model retrained on v55-v58 games** (`samples/cloud-lab/value_model_v58_candidate.json`; lab `VALUE_MODEL=<file>`):
+  held out on the first seed set, log loss lower at every ante (ante 2: 0.735 vs 0.924; the v32 model says 18% where
+  today's bot wins 45%), AUC 0.74-0.75 at antes 6-7 (old 0.72-0.73). In the lab at weight 0.25 (its P runs ~2x the
+  old one's): first seed set 442 vs 449 wins, +0.004 +- 0.017 ante, 134 games changed: neutral, as at v54.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,

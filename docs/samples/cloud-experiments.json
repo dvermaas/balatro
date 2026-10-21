@@ -1648,5 +1648,16 @@
   "wins": 470,
   "baseline_wins": 471,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Value model retrained on v55-v58 games (weight 0.25)",
+  "theme": "Forecast",
+  "baseline": "v58",
+  "games": 1000,
+  "delta_ante": 0.004,
+  "se": 0.017,
+  "wins": 442,
+  "baseline_wins": 449,
+  "outcome": "neutral"
  }
 ]
