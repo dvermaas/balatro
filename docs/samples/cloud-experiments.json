@@ -1450,5 +1450,16 @@
   "wins": 828,
   "baseline_wins": 825,
   "outcome": "promising"
+ },
+ {
+  "experiment": "Clear margin 1.1 only where the estimate is uncertain, else 1.0",
+  "theme": "Play",
+  "baseline": "v55",
+  "games": 1000,
+  "delta_ante": 0.016,
+  "se": 0.01,
+  "wins": 430,
+  "baseline_wins": 419,
+  "outcome": "shipped v56"
  }
 ]

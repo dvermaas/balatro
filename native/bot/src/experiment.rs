@@ -29,10 +29,10 @@
 //!   rollout-behind=K  forecast rollouts discard only while K x best play x hands left < chips needed (default 1)
 //!   discard-key=K  with hands to spare, CodeJev's discards are ranked by K: pace (chance the next play makes the
 //!                 pace) or low (20th-percentile next play), then the mean (default: the mean next play)
-//!   clear-margin=M  a play counts as clearing the blind when its estimate >= M x chips needed (with jokers;
-//!                 default decisions::play::CLEAR_MARGIN = 1.1)
+//!   clear-margin=M  a play counts as clearing the blind when its estimate >= M x chips needed (with jokers and an
+//!                 exact estimate; default 1 since v56, was 1.1)
 //!   clear-risky=M  the clear margin when the estimate is uncertain (Misprint, Bloodstone, an unmodelled scoring
-//!                 joker, a Lucky card in hand)
+//!                 joker, a Lucky card in hand; default decisions::play::CLEAR_MARGIN = 1.1)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)

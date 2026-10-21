@@ -24,7 +24,7 @@ use std::collections::HashSet;
 #[allow(unused_imports)]
 pub(crate) use crate::hands::{BossAllow, _boss_allows, _boss_levels};
 
-// decisions.py 158-159
+// decisions.py 158-159; v56: only where the estimate is uncertain
 pub(crate) const CLEAR_MARGIN: f64 = 1.1;
 pub(crate) const PLAY_NOW_UNDER_PACE: f64 = 0.85;
 
@@ -369,19 +369,18 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             plays.insert(0, p);
         }
     }
+    // v56: the margin only covers estimates that can be wrong (a random or unmodelled joker, a Lucky card); the
+    // rest are exact, and a 10% margin there passed up plays that clear for a discard, even on the last hand
+    let risky = !jokers::unmodelled(&js).is_empty()
+        || js.iter().any(|j| matches!(j.label.as_deref(), Some("Misprint") | Some("Bloodstone")))
+        || infos.iter().any(|i| i.enh_is("LUCKY"));
+    let e = crate::experiment::get();
     let margin = if js.is_empty() {
         1.0
+    } else if risky {
+        e.clear_risky.unwrap_or(CLEAR_MARGIN)
     } else {
-        let e = crate::experiment::get();
-        let m = e.clear_margin.unwrap_or(CLEAR_MARGIN);
-        // lab (`clear-risky=M`): margin M when the estimate is uncertain (a random or unmodelled joker, a Lucky card)
-        let risky = !jokers::unmodelled(&js).is_empty()
-            || js.iter().any(|j| matches!(j.label.as_deref(), Some("Misprint") | Some("Bloodstone")))
-            || infos.iter().any(|i| i.enh_is("LUCKY"));
-        match e.clear_risky {
-            Some(r) if risky => r,
-            _ => m,
-        }
+        e.clear_margin.unwrap_or(1.0)
     };
     if let Some(c) = plays.iter().find(|p| clears(p, &info, margin)) {
         let desc = format!("{} ({}) clears the blind", gs::s(gs::get(c, "hand")), gs::int(gs::get(c, "estimate")));

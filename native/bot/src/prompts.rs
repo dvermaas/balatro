@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v56 (Rust only): a play with jokers counts as clearing the blind at its estimate (was 1.1 x chips needed); ",
+    "the 10% margin stays only where the estimate is uncertain (Misprint, Bloodstone, an unmodelled joker, a Lucky ",
+    "card). The margin passed up plays that clear for a discard, even on the last hand. Fresh 2,000 seeds: 1.0 882 ",
+    "vs 862 wins; first 2,000: 828 vs 825 (pooled 90/67 seeds won by one side); this rule on 1,000: 430 vs 419. Based on: ",
     "v55 (Rust only): the code stand-in for JEV plays now unless the best discard's modeled next play beats the ",
     "best play by 1/0.6 (was: by anything). A play also replaces its cards and a kept discard is worth a lot later ",
     "in the round. 2 x 2,000 seeds vs v54: 862 vs 659 and 825 vs 640 wins (z = 8.9, 8.4). Based on: ",

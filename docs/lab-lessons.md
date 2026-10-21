@@ -259,6 +259,10 @@ measured the wrong thing or was never asked:
   No clear margin (`clear-margin=1.0`; a play with jokers counted as clearing only at 1.1 x chips needed, so a
   play that clears by under 10% could be passed up for a discard, even on the last hand): second seed set 882 vs
   862 wins (52/32, z = 2.18), first set 828 vs 825 (38/35); pooled 90/67 (z = 1.84), +0.005 +- 0.006 ante.
+  Keeping 1.1 only where the estimate is uncertain (`clear-risky=1.1`: Misprint, Bloodstone, an unmodelled scoring
+  joker, a Lucky card in hand): first 1,000 seeds of the second set 430 vs 419 (20/9, +0.016 +- 0.010 ante), 16
+  games differ from plain 1.0. **v56** ships that rule (production and lab): a small gain, but the margin protected
+  nothing where the estimate is exact.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
