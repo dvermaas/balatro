@@ -294,6 +294,8 @@ measured the wrong thing or was never asked:
   Early slot fill to 5 jokers or to ante 2 / 5 (`early-jokers`, `early-ante`): 0-1 of 24 games change; the forecast's
   1 SE bar already buys those jokers. Rollouts that buy the top hand's planet (the bot's planet rule; rollout shops
   had to be stocked, `no_shop`): 0 of 24 games change; every option's rollouts get the same planets. Not kept.
+  Skips for tags up to ante 5 on v57 (`skip-max=5`; v48: 4): first 1,000 seeds 455 vs 457 wins, -0.009 +- 0.016
+  ante, 407 games changed: neutral; 4 stays.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,

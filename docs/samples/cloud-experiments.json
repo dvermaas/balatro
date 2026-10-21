@@ -1560,5 +1560,16 @@
   "wins": 455,
   "baseline_wins": 457,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Skip blinds for tags up to ante 5 (v48: 4), on v57",
+  "theme": "Blinds",
+  "baseline": "v57",
+  "games": 1000,
+  "delta_ante": -0.009,
+  "se": 0.016,
+  "wins": 455,
+  "baseline_wins": 457,
+  "outcome": "neutral"
  }
 ]
