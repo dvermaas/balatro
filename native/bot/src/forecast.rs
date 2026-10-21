@@ -60,6 +60,8 @@ struct Ent<'a> {
     pol: Policy,
     base: Option<rumbot_sim::game::GameState>,
     error: bool,
+    order: Option<Vec<usize>>,
+    ojs: Vec<Value>,
 }
 
 /// `clock` returns seconds since the start of the forecast (time.time() - t0).
@@ -89,19 +91,29 @@ pub fn forecast_clock(
         Err(e) => Err(e.clone()),
     };
     let mut ents: Vec<Ent> = Vec::new();
+    let fc_order = crate::experiment::get().fc_order;
     for o in &opts {
         let key = gs::s(gs::get(o, "key")).to_string();
-        let pol = policy_of(&option_jokers(pub_, o));
+        let ojs = option_jokers(pub_, o);
+        // lab (`fc-order`): the rollouts hold the jokers in the order the bot would put them in (v57's search)
+        let order = if fc_order { joker_order_after(pub_, &ojs) } else { None };
+        let pol = policy_of(&match &order {
+            Some(ord) => ord.iter().map(|&i| ojs[i].clone()).collect(),
+            None => ojs.clone(),
+        });
         let s0 = seed(0);
         let (error, base) = match crate::prof::time("f.apply0", || apply_json(o, &s0)) {
             Err(_) => (true, None),
             Ok((_, Some(_))) => (false, None),
             Ok((d, None)) => match game_of(d, None, &s0) {
-                Ok(g) => (false, Some(g)),
+                Ok(mut g) => {
+                    reorder(&mut g, order.as_deref(), &ojs);
+                    (false, Some(g))
+                }
                 Err(_) => (true, None),
             },
         };
-        ents.push(Ent { key, opt: o, pol, base, error });
+        ents.push(Ent { key, opt: o, pol, base, error, order, ojs });
     }
     let mut runs: Vec<Vec<Value>> = vec![Vec::new(); ents.len()];
     let mut k = 0usize;
@@ -119,8 +131,12 @@ pub fn forecast_clock(
                         g.rng = rumbot_sim::rng::RunRng::new(sd.clone());
                         g
                     }
-                    None => crate::prof::time("f.apply_k", || apply_json(e.opt, &sd).and_then(|(d, pl)| game_of(d, pl, &sd)))
-                        .expect("option applied at seed 0"),
+                    None => {
+                        let mut g = crate::prof::time("f.apply_k", || apply_json(e.opt, &sd).and_then(|(d, pl)| game_of(d, pl, &sd)))
+                            .expect("option applied at seed 0");
+                        reorder(&mut g, e.order.as_deref(), &e.ojs);
+                        g
+                    }
                 };
                 g.seed = sd;
                 if i == 0 && ei == 0 && std::env::var_os("VALUE_CHECK").is_some() {
@@ -148,4 +164,28 @@ pub fn forecast_clock(
     m.insert("seconds".into(), json!(pycompat::pyround(clock(), 2)));
     m.insert("_runs".into(), Value::Object(rmap));
     out
+}
+
+/// Lab (`fc-order`): v57's joker order (readiness::best_joker_order) for the jokers an option leaves, as
+/// indices into `ojs`; None to keep them as they are.
+fn joker_order_after(pub_: &Value, ojs: &[Value]) -> Option<Vec<usize>> {
+    let mut g = pub_.clone();
+    let area = g.get_mut("jokers")?.as_object_mut()?;
+    area.insert("cards".into(), Value::Array(ojs.to_vec()));
+    crate::readiness::best_joker_order(&g, 12)
+}
+
+/// Put the rollout game's jokers in `order` (indices into `ojs`), when the game holds exactly `ojs` by name
+/// (case aside: rumbot's "Riff-Raff" is the game's "Riff-raff").
+fn reorder(g: &mut rumbot_sim::game::GameState, order: Option<&[usize]>, ojs: &[Value]) {
+    let Some(order) = order else { return };
+    let names: Vec<String> = g.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect();
+    let want: Vec<&str> = ojs.iter().map(|c| gs::get(c, "label").as_str().unwrap_or("")).collect();
+    if names.len() != want.len() || names.iter().zip(&want).any(|(a, b)| !a.eq_ignore_ascii_case(b)) {
+        if std::env::var_os("ORDER_DEBUG").is_some() {
+            eprintln!("FC-ORDER mismatch: {names:?} vs {want:?}");
+        }
+        return;
+    }
+    g.jokers = order.iter().map(|&i| g.jokers[i].clone()).collect();
 }

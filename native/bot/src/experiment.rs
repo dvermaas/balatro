@@ -43,6 +43,8 @@
 //!                 most (decisions::best_card_order)
 //!   tarot-measure  targeted tarots pick their cards by measurement (readiness::measured_plan) instead of
 //!                 tarots::plan's card-value rule
+//!   fc-order      the shop forecast's rollouts hold each option's jokers in v57's searched order (a bought joker
+//!                 was appended on the right)
 //!   blueprint-fix  the scorer's rightmost Blueprint copies nothing (it copied the leftmost joker, like Brainstorm)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
@@ -105,6 +107,7 @@ pub struct Exp {
     pub blueprint_fix: bool,
     pub card_order: bool,
     pub tarot_measure: bool,
+    pub fc_order: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -147,6 +150,7 @@ pub fn get() -> &'static Exp {
               blueprint_fix: has("blueprint-fix"),
               card_order: has("card-order"),
               tarot_measure: has("tarot-measure"),
+              fc_order: has("fc-order"),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

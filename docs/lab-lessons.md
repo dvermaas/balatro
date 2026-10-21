@@ -286,6 +286,9 @@ measured the wrong thing or was never asked:
   reorder's gain): traced reorders scored 10-40% more than in place, but nearly all on plays that cleared anyway.
   First 1,000 seeds of the second set 460 vs 457 wins, -0.001 +- 0.011 ante, 50 games changed: neutral, dropped. (A
   first run rescored plays without boss rules and lifted Mouth-banned plays: Mouth deaths 21 -> 42.)
+  Tarot targets by measurement (`tarot-measure`: every target set applied to a copy of the deck, best mean best
+  play over 24 deals; was tarots::plan's card-value rule): first 1,000 seeds 449 vs 457 wins, -0.004 +- 0.029 ante,
+  299 games changed: dropped. (Measuring inside the Picker, which the forecasts' rollouts also run, was ~10x slower.)
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
