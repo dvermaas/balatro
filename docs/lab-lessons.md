@@ -289,6 +289,11 @@ measured the wrong thing or was never asked:
   Tarot targets by measurement (`tarot-measure`: every target set applied to a copy of the deck, best mean best
   play over 24 deals; was tarots::plan's card-value rule): first 1,000 seeds 449 vs 457 wins, -0.004 +- 0.029 ante,
   299 games changed: dropped. (Measuring inside the Picker, which the forecasts' rollouts also run, was ~10x slower.)
+  The shop forecast's rollouts holding each option's jokers in v57's searched order (`fc-order`; a bought joker sat
+  on the right): first 1,000 seeds 455 vs 457 wins, -0.003 +- 0.013 ante: dropped.
+  Early slot fill to 5 jokers or to ante 2 / 5 (`early-jokers`, `early-ante`): 0-1 of 24 games change; the forecast's
+  1 SE bar already buys those jokers. Rollouts that buy the top hand's planet (the bot's planet rule; rollout shops
+  had to be stocked, `no_shop`): 0 of 24 games change; every option's rollouts get the same planets. Not kept.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
