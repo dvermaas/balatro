@@ -688,5 +688,20 @@
   "died_ante_1_4": 106,
   "died_ante_5_7": 631,
   "died_ante_8": 401
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v56",
+  "version_id": "rust",
+  "change": "Clear margin only where the estimate is uncertain",
+  "games": 2000,
+  "mean_ante": 7.203,
+  "se": 0.032,
+  "wins": 877,
+  "win_rate": 0.439,
+  "mean_round": 19.46,
+  "died_ante_1_4": 107,
+  "died_ante_5_7": 621,
+  "died_ante_8": 395
  }
 ]
