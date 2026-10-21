@@ -772,7 +772,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             auto = non_item;
         }
         let mut why = "forecast";
-        if auto.is_empty() && ante <= super::EARLY_ANTE && jok_count < super::EARLY_JOKERS {
+        if auto.is_empty() && ante <= super::early_ante() && jok_count < super::early_jokers() {
             // v23: early slots are filled by code. Ante-1/2 blinds are easy enough that no single joker
             // clears the 2 SE bar, so every early joker was a close call, and the code-only bot (top
             // option = buy nothing) died with empty slots on seeds where JEV filled them and went deep.
@@ -866,7 +866,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
     }
     let (s, cost) = if !best.is_empty() { (sc(best), find(best).unwrap().cost) } else { (-1.0, 0) };
-    let early = ante <= super::EARLY_ANTE && jok_count < super::EARLY_JOKERS;
+    let early = ante <= super::early_ante() && jok_count < super::early_jokers();
     let early_joker = early && (best.starts_with("buy_card") || best.starts_with("replace"))
         && crate::gs::s(&g(&find(best).unwrap().obj, "kind")).contains("joker");
     // A joker that measurably lifts our recent hands a lot is bought whenever a slot is free.

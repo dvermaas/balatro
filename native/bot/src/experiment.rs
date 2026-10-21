@@ -45,6 +45,8 @@
 //!                 tarots::plan's card-value rule
 //!   fc-order      the shop forecast's rollouts hold each option's jokers in v57's searched order (a bought joker
 //!                 was appended on the right)
+//!   early-jokers=N / early-ante=A  the shop's early slot fill (any joker the forecast rates above zero) runs while
+//!                 the bot has fewer than N jokers, up to ante A (decisions::EARLY_JOKERS 4, EARLY_ANTE 3)
 //!   blueprint-fix  the scorer's rightmost Blueprint copies nothing (it copied the leftmost joker, like Brainstorm)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
@@ -108,6 +110,8 @@ pub struct Exp {
     pub card_order: bool,
     pub tarot_measure: bool,
     pub fc_order: bool,
+    pub early_jokers: Option<i64>,
+    pub early_ante: Option<i64>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -151,6 +155,8 @@ pub fn get() -> &'static Exp {
               card_order: has("card-order"),
               tarot_measure: has("tarot-measure"),
               fc_order: has("fc-order"),
+              early_jokers: s.split(',').find_map(|x| x.trim().strip_prefix("early-jokers=")?.parse().ok()),
+              early_ante: s.split(',').find_map(|x| x.trim().strip_prefix("early-ante=")?.parse().ok()),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

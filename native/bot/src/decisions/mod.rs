@@ -31,6 +31,13 @@ pub const BUY_SCORE: f64 = 2.5;
 pub const BUY_SCORE_LOOSE: i64 = 2;
 pub const EARLY_JOKERS: i64 = 4;
 pub const EARLY_ANTE: i64 = 3;
+/// EARLY_JOKERS / EARLY_ANTE, or the lab's `early-jokers=N` / `early-ante=A`.
+pub fn early_jokers() -> i64 {
+    crate::experiment::get().early_jokers.unwrap_or(EARLY_JOKERS)
+}
+pub fn early_ante() -> i64 {
+    crate::experiment::get().early_ante.unwrap_or(EARLY_ANTE)
+}
 pub const SURE_GAIN: f64 = 0.5;
 pub const RECENT_PLAYS: usize = 10;
 pub const NEAR_PACE: f64 = 0.8;
