@@ -1516,5 +1516,27 @@
   "wins": 886,
   "baseline_wins": 834,
   "outcome": "shipped v57"
+ },
+ {
+  "experiment": "Played cards in their best-scoring order (card-order)",
+  "theme": "Play",
+  "baseline": "v57",
+  "games": 1000,
+  "delta_ante": -0.001,
+  "se": 0.011,
+  "wins": 460,
+  "baseline_wins": 457,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Blueprint in the rightmost slot copies nothing (scorer fix)",
+  "theme": "Jokers",
+  "baseline": "v57",
+  "games": 1000,
+  "delta_ante": 0.001,
+  "se": 0.001,
+  "wins": 457,
+  "baseline_wins": 457,
+  "outcome": "neutral"
  }
 ]

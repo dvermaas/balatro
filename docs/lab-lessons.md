@@ -282,6 +282,10 @@ measured the wrong thing or was never asked:
   the default (lab and production; `no-order-search` restores the old rule).
   `blueprint-fix` on v57: first 1,000 seeds of the second set 457 vs 457 wins, 3 games changed. Correct, too rare to
   measure; to ship with the next change that needs new baselines.
+  Played cards in their best-scoring order (`card-order`: rearrange the hand before a play; estimates scaled by the
+  reorder's gain): traced reorders scored 10-40% more than in place, but nearly all on plays that cleared anyway.
+  First 1,000 seeds of the second set 460 vs 457 wins, -0.001 +- 0.011 ante, 50 games changed: neutral, dropped. (A
+  first run rescored plays without boss rules and lifted Mouth-banned plays: Mouth deaths 21 -> 42.)
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
