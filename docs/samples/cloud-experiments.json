@@ -1504,6 +1504,17 @@
   "se": 0.013,
   "wins": 895,
   "baseline_wins": 877,
-  "outcome": "promising"
+  "outcome": "shipped v57"
+ },
+ {
+  "experiment": "Joker order by sampled score, first seeds",
+  "theme": "Jokers",
+  "baseline": "v56",
+  "games": 2000,
+  "delta_ante": 0.018,
+  "se": 0.013,
+  "wins": 886,
+  "baseline_wins": 834,
+  "outcome": "shipped v57"
  }
 ]

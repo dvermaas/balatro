@@ -210,7 +210,7 @@ pub fn reset_mix_cache() {
     ORDER_CACHE.with(|c| c.borrow_mut().clear());
 }
 
-/// Lab (`order-search`): the joker order with the best mean best-play score over `samples` order-free deals of
+/// v57: the joker order with the best mean best-play score over `samples` order-free deals of
 /// hand size + MIX_EXTRA from the deck (the scorer models Blueprint, Brainstorm and effect order), or None when
 /// no pairwise swap gains over 0.1% (hill-climbing from the current order). Up to 8 jokers; cached per game.
 pub fn best_joker_order(g: &Value, samples: usize) -> Option<Vec<usize>> {
@@ -271,14 +271,6 @@ pub fn best_joker_order(g: &Value, samples: usize) -> Option<Vec<usize>> {
         if best.0 > base * 1.001 && std::env::var("ORDER_DEBUG").is_ok() {
             let l = |o: &[usize]| o.iter().map(|&i| format!("{}", gs::get(&js_cards[i], "label").as_str().unwrap_or("?"))).collect::<Vec<_>>().join(" | ");
             eprintln!("ORDER {:.0} -> {:.0} ({:+.1}%): {}  ==>  {}", base, best.0, 100.0 * (best.0 / base - 1.0), l(&ident), l(&best.1));
-            for o in [&ident, &best.1] {
-                let cards: Vec<Value> = o.iter().map(|&i| js_cards[i].clone()).collect();
-                let js = jokers::build(g, Some(&cards));
-                let scorer = jokers::Scorer::new(levels.clone(), js.clone(), jokers::Rnd { hands_left: 2.0, discards_left: 1.0 });
-                let d0: Vec<f64> = deals.iter().take(4).map(|d| hands::best_score(d, ScorerArg::Jokers(&scorer), Allowed::None) as f64).collect();
-                eprintln!("   native={} {:?} {:?}", scorer.native().is_some(), d0,
-                    js.iter().map(|j| (j.label.clone().unwrap_or_default(), j.rule.is_some(), j.scoring)).collect::<Vec<_>>());
-            }
         }
         if best.0 > base * 1.001 { Some(best.1) } else { None }
     };

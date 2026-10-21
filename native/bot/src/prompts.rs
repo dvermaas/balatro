@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v57: jokers are ordered in the shop by the best mean best-play score over 12 sampled deals (pairwise swaps ",
+    "from the current order while one gains 0.1%), not 'xMult jokers to the right, nothing around a copier': joker ",
+    "editions apply at their joker's place (a Polychrome joker multiplies wherever it sits) and per-card effects run ",
+    "in joker order. Lab: 895 vs 877 wins (+0.042 +- 0.013 ante) and 886 vs 834 (z = 3.54). Based on: ",
     "v56 (Rust only): a play with jokers counts as clearing the blind at its estimate (was 1.1 x chips needed); ",
     "the 10% margin stays only where the estimate is uncertain (Misprint, Bloodstone, an unmodelled joker, a Lucky ",
     "card). The margin passed up plays that clear for a discard, even on the last hand. Fresh 2,000 seeds: 1.0 882 ",
