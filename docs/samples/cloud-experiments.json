@@ -1593,5 +1593,16 @@
   "wins": 460,
   "baseline_wins": 457,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Discards throw plain cards before enhanced or sealed ones (toss-plain)",
+  "theme": "Play",
+  "baseline": "v57",
+  "games": 1000,
+  "delta_ante": -0.013,
+  "se": 0.008,
+  "wins": 450,
+  "baseline_wins": 457,
+  "outcome": "dropped"
  }
 ]

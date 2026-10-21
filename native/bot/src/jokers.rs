@@ -488,13 +488,47 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
             out[j].scoring = true;
         }
     }
+    if crate::experiment::get().scorer_fix {
+        // lab (`scorer-fix`): jokers the game updates before the hand scores (rumbot update_before_scoring)
+        let played = |h: &str| gs::num(gs::mget(gs::d(gs::get(gs::get(gs_, "hands"), h)), "played"));
+        for (j, c) in cards.iter().enumerate() {
+            if gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")) {
+                continue;
+            }
+            let eff = effect_or_empty(gs::mget(gs::d(gs::get(c, "value")), "effect"));
+            match gs::get(c, "key").as_str() {
+                Some("j_obelisk") => {
+                    // gains X0.2 first, or resets to X1 when the hand (counted with this play) is the most played
+                    if let Some(m) = rx!(r"Currently X(\d+(?:\.\d+)?)").captures(&eff) {
+                        let cur: f64 = m[1].parse().unwrap();
+                        let names: Vec<String> = HAND_NAMES.iter().map(|s| s.to_string()).collect();
+                        let reset: Vec<String> = names.iter().filter(|h| {
+                            let mine = played(h) + 1.0;
+                            names.iter().all(|o| o == *h || played(o) < mine)
+                        }).cloned().collect();
+                        out[j].rule = Some(Rule { hand: Some(HandSpec::Cond { cond: Cond::Names(reset), yes: (0.0, 0.0, 1.0), no: (0.0, 0.0, cur + 0.2) }), ..Default::default() });
+                        out[j].scoring = true;
+                    }
+                }
+                Some("j_green_joker") => {
+                    // +1 Mult for this hand before it scores
+                    if let Some(m) = rx!(r"Currently \+(\d+(?:\.\d+)?) Mult").captures(&eff) {
+                        let cur: f64 = m[1].parse().unwrap();
+                        out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, cur + 1.0, 1.0))), ..Default::default() });
+                        out[j].scoring = true;
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
     // Blueprint copies the joker to its right, Brainstorm the leftmost.
     for n in 0..out.len() {
         let label = out[n].label.as_deref();
         if label == Some("Blueprint") || label == Some("Brainstorm") {
             let src = if label == Some("Blueprint") && n + 1 < out.len() {
                 Some(n + 1)
-            } else if label == Some("Blueprint") && crate::experiment::get().blueprint_fix {
+            } else if label == Some("Blueprint") && (crate::experiment::get().blueprint_fix || crate::experiment::get().scorer_fix) {
                 // lab (`blueprint-fix`): the rightmost Blueprint copies nothing (card.lua: G.jokers.cards[i+1] is nil)
                 None
             } else if n > 0 {

@@ -299,6 +299,15 @@ measured the wrong thing or was never asked:
   Value tail 0.75 on v57 (0.5): first 1,000 seeds 460 vs 457 wins, +0.003 +- 0.010 ante, 56 games changed: neutral.
   The planet rule's floor at $25 (`planet-floor=25`; $4 spends interest money): first 1,000 seeds 460 vs 457 wins,
   +0.003 +- 0.015 ante, 136 games changed: neutral. Money is still not the bottleneck.
+  Discard plans throwing plain cards before enhanced, editioned or sealed ones (`toss-plain`; rank order threw a Steel 2
+  first): first 1,000 seeds 450 vs 457 wins, -0.013 +- 0.008 ante: dropped.
+- **Estimate audit (`samples/cloud-lab/estaudit.py`, 200 traced v56 games, 7,411 plays):** the play's estimate matched the
+  chips scored within 1% in 65% of plays (73% without Misprint and Bloodstone), was low in 26% and high in 8%. Jokers the
+  game updates before the hand scores (rumbot `update_before_scoring`: Green Joker, Obelisk, Ride the Bus, Runner,
+  Spare Trousers, Square Joker, Vampire, Midas Mask) are read at their displayed value. Obelisk was exact in 30 of 177
+  plays: it gains X0.2 before scoring, or resets to X1 when the hand (counted with this play) is the run's most played,
+  so the bot could count on a clear that scored a third. Green Joker gains +1 first (exact in 21 of 777). Lab flag
+  `scorer-fix` (with the Blueprint fix): Obelisk 220 of 267 exact, Green Joker 623 of 776, all plays 86%.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
