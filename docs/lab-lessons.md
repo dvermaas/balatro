@@ -265,6 +265,8 @@ measured the wrong thing or was never asked:
   nothing where the estimate is exact.
   v56 itself: second seed set 877 vs 862 wins (37/22), first set 834 vs 825 (34/25, +0.015 +- 0.007 ante); pooled
   71/47 (z = 2.21).
+  CodeJev's item forecast over shop planets too: a no-op (0 of 1,000 games changed; the shop's planet rule and its
+  own item forecast decide planets first). Removed. Check that a new flag changes games on ~20 seeds first.
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
