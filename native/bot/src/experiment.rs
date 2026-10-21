@@ -39,6 +39,8 @@
 //!                 (default codejev::FORECAST_N = 16)
 //!   no-order-search  the v56 joker order (xMult jokers to the right, nothing around a copier) instead of v57's
 //!                 search by sampled score (readiness::best_joker_order)
+//!   card-order    before a play, the played cards are moved to the front of the hand in the order that scores
+//!                 most (decisions::best_card_order)
 //!   blueprint-fix  the scorer's rightmost Blueprint copies nothing (it copied the leftmost joker, like Brainstorm)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
@@ -99,6 +101,7 @@ pub struct Exp {
     pub cj_fc_n: Option<i64>,
     pub no_order_search: bool,
     pub blueprint_fix: bool,
+    pub card_order: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -139,6 +142,7 @@ pub fn get() -> &'static Exp {
               cj_fc_n: s.split(',').find_map(|x| x.trim().strip_prefix("cj-fc-n=")?.parse().ok()),
               no_order_search: has("no-order-search"),
               blueprint_fix: has("blueprint-fix"),
+              card_order: has("card-order"),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),

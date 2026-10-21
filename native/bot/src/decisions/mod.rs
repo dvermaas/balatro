@@ -382,6 +382,70 @@ pub(crate) fn play(bot: &mut JevBot, gs_: &Value, hand: &[Value], cards: &[usize
         return Ok(());
     }
     remember(bot, gs_, hand, cards);
+    if crate::experiment::get().card_order {
+        if let Some(order) = best_card_order(gs_, hand, cards) {
+            // lab (`card-order`): the played cards first, in the order that scores most, then the held cards
+            bot.act("rearrange", Some(&json!({"hand": order})))?;
+            let first: Vec<usize> = (0..cards.len()).collect();
+            bot.act("play", Some(&json!({"cards": first})))?;
+            return Ok(());
+        }
+    }
     bot.act("play", Some(&json!({"cards": cards})))?;
     Ok(())
+}
+
+/// Lab (`card-order`): played cards score left to right, each card's effects in turn (a Mult card before a Glass
+/// card, a joker's +Mult on one card before its xMult on the next). The hand order (played cards first in the
+/// best of their orders, held cards after in their order) when it scores over 0.5% more than playing in place.
+fn best_card_order(gs_: &Value, hand: &[Value], cards: &[usize]) -> Option<Vec<usize>> {
+    card_order_scored(gs_, hand, cards).and_then(|(base, best, order)| (best as f64 > base as f64 * 1.005).then_some(order))
+}
+
+/// (score in place, best score, the hand order that gives it) for playing `cards`; see best_card_order.
+pub(crate) fn card_order_scored(gs_: &Value, hand: &[Value], cards: &[usize]) -> Option<(i64, i64, Vec<usize>)> {
+    let k = cards.len();
+    if k < 2 || k > 5 {
+        return None;
+    }
+    let info = round_info(gs_);
+    let boss = gs::get(&info, "blind").as_str().unwrap_or("").to_string();
+    let levels = hands::_boss_levels(gs::area(gs_, "hands"), &boss);
+    let scorer = crate::jokers::Scorer::new(levels, crate::jokers::build(gs_, None), crate::jokers::Rnd::from_value(gs::get(gs_, "round")));
+    let infos: Vec<hands::Info> = hand.iter().map(card_info).collect();
+    let mut combo: Vec<usize> = cards.to_vec();
+    combo.sort_unstable();
+    let score_of = |infos: &[hands::Info], combo: &[usize]| -> i64 {
+        let sel: Vec<hands::Info> = combo.iter().map(|&i| infos[i].clone()).collect();
+        let (name, sc) = hands::classify(&sel);
+        scorer.call(infos, combo, name, &sc)
+    };
+    let base = score_of(&infos, &combo);
+    let held: Vec<usize> = (0..hand.len()).filter(|i| !combo.contains(i)).collect();
+    let first: Vec<usize> = (0..k).collect();
+    let mut best: Option<(i64, Vec<usize>)> = None;
+    let mut perm = combo.clone();
+    let mut c = vec![0usize; k];
+    let try_perm = |perm: &[usize], best: &mut Option<(i64, Vec<usize>)>| {
+        let order: Vec<usize> = perm.iter().chain(held.iter()).copied().collect();
+        let re: Vec<hands::Info> = order.iter().map(|&i| infos[i].clone()).collect();
+        let s = score_of(&re, &first);
+        if best.as_ref().map_or(true, |b| s > b.0) {
+            *best = Some((s, order));
+        }
+    };
+    try_perm(&perm, &mut best);
+    let mut i = 0;
+    while i < k {
+        if c[i] < i {
+            if i % 2 == 0 { perm.swap(0, i) } else { perm.swap(c[i], i) }
+            try_perm(&perm, &mut best);
+            c[i] += 1;
+            i = 0;
+        } else {
+            c[i] = 0;
+            i += 1;
+        }
+    }
+    best.map(|b| (base, b.0, b.1))
 }

@@ -280,6 +280,8 @@ measured the wrong thing or was never asked:
   (98/80), +0.042 +- 0.013 ante (231 games changed). Trying all 720 orders gave the same 24-seed results, 7x slower.
   First seed set 886 vs 834 wins (134/82, z = 3.54), +0.018 +- 0.013 ante; pooled 232/162 (z = 3.5). **v57** makes it
   the default (lab and production; `no-order-search` restores the old rule).
+  `blueprint-fix` on v57: first 1,000 seeds of the second set 457 vs 457 wins, 3 games changed. Correct, too rare to
+  measure; to ship with the next change that needs new baselines.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,

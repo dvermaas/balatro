@@ -375,6 +375,18 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         || js.iter().any(|j| matches!(j.label.as_deref(), Some("Misprint") | Some("Bloodstone")))
         || infos.iter().any(|i| i.enh_is("LUCKY"));
     let e = crate::experiment::get();
+    if crate::experiment::get().card_order && !js.is_empty() {
+        // lab (`card-order`): each play's estimate in its best card order (the play reorders the hand to match)
+        for p in plays.iter_mut() {
+            let cards = idx_list(gs::get(p, "cards"));
+            if let Some((_, best, _)) = super::card_order_scored(gs_, hand, &cards) {
+                if best > gs::int(gs::get(p, "estimate")) {
+                    p.as_object_mut().unwrap().insert("estimate".into(), json!(best));
+                }
+            }
+        }
+        plays.sort_by(|a, b| gs::int(gs::get(b, "estimate")).cmp(&gs::int(gs::get(a, "estimate"))));
+    }
     let margin = if js.is_empty() {
         1.0
     } else if risky {
