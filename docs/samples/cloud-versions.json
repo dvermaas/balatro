@@ -748,5 +748,35 @@
   "died_ante_1_4": 118,
   "died_ante_5_7": 567,
   "died_ante_8": 429
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v58",
+  "version_id": "rust",
+  "change": "Scorer counts jokers updated before scoring",
+  "games": 2000,
+  "mean_ante": 7.262,
+  "se": 0.032,
+  "wins": 908,
+  "win_rate": 0.454,
+  "mean_round": 19.64,
+  "died_ante_1_4": 98,
+  "died_ante_5_7": 570,
+  "died_ante_8": 424
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v58",
+  "version_id": "rust",
+  "change": "Scorer counts jokers updated before scoring",
+  "games": 2000,
+  "mean_ante": 7.215,
+  "se": 0.033,
+  "wins": 890,
+  "win_rate": 0.445,
+  "mean_round": 19.51,
+  "died_ante_1_4": 113,
+  "died_ante_5_7": 574,
+  "died_ante_8": 423
  }
 ]

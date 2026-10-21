@@ -1610,9 +1610,9 @@
   "theme": "Jokers",
   "baseline": "v57",
   "games": 2000,
-  "delta_ante": 0.019,
+  "delta_ante": 0.017,
   "se": 0.011,
-  "wins": 911,
+  "wins": 908,
   "baseline_wins": 895,
   "outcome": "shipped v58"
  },

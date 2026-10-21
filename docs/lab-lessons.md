@@ -313,6 +313,7 @@ measured the wrong thing or was never asked:
   With Ride the Bus, second half: 437 vs 438. Second set 911 vs 895 (62/46), first set 890 vs 886 (56/52, +0.009 +-
   0.012 ante); pooled 118/98 (z = 1.36). **v58** ships the fixes (lab and production; `no-scorer-fix` restores v57's
   scorer): small, but they are the game's rules and the bot's numbers are what every decision reads.
+  v58 itself (Ride the Bus included throughout): second set 908 vs 895 (66/53), +0.017 +- 0.011 ante; first set 890.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
