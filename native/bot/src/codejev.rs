@@ -95,10 +95,12 @@ impl CodeJev {
             .filter(|q| {
                 q.starts_with("buy_pack_")
                     || (q.starts_with("buy_card_")
-                        && matches!(
-                            gs::get(&shop[q.rsplit('_').next().unwrap().parse::<usize>().unwrap()], "set").as_str(),
-                            Some("TAROT") | Some("SPECTRAL")
-                        ))
+                        && match gs::get(&shop[q.rsplit('_').next().unwrap().parse::<usize>().unwrap()], "set").as_str() {
+                            Some("TAROT") | Some("SPECTRAL") => true,
+                            // lab (`fc-planets`): shop planets too
+                            Some("PLANET") => crate::experiment::get().fc_planets,
+                            _ => false,
+                        })
             })
             .cloned()
             .collect();
