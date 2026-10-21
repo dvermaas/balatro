@@ -308,6 +308,8 @@ measured the wrong thing or was never asked:
   plays: it gains X0.2 before scoring, or resets to X1 when the hand (counted with this play) is the run's most played,
   so the bot could count on a clear that scored a third. Green Joker gains +1 first (exact in 21 of 777). Lab flag
   `scorer-fix` (with the Blueprint fix): Obelisk 220 of 267 exact, Green Joker 623 of 776, all plays 86%.
+  In the lab (Obelisk, Green Joker, Blueprint): first 1,000 seeds of the second set 474 vs 457 wins (34/17, z = 2.38),
+  +0.039 +- 0.013 ante, 63 games changed. Ride the Bus added (kernel hand cond 12: no face card scored).
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
