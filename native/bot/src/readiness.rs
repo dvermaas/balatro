@@ -343,3 +343,75 @@ pub fn lasting(gain: &Value, kind: Option<&str>, wall_ratio: &Value) -> Value {
     let m = (1.0 / gs::num(wall_ratio)).max(1.0);
     json!(gs::num(gain) / m.powf(0.5))
 }
+
+/// Lab (`tarot-measure`): targets for a targeted tarot chosen by measurement: every target set from the hand is
+/// applied to a copy of the deck (draw pile + hand), and the set whose deck has the best mean best-play score over
+/// 24 deals of hand size + MIX_EXTRA wins. Enhancements (not Gold: its money is not a score), suit changes,
+/// Hanged Man, Strength and Death; None for the rest (the caller keeps tarots::plan).
+pub fn measured_plan(g: &Value, tarot: &str, hand: &[Value]) -> Option<(Vec<usize>, String)> {
+    let (kind, n, arg) = crate::tarots::targeted(tarot)?;
+    if !matches!(kind, "enhance" | "suit" | "remove" | "rank_up" | "copy") || arg == Some("GOLD") {
+        return None;
+    }
+    let pile: Vec<Info> = gs::cards_of(g, "cards").iter().map(hands::card_info).collect();
+    let infos: Vec<Info> = hand.iter().map(hands::card_info).collect();
+    let live: Vec<usize> = (0..infos.len()).filter(|&i| !infos[i].debuff).collect();
+    let size = hand_size(g) + MIX_EXTRA;
+    let k = if kind == "copy" { 2 } else { n.min(live.len()) };
+    if k == 0 || live.len() < k || pile.len() + infos.len() < size + 2 {
+        return None;
+    }
+    let levels: Levels = gs::area(g, "hands").clone();
+    let scorer = jokers::Scorer::new(levels.clone(), jokers::build(g, None), jokers::Rnd { hands_left: 2.0, discards_left: 1.0 });
+    let apply = |set: &[usize]| -> Option<Vec<Info>> {
+        let mut h = infos.clone();
+        let mut gone: Vec<usize> = Vec::new();
+        match kind {
+            "enhance" => set.iter().for_each(|&i| h[i].enh = arg.map(String::from)),
+            "suit" => set.iter().for_each(|&i| h[i].suit = arg.map(String::from)),
+            "remove" => gone.extend_from_slice(set),
+            "rank_up" => {
+                for &i in set {
+                    let r = h[i].rank_truthy()?.to_string();
+                    let ix = hands::rank_index(&r);
+                    if ix + 1 >= hands::RANK_ORDER.len() {
+                        return None;
+                    }
+                    h[i].rank = Some(hands::RANK_ORDER[ix + 1..ix + 2].to_string());
+                }
+            }
+            _ => {
+                // Death: the left card becomes a copy of the right one
+                let (l, r) = (set[0].min(set[1]), set[0].max(set[1]));
+                h[l] = h[r].clone();
+            }
+        }
+        let mut deck = pile.clone();
+        deck.extend(h.into_iter().enumerate().filter(|(i, _)| !gone.contains(i)).map(|(_, c)| c));
+        deck.sort_by_cached_key(key);
+        Some(deck)
+    };
+    let mean = |deck: &[Info]| -> f64 {
+        let mut rng = Random::new_int(17017);
+        (0..24)
+            .map(|_| {
+                let idx = rng.sample_indices(deck.len(), size);
+                let d: Vec<Info> = idx.iter().map(|&i| deck[i].clone()).collect();
+                hands::best_score(&d, ScorerArg::Jokers(&scorer), Allowed::None) as f64
+            })
+            .sum::<f64>()
+            / 24.0
+    };
+    let mut best: Option<(f64, Vec<usize>)> = None;
+    for c in hands::combinations(live.len(), k) {
+        let set: Vec<usize> = c.iter().map(|&j| live[j]).collect();
+        let Some(deck) = apply(&set) else { continue };
+        let m = mean(&deck);
+        if best.as_ref().map_or(true, |b| m > b.0) {
+            best = Some((m, set));
+        }
+    }
+    let (_, set) = best?;
+    let names = set.iter().map(|&i| hands::describe(&hand[i])).collect::<Vec<_>>().join(", ");
+    Some((set, format!("measured best targets: {names}")))
+}

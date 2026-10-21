@@ -88,7 +88,8 @@ pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         let mut params = Map::new();
         params.insert("card".into(), json!(i));
         if tarots::targeted(key).is_some() {
-            match tarots::plan(key, hand, &b) {
+            let measured = if crate::experiment::get().tarot_measure { crate::readiness::measured_plan(gs_, key, hand) } else { None };
+            match measured.or_else(|| tarots::plan(key, hand, &b)) {
                 Some((targets, text)) => {
                     o.insert("use".into(), json!(text));
                     params.insert("targets".into(), json!(targets));
