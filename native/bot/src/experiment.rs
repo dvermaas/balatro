@@ -52,6 +52,7 @@
 //!   toss-plain    discard plans throw plain cards before enhanced, editioned or sealed ones (rank order otherwise)
 //!   no-scorer-fix  v57's scorer: jokers read at their shown value even when the game updates them before the
 //!                 hand scores (Obelisk, Green Joker, Ride the Bus), and a rightmost Blueprint copying the leftmost joker
+//!   extra-chips   cards carry their permanent bonus chips (Hiker) into the bot's scorer and the rollouts' choices
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -118,6 +119,7 @@ pub struct Exp {
     pub planet_floor: Option<i64>,
     pub toss_plain: bool,
     pub no_scorer_fix: bool,
+    pub extra_chips: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -165,6 +167,7 @@ pub fn get() -> &'static Exp {
               planet_floor: s.split(',').find_map(|x| x.trim().strip_prefix("planet-floor=")?.parse().ok()),
               toss_plain: has("toss-plain"),
               no_scorer_fix: has("no-scorer-fix"),
+              extra_chips: has("extra-chips"),
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
@@ -172,6 +175,7 @@ pub fn get() -> &'static Exp {
         simcore::FREE_DISCARD.store(e.free_discard, std::sync::atomic::Ordering::Relaxed);
         simcore::NO_DISCARD.store(e.rollout_nodiscard, std::sync::atomic::Ordering::Relaxed);
         simcore::SMART_DISCARD.store(e.rollout_discard2, std::sync::atomic::Ordering::Relaxed);
+        simcore::EXTRA_CHIPS.store(e.extra_chips, std::sync::atomic::Ordering::Relaxed);
         if let Some(k) = e.rollout_behind {
             simcore::ROLLOUT_BEHIND.store(k.to_bits(), std::sync::atomic::Ordering::Relaxed);
         }

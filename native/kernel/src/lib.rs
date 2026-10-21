@@ -44,13 +44,15 @@ pub struct Card {
     pub edition: u8,
     pub red: bool,
     pub debuff: bool,
+    /// permanent bonus chips (Hiker), added each time the card scores
+    pub extra: u16,
 }
 
 pub type CardIn = (u8, u8, u8, u8, bool, bool);
 
 pub fn cards_of(v: &[CardIn]) -> Vec<Card> {
     v.iter()
-        .map(|&(rank, suit, enh, edition, red, debuff)| Card { rank, suit, enh, edition, red, debuff })
+        .map(|&(rank, suit, enh, edition, red, debuff)| Card { rank, suit, enh, edition, red, debuff, extra: 0 })
         .collect()
 }
 
@@ -294,7 +296,7 @@ impl Scorer {
                 }
             }
             for _ in 0..reps.max(0) {
-                chips += if c.enh == STONE || c.rank == 0 { 50.0 } else { rank_chips(c.rank) };
+                chips += if c.enh == STONE || c.rank == 0 { 50.0 } else { rank_chips(c.rank) } + c.extra as f64;
                 chips += ((if c.enh == BONUS { 30 } else { 0 }) + (if c.edition == FOIL { 50 } else { 0 })) as f64;
                 mult += ((if c.enh == MULT { 4 } else { 0 }) + (if c.edition == HOLO { 10 } else { 0 })) as f64;
                 mult *= (if c.enh == GLASS { 2.0 } else { 1.0 }) * (if c.edition == POLYCHROME { 1.5 } else { 1.0 });

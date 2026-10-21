@@ -729,6 +729,7 @@ pub fn sample_plays(gs_: &Value, recent: &[Value]) -> Vec<Sample> {
                     edition: None,
                     seal: None,
                     debuff: false,
+                    extra: 0,
                 }
             })
             .collect();
@@ -828,7 +829,7 @@ pub fn score(infos: &[Info], combo: &[usize], name: &str, scoring: &[usize], han
             }
         }
         for _ in 0..reps {
-            chips += if c.enh_is("STONE") || c.rank_truthy().is_none() { 50.0 } else { hands::rank_chips(c.rank_truthy().unwrap()) };
+            chips += if c.enh_is("STONE") || c.rank_truthy().is_none() { 50.0 } else { hands::rank_chips(c.rank_truthy().unwrap()) } + c.extra as f64;
             chips += (if c.enh_is("BONUS") { 30.0 } else { 0.0 }) + (if is_ed(c, "FOIL") { 50.0 } else { 0.0 });
             mult += (if c.enh_is("MULT") { 4.0 } else { 0.0 }) + (if is_ed(c, "HOLO") { 10.0 } else { 0.0 });
             mult *= (if c.enh_is("GLASS") { 2.0 } else { 1.0 }) * (if is_ed(c, "POLYCHROME") { 1.5 } else { 1.0 });

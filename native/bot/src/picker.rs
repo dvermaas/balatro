@@ -62,6 +62,7 @@ pub(crate) fn kernel_card(i: &Info) -> jev_kernel::Card {
         edition: 0,
         red: false,
         debuff: i.debuff,
+        extra: i.extra.clamp(0, u16::MAX as i64) as u16,
     }
 }
 

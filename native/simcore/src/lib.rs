@@ -359,6 +359,7 @@ pub fn info(c: &CardRef) -> kernel::Card {
         },
         red: c.seal == Seal::Red,
         debuff: c.debuffed,
+        extra: if EXTRA_CHIPS.load(std::sync::atomic::Ordering::Relaxed) { c.extra_chips.clamp(0, u16::MAX as i32) as u16 } else { 0 },
     }
 }
 
@@ -594,6 +595,8 @@ pub static NO_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::Atomic
 /// Lab (`rollout-behind=K`): rollouts discard only while K x (best play x hands left) < chips needed (default 1;
 /// stored as f64 bits). K < 1 discards less.
 pub static ROLLOUT_BEHIND: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0x3FF0000000000000);
+/// Lab (`extra-chips`): kernel cards carry their permanent bonus chips (Hiker); they scored without them.
+pub static EXTRA_CHIPS: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Free discards the rollouts took (lab diagnostics).
 pub static FREE_DISCARDS_TAKEN: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 

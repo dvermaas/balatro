@@ -37,6 +37,7 @@ fn card(r: &mut Lcg) -> Card {
         edition: if r.chance(80) { 0 } else { r.below(4) as u8 },
         red: r.chance(10),
         debuff: r.chance(5),
+        extra: 0,
     }
 }
 

@@ -76,6 +76,8 @@ pub struct Info {
     pub edition: Option<String>,
     pub seal: Option<String>,
     pub debuff: bool,
+    /// permanent bonus chips (Hiker's +5 per score), read from the card text; 0 unless lab `extra-chips`
+    pub extra: i64,
 }
 
 impl Info {
@@ -93,7 +95,7 @@ impl Info {
     pub fn from_json(v: &Value) -> Info {
         let o = |k: &str| gs::get(v, k).as_str().map(str::to_string);
         Info { rank: o("rank"), suit: o("suit"), enh: o("enh"), edition: o("edition"), seal: o("seal"),
-               debuff: gs::truthy(gs::get(v, "debuff")) }
+               debuff: gs::truthy(gs::get(v, "debuff")), extra: 0 }
     }
     pub fn to_json(&self) -> Value {
         json!({"rank": self.rank, "suit": self.suit, "enh": self.enh, "edition": self.edition,
@@ -119,6 +121,18 @@ pub fn card_info(c: &Value) -> Info {
         edition: st(m, "edition"),
         seal: st(m, "seal"),
         debuff: gs::truthy(gs::get(s, "debuff")),
+        extra: if crate::experiment::get().extra_chips { extra_chips(v, gs::get(m, "enhancement").as_str()) } else { 0 },
+    }
+}
+
+/// A card's permanent bonus chips from its text: "+N extra chips" is the enhancement's bonus (Bonus +30) plus
+/// Hiker's perma_bonus (engine/text.rs playing_card_lines; Lucky shows only the perma part).
+fn extra_chips(v: &Value, enh: Option<&str>) -> i64 {
+    let e = gs::get(v, "effect").as_str().unwrap_or("");
+    static RE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
+    match RE.get_or_init(|| regex::Regex::new(r"\+(\d+) extra chips").unwrap()).captures(e) {
+        Some(m) => (m[1].parse::<i64>().unwrap_or(0) - if enh == Some("BONUS") { 30 } else { 0 }).max(0),
+        None => 0,
     }
 }
 
@@ -905,7 +919,11 @@ pub mod native {
         let cards = encode_cards(infos);
         let allow = allow_spec(allowed);
         let (cards, allow) = (cards?, allow?);
-        Some((ns, jev_kernel::cards_of(&cards), allow))
+        let mut kc = jev_kernel::cards_of(&cards);
+        for (k, i) in kc.iter_mut().zip(infos) {
+            k.extra = i.extra.clamp(0, u16::MAX as i64) as u16;
+        }
+        Some((ns, kc, allow))
     }
 
     // native.py 165-170
