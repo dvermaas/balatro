@@ -31,7 +31,12 @@ struct Model {
 fn model() -> &'static Model {
     static M: OnceLock<Model> = OnceLock::new();
     M.get_or_init(|| {
-        let v: Value = serde_json::from_str(include_str!("../data/value_model.json")).expect("value_model.json");
+        // lab: VALUE_MODEL=<path> loads another model file (same format) instead of the built-in one
+        let text = match std::env::var("VALUE_MODEL") {
+            Ok(p) => std::fs::read_to_string(&p).expect("VALUE_MODEL file"),
+            Err(_) => include_str!("../data/value_model.json").to_string(),
+        };
+        let v: Value = serde_json::from_str(&text).expect("value_model.json");
         let strs = |k: &str| -> Vec<String> { v[k].as_array().unwrap().iter().map(|s| s.as_str().unwrap().to_string()).collect() };
         let fl = |x: &Value| -> Vec<f64> { x.as_array().unwrap().iter().map(|f| f.as_f64().unwrap()).collect() };
         let by_ante = v["models"].as_object().unwrap().iter().map(|(a, m)| {
