@@ -324,6 +324,9 @@ measured the wrong thing or was never asked:
   held out on the first seed set, log loss lower at every ante (ante 2: 0.735 vs 0.924; the v32 model says 18% where
   today's bot wins 45%), AUC 0.74-0.75 at antes 6-7 (old 0.72-0.73). In the lab at weight 0.25 (its P runs ~2x the
   old one's): first seed set 442 vs 449 wins, +0.004 +- 0.017 ante, 134 games changed: neutral, as at v54.
+- **Pack jokers through the shop forecast** (`pack-forecast`; the Picker valued them by measured gain on recent hands,
+  shop jokers by rollouts): the pack's jokers shown to the forecast as $0 shop jokers, the best beating nothing by
+  1 SE taken. Second seed set 905 vs 908 wins, +0.000 +- 0.017 ante, 181 games changed: neutral, dropped.
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,

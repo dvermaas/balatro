@@ -1659,5 +1659,16 @@
   "wins": 442,
   "baseline_wins": 449,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Pack jokers judged by the shop forecast (pack-forecast)",
+  "theme": "Jokers",
+  "baseline": "v58",
+  "games": 2000,
+  "delta_ante": 0.0,
+  "se": 0.017,
+  "wins": 905,
+  "baseline_wins": 908,
+  "outcome": "neutral"
  }
 ]
