@@ -1769,5 +1769,16 @@
   "wins": 382,
   "baseline_wins": 393,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Learned value from measured build power (+ money, jokers, hand size) as the forecast tail",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 600,
+  "delta_ante": -0.01,
+  "se": 0.038,
+  "wins": 264,
+  "baseline_wins": 280,
+  "outcome": "dropped"
  }
 ]

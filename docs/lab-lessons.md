@@ -362,6 +362,16 @@ measured the wrong thing or was never asked:
   Negative) below playing and vetoes those skips: 24 seeds 6 vs 12 wins. Keeping the static skips and letting it add
   others: 10 vs 12. Rollouts buying a tag's free joker first (`rollout-free-first`) changes neither (6 vs 12, 10 vs 12):
   the forecast just does not see what the six tags are worth. The static list stays.
+- **Measured build power as the learned value** (`simcore::power`: the best play's score on 32 hands dealt from the
+  full deck, scorer as at a round's first hand; logged per shop by `JEVLAB_SNAPS`; `samples/cloud-lab/ptrain.py`,
+  800 v60 games `samples/cloud-lab/c2k-pw-v60-snaps.jsonl.gz`, logging leaves all 800 identical). At the first shop of
+  antes 6-8, its log10 p25/median/p75/mean plus money, jokers and hand size (7 inputs) predict the win at held-out AUC
+  0.70-0.72, vs 0.68 for the old 100+ inputs (joker identities overfit: log loss 0.60-0.70 vs 0.53-0.62). The median
+  alone is worse (0.61-0.67): how evenly a build scores counts. Antes 2-4: ~0.5-0.6 for every input set.
+  As the forecast's tail (`VALUE_MODEL=samples/cloud-lab/value_model_power_c2k800.json`, value-tail 0.25, calibrated so
+  about v60's weight): first 600 seeds of the first set (held out) 264 vs 280 wins, -0.010 +- 0.038 ante, 157 changed.
+  It buys fewer level-1 planets and Celestial/Standard/Arcana packs, more Buffoon packs: the model's money weight
+  (winners hold money) makes the forecast hoard, which the shopping rollouts already price.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

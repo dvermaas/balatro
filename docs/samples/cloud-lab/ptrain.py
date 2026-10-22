@@ -13,7 +13,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.metrics import roc_auc_score, log_loss
 from sklearn.model_selection import GroupKFold
 HANDS = ["High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush"]
-args = sys.argv[1:]; out_path = None
+args = sys.argv[1:]; out_path = None; OUT_SET = "power"
+if "--only" in args: args.remove("--only"); OUT_SET = "power only"  # build strength alone (no money: the rollouts value it)
 if "--out" in args: i = args.index("--out"); out_path = args[i + 1]; args = args[:i] + args[i + 2:]
 def rows_of(files):
     rows = []
@@ -37,7 +38,7 @@ RICH = ["money", "n_j", "lv_max", "lv_total", "neg", "ed", "deck", "enh", "hs"] 
 POW = ["p25", "p50", "p75", "pmean"]
 cnt = collections.Counter(k for r in rows for k in set(r["jkeys"]))
 KEYS = sorted(k for k, c in cnt.items() if c >= 30)
-SETS = {"base": (RICH, KEYS), "power": (POW + ["money", "n_j", "hs"], []), "power+base": (POW + RICH, KEYS)}
+SETS = {"base": (RICH, KEYS), "power": (POW + ["money", "n_j", "hs"], []), "power+base": (POW + RICH, KEYS), "power only": (POW, [])}
 def X(rs, cols, keys): return np.hstack([np.array([[r[c] for c in cols] for r in rs], float), np.array([[k in r["jkeys"] for k in keys] for r in rs], float).reshape(len(rs), len(keys))])
 def fit(Xa, y): return make_pipeline(StandardScaler(), LogisticRegression(C=0.05, max_iter=4000)).fit(Xa, y)
 print(f"{len(set(r['seed'] for r in rows))} games")
@@ -50,7 +51,7 @@ for a in range(2, 9):
         line += f" | {name} ll {log_loss(y, p):.4f} AUC {roc_auc_score(y, p):.3f}"
     print(line)
 if out_path:
-    cols, keys = SETS["power"]
+    cols, keys = SETS[OUT_SET]
     out = {"features": cols, "keys": keys, "hands": HANDS, "power": POW, "trained_on": f"{len(set(r['seed'] for r in rows))} lab games, first shop of each ante", "models": {}}
     for a in range(2, 9):
         rs = [r for r in rows if r["ante"] == a]; y = np.array([r["won"] for r in rs])
