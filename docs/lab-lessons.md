@@ -338,6 +338,8 @@ measured the wrong thing or was never asked:
   a game vs 7.2). Against v1 (`rollout-shop`): -0.051 +- 0.031 ante, 490 vs 475 wins. Noisy: both change ~40% of games.
   `rollout-shop` over the second set (first half run on v58's binary, second on v59): 955 vs 914 wins (283/242, z =
   1.79), +0.049 +- 0.032 ante, 768 games changed.
+  `rollout-shop-policy` over the second set: **987 vs 914 wins** (303/230, z = 3.16), +0.030 +- 0.031 ante; vs
+  `rollout-shop` 987 vs 955 (203/171).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

@@ -1692,5 +1692,16 @@
   "wins": 955,
   "baseline_wins": 914,
   "outcome": "promising"
+ },
+ {
+  "experiment": "Shopping rollouts that rebuild their play policy (rollout-shop-policy)",
+  "theme": "Forecast",
+  "baseline": "v59",
+  "games": 2000,
+  "delta_ante": 0.03,
+  "se": 0.031,
+  "wins": 987,
+  "baseline_wins": 914,
+  "outcome": "promising"
  }
 ]
