@@ -1,7 +1,8 @@
+"""estaudit.py DIR: every play's estimate vs the chips it scored, for all decisions.jsonl under DIR (lab traces or real runs)."""
 import json, glob, re, collections, sys
 root = sys.argv[1]
 rows = []
-for f in glob.glob(f"{root}/*/*/decisions.jsonl"):
+for f in glob.glob(f"{root}/**/decisions.jsonl", recursive=True):
     ev = [json.loads(l) for l in open(f)]
     for i, e in enumerate(ev):
         if e.get("kind") not in ("decision", "forced") or e.get("question") != "move":
