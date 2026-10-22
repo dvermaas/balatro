@@ -340,6 +340,9 @@ measured the wrong thing or was never asked:
   1.79), +0.049 +- 0.032 ante, 768 games changed.
   `rollout-shop-policy` over the second set: **987 vs 914 wins** (303/230, z = 3.16), +0.030 +- 0.031 ante; vs
   `rollout-shop` 987 vs 955 (203/171).
+  First seed set (vs v58; v59 changed no game's final ante or round on the second set): **956 vs 890 wins** (317/251,
+  z = 2.77), +0.095 +- 0.033 ante. **v60** makes shopping rollouts with policy rebuilds the default (`no-rollout-shop`
+  restores v59's). Lab games take ~2x as long (14 s vs 7 s); production's 4 s budget plays fewer rollouts.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

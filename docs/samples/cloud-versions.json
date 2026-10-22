@@ -793,5 +793,35 @@
   "died_ante_1_4": 98,
   "died_ante_5_7": 570,
   "died_ante_8": 418
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v60",
+  "version_id": "rust",
+  "change": "Forecast rollouts shop and rebuild their play policy",
+  "games": 2000,
+  "mean_ante": 7.292,
+  "se": 0.032,
+  "wins": 987,
+  "win_rate": 0.493,
+  "mean_round": 19.73,
+  "died_ante_1_4": 108,
+  "died_ante_5_7": 520,
+  "died_ante_8": 385
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v60",
+  "version_id": "rust",
+  "change": "Forecast rollouts shop and rebuild their play policy",
+  "games": 2000,
+  "mean_ante": 7.311,
+  "se": 0.031,
+  "wins": 956,
+  "win_rate": 0.478,
+  "mean_round": 19.8,
+  "died_ante_1_4": 99,
+  "died_ante_5_7": 516,
+  "died_ante_8": 429
  }
 ]
