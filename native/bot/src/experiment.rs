@@ -58,6 +58,7 @@
 //!   pack-forecast  a pack's jokers go through the shop forecast (as $0 shop jokers) instead of the Picker's gain
 //!   no-rollout-shop  v59's frozen-build forecast rollouts (v60: rollouts shop, simcore::rollout_shop)
 //!   rollout-shop=F  the rollouts' joker floor: they buy the priciest affordable joker while $F stays (default 10)
+//!   rollout-shop-first  rollouts take the first affordable joker in the shop (in effect random), not the priciest
 //!   rollout-shop-nopolicy  rollouts shop but do not rebuild their play policy after buying a joker
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
@@ -131,6 +132,7 @@ pub struct Exp {
     pub pack_forecast: bool,
     pub rollout_shop: Option<i32>,
     pub rollout_shop_policy: bool,
+    pub rollout_shop_first: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -185,6 +187,7 @@ pub fn get() -> &'static Exp {
               // v60: shopping rollouts with policy rebuilds by default; `no-rollout-shop` freezes the build again,
               // `rollout-shop-nopolicy` keeps the shopping without the rebuild
               rollout_shop_policy: !has("no-rollout-shop") && !has("rollout-shop-nopolicy"),
+              rollout_shop_first: has("rollout-shop-first"),
               rollout_shop: if has("no-rollout-shop") { None } else { Some(s.split(',').find_map(|x| x.trim().strip_prefix("rollout-shop=")?.parse().ok()).unwrap_or(10)) },
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
@@ -195,6 +198,7 @@ pub fn get() -> &'static Exp {
         simcore::SMART_DISCARD.store(e.rollout_discard2, std::sync::atomic::Ordering::Relaxed);
         simcore::EXTRA_CHIPS.store(e.extra_chips, std::sync::atomic::Ordering::Relaxed);
         simcore::ROLLOUT_SHOP.store(e.rollout_shop.is_some(), std::sync::atomic::Ordering::Relaxed);
+        simcore::ROLLOUT_SHOP_FIRST.store(e.rollout_shop_first, std::sync::atomic::Ordering::Relaxed);
         if let Some(f) = e.rollout_shop {
             simcore::ROLLOUT_SHOP_FLOOR.store(f, std::sync::atomic::Ordering::Relaxed);
         }

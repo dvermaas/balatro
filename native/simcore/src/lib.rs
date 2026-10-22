@@ -1041,6 +1041,8 @@ pub fn use_items(g: &mut GameState, it: &ItemsDesc, state: u8, failed: &mut Hash
 /// The shop forecast rebuilds the rollout's play policy after a buy (bot forecast.rs); the items forecast does not.
 pub static ROLLOUT_SHOP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true); // v60
 pub static ROLLOUT_SHOP_FLOOR: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(10);
+/// Lab (`rollout-shop-first`): rollouts take the first affordable joker in the shop (in effect a random one), not the priciest.
+pub static ROLLOUT_SHOP_FIRST: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 fn rollout_shop(g: &mut GameState) {
     let floor = ROLLOUT_SHOP_FLOOR.load(std::sync::atomic::Ordering::Relaxed);
@@ -1051,7 +1053,7 @@ fn rollout_shop(g: &mut GameState) {
         let Some(shop) = g.shop.as_ref() else { return };
         let pick = shop.slots.iter().enumerate()
             .filter(|(_, sl)| sl.joker.is_some() && g.money - g.slot_price(sl) >= floor)
-            .max_by_key(|(i, sl)| (g.slot_price(sl), std::cmp::Reverse(*i)))
+            .max_by_key(|(i, sl)| if ROLLOUT_SHOP_FIRST.load(std::sync::atomic::Ordering::Relaxed) { (0, std::cmp::Reverse(*i)) } else { (g.slot_price(sl), std::cmp::Reverse(*i)) })
             .map(|(i, _)| i);
         let Some(i) = pick else { break };
         let a = Action::at(ActionType::Buy, i as i32);
