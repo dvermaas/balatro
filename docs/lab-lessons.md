@@ -329,6 +329,14 @@ measured the wrong thing or was never asked:
   1 SE taken. Second seed set 905 vs 908 wins, +0.000 +- 0.017 ante, 181 games changed: neutral, dropped.
   The three rare-joker scorer fixes together (`extra-chips,splash,baseball-fix`): first 1,000 seeds of the first set
   447 vs 449 wins, +0.019 +- 0.012 ante, 35 games changed: neutral; kept as lab flags.
+- **Shopping rollouts** (`rollout-shop`: forecast rollouts stock their shops and buy the priciest affordable joker
+  while a slot is free and $10 stays, then the top hand's planet; the frozen build valued money and open slots at 0):
+  on v58, first 1,000 seeds of the second set 475 vs 471 wins, +0.078 +- 0.045 ante, 369 games changed. To retest on
+  v59 (new sim baseline), with `rollout-shop-policy` (the play policy rebuilt after a buy).
+- **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
+  fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
+  rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
+  comparable (`docs/samples/real-sync/2026-10-22.md`).
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
   (lab flag `blueprint-fix`).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,

@@ -1670,5 +1670,16 @@
   "wins": 905,
   "baseline_wins": 908,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Forecast rollouts shop (rollout-shop: priciest joker, top-hand planet)",
+  "theme": "Forecast",
+  "baseline": "v58",
+  "games": 1000,
+  "delta_ante": 0.078,
+  "se": 0.045,
+  "wins": 475,
+  "baseline_wins": 471,
+  "outcome": "promising"
  }
 ]
