@@ -375,6 +375,13 @@ measured the wrong thing or was never asked:
   Power alone (`ptrain.py --only`, AUC 0.67-0.70 at antes 6-8): 255 vs 279 wins, -0.008 +- 0.039 ante (z = -2.12), the
   same shift (fewer Arcana/Celestial/Standard packs, Mars, Hermit, Temperance): a power tail at the rollouts' end
   also counts the jokers their shops buy with the money an option saves, so it rewards saving over cheap upgrades.
+  The option's own power gain instead, before any rollout (`power-bonus=1`, + 1 blind per 10x p75 power over the skip
+  option, ~the model's mid-game slope): 271 vs 280 wins, +0.005 +- 0.029 ante, 131 changed: neutral.
+  Why a planner for early build choices has little to learn: p75 power minus log10 of the ante's boss target, median at
+  each ante's first shop (800 v60 games), wins / died at ante 8 / died at 7 / died by 6: ante 3 -0.24 / -0.26 / -0.30 /
+  -0.37, ante 5 -0.40 / -0.46 / -0.53 / -0.62, ante 7 -0.56 / -0.66 / -0.74, ante 8 -0.61 / -0.73. Winners and the ante-8
+  losers build the same power through ante 4; the gap opens at antes 5-8, and every group falls behind the targets
+  each ante (4 hands of p75 cover 10^0.6). The runs split on late scaling, not on the early build.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

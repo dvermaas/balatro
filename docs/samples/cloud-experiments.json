@@ -1791,5 +1791,16 @@
   "wins": 255,
   "baseline_wins": 279,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Forecast options + their own measured power gain (power-bonus=1)",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 600,
+  "delta_ante": 0.005,
+  "se": 0.029,
+  "wins": 271,
+  "baseline_wins": 280,
+  "outcome": "neutral"
  }
 ]
