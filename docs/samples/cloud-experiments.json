@@ -1747,5 +1747,16 @@
   "wins": 484,
   "baseline_wins": 490,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Spend the interest reserve late (late-floor 9) on v60",
+  "theme": "Money",
+  "baseline": "v60",
+  "games": 800,
+  "delta_ante": 0.02,
+  "se": 0.02,
+  "wins": 340,
+  "baseline_wins": 393,
+  "outcome": "dropped"
  }
 ]
