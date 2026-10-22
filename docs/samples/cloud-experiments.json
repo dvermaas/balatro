@@ -1758,5 +1758,16 @@
   "wins": 340,
   "baseline_wins": 393,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Up to 4 rerolls a shop on v60 (2)",
+  "theme": "Money",
+  "baseline": "v60",
+  "games": 800,
+  "delta_ante": 0.005,
+  "se": 0.013,
+  "wins": 382,
+  "baseline_wins": 393,
+  "outcome": "neutral"
  }
 ]

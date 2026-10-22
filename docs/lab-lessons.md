@@ -355,6 +355,7 @@ measured the wrong thing or was never asked:
   not a finish-line slip. Boss rerolls retested on v60 (`boss-reroll=...`): the bot never buys Director's Cut or Retcon
   (offered in 13 of 48 traced games with $8-14; `buy-vouchers` + `voucher-floor=10` still buy none: CodeJev's shop
   answer never takes a "strong" voucher), so nothing changes; parked.
+  Up to 4 rerolls a shop on v60 (`max-rerolls=4`; 2): first 800 seeds 382 vs 393 wins, +0.005 +- 0.013 ante: neutral.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
