@@ -26,7 +26,7 @@ struct Model {
     power: Vec<String>,
     keys: Vec<String>,
     hands: Vec<String>,
-    n_base: usize,
+    features: Vec<String>,
     by_ante: HashMap<i32, AnteModel>,
 }
 
@@ -45,11 +45,23 @@ fn model() -> &'static Model {
             (a.parse().unwrap(), AnteModel { mean: fl(&m["mean"]), scale: fl(&m["scale"]), coef: fl(&m["coef"]), intercept: m["intercept"].as_f64().unwrap() })
         }).collect();
         let power = if v["power"].is_array() { strs("power") } else { vec![] };
-        Model { power, keys: strs("keys"), hands: strs("hands"), n_base: strs("features").len(), by_ante }
+        Model { power, keys: strs("keys"), hands: strs("hands"), features: strs("features"), by_ante }
     })
 }
 
-/// The model's inputs, in vcurve.py's RICH order then the joker keys:
+/// Every named input, in the order `features` computes them (the power ones only for a power model).
+fn all_names(m: &Model) -> Vec<String> {
+    m.power.iter().map(|s| s.as_str()).chain(["money", "n_j", "lv_max", "lv_total", "neg", "ed", "deck", "enh", "hs"]).map(|s| s.to_string())
+        .chain(m.hands.iter().map(|h| format!("lv:{h}"))).chain(m.hands.iter().map(|h| format!("pl:{h}"))).collect()
+}
+
+/// The model's `features`, by name, out of every named input.
+fn select(m: &Model, all: &[f64]) -> Vec<f64> {
+    let names = all_names(m);
+    m.features.iter().map(|f| all[names.iter().position(|n| n == f).unwrap_or_else(|| panic!("value model feature {f}"))]).collect()
+}
+
+/// The model's inputs (its `features` by name, then the joker keys), from every named input in vcurve.py's RICH order:
 /// money (<= 200), jokers, lv_max, lv_total, negative jokers, jokers with an edition, deck size, enhanced
 /// cards, hand size, each hand's level, each hand's times played.
 pub fn features(g: &GameState) -> Vec<f64> {
@@ -72,7 +84,7 @@ pub fn features(g: &GameState) -> Vec<f64> {
     ]);
     x.extend(m.hands.iter().map(|h| lv(h)));
     x.extend(m.hands.iter().map(|h| pl(h)));
-    debug_assert_eq!(x.len(), m.n_base);
+    let mut x = select(m, &x);
     let owned: Vec<&str> = g.jokers.iter().map(|j| joker_row(j.borrow().spec.name).map_or("", |r| r.key)).collect();
     x.extend(m.keys.iter().map(|k| owned.contains(&k.as_str()) as i32 as f64));
     x
@@ -103,6 +115,7 @@ pub fn features_from_view(gs_: &Value) -> Vec<f64> {
     ]);
     x.extend(m.hands.iter().map(|h| lv(h)));
     x.extend(m.hands.iter().map(|h| pl(h)));
+    let mut x = select(m, &x);
     let owned: Vec<&str> = js.iter().map(|c| c["key"].as_str().unwrap_or("")).collect();
     x.extend(m.keys.iter().map(|k| owned.contains(&k.as_str()) as i32 as f64));
     x
@@ -129,8 +142,7 @@ pub fn tail(g: &GameState, last_cleared: bool) -> f64 {
 pub fn check(pub_: &Value, g: &GameState) {
     let (a, b) = (features(g), features_from_view(pub_));
     let m = model();
-    let names: Vec<String> = m.power.iter().map(|s| s.as_str()).chain(["money", "n_j", "lv_max", "lv_total", "neg", "ed", "deck", "enh", "hs"]).map(|s| s.to_string())
-        .chain(m.hands.iter().map(|h| format!("lv:{h}"))).chain(m.hands.iter().map(|h| format!("pl:{h}"))).chain(m.keys.iter().cloned()).collect();
+    let names: Vec<String> = m.features.iter().cloned().chain(m.keys.iter().cloned()).collect();
     let diff: Vec<String> = a.iter().zip(&b).zip(&names).filter(|((x, y), _)| x != y).map(|((x, y), n)| format!("{n} rumbot {x} view {y}")).collect();
     eprintln!("VALUE_CHECK ante {} {}", g.ante, if diff.is_empty() { "identical".to_string() } else { diff.join("; ") });
 }

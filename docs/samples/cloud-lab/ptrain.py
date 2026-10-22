@@ -1,8 +1,11 @@
 """ptrain.py RESULTS.jsonl... [--out OUT.json]: does the build's measured scoring power (jevlab JEVLAB_SNAPS `power`:
 log10 best-play score on 32 hands dealt from the full deck) predict P(win) beyond the value model's features?
 5-fold CV by seed at the first shop of each ante: log loss and AUC for base (the value model's RICH + joker keys),
-power alone (+ money, jokers, hand size), and both. --out writes the power model (all games) in value_model.json's
-format with the power features first."""
+power alone (+ money, jokers, hand size), and both. --out writes the power model (power alone: the best
+held-out set at antes 6-8; all games) in value_model.json's format (value_model.rs picks its features by name).
+
+On 712 v60 games (c2k-pw): power alone AUC 0.69-0.72 at antes 6-8 vs base 0.66-0.67 (base overfits: log loss 0.62-0.72
+vs 0.55-0.63); antes 2-4 ~0.5-0.6 for every set. The median alone is worse (0.61-0.67): the spread counts."""
 import json, sys, collections, numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
@@ -47,7 +50,7 @@ for a in range(2, 9):
         line += f" | {name} ll {log_loss(y, p):.4f} AUC {roc_auc_score(y, p):.3f}"
     print(line)
 if out_path:
-    cols, keys = SETS["power+base"]
+    cols, keys = SETS["power"]
     out = {"features": cols, "keys": keys, "hands": HANDS, "power": POW, "trained_on": f"{len(set(r['seed'] for r in rows))} lab games, first shop of each ante", "models": {}}
     for a in range(2, 9):
         rs = [r for r in rows if r["ante"] == a]; y = np.array([r["won"] for r in rs])
