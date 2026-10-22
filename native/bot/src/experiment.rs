@@ -59,6 +59,7 @@
 //!   no-rollout-shop  v59's frozen-build forecast rollouts (v60: rollouts shop, simcore::rollout_shop)
 //!   rollout-shop=F  the rollouts' joker floor: they buy the priciest affordable joker while $F stays (default 10)
 //!   rollout-shop-first  rollouts take the first affordable joker in the shop (in effect random), not the priciest
+//!   rollout-free-first  rollouts buy a free (tag) joker before the priciest one
 //!   rollout-shop-nopolicy  rollouts shop but do not rebuild their play policy after buying a joker
 //!   skip-forecast=A  up to ante A, skip-or-play at a Small/Big blind is decided by a forecast from the blind select
 //!                 with the real tags (forecast::skip_forecast), not the static tag list
@@ -138,6 +139,7 @@ pub struct Exp {
     pub rollout_shop_first: bool,
     pub skip_forecast: Option<i64>,
     pub skip_forecast_add: Option<i64>,
+    pub rollout_free_first: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -195,6 +197,7 @@ pub fn get() -> &'static Exp {
               rollout_shop_first: has("rollout-shop-first"),
               skip_forecast: s.split(',').find_map(|x| x.trim().strip_prefix("skip-forecast=")?.parse().ok()),
               skip_forecast_add: s.split(',').find_map(|x| x.trim().strip_prefix("skip-forecast-add=")?.parse().ok()),
+              rollout_free_first: has("rollout-free-first"),
               rollout_shop: if has("no-rollout-shop") { None } else { Some(s.split(',').find_map(|x| x.trim().strip_prefix("rollout-shop=")?.parse().ok()).unwrap_or(10)) },
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
@@ -206,6 +209,7 @@ pub fn get() -> &'static Exp {
         simcore::EXTRA_CHIPS.store(e.extra_chips, std::sync::atomic::Ordering::Relaxed);
         simcore::ROLLOUT_SHOP.store(e.rollout_shop.is_some(), std::sync::atomic::Ordering::Relaxed);
         simcore::ROLLOUT_SHOP_FIRST.store(e.rollout_shop_first, std::sync::atomic::Ordering::Relaxed);
+        simcore::FREE_FIRST.store(e.rollout_free_first, std::sync::atomic::Ordering::Relaxed);
         if let Some(f) = e.rollout_shop {
             simcore::ROLLOUT_SHOP_FLOOR.store(f, std::sync::atomic::Ordering::Relaxed);
         }

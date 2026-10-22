@@ -360,7 +360,8 @@ measured the wrong thing or was never asked:
   blind select with the real tags, a play branch and a skip branch, the skipped blind counted as passed; rumbot's
   math.random stream must be seeded first or a pack tag panics): the forecast rates the proven tags (Rare, Polychrome,
   Negative) below playing and vetoes those skips: 24 seeds 6 vs 12 wins. Keeping the static skips and letting it add
-  others: 10 vs 12. The rollouts' crude shop undervalues a tag's free joker; the static list stays.
+  others: 10 vs 12. Rollouts buying a tag's free joker first (`rollout-free-first`) changes neither (6 vs 12, 10 vs 12):
+  the forecast just does not see what the six tags are worth. The static list stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
