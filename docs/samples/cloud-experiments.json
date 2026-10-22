@@ -1714,5 +1714,27 @@
   "wins": 956,
   "baseline_wins": 890,
   "outcome": "shipped v60"
+ },
+ {
+  "experiment": "Rollouts buy $25 floor (rollout-shop=25; v60: $10)",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 1000,
+  "delta_ante": 0.018,
+  "se": 0.043,
+  "wins": 489,
+  "baseline_wins": 490,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Rollouts buy the first affordable joker, not the priciest",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 1000,
+  "delta_ante": 0.016,
+  "se": 0.035,
+  "wins": 484,
+  "baseline_wins": 490,
+  "outcome": "probe"
  }
 ]

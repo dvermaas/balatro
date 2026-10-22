@@ -345,6 +345,9 @@ measured the wrong thing or was never asked:
   restores v59's). Lab games take ~2x as long (14 s vs 7 s); production's 4 s budget plays fewer rollouts.
   Rollouts keeping $25 before a joker (`rollout-shop=25`; v60: $10): first 1,000 seeds 489 vs 490 wins, +0.018 +-
   0.043 ante: neutral.
+  Rollouts taking the first affordable joker in the shop (in effect random; `rollout-shop-first`) instead of the
+  priciest: first 1,000 seeds 484 vs 490 wins, +0.016 +- 0.035 ante. Which joker the rollouts buy barely matters: the
+  v60 gain is money and open slots being worth something to the forecast, not a better imagined build.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
