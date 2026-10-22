@@ -351,6 +351,10 @@ measured the wrong thing or was never asked:
   A 4-boss horizon on v60 (`fc-bosses=4`): first 1,000 seeds 484 vs 490 wins, -0.029 +- 0.034 ante: neutral, as on v56.
   Spending the interest reserve late on v60 (`late-floor=9`: $16 at ante 5, $7 at 6, $0 from 7): first 800 seeds 340
   vs 393 wins (40/93, z = -4.6), +0.020 +- 0.020 ante: worse. Money held at ante 8 scores (Bull, Bootstraps).
+  Violet Vessel losses on v60 (345 of 4,000 games) end at a median 48% of the target (37 reach 80%): a 2x power gap,
+  not a finish-line slip. Boss rerolls retested on v60 (`boss-reroll=...`): the bot never buys Director's Cut or Retcon
+  (offered in 13 of 48 traced games with $8-14; `buy-vouchers` + `voucher-floor=10` still buy none: CodeJev's shop
+  answer never takes a "strong" voucher), so nothing changes; parked.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
