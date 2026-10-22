@@ -1188,6 +1188,12 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                 }
                 if ROLLOUT_SHOP.load(std::sync::atomic::Ordering::Relaxed) {
                     rollout_shop(g);
+                    // v2 (`rollout-shop-policy`): the bought jokers steer the plays too
+                    if !strict && rebuild.is_some() && g.jokers.iter().map(|j| j.borrow().uid).collect::<Vec<u64>>() != pol_uids {
+                        pol = (rebuild.as_mut().unwrap())(g);
+                        pol_uids = g.jokers.iter().map(|j| j.borrow().uid).collect();
+                        pol_names = joker_names(g);
+                    }
                 }
                 act(g, ActionType::LeaveShop);
             }

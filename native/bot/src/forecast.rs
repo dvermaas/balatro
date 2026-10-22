@@ -116,6 +116,8 @@ pub fn forecast_clock(
         ents.push(Ent { key, opt: o, pol, base, error, order, ojs });
     }
     let mut runs: Vec<Vec<Value>> = vec![Vec::new(); ents.len()];
+    let shop_policy = crate::experiment::get().rollout_shop_policy;
+    let pols: std::cell::RefCell<std::collections::HashMap<Vec<String>, Policy>> = Default::default();
     let mut k = 0usize;
     while k < n {
         let step_n = if budget.is_some() { 8.min(n - k) } else { n - k };
@@ -142,7 +144,21 @@ pub fn forecast_clock(
                 if i == 0 && ei == 0 && std::env::var_os("VALUE_CHECK").is_some() {
                     crate::value_model::check(pub_, &g);
                 }
-                let rows = crate::prof::time("f.play_horizon", || play_horizon(&mut g, &e.pol, bosses_u, 600)).expect("rollout");
+                let rows = if shop_policy {
+                    // lab (`rollout-shop-policy`): rebuild the play policy when a rollout buys a joker (cached per lineup)
+                    let mut rebuild = |gm: &rumbot_sim::game::GameState| -> Policy {
+                        let sig: Vec<String> = gm.jokers.iter().map(|j| format!("{}|{:?}", j.borrow().spec.name, j.borrow().edition)).collect();
+                        if let Some(p) = pols.borrow().get(&sig) {
+                            return p.clone();
+                        }
+                        let p = crate::forecast_items::policy_of_game(gm.deep_clone()).1;
+                        pols.borrow_mut().insert(sig, p.clone());
+                        p
+                    };
+                    crate::prof::time("f.play_horizon", || simcore::play_horizon_rebuild(&mut g, &e.pol, bosses_u, 600, None, None, Some(&mut rebuild))).expect("rollout")
+                } else {
+                    crate::prof::time("f.play_horizon", || play_horizon(&mut g, &e.pol, bosses_u, 600)).expect("rollout")
+                };
                 let mut rj: Vec<Value> = rows.iter().map(row_json).collect();
                 tail_value(&mut rj, &g);
                 runs[ei].push(Value::Array(rj));

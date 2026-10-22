@@ -231,7 +231,7 @@ pub fn items_desc(suit: Option<&str>) -> simcore::ItemsDesc {
 }
 
 /// rollout.Policy(_area_cards(gs, "jokers")) on the engine's view of the jokers.
-fn policy_of_game(g: GameState) -> (GameState, simcore::Policy) {
+pub(crate) fn policy_of_game(g: GameState) -> (GameState, simcore::Policy) {
     let mut eng = RumbotGame::new();
     eng.g = Some(g);
     let st = eng.state().expect("state");
