@@ -382,6 +382,9 @@ measured the wrong thing or was never asked:
   -0.37, ante 5 -0.40 / -0.46 / -0.53 / -0.62, ante 7 -0.56 / -0.66 / -0.74, ante 8 -0.61 / -0.73. Winners and the ante-8
   losers build the same power through ante 4; the gap opens at antes 5-8, and every group falls behind the targets
   each ante (4 hands of p75 cover 10^0.6). The runs split on late scaling, not on the early build.
+  So a late-game shop rule: the power bonus only from ante 5, doubled (`power-bonus=2,power-bonus-ante=5`): 280 vs 280
+  wins (37/37), -0.008 +- 0.020 ante, 88 games changed (swaps and Celestial packs both ways). From ante 5 the 3-boss
+  rollouts reach the end of the run and already score what power measures; the measure adds nothing they miss.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

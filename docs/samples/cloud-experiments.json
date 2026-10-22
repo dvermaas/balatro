@@ -1802,5 +1802,16 @@
   "wins": 271,
   "baseline_wins": 280,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Late-game shop rule: forecast options + 2 blinds per 10x measured power, ante 5+",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 600,
+  "delta_ante": -0.008,
+  "se": 0.02,
+  "wins": 280,
+  "baseline_wins": 280,
+  "outcome": "neutral"
  }
 ]
