@@ -778,5 +778,20 @@
   "died_ante_1_4": 113,
   "died_ante_5_7": 574,
   "died_ante_8": 423
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v59",
+  "version_id": "rust",
+  "change": "Real-game sync fixes (rumbot): Crimson Heart, tag-free joker cost",
+  "games": 2000,
+  "mean_ante": 7.262,
+  "se": 0.032,
+  "wins": 914,
+  "win_rate": 0.457,
+  "mean_round": 19.64,
+  "died_ante_1_4": 98,
+  "died_ante_5_7": 570,
+  "died_ante_8": 418
  }
 ]
