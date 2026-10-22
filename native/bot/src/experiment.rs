@@ -99,6 +99,8 @@ pub struct Exp {
     /// `power-bonus=W`: each forecast option scores + W x (log10 p75 power of its state - the skip option's), in blinds
     /// (value_model::power_log on the option applied, before any rollout; ~1 blind per 10x power mid-game by the power model)
     pub power_bonus: f64,
+    /// `power-bonus-ante=A`: the power bonus only from ante A (default every ante)
+    pub power_bonus_ante: i64,
     pub free_discard: bool,
     pub money_tail: f64,
     pub eye_plan: bool,
@@ -159,7 +161,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,

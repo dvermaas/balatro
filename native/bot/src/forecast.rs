@@ -117,7 +117,8 @@ pub fn forecast_clock(
     }
     // lab (`power-bonus=W`): the option's own scoring power, before any rollout, vs the skip option's
     let pb = crate::experiment::get().power_bonus;
-    let bonus: Vec<f64> = if pb > 0.0 {
+    let late = gs::num(gs::get(pub_, "ante_num")) as i64 >= crate::experiment::get().power_bonus_ante;
+    let bonus: Vec<f64> = if pb > 0.0 && late {
         let p75 = |e: &Ent| -> Option<f64> {
             let g = match &e.base {
                 Some(b) => b.deep_clone(),
