@@ -268,6 +268,13 @@ pub struct JokerInstance {
     /// row, and back by `Blind:defeat` and `Blind:disable`. The rules do not
     /// read it; it is what a player could not see -- which joker sits where.
     pub face_down: bool,
+    /// Card.cost is 0: bought couponed (an edition tag, the Coupon Tag or a
+    /// tag's free joker), and set_cost has not run on it since. set_cost zeroes
+    /// a couponed card's cost only while it sits in the shop (card.lua:503), so
+    /// anything that reprices the joker gives it back its price -- an edition,
+    /// Gift Card, Egg, Astronomer coming or going, Clearance Sale, Liquidation.
+    /// The sell value is priced from the full cost either way.
+    pub cost_zeroed: bool,
 }
 
 impl JokerInstance {
@@ -287,6 +294,7 @@ impl JokerInstance {
             extra_sell_value: 0.0,
             named_hand: None,
             face_down: false,
+            cost_zeroed: false,
         }
     }
 

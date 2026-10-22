@@ -36,6 +36,20 @@ Local changes to this copy are listed here, newest last:
   `Tarot_Planet` pool (interleaved by `order`) + `random_consumables_set`; The Fool with nothing to copy draws from it
   (Jackdaw patch). GameState flags `fool_always_usable`, `pack_ignores_played` (default false) mirror Jackdaw's pack
   path in item forecasts.
+- Crimson Heart deals nothing for a hand size it gives back (game.rs `_drawn_to_hand`, game_jokers.rs
+  `_hand_size_changed`, new `GameState.in_drawn_to_hand`): letting go of a Juggler raised the limit and rumbot dealt
+  a card at once; the game deals nothing and the hand fills at the next draw. game.lua:3418-3423 (lovely dump) sets
+  `old_slots`, then SELECTING_HAND, then calls `drawn_to_hand`; SMODS' `CardArea:change_size` deals only when
+  `old_slots > total_slots` (cardarea.lua:116). The same holds for a hand size the pick takes (a disabled Stuntman's
+  -2 coming back is assumed, not seen). Found by the real-game check of 2026-10-22 (G6MTPMNN state 101: game 8 cards
+  under a limit of 9, rumbot 9; docs/samples/real-sync/2026-10-22.md).
+- A joker bought couponed reports cost 0 (new `JokerInstance.cost_zeroed`, set in game.rs `_buy`; read by the bot's
+  engine/view.rs): `Card:set_cost` zeroes a couponed card's cost only in the shop (card.lua:503), and nothing reprices
+  it on purchase, so the owned joker shows 0 (the sell value is from the full cost, as before). Cleared where the
+  game runs set_cost on it again: an edition (set_edition, card.lua:605: Wheel of Fortune, Ectoplasm, Hex), Gift
+  Card (card.lua:3395), Egg (3388), Astronomer arriving or leaving (800-806, 860-866), Clearance Sale or Liquidation
+  (2264-2267). A held consumable bought under the Coupon Tag still reports its price (not changed). Found by the same
+  check (7 of 8 seeds; e.g. RZSTXX2S Onyx Agate from a Negative Tag: game buy 0 / sell 6, rumbot 12 / 6).
 
 ## fc-items3: forecast-only Jackdaw mirror
 `GameState.jackdaw_card_pay_unseen` (default false; set only by the Rust items forecast when Python would have fallen back to Jackdaw): Bootstraps and Bull

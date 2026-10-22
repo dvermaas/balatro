@@ -289,6 +289,10 @@ impl GameState {
         if joker.borrow().debuffed {
             return;
         }
+        if joker.borrow().spec.name == "Astronomer" {
+            // add_to_deck and remove_from_deck run set_cost on every card (card.lua:800-806, 860-866).
+            self.reprice_jokers();
+        }
         let rerolls = joker.borrow().spec.free_rerolls;
         if rerolls != 0 {
             if let Some(shop) = self.shop.as_mut() {
@@ -368,8 +372,15 @@ impl GameState {
     /// change_size event has run (see playing_tarot): on the engine a Hex
     /// that destroys a Stuntman and a Judgement that makes a Juggler both
     /// raise the limit and deal nothing.
+    ///
+    /// Not from Blind:drawn_to_hand either (`in_drawn_to_hand`): Crimson Heart
+    /// letting go of a Juggler raises the limit and deals nothing; the hand
+    /// fills at the next draw. game.lua:3418-3423 sets old_slots and then
+    /// SELECTING_HAND before drawn_to_hand, and SMODS' change_size deals only
+    /// when old_slots > total_slots (cardarea.lua:116). G6MTPMNN, real game
+    /// 2026-10-22: 8 cards under a limit of 9, the simulator 9.
     pub fn _hand_size_changed(&mut self, delta: i32) {
-        if delta <= 0 || self.playing_tarot {
+        if delta <= 0 || self.playing_tarot || self.in_drawn_to_hand {
             return;
         }
         if self.phase != Phase::Playing || self.hand.is_empty() {
@@ -381,6 +392,13 @@ impl GameState {
             return;
         }
         self._draw_cards(delta);
+    }
+
+    /// set_cost on every joker held: each one bought couponed gets its price back.
+    pub fn reprice_jokers(&mut self) {
+        for j in &self.jokers {
+            j.borrow_mut().cost_zeroed = false;
+        }
     }
 
     /// Card:set_debuff on a joker (card.lua:526-538).
@@ -454,6 +472,8 @@ impl GameState {
                 named_hand: j.named_hand,
                 // A new card, made face up.
                 face_down: false,
+                // copy_card's set_cost runs before the copy is in an area.
+                cost_zeroed: false,
             }
         };
         let clone = crate::jokers::make_ref(clone);

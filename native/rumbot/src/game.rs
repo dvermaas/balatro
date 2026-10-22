@@ -528,6 +528,9 @@ pub struct GameState {
     /// queued behind it, so a hand size a Hex or a Judgement raises is not dealt
     /// into. See `hand_size_changed`.
     pub playing_tarot: bool,
+    /// True while Blind:drawn_to_hand runs (Crimson Heart's release and pick).
+    /// A hand size it gives back is not dealt into. See `hand_size_changed`.
+    pub in_drawn_to_hand: bool,
     /// The setting_blind pass while it runs: the events its jokers queue for
     /// after it, and the jokers Madness and Ceremonial Dagger have marked
     /// getting_sliced. None outside the pass, when there is nothing to wait for.
@@ -759,6 +762,7 @@ impl GameState {
             using_from_pack: false,
             using_key: String::new(),
             playing_tarot: false,
+            in_drawn_to_hand: false,
             blind_select_events: None,
             getting_sliced: Vec::new(),
             crimson_chosen: None,
@@ -1826,6 +1830,9 @@ impl GameState {
             // vanilla's. The joker it held is let go (only that one: a perishable stays debuffed);
             // the pick is over the jokers not debuffed, leaving out the one it held unless nothing
             // else is left.
+            // jev fork: a hand size it gives back (releasing a Juggler) or takes is not dealt for:
+            // the game deals nothing until the next draw (G6MTPMNN, real game 2026-10-22).
+            self.in_drawn_to_hand = true;
             let prev = self.crimson_chosen.take();
             if let Some(uid) = prev {
                 if let Some(j) = self.jokers.iter().find(|j| j.borrow().uid == uid).cloned() {
@@ -1843,6 +1850,7 @@ impl GameState {
                 self.crimson_chosen = Some(chosen.borrow().uid);
                 self.set_joker_debuff(&chosen, true);
             }
+            self.in_drawn_to_hand = false;
         }
         if let Some(blind) = &mut self.blind {
             blind.prepped = false;
@@ -3494,6 +3502,10 @@ impl GameState {
 
     /// What redeeming does beyond the fields read off `self.vouchers`.
     pub fn _redeem_voucher(&mut self, voucher: crate::shop::Voucher) {
+        if voucher.discount_percent != 0 {
+            // Clearance Sale and Liquidation run set_cost on every card (card.lua:2264-2267).
+            self.reprice_jokers();
+        }
         if voucher.shop_slots != 0 && self.shop.is_some() {
             // change_shop_size fills *every* empty slot, not just the one it
             // added.
@@ -3727,6 +3739,8 @@ impl GameState {
         let price = self.slot_price(&slot);
         self.add_money(-price, &format!("bought {}", label));
         if let Some(joker) = slot.joker {
+            // Before gain_joker: an Astronomer bought couponed reprices itself on arrival.
+            joker.borrow_mut().cost_zeroed = slot.couponed;
             self.gain_joker(&joker);
         } else if let Some(spec) = slot.consumable {
             let held = self.hold_consumable(spec, Edition::None);
@@ -4350,6 +4364,7 @@ fn clone_joker_instance(inst: &crate::jokers::JokerInstance) -> crate::jokers::J
     copy.extra_sell_value = inst.extra_sell_value;
     copy.named_hand = inst.named_hand;
     copy.face_down = inst.face_down;
+    copy.cost_zeroed = inst.cost_zeroed;
     copy
 }
 

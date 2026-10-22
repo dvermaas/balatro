@@ -779,6 +779,7 @@ fn the_wheel_of_fortune(game: &mut GameState, _cards: &[CardRef]) {
         crate::shop_pool::poll_edition(&mut game.rng, "wheel_of_fortune", 1.0, true, 1.0, true);
     let edition = edition_from_name(name);
     joker.borrow_mut().edition = edition;
+    joker.borrow_mut().cost_zeroed = false; // set_edition ends in set_cost (card.lua:605)
     glog!(game, 
         "Wheel of Fortune: {} is now {}",
         joker.borrow().name(),
@@ -840,6 +841,7 @@ fn ectoplasm(game: &mut GameState, _cards: &[CardRef]) {
     }
     let joker = game.rng.choice("ectoplasm", &plain);
     joker.borrow_mut().edition = Edition::Negative;
+    joker.borrow_mut().cost_zeroed = false; // set_edition ends in set_cost (card.lua:605)
     game.base_hand_size -= game.ecto_minus;
     game.ecto_minus += 1;
 }
@@ -975,6 +977,7 @@ fn hex(game: &mut GameState, _cards: &[CardRef]) {
     }
     let chosen = game.rng.choice("hex", &plain);
     chosen.borrow_mut().edition = Edition::Polychrome;
+    chosen.borrow_mut().cost_zeroed = false; // set_edition ends in set_cost (card.lua:605)
     let row = game.jokers.clone();
     for joker in row {
         if !Rc::ptr_eq(&joker, &chosen) {

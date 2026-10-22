@@ -179,7 +179,14 @@ fn joker_json_t(g: &GameState, j: &JokerRef, in_jokers: bool, text: bool) -> Val
     if jb.rental {
         m.insert("rental".into(), json!(true));
     }
-    let buy = if jb.rental { 1 } else { g.card_cost(jb.spec.cost, jb.edition) };
+    // bought couponed: cost 0 until something reprices it (rumbot JokerInstance::cost_zeroed)
+    let buy = if jb.cost_zeroed {
+        0
+    } else if jb.rental {
+        1
+    } else {
+        g.card_cost(jb.spec.cost, jb.edition)
+    };
     let (debuff, hidden, uid) = (jb.debuffed, jb.face_down, jb.uid);
     drop(jb);
     let sell = g.sell_value(j);

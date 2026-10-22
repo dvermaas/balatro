@@ -83,6 +83,7 @@ impl Memo {
             extra_sell_value: j.extra_sell_value,
             named_hand: j.named_hand,
             face_down: j.face_down,
+            cost_zeroed: j.cost_zeroed,
         }));
         drop(j);
         self.jokers.insert(key, new.clone());
@@ -180,6 +181,7 @@ impl GameState {
             using_from_pack: self.using_from_pack,
             using_key: self.using_key.clone(),
             playing_tarot: self.playing_tarot,
+            in_drawn_to_hand: self.in_drawn_to_hand,
             blind_select_events: self.blind_select_events.clone(),
             getting_sliced: self.getting_sliced.clone(),
             crimson_chosen: self.crimson_chosen,

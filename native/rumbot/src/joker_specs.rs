@@ -1449,6 +1449,7 @@ fn satellite_money(j: &JokerRef, game: &mut GameState) {
 
 fn egg_end(j: &JokerRef, _game: &mut GameState) {
     j.borrow_mut().extra_sell_value += 3.0;
+    j.borrow_mut().cost_zeroed = false; // set_cost (card.lua:3388)
 }
 
 /// `_gift_card`: a dollar on every joker and every consumable held
@@ -1459,6 +1460,7 @@ fn egg_end(j: &JokerRef, _game: &mut GameState) {
 fn gift_card(_j: &JokerRef, game: &mut GameState) {
     for other in game.jokers.clone() {
         other.borrow_mut().extra_sell_value += 1.0;
+        other.borrow_mut().cost_zeroed = false; // set_cost (card.lua:3395)
     }
     for held in game.consumables.clone() {
         held.borrow_mut().extra_sell_value += 1;

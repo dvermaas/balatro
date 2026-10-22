@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v59 (sim only): two rumbot fixes from the real-game check of 2026-10-22. Crimson Heart letting go of a Juggler ",
+    "no longer deals a card at once (the game fills the hand at the next draw; G6MTPMNN split there), and a joker ",
+    "bought couponed (tag-free) shows cost 0 once owned, as in the game. New sim baseline. Based on: ",
     "v58: the scorer counts what jokers gain or lose before the hand scores, as the game does: Obelisk gains X0.2 or ",
     "resets to X1 when the hand (counted with this play) is the most played, Green Joker gains +1, Ride the Bus gains ",
     "+1 or resets when a face card scores; a rightmost Blueprint copies nothing. Plays estimated exactly: 73% -> 86%. ",
