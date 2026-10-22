@@ -1681,5 +1681,16 @@
   "wins": 475,
   "baseline_wins": 471,
   "outcome": "promising"
+ },
+ {
+  "experiment": "Forecast rollouts shop, full second set (rollout-shop)",
+  "theme": "Forecast",
+  "baseline": "v59",
+  "games": 2000,
+  "delta_ante": 0.049,
+  "se": 0.032,
+  "wins": 955,
+  "baseline_wins": 914,
+  "outcome": "promising"
  }
 ]
