@@ -152,7 +152,11 @@ fn play(seed: &str) -> Result<Value, String> {
         if want_snaps {
             if let Some(g) = bot.last_state.as_ref().filter(|g| g["state"] == "SHOP") {
                 if snapped.insert(g["round_num"].to_string()) {
-                    snaps.push(snap(g));
+                    let mut s = snap(g);
+                    if let Some(p) = jevbot::value_model::power_of_view(g) {
+                        s["power"] = json!(p.iter().map(|x| (x * 1000.0).round() / 1000.0).collect::<Vec<f64>>());
+                    }
+                    snaps.push(s);
                 }
             }
         }

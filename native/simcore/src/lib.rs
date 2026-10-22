@@ -581,6 +581,51 @@ impl Policy {
     }
 }
 
+/// The build's scoring power: the best play's score on `samples` hands dealt from the full deck (sorted), as at a
+/// fresh round's first hand (4 hands, 3 discards, nothing played yet). Its own RNG, so the game is untouched.
+pub fn power(g: &GameState, pol: &Policy, samples: usize, seed: u64) -> Vec<f64> {
+    let levels = (0..HAND_NAMES.len())
+        .map(|i| {
+            let (chips, mult) = g.hand_levels.values(hand_type(i));
+            (chips as f64, mult as f64, g.hand_levels.played(hand_type(i)) as f64, false)
+        })
+        .collect();
+    let scorer = kernel::Scorer::new(levels, pol.jokers.clone(), 4.0, 3.0).expect("12 levels");
+    let deck: Vec<kernel::Card> = g.full_deck.iter().map(info).collect();
+    let n = (g.hand_size().max(1) as usize).min(deck.len());
+    let mut s = seed ^ 0x9E37_79B9_7F4A_7C15;
+    let mut next = || {
+        s = s.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut z = s;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        z ^ (z >> 31)
+    };
+    let mut out: Vec<f64> = (0..samples)
+        .map(|_| {
+            let mut idx: Vec<usize> = (0..deck.len()).collect();
+            for i in 0..n {
+                let j = i + (next() % (deck.len() - i) as u64) as usize;
+                idx.swap(i, j);
+            }
+            let mut infos: Vec<kernel::Card> = idx[..n].iter().map(|&p| deck[p]).collect();
+            for c in infos.iter_mut() {
+                c.debuff = false;
+            }
+            candidates(&infos)
+                .into_iter()
+                .map(|combo| {
+                    let cs: Vec<kernel::Card> = combo.iter().map(|&p| infos[p]).collect();
+                    let (name, sc) = kernel::classify(&cs);
+                    scorer.score(&infos, &combo, name, &sc)
+                })
+                .fold(0.0, f64::max)
+        })
+        .collect();
+    out.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    out
+}
+
 // ---------------------------------------------------------------------------
 // Lab (`JEVLAB_EXP=free-discard`, set by jevbot): spend discards the play does not need when a held joker
 // pays for them. Off unless FREE_DISCARD is set; the bot (decisions/play.rs) and the forecast's rollouts

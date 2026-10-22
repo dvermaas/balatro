@@ -22,6 +22,8 @@ struct AnteModel {
 }
 
 struct Model {
+    /// a power model (ptrain.py): these power features come first
+    power: Vec<String>,
     keys: Vec<String>,
     hands: Vec<String>,
     n_base: usize,
@@ -42,7 +44,8 @@ fn model() -> &'static Model {
         let by_ante = v["models"].as_object().unwrap().iter().map(|(a, m)| {
             (a.parse().unwrap(), AnteModel { mean: fl(&m["mean"]), scale: fl(&m["scale"]), coef: fl(&m["coef"]), intercept: m["intercept"].as_f64().unwrap() })
         }).collect();
-        Model { keys: strs("keys"), hands: strs("hands"), n_base: strs("features").len(), by_ante }
+        let power = if v["power"].is_array() { strs("power") } else { vec![] };
+        Model { power, keys: strs("keys"), hands: strs("hands"), n_base: strs("features").len(), by_ante }
     })
 }
 
@@ -55,7 +58,8 @@ pub fn features(g: &GameState) -> Vec<f64> {
     let pl = |h: &str| simcore::hand_of(h).map_or(0, |t| g.hand_levels.played(t)) as f64;
     let levels: Vec<f64> = ALL_HANDS.iter().map(|h| lv(h)).collect();
     let eds: Vec<Edition> = g.jokers.iter().map(|j| j.borrow().edition).collect();
-    let mut x = vec![
+    let mut x: Vec<f64> = if m.power.is_empty() { vec![] } else { power_feats(&power_log(g, POWER_SAMPLES)).to_vec() };
+    x.extend([
         (g.money as f64).min(200.0),
         g.jokers.len() as f64,
         levels.iter().cloned().fold(1.0, f64::max),
@@ -65,7 +69,7 @@ pub fn features(g: &GameState) -> Vec<f64> {
         g.full_deck.len() as f64,
         g.full_deck.iter().filter(|c| c.borrow().enhancement != Enhancement::None).count() as f64,
         g.hand_size() as f64,
-    ];
+    ]);
     x.extend(m.hands.iter().map(|h| lv(h)));
     x.extend(m.hands.iter().map(|h| pl(h)));
     debug_assert_eq!(x.len(), m.n_base);
@@ -85,7 +89,8 @@ pub fn features_from_view(gs_: &Value) -> Vec<f64> {
     let levels: Vec<f64> = hands.values().map(|v| v["level"].as_f64().unwrap_or(1.0)).collect();
     let js = cards("jokers");
     let ed = |c: &Value| c["modifier"]["edition"].as_str().map(String::from);
-    let mut x = vec![
+    let mut x: Vec<f64> = if m.power.is_empty() { vec![] } else { power_of_view(gs_).map_or(vec![0.0; 4], |p| power_feats(&p).to_vec()) };
+    x.extend([
         gs_["money"].as_f64().unwrap_or(0.0).min(200.0),
         js.len() as f64,
         levels.iter().cloned().fold(1.0, f64::max),
@@ -95,7 +100,7 @@ pub fn features_from_view(gs_: &Value) -> Vec<f64> {
         deck.len() as f64,
         deck.iter().filter(|c| c["modifier"]["enhancement"].as_str().is_some_and(|e| !e.is_empty())).count() as f64,
         gs_["hand"]["limit"].as_f64().filter(|h| *h != 0.0).unwrap_or(8.0),
-    ];
+    ]);
     x.extend(m.hands.iter().map(|h| lv(h)));
     x.extend(m.hands.iter().map(|h| pl(h)));
     let owned: Vec<&str> = js.iter().map(|c| c["key"].as_str().unwrap_or("")).collect();
@@ -124,8 +129,31 @@ pub fn tail(g: &GameState, last_cleared: bool) -> f64 {
 pub fn check(pub_: &Value, g: &GameState) {
     let (a, b) = (features(g), features_from_view(pub_));
     let m = model();
-    let names: Vec<String> = ["money", "n_j", "lv_max", "lv_total", "neg", "ed", "deck", "enh", "hs"].iter().map(|s| s.to_string())
+    let names: Vec<String> = m.power.iter().map(|s| s.as_str()).chain(["money", "n_j", "lv_max", "lv_total", "neg", "ed", "deck", "enh", "hs"]).map(|s| s.to_string())
         .chain(m.hands.iter().map(|h| format!("lv:{h}"))).chain(m.hands.iter().map(|h| format!("pl:{h}"))).chain(m.keys.iter().cloned()).collect();
     let diff: Vec<String> = a.iter().zip(&b).zip(&names).filter(|((x, y), _)| x != y).map(|((x, y), n)| format!("{n} rumbot {x} view {y}")).collect();
     eprintln!("VALUE_CHECK ante {} {}", g.ante, if diff.is_empty() { "identical".to_string() } else { diff.join("; ") });
+}
+
+/// The build's scoring power at a shop state (jevlab `JEVLAB_SNAPS`): log10 of the best play's score on 32 hands dealt
+/// from the full deck (simcore::power), sorted. None if the view does not build.
+pub fn power_of_view(pub_: &Value) -> Option<Vec<f64>> {
+    let d = crate::forecast_state::state_json_from_pub(pub_).ok()?;
+    let g = crate::forecast_apply::game_of(d, None, "power").ok()?;
+    Some(power_log(&g, POWER_SAMPLES))
+}
+
+/// Hands dealt per power measure (the training snapshots used 32).
+const POWER_SAMPLES: usize = 32;
+
+/// log10 of simcore::power, the policy built from the held jokers' cards only (the same policy as the full view's).
+pub fn power_log(g: &GameState, samples: usize) -> Vec<f64> {
+    let pol = crate::forecast::policy_of(&crate::engine::view::jokers_json(g));
+    simcore::power(g, &pol, samples, 1).iter().map(|s| s.max(1.0).log10()).collect()
+}
+
+/// The power model's inputs from a sorted power sample: p25, median, p75, mean (ptrain.py's POW).
+fn power_feats(p: &[f64]) -> [f64; 4] {
+    let n = p.len();
+    [p[n / 4], p[n / 2], p[3 * n / 4], p.iter().sum::<f64>() / n as f64]
 }

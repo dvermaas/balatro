@@ -152,6 +152,11 @@ fn effect_value(text: String) -> Map<String, Value> {
     value
 }
 
+/// The held jokers as the view's `jokers` cards (for a policy without serializing the whole view).
+pub fn jokers_json(g: &GameState) -> Vec<Value> {
+    g.jokers.iter().map(|j| joker_json(g, j, true)).collect()
+}
+
 fn joker_json(g: &GameState, j: &JokerRef, in_jokers: bool) -> Value {
     joker_json_t(g, j, in_jokers, true)
 }

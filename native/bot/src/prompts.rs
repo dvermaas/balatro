@@ -87,6 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v60 + lab tooling (plays unchanged): simcore::power measures a build's scoring power (best play on 32 hands dealt ",
+    "from the full deck); jevlab JEVLAB_SNAPS logs it per shop, and a value model file with power features ",
+    "(VALUE_MODEL=<file>, docs/samples/cloud-lab/ptrain.py) uses it in the forecast's tail. Based on: ",
     "v60 (lab measured; production forecasts are slower): forecast rollouts shop instead of keeping the build frozen: ",
     "after each round they buy the priciest joker affordable with $10 left while a slot is free, then the most played ",
     "hand's planet while $4 stays, and the shop forecast rebuilds their play policy after a buy. Money and open joker ",
