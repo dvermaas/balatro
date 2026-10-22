@@ -356,6 +356,11 @@ measured the wrong thing or was never asked:
   (offered in 13 of 48 traced games with $8-14; `buy-vouchers` + `voucher-floor=10` still buy none: CodeJev's shop
   answer never takes a "strong" voucher), so nothing changes; parked.
   Up to 4 rerolls a shop on v60 (`max-rerolls=4`; 2): first 800 seeds 382 vs 393 wins, +0.005 +- 0.013 ante: neutral.
+- **Skip decisions by forecast** (`skip-forecast=A`, `skip-forecast-add=A`; forecast::skip_forecast: rollouts from the
+  blind select with the real tags, a play branch and a skip branch, the skipped blind counted as passed; rumbot's
+  math.random stream must be seeded first or a pack tag panics): the forecast rates the proven tags (Rare, Polychrome,
+  Negative) below playing and vetoes those skips: 24 seeds 6 vs 12 wins. Keeping the static skips and letting it add
+  others: 10 vs 12. The rollouts' crude shop undervalues a tag's free joker; the static list stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

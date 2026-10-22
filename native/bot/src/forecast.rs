@@ -205,3 +205,63 @@ fn reorder(g: &mut rumbot_sim::game::GameState, order: Option<&[usize]>, ojs: &[
     }
     g.jokers = order.iter().map(|&i| g.jokers[i].clone()).collect();
 }
+
+/// Lab (`skip-forecast`): skip this Small/Big blind for its tag, or play it? From a BLIND_SELECT state: the
+/// rollouts start at this blind select with the game's real tags, one branch plays the blind, the other skips it
+/// (the skipped blind counted as passed), both over the same seeds; returns (skip - play, paired SE) in blinds
+/// (forecast_stats::m_blinds, value tail included). Shopping rollouts (v60) let a tag's free joker count.
+pub fn skip_forecast(pub_: &Value, n: usize, bosses: i64) -> Option<(f64, f64)> {
+    use rumbot_sim::game::{Action, ActionType};
+    let desc = crate::forecast_state::state_json_from_pub(pub_).ok()?;
+    let all = options(pub_);
+    let noop = all.iter().find(|o| gs::s(gs::get(o, "key")) == "skip")?;
+    let pol = policy_of(&option_jokers(pub_, noop));
+    let (d, pl) = apply_option_json_on(desc, pub_, noop, &seed(0)).ok()?;
+    let base = game_of(d, pl, &seed(0)).ok()?;
+    let blinds = gs::get(pub_, "blinds");
+    let tag_of = |k: &str| -> (String, String) {
+        let name = gs::s(gs::get(gs::get(blinds, k), "tag_name")).to_string();
+        let key = rumbot_sim::tag_data::TAG_DATA.iter().find(|t| t.name == name).map_or(String::new(), |t| t.key.to_string());
+        (name, key)
+    };
+    let (small, big) = (tag_of("small"), tag_of("big"));
+    let pols: std::cell::RefCell<std::collections::HashMap<Vec<String>, Policy>> = Default::default();
+    let mut rebuild = |gm: &rumbot_sim::game::GameState| -> Policy {
+        let sig: Vec<String> = gm.jokers.iter().map(|j| format!("{}|{:?}", j.borrow().spec.name, j.borrow().edition)).collect();
+        if let Some(p) = pols.borrow().get(&sig) {
+            return p.clone();
+        }
+        let p = crate::forecast_items::policy_of_game(gm.deep_clone()).1;
+        pols.borrow_mut().insert(sig, p.clone());
+        p
+    };
+    let (mut play, mut skip): (Vec<Vec<Value>>, Vec<Vec<Value>>) = (Vec::new(), Vec::new());
+    for i in 0..n {
+        for skipping in [false, true] {
+            let sd = seed(i);
+            let mut g = base.deep_clone();
+            g.rng = rumbot_sim::rng::RunRng::new(sd.clone());
+            g.rng.seeded("skip_forecast"); // a tag that opens a pack draws math.random before anything else seeds it
+            g.seed = sd;
+            g.step(&Action::new(ActionType::LeaveShop));
+            g.ante_tags = vec![small.0.clone(), big.0.clone()];
+            g.ante_tag_keys = vec![small.1.clone(), big.1.clone()];
+            let mut lead: Vec<Value> = Vec::new();
+            if skipping {
+                let a = Action::new(ActionType::SkipBlind);
+                if !g.is_legal(&a) {
+                    return None;
+                }
+                let typ = if g.blind_index == 0 { "Small" } else { "Big" };
+                lead.push(json!({"ante": g.ante, "type": typ, "boss": Value::Null, "target": 0, "chips": 0, "cleared": true}));
+                g.step(&a);
+            }
+            let rows = simcore::play_horizon_rebuild(&mut g, &pol, bosses as usize, 600, None, None, Some(&mut rebuild)).ok()?;
+            let mut rj: Vec<Value> = lead;
+            rj.extend(rows.iter().map(row_json));
+            tail_value(&mut rj, &g);
+            if skipping { skip.push(rj) } else { play.push(rj) }
+        }
+    }
+    Some(crate::forecast_stats::paired(&skip, &play, crate::forecast_stats::m_blinds))
+}

@@ -301,6 +301,21 @@ pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let listed = if e.skip_tags.is_empty() { SKIP_TAGS.contains(&tag.as_str()) } else { e.skip_tags.contains(&tag) };
     // v46: never skip a Big blind with no joker: after a skipped Small blind that would reach the boss without a shop
     let no_joker = cards_of(gs_, "jokers").is_empty() && gs::get(&b, "type").as_str() == Some("BIG");
+    let static_skip = listed && ante <= e.skip_max.unwrap_or(SKIP_ANTE) && ante >= e.skip_min && !no_joker;
+    // lab (`skip-forecast-add=A`): keep the static skips; the forecast may add skips for other tags up to ante A
+    let fc_add = e.skip_forecast_add.is_some_and(|m| !static_skip && ante <= m && ante >= e.skip_min && !no_joker && !tag.is_empty());
+    if fc_add || e.skip_forecast.is_some_and(|m| ante <= m && ante >= e.skip_min && !no_joker && !tag.is_empty()) {
+        // lab (`skip-forecast=A`): up to ante A, the forecast decides skip vs play for any tag (rollouts from this
+        // blind select with the real tags); the static list decides if the forecast fails
+        if let Some((d, se)) = crate::forecast::skip_forecast(gs_, bot.dec.forecast_n as usize, bot.dec.forecast_bosses) {
+            let skip = d > SURE_SE as f64 * se.max(1e-9);
+            bot.emit("auto", json!({"question": "blind", "choice": if skip { "skip" } else { "play" },
+                "desc": if skip { format!("skip for {tag}") } else { format!("play, not skip for {tag}") },
+                "reason": format!("skip forecast: skip - play = {} blinds (SE {})", pycompat::fixed(d, 2), pycompat::fixed(se, 2))}));
+            bot.act(if skip { "skip" } else { "select" }, None)?;
+            return Ok(());
+        }
+    }
     if listed && ante <= e.skip_max.unwrap_or(SKIP_ANTE) && ante >= e.skip_min && !no_joker {
         bot.emit("auto", json!({"question": "blind", "choice": "skip", "desc": format!("skip for {tag}"),
             "reason": "a skip for this tag early wins more runs than the blind's cash-out and shop (lab: 428 vs 359 wins)"}));
