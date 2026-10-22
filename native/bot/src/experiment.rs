@@ -56,6 +56,8 @@
 //!   splash        with Splash held, the scorer counts every played card (it scored only the poker hand's cards)
 //!   baseball-fix  Baseball Card's X1.5 applies at each Uncommon joker's place, after its effect (was all at once)
 //!   pack-forecast  a pack's jokers go through the shop forecast (as $0 shop jokers) instead of the Picker's gain
+//!   rollout-shop[=F]  forecast rollouts shop: the priciest affordable joker while a slot is free and $F stays
+//!                 (default 10), then the top hand's planet (simcore::rollout_shop); they never shopped
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -126,6 +128,7 @@ pub struct Exp {
     pub splash: bool,
     pub baseball_fix: bool,
     pub pack_forecast: bool,
+    pub rollout_shop: Option<i32>,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
     pub voucher_floor: Option<i64>,
@@ -177,6 +180,7 @@ pub fn get() -> &'static Exp {
               splash: has("splash"),
               baseball_fix: has("baseball-fix"),
               pack_forecast: has("pack-forecast"),
+              rollout_shop: if has("rollout-shop") { Some(10) } else { s.split(',').find_map(|x| x.trim().strip_prefix("rollout-shop=")?.parse().ok()) },
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
@@ -185,6 +189,10 @@ pub fn get() -> &'static Exp {
         simcore::NO_DISCARD.store(e.rollout_nodiscard, std::sync::atomic::Ordering::Relaxed);
         simcore::SMART_DISCARD.store(e.rollout_discard2, std::sync::atomic::Ordering::Relaxed);
         simcore::EXTRA_CHIPS.store(e.extra_chips, std::sync::atomic::Ordering::Relaxed);
+        if let Some(f) = e.rollout_shop {
+            simcore::ROLLOUT_SHOP.store(true, std::sync::atomic::Ordering::Relaxed);
+            simcore::ROLLOUT_SHOP_FLOOR.store(f, std::sync::atomic::Ordering::Relaxed);
+        }
         if let Some(k) = e.rollout_behind {
             simcore::ROLLOUT_BEHIND.store(k.to_bits(), std::sync::atomic::Ordering::Relaxed);
         }

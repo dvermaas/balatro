@@ -179,7 +179,7 @@ pub enum Item<'a> {
 /// A rumbot-sim game in the SHOP phase (shop left empty) equal to the described Jackdaw state.
 pub fn build(desc: &StateDesc) -> Result<GameState, String> {
     let mut g = GameState::new("JEVROLLOUT", &desc.deck, desc.stake);
-    g.no_shop = true;
+    g.no_shop = !ROLLOUT_SHOP.load(std::sync::atomic::Ordering::Relaxed); // lab `rollout-shop` stocks shops
     g.ante = desc.ante;
     g.blind_index = desc.blind_index;
     g.round_number = desc.round;
@@ -1035,6 +1035,51 @@ pub fn use_items(g: &mut GameState, it: &ItemsDesc, state: u8, failed: &mut Hash
     Ok(())
 }
 
+/// Lab (`rollout-shop`): forecast rollouts shop instead of keeping the build frozen, so money and open joker slots
+/// are worth something: while a slot is free, the priciest joker affordable with ROLLOUT_SHOP_FLOOR dollars left
+/// (price stands in for rarity), then the most played hand's planet while $4 stays (the bot's planet rule).
+/// The rollout's play policy is not rebuilt: a bought joker scores in the game but does not steer the plays.
+pub static ROLLOUT_SHOP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub static ROLLOUT_SHOP_FLOOR: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(10);
+
+fn rollout_shop(g: &mut GameState) {
+    let floor = ROLLOUT_SHOP_FLOOR.load(std::sync::atomic::Ordering::Relaxed);
+    loop {
+        if (g.jokers.len() as i32) >= g.joker_slots() {
+            break;
+        }
+        let Some(shop) = g.shop.as_ref() else { return };
+        let pick = shop.slots.iter().enumerate()
+            .filter(|(_, sl)| sl.joker.is_some() && g.money - g.slot_price(sl) >= floor)
+            .max_by_key(|(i, sl)| (g.slot_price(sl), std::cmp::Reverse(*i)))
+            .map(|(i, _)| i);
+        let Some(i) = pick else { break };
+        let a = Action::at(ActionType::Buy, i as i32);
+        if !g.is_legal(&a) {
+            break;
+        }
+        g.step(&a);
+    }
+    let mut top: Option<(HandType, i32)> = None;
+    for (h, &n) in g.hand_levels.plays.iter() {
+        if n > 0 && top.map_or(true, |t| n > t.1) {
+            top = Some((*h, n));
+        }
+    }
+    let Some((hand, _)) = top else { return };
+    let name = rumbot_sim::hands::planet_for_hand(hand);
+    loop {
+        let Some(shop) = g.shop.as_ref() else { return };
+        let pick = shop.slots.iter().position(|sl| sl.consumable.is_some_and(|c| c.name == name) && g.money - g.slot_price(sl) >= 4);
+        let Some(i) = pick else { return };
+        let a = Action::at(ActionType::BuyAndUse, i as i32);
+        if !g.is_legal(&a) {
+            return;
+        }
+        g.step(&a);
+    }
+}
+
 pub fn use_planets(g: &mut GameState) {
     let mut i = 0;
     while i < g.consumables.len() {
@@ -1140,6 +1185,9 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                 match items {
                     Some(it) => use_items(g, it, SHOP, &mut failed)?,
                     None => use_planets(g),
+                }
+                if ROLLOUT_SHOP.load(std::sync::atomic::Ordering::Relaxed) {
+                    rollout_shop(g);
                 }
                 act(g, ActionType::LeaveShop);
             }
