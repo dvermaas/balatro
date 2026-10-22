@@ -87,6 +87,10 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v60 (lab measured; production forecasts are slower): forecast rollouts shop instead of keeping the build frozen: ",
+    "after each round they buy the priciest joker affordable with $10 left while a slot is free, then the most played ",
+    "hand's planet while $4 stays, and the shop forecast rebuilds their play policy after a buy. Money and open joker ",
+    "slots were worth nothing to the forecast. Lab: 987 vs 914 wins (second seed set), confirmed on the first. Based on: ",
     "v59 (sim only): two rumbot fixes from the real-game check of 2026-10-22. Crimson Heart letting go of a Juggler ",
     "no longer deals a card at once (the game fills the hand at the next draw; G6MTPMNN split there), and a joker ",
     "bought couponed (tag-free) shows cost 0 once owned, as in the game. New sim baseline. Based on: ",

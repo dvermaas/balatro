@@ -1035,11 +1035,11 @@ pub fn use_items(g: &mut GameState, it: &ItemsDesc, state: u8, failed: &mut Hash
     Ok(())
 }
 
-/// Lab (`rollout-shop`): forecast rollouts shop instead of keeping the build frozen, so money and open joker slots
+/// v60: forecast rollouts shop instead of keeping the build frozen, so money and open joker slots
 /// are worth something: while a slot is free, the priciest joker affordable with ROLLOUT_SHOP_FLOOR dollars left
 /// (price stands in for rarity), then the most played hand's planet while $4 stays (the bot's planet rule).
-/// The rollout's play policy is not rebuilt: a bought joker scores in the game but does not steer the plays.
-pub static ROLLOUT_SHOP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// The shop forecast rebuilds the rollout's play policy after a buy (bot forecast.rs); the items forecast does not.
+pub static ROLLOUT_SHOP: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(true); // v60
 pub static ROLLOUT_SHOP_FLOOR: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(10);
 
 fn rollout_shop(g: &mut GameState) {
@@ -1188,7 +1188,7 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                 }
                 if ROLLOUT_SHOP.load(std::sync::atomic::Ordering::Relaxed) {
                     rollout_shop(g);
-                    // v2 (`rollout-shop-policy`): the bought jokers steer the plays too
+                    // v60: the bought jokers steer the plays too (the shop forecast passes a rebuild)
                     if !strict && rebuild.is_some() && g.jokers.iter().map(|j| j.borrow().uid).collect::<Vec<u64>>() != pol_uids {
                         pol = (rebuild.as_mut().unwrap())(g);
                         pol_uids = g.jokers.iter().map(|j| j.borrow().uid).collect();

@@ -56,9 +56,9 @@
 //!   splash        with Splash held, the scorer counts every played card (it scored only the poker hand's cards)
 //!   baseball-fix  Baseball Card's X1.5 applies at each Uncommon joker's place, after its effect (was all at once)
 //!   pack-forecast  a pack's jokers go through the shop forecast (as $0 shop jokers) instead of the Picker's gain
-//!   rollout-shop[=F]  forecast rollouts shop: the priciest affordable joker while a slot is free and $F stays
-//!                 (default 10), then the top hand's planet (simcore::rollout_shop); they never shopped
-//!   rollout-shop-policy  with rollout-shop, the shop forecast's rollouts rebuild their play policy after buying a joker
+//!   no-rollout-shop  v59's frozen-build forecast rollouts (v60: rollouts shop, simcore::rollout_shop)
+//!   rollout-shop=F  the rollouts' joker floor: they buy the priciest affordable joker while $F stays (default 10)
+//!   rollout-shop-nopolicy  rollouts shop but do not rebuild their play policy after buying a joker
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
 //!   play-now-spare=R  the play-now ratio while discards left >= hands left (spare discards)
@@ -182,8 +182,10 @@ pub fn get() -> &'static Exp {
               splash: has("splash"),
               baseball_fix: has("baseball-fix"),
               pack_forecast: has("pack-forecast"),
-              rollout_shop_policy: has("rollout-shop-policy"),
-              rollout_shop: if has("rollout-shop") || has("rollout-shop-policy") { Some(10) } else { s.split(',').find_map(|x| x.trim().strip_prefix("rollout-shop=")?.parse().ok()) },
+              // v60: shopping rollouts with policy rebuilds by default; `no-rollout-shop` freezes the build again,
+              // `rollout-shop-nopolicy` keeps the shopping without the rebuild
+              rollout_shop_policy: !has("no-rollout-shop") && !has("rollout-shop-nopolicy"),
+              rollout_shop: if has("no-rollout-shop") { None } else { Some(s.split(',').find_map(|x| x.trim().strip_prefix("rollout-shop=")?.parse().ok()).unwrap_or(10)) },
               boss_reroll: s.split(',').find_map(|x| x.trim().strip_prefix("boss-reroll=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
               strong_vouchers: has("strong-vouchers"),
               buy_vouchers: s.split(',').find_map(|x| x.trim().strip_prefix("buy-vouchers=")).map_or(vec![], |v| v.split('+').map(|t| t.replace('_', " ")).collect()),
@@ -192,8 +194,8 @@ pub fn get() -> &'static Exp {
         simcore::NO_DISCARD.store(e.rollout_nodiscard, std::sync::atomic::Ordering::Relaxed);
         simcore::SMART_DISCARD.store(e.rollout_discard2, std::sync::atomic::Ordering::Relaxed);
         simcore::EXTRA_CHIPS.store(e.extra_chips, std::sync::atomic::Ordering::Relaxed);
+        simcore::ROLLOUT_SHOP.store(e.rollout_shop.is_some(), std::sync::atomic::Ordering::Relaxed);
         if let Some(f) = e.rollout_shop {
-            simcore::ROLLOUT_SHOP.store(true, std::sync::atomic::Ordering::Relaxed);
             simcore::ROLLOUT_SHOP_FLOOR.store(f, std::sync::atomic::Ordering::Relaxed);
         }
         if let Some(k) = e.rollout_behind {

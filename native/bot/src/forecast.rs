@@ -145,7 +145,7 @@ pub fn forecast_clock(
                     crate::value_model::check(pub_, &g);
                 }
                 let rows = if shop_policy {
-                    // lab (`rollout-shop-policy`): rebuild the play policy when a rollout buys a joker (cached per lineup)
+                    // v60: rebuild the play policy when a rollout buys a joker (cached per lineup)
                     let mut rebuild = |gm: &rumbot_sim::game::GameState| -> Policy {
                         let sig: Vec<String> = gm.jokers.iter().map(|j| format!("{}|{:?}", j.borrow().spec.name, j.borrow().edition)).collect();
                         if let Some(p) = pols.borrow().get(&sig) {
