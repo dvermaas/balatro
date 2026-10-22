@@ -1736,5 +1736,16 @@
   "wins": 484,
   "baseline_wins": 490,
   "outcome": "probe"
+ },
+ {
+  "experiment": "4-boss forecast horizon on v60 (shopping rollouts)",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 1000,
+  "delta_ante": -0.029,
+  "se": 0.034,
+  "wins": 484,
+  "baseline_wins": 490,
+  "outcome": "neutral"
  }
 ]

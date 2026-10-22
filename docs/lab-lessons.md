@@ -348,6 +348,7 @@ measured the wrong thing or was never asked:
   Rollouts taking the first affordable joker in the shop (in effect random; `rollout-shop-first`) instead of the
   priciest: first 1,000 seeds 484 vs 490 wins, +0.016 +- 0.035 ante. Which joker the rollouts buy barely matters: the
   v60 gain is money and open slots being worth something to the forecast, not a better imagined build.
+  A 4-boss horizon on v60 (`fc-bosses=4`): first 1,000 seeds 484 vs 490 wins, -0.029 +- 0.034 ante: neutral, as on v56.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
