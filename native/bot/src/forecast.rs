@@ -115,6 +115,24 @@ pub fn forecast_clock(
         };
         ents.push(Ent { key, opt: o, pol, base, error, order, ojs });
     }
+    // lab (`power-bonus=W`): the option's own scoring power, before any rollout, vs the skip option's
+    let pb = crate::experiment::get().power_bonus;
+    let bonus: Vec<f64> = if pb > 0.0 {
+        let p75 = |e: &Ent| -> Option<f64> {
+            let g = match &e.base {
+                Some(b) => b.deep_clone(),
+                None => apply_json(e.opt, &seed(0)).and_then(|(d, pl)| game_of(d, pl, &seed(0))).ok()?,
+            };
+            let p = crate::value_model::power_log(&g, 32);
+            Some(p[3 * p.len() / 4])
+        };
+        let pw: Vec<Option<f64>> = ents.iter().map(|e| if e.error { None } else { p75(e) }).collect();
+        let reference = ents.iter().zip(&pw).find(|(e, _)| e.key == "skip").and_then(|(_, p)| *p)
+            .or_else(|| pw.iter().flatten().cloned().reduce(f64::min)).unwrap_or(0.0);
+        pw.iter().map(|p| p.map_or(0.0, |p| pb * (p - reference))).collect()
+    } else {
+        vec![0.0; ents.len()]
+    };
     let mut runs: Vec<Vec<Value>> = vec![Vec::new(); ents.len()];
     let shop_policy = crate::experiment::get().rollout_shop_policy;
     let pols: std::cell::RefCell<std::collections::HashMap<Vec<String>, Policy>> = Default::default();
@@ -161,6 +179,12 @@ pub fn forecast_clock(
                 };
                 let mut rj: Vec<Value> = rows.iter().map(row_json).collect();
                 tail_value(&mut rj, &g);
+                if bonus[ei] != 0.0 {
+                    if let Some(last) = rj.last_mut() {
+                        let v = last.get("value").and_then(|v| v.as_f64()).unwrap_or(0.0);
+                        last["value"] = json!(v + bonus[ei]);
+                    }
+                }
                 runs[ei].push(Value::Array(rj));
             }
         }

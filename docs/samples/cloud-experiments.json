@@ -1780,5 +1780,16 @@
   "wins": 264,
   "baseline_wins": 280,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Learned value from measured build power alone as the forecast tail",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 600,
+  "delta_ante": -0.008,
+  "se": 0.039,
+  "wins": 255,
+  "baseline_wins": 279,
+  "outcome": "dropped"
  }
 ]

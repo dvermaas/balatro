@@ -372,6 +372,9 @@ measured the wrong thing or was never asked:
   about v60's weight): first 600 seeds of the first set (held out) 264 vs 280 wins, -0.010 +- 0.038 ante, 157 changed.
   It buys fewer level-1 planets and Celestial/Standard/Arcana packs, more Buffoon packs: the model's money weight
   (winners hold money) makes the forecast hoard, which the shopping rollouts already price.
+  Power alone (`ptrain.py --only`, AUC 0.67-0.70 at antes 6-8): 255 vs 279 wins, -0.008 +- 0.039 ante (z = -2.12), the
+  same shift (fewer Arcana/Celestial/Standard packs, Mars, Hermit, Temperance): a power tail at the rollouts' end
+  also counts the jokers their shops buy with the money an option saves, so it rewards saving over cheap upgrades.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
