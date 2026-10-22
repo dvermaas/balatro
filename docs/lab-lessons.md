@@ -333,6 +333,9 @@ measured the wrong thing or was never asked:
   while a slot is free and $10 stays, then the top hand's planet; the frozen build valued money and open slots at 0):
   on v58, first 1,000 seeds of the second set 475 vs 471 wins, +0.078 +- 0.045 ante, 369 games changed. To retest on
   v59 (new sim baseline), with `rollout-shop-policy` (the play policy rebuilt after a buy).
+  v59 vs v58 on that half: 475 vs 471 wins, no game's final ante or round changed (Crimson Heart fixes in last rounds).
+  `rollout-shop-policy` on v59: 490 vs 475 wins (141/126), +0.027 +- 0.047 ante, 395 games changed; 2x slower (14.3 s
+  a game vs 7.2). Against v1 (`rollout-shop`): -0.051 +- 0.031 ante, 490 vs 475 wins. Noisy: both change ~40% of games.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
