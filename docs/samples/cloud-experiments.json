@@ -1813,5 +1813,16 @@
   "wins": 280,
   "baseline_wins": 280,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker prior: learned per-joker values added to the shop forecast (joker-prior=1), first 600",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 600,
+  "delta_ante": 0.09,
+  "se": 0.046,
+  "wins": 319,
+  "baseline_wins": 280,
+  "outcome": "confirming"
  }
 ]

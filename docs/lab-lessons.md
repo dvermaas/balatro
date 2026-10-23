@@ -385,6 +385,25 @@ measured the wrong thing or was never asked:
   So a late-game shop rule: the power bonus only from ante 5, doubled (`power-bonus=2,power-bonus-ante=5`): 280 vs 280
   wins (37/37), -0.008 +- 0.020 ante, 88 games changed (swaps and Celestial packs both ways). From ante 5 the 3-boss
   rollouts reach the end of the run and already score what power measures; the measure adds nothing they miss.
+- **Joker valuation study (v60; `samples/cloud-lab/joker-study/`):** which jokers held at the first shop of ante 5
+  go with winning (4,000 games, logistic win model with joker count, money, levels, editions; `jval.py`): Constellation
+  93% wins held vs 51%, Hologram 88%, Baseball Card 83%, then Duo, Stuntman, Castle, Blackboard, Seeing Double, Mr. Bones;
+  worst Faceless, Ceremonial Dagger, 8 Ball, Stencil, Gluttonous, Crafty, Bootstraps, Joker, Greedy, Mystic Summit.
+  Split-half (each seed set alone) correlation of the values 0.75 at ante 5, 0.5 at ante 3. Pairs (`pairs.py`): too
+  sparse at 4,000 games (201 pairs, top z 2.5 ~ chance); the top two are real synergies, Hanging Chad + Photograph and
+  Burglar + Green Joker. Every shop's options with their forecast numbers (`JEVLAB_OFFERS=<file>`, 701 games,
+  `offers-v60-701.jsonl.gz`, `offan.py`): the bot passes on the best jokers and the forecast rates them below buying
+  nothing: Constellation offered 215 times, taken 9%, median forecast z -3.5; Hologram 6% (-3.4), Castle 17%, Blackboard
+  12%, Gift Card 8%; economy jokers (Golden, Egg, Delayed Gratification) under 8%. Across jokers, value vs take rate
+  correlates only 0.26. Since v60 the skip option keeps a slot the rollouts fill with the priciest joker at the next shop,
+  so a joker that starts weak and scales loses inside 3 bosses (Hologram never grows: rollouts add no cards).
+  Caveat: the bot holds these only where the forecast liked them, so their values are inflated by selection.
+- **Joker prior** (`joker-prior=B`, values `JOKER_PRIOR=samples/cloud-lab/joker_prior_c2k_a5.json`: the ante-5 values
+  from the second seed set alone, clipped to [-1, 1.5]; through ante 6 a shop joker's forecast delta gains B x (its value
+  - the sold joker's) blinds, before hiding, rerolls and the buy rule): B = 1, first 600 seeds of the first set (held
+  out): **319 vs 280 wins (93/54, z = 3.22), +0.090 +- 0.046 ante**, 205 games changed. Held at ante 5: Hologram 7 -> 30,
+  Constellation 13 -> 34, Castle 14 -> 34, Baseball 21 -> 36, Scholar, Green Joker, Photograph up; Mystic Summit 42 -> 15,
+  Even Steven, Misprint, Crafty, Seltzer, Faceless down.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
