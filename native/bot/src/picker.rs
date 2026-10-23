@@ -310,7 +310,10 @@ impl<'a> Picker<'a> {
         let k = format!("j|{}|{}", gs::get(c, "key"), py_str(gs::mget(m, "edition")));
         if !self.memo.contains_key(&k) {
             let base = match self.gain(Some(c), None) { None => 0.05, Some(g) => pmax(g, 0.0) };
-            self.memo.insert(k.clone(), base + 0.01);
+            // lab (`pack-prior=P`): + P x the joker's learned value
+            let pp = crate::experiment::get().pack_prior;
+            let prior = if pp != 0.0 { pp * crate::experiment::joker_value(gs::s(gs::get(c, "key"))) } else { 0.0 };
+            self.memo.insert(k.clone(), pmax(base + prior, 0.0) + 0.01);
         }
         self.memo[&k]
     }

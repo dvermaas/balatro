@@ -162,7 +162,15 @@ pub fn weakest_jokers(gs: &Value, recent: &[Value], n: usize) -> HashSet<usize> 
         loss.push((-gain, sell, j));
     }
     loss.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap().then(a.1.partial_cmp(&b.1).unwrap()).then(a.2.cmp(&b.2)));
-    loss.into_iter().take(n).map(|(_, _, j)| j).collect()
+    let mut out: HashSet<usize> = loss.iter().take(n).map(|(_, _, j)| *j).collect();
+    if crate::experiment::get().prior_sell {
+        // lab: also offer to sell the held joker the learned values rate lowest
+        let jv = |j: usize| crate::experiment::joker_value(crate::gs::s(&g(&cards_of(gs, "jokers")[j], "key")));
+        if let Some(&(_, _, j)) = loss.iter().min_by(|a, b| jv(a.2).partial_cmp(&jv(b.2)).unwrap().then(a.2.cmp(&b.2))) {
+            out.insert(j);
+        }
+    }
+    out
 }
 
 /// Python try-body of `_shop_forecast`: Ok((sig, f)) or Err((exception type, message)).
