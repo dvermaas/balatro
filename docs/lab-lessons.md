@@ -416,6 +416,10 @@ measured the wrong thing or was never asked:
   +0.004 +- 0.023; The Mouth deaths 35 -> 49.
   The prior only from ante 3 (`joker-prior-from=3`, to spare the fragile first antes): first 600 seeds of the first set
   309 vs 319 wins (28/38): worse. Buying the scaling jokers early is part of the gain.
+  Values re-estimated on v61's own 2,000 second-set games (the bot now buys the good jokers widely, so less selection
+  bias; correlation with the v60 table 0.75; Castle 0.76 -> 0.15, Scholar 0.47 -> -0.20, Stuntman 0.84 -> 1.26, Egg
+  0.02 -> 0.70), averaged with the old table (`joker-study/joker_prior_iter2.json`): first 600 seeds 323 vs 319 wins
+  (44/40), -0.020 +- 0.029 ante: neutral. The v61 table stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

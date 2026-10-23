@@ -1857,5 +1857,16 @@
   "wins": 309,
   "baseline_wins": 319,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Joker values re-estimated on v61 games (damped)",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 599,
+  "delta_ante": -0.02,
+  "se": 0.029,
+  "wins": 323,
+  "baseline_wins": 319,
+  "outcome": "neutral"
  }
 ]
