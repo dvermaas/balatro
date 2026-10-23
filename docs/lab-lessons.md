@@ -412,6 +412,8 @@ measured the wrong thing or was never asked:
   **Shipped as v61** (`data/joker_values.json` = `samples/cloud-lab/joker_prior_c2k_a5.json`, B = 1). Whole first set
   (held out from the values): **1,048 vs 956 wins (52.4% vs 47.8%; 281/189, z = 4.24)**, mean ante -0.021 +- 0.024.
   Deaths at antes 1-4 / 5-7 / 8: 122 / 455 / 375 (v60 99 / 516 / 429): it buys builds that start weaker and scale.
+  Second set (the values' own games, so in-sample): 1,061 vs 987 wins (53.0% vs 49.4%; 276/202, z = 3.38), mean ante
+  +0.004 +- 0.023; The Mouth deaths 35 -> 49.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
