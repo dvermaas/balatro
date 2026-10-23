@@ -407,6 +407,9 @@ measured the wrong thing or was never asked:
   wins (180/114, z = 3.85)**, +0.032 +- 0.031 ante, 395 games changed.
   B = 2: first 600 seeds 309 wins (vs v60 280, vs B = 1 319: 63/73), -0.072 +- 0.054 ante: pushing harder buys more
   early deaths. B = 1 stays.
+  On top of B = 1: pack picks valued + 0.1 x the learned value (`pack-prior=0.1`) and the lowest-valued held joker
+  offered for sale (`prior-sell`): first 600 seeds 322 vs 319 wins (42/39), -0.060 +- 0.030 ante: not better; dropped.
+  **Shipped as v61** (`data/joker_values.json` = `samples/cloud-lab/joker_prior_c2k_a5.json`, B = 1).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

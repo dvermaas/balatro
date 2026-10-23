@@ -1823,7 +1823,7 @@
   "se": 0.031,
   "wins": 623,
   "baseline_wins": 557,
-  "outcome": "confirmed"
+  "outcome": "shipped v61"
  },
  {
   "experiment": "Joker prior at double strength (joker-prior=2)",
@@ -1835,5 +1835,16 @@
   "wins": 309,
   "baseline_wins": 280,
   "outcome": "worse than B=1"
+ },
+ {
+  "experiment": "Joker prior + pack picks and sells by learned value (pack-prior=0.1, prior-sell)",
+  "theme": "Forecast",
+  "baseline": "v61 (joker-prior=1)",
+  "games": 600,
+  "delta_ante": -0.06,
+  "se": 0.03,
+  "wins": 322,
+  "baseline_wins": 319,
+  "outcome": "dropped"
  }
 ]
