@@ -101,8 +101,8 @@ pub struct Exp {
     pub power_bonus: f64,
     /// `power-bonus-ante=A`: the power bonus only from ante A (default every ante)
     pub power_bonus_ante: i64,
-    /// `joker-prior=B`: through ante 6, a shop joker's forecast delta gains B x (its value - the sold joker's) blinds,
-    /// values from the JOKER_PRIOR=<json {key: value}> file (lab joker valuation study)
+    /// v61: through ante 6, a shop joker's forecast delta gains B x (its value - the sold joker's) blinds (B = JOKER_PRIOR;
+    /// lab `joker-prior=B`, `no-joker-prior`), values from data/joker_values.json (lab: JOKER_PRIOR=<json> instead)
     pub joker_prior: f64,
     /// `pack-prior=P`: the Picker's joker value (score gain, $1 = 0.01) gains P x the joker's JOKER_PRIOR value (floor 0.01)
     pub pack_prior: f64,
@@ -168,7 +168,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: num("joker-prior"), pack_prior: num("pack-prior"), prior_sell: has("prior-sell"), eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: num("pack-prior"), prior_sell: has("prior-sell"), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,
@@ -236,12 +236,20 @@ pub fn is_pair_joker(label: Option<&str>) -> bool {
     label.is_some_and(|l| PAIR_JOKERS.contains(&l))
 }
 
-/// Lab (`joker-prior=B`): the per-joker values from the JOKER_PRIOR file (0 for a joker it does not list).
+/// v61: the joker prior's weight, in blinds per unit of learned value.
+pub const JOKER_PRIOR: f64 = 1.0;
+
+/// v61: a joker's learned value (data/joker_values.json: the logit of winning when held at ante 5's first shop, from
+/// 2,000 v60 lab games, docs/samples/cloud-lab/joker-study/jval.py; clipped to [-1, 1.5]); 0 for a joker it does not
+/// list. Lab: JOKER_PRIOR=<file> loads another table.
 pub fn joker_value(key: &str) -> f64 {
     static T: std::sync::OnceLock<std::collections::HashMap<String, f64>> = std::sync::OnceLock::new();
-    let t = T.get_or_init(|| match std::env::var("JOKER_PRIOR") {
-        Ok(p) => serde_json::from_str(&std::fs::read_to_string(&p).expect("JOKER_PRIOR file")).expect("JOKER_PRIOR json"),
-        Err(_) => Default::default(),
+    let t = T.get_or_init(|| {
+        let text = match std::env::var("JOKER_PRIOR") {
+            Ok(p) => std::fs::read_to_string(&p).expect("JOKER_PRIOR file"),
+            Err(_) => include_str!("../data/joker_values.json").to_string(),
+        };
+        serde_json::from_str(&text).expect("joker values json")
     });
     t.get(key).cloned().unwrap_or(0.0)
 }

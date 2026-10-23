@@ -721,7 +721,9 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             let _ = f.write_all(format!("{row}\n").as_bytes());
         }
     }
-    // lab (`joker-prior=B`): add the joker's learned value (minus the sold joker's) to its forecast delta
+    // v61: add the joker's learned value (minus the sold joker's) to its forecast delta: the 3-boss rollouts, whose skip
+    // option fills the open slot at the next shop, rated the scaling jokers that win runs (Constellation, Hologram)
+    // below buying nothing
     let jp = crate::experiment::get().joker_prior;
     if jp != 0.0 && fc.is_some() && crate::gs::int(&g(gs, "ante_num")) <= 6 {
         let held: Vec<String> = crate::gs::cards_of(gs, "jokers").iter().map(|c| crate::gs::s(&g(c, "key")).to_string()).collect();

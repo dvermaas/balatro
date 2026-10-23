@@ -87,6 +87,11 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v61 (lab measured): a learned value per joker. Through ante 6 each shop joker's forecast gain (blinds vs buying ",
+    "nothing) gets its value minus the sold joker's: the logit of winning when held at ante 5, from 2,000 v60 games ",
+    "(Constellation, Hologram, Baseball Card +1.5; Stuntman, Castle, Seeing Double, Blackboard, Duo +0.6-0.85; Faceless, ",
+    "Ride the Bus, Ceremonial Dagger, Gluttonous, Stencil, Joker -0.6 to -1). The forecast rated the scaling jokers below ",
+    "buying nothing (Constellation taken 9% of offers). Lab: 623 vs 557 wins on 1,200 held-out seeds. Based on: ",
     "v60 + lab tooling (plays unchanged): simcore::power measures a build's scoring power (best play on 32 hands dealt ",
     "from the full deck); jevlab JEVLAB_SNAPS logs it per shop, and a value model file with power features ",
     "(VALUE_MODEL=<file>, docs/samples/cloud-lab/ptrain.py) uses it in the forecast's tail. Based on: ",
