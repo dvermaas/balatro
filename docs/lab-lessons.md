@@ -405,6 +405,8 @@ measured the wrong thing or was never asked:
   Constellation 13 -> 34, Castle 14 -> 34, Baseball 21 -> 36, Scholar, Green Joker, Photograph up; Mystic Summit 42 -> 15,
   Even Steven, Misprint, Crafty, Seltzer, Faceless down. Next 600 seeds: 304 vs 277. **First 1,200 seeds: 623 vs 557
   wins (180/114, z = 3.85)**, +0.032 +- 0.031 ante, 395 games changed.
+  B = 2: first 600 seeds 309 wins (vs v60 280, vs B = 1 319: 63/73), -0.072 +- 0.054 ante: pushing harder buys more
+  early deaths. B = 1 stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

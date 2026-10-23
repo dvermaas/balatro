@@ -1824,5 +1824,16 @@
   "wins": 623,
   "baseline_wins": 557,
   "outcome": "confirmed"
+ },
+ {
+  "experiment": "Joker prior at double strength (joker-prior=2)",
+  "theme": "Forecast",
+  "baseline": "v60",
+  "games": 600,
+  "delta_ante": -0.072,
+  "se": 0.054,
+  "wins": 309,
+  "baseline_wins": 280,
+  "outcome": "worse than B=1"
  }
 ]
