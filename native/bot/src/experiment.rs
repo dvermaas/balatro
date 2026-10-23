@@ -101,6 +101,9 @@ pub struct Exp {
     pub power_bonus: f64,
     /// `power-bonus-ante=A`: the power bonus only from ante A (default every ante)
     pub power_bonus_ante: i64,
+    /// `joker-prior=B`: through ante 6, a shop joker's forecast delta gains B x (its value - the sold joker's) blinds,
+    /// values from the JOKER_PRIOR=<json {key: value}> file (lab joker valuation study)
+    pub joker_prior: f64,
     pub free_discard: bool,
     pub money_tail: f64,
     pub eye_plan: bool,
@@ -161,7 +164,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: num("joker-prior"), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,
@@ -227,4 +230,14 @@ pub fn get() -> &'static Exp {
 
 pub fn is_pair_joker(label: Option<&str>) -> bool {
     label.is_some_and(|l| PAIR_JOKERS.contains(&l))
+}
+
+/// Lab (`joker-prior=B`): the per-joker values from the JOKER_PRIOR file (0 for a joker it does not list).
+pub fn joker_value(key: &str) -> f64 {
+    static T: std::sync::OnceLock<std::collections::HashMap<String, f64>> = std::sync::OnceLock::new();
+    let t = T.get_or_init(|| match std::env::var("JOKER_PRIOR") {
+        Ok(p) => serde_json::from_str(&std::fs::read_to_string(&p).expect("JOKER_PRIOR file")).expect("JOKER_PRIOR json"),
+        Err(_) => Default::default(),
+    });
+    t.get(key).cloned().unwrap_or(0.0)
 }

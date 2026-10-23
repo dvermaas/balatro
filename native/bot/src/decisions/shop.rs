@@ -713,6 +713,27 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             let _ = f.write_all(format!("{row}\n").as_bytes());
         }
     }
+    // lab (`joker-prior=B`): add the joker's learned value (minus the sold joker's) to its forecast delta
+    let jp = crate::experiment::get().joker_prior;
+    if jp != 0.0 && fc.is_some() && crate::gs::int(&g(gs, "ante_num")) <= 6 {
+        let held: Vec<String> = crate::gs::cards_of(gs, "jokers").iter().map(|c| crate::gs::s(&g(c, "key")).to_string()).collect();
+        for it in items.iter_mut() {
+            let parts: Vec<&str> = it.key.split('_').collect();
+            let (new_i, sold) = match parts.as_slice() {
+                ["buy", "card", i] => (i.parse::<usize>().ok(), None),
+                ["replace", j, i] => (i.parse::<usize>().ok(), j.parse::<usize>().ok()),
+                _ => (None, None),
+            };
+            let Some(i) = new_i else { continue };
+            let k = crate::gs::s(&g(&shop_cards[i], "key")).to_string();
+            if !k.starts_with("j_") || !_d(&it.obj).contains_key("_fc_delta") {
+                continue;
+            }
+            let b = jp * (crate::experiment::joker_value(&k) - sold.and_then(|j| held.get(j)).map_or(0.0, |h| crate::experiment::joker_value(h)));
+            let d = fnum(&it.obj, "_fc_delta", 0.0) + b;
+            it.obj["_fc_delta"] = json!(d);
+        }
+    }
     if fc.is_some() {
         // v19: hide items the forecast finds clearly worse than buying nothing, unless economic
         let src = |k: &str| -> Value {
