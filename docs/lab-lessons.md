@@ -409,7 +409,9 @@ measured the wrong thing or was never asked:
   early deaths. B = 1 stays.
   On top of B = 1: pack picks valued + 0.1 x the learned value (`pack-prior=0.1`) and the lowest-valued held joker
   offered for sale (`prior-sell`): first 600 seeds 322 vs 319 wins (42/39), -0.060 +- 0.030 ante: not better; dropped.
-  **Shipped as v61** (`data/joker_values.json` = `samples/cloud-lab/joker_prior_c2k_a5.json`, B = 1).
+  **Shipped as v61** (`data/joker_values.json` = `samples/cloud-lab/joker_prior_c2k_a5.json`, B = 1). Whole first set
+  (held out from the values): **1,048 vs 956 wins (52.4% vs 47.8%; 281/189, z = 4.24)**, mean ante -0.021 +- 0.024.
+  Deaths at antes 1-4 / 5-7 / 8: 122 / 455 / 375 (v60 99 / 516 / 429): it buys builds that start weaker and scale.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

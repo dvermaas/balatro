@@ -823,5 +823,20 @@
   "died_ante_1_4": 99,
   "died_ante_5_7": 516,
   "died_ante_8": 429
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v61",
+  "version_id": "rust",
+  "change": "Learned per-joker values added to the shop forecast",
+  "games": 2000,
+  "mean_ante": 7.29,
+  "se": 0.033,
+  "wins": 1048,
+  "win_rate": 0.524,
+  "mean_round": 19.74,
+  "died_ante_1_4": 122,
+  "died_ante_5_7": 455,
+  "died_ante_8": 375
  }
 ]
