@@ -403,7 +403,8 @@ measured the wrong thing or was never asked:
   - the sold joker's) blinds, before hiding, rerolls and the buy rule): B = 1, first 600 seeds of the first set (held
   out): **319 vs 280 wins (93/54, z = 3.22), +0.090 +- 0.046 ante**, 205 games changed. Held at ante 5: Hologram 7 -> 30,
   Constellation 13 -> 34, Castle 14 -> 34, Baseball 21 -> 36, Scholar, Green Joker, Photograph up; Mystic Summit 42 -> 15,
-  Even Steven, Misprint, Crafty, Seltzer, Faceless down.
+  Even Steven, Misprint, Crafty, Seltzer, Faceless down. Next 600 seeds: 304 vs 277. **First 1,200 seeds: 623 vs 557
+  wins (180/114, z = 3.85)**, +0.032 +- 0.031 ante, 395 games changed.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
