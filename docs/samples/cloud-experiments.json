@@ -1846,5 +1846,16 @@
   "wins": 322,
   "baseline_wins": 319,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Joker prior only from ante 3 (joker-prior-from=3)",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": -0.01,
+  "se": 0.037,
+  "wins": 309,
+  "baseline_wins": 319,
+  "outcome": "dropped"
  }
 ]
