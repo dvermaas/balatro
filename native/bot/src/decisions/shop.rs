@@ -694,6 +694,25 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
     }
     items.retain(|it| !bot._failed.contains(&dumps(&crate::jev_bot::action_value(&it.action))));
+    // lab: JEVLAB_OFFERS=<file> appends each forecast shop's items with their forecast numbers (joker valuation study)
+    if let (Some(path), true) = (std::env::var_os("JEVLAB_OFFERS"), fc.is_some()) {
+        let card_key = |k: &str| -> Value {
+            if k.starts_with("buy_card_") || k.starts_with("replace_") {
+                let i: usize = k.rsplit('_').next().unwrap().parse().unwrap();
+                g(&shop_cards[i], "key")
+            } else {
+                Value::Null
+            }
+        };
+        let held: Vec<Value> = crate::gs::cards_of(gs, "jokers").iter().map(|c| g(c, "key")).collect();
+        let row = json!({"seed": g(gs, "seed"), "ante": g(gs, "ante_num"), "round": g(gs, "round_num"), "money": money, "held": held,
+            "rerolls": bot._rerolls, "items": items.iter().map(|it| json!({"key": it.key, "card": card_key(&it.key), "desc": it.desc, "cost": it.cost,
+                "delta": g(&it.obj, "_fc_delta"), "se": g(&it.obj, "_fc_se")})).collect::<Vec<_>>()});
+        use std::io::Write;
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(path) {
+            let _ = f.write_all(format!("{row}\n").as_bytes());
+        }
+    }
     if fc.is_some() {
         // v19: hide items the forecast finds clearly worse than buying nothing, unless economic
         let src = |k: &str| -> Value {
