@@ -725,7 +725,8 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     // option fills the open slot at the next shop, rated the scaling jokers that win runs (Constellation, Hologram)
     // below buying nothing
     let jp = crate::experiment::get().joker_prior;
-    if jp != 0.0 && fc.is_some() && crate::gs::int(&g(gs, "ante_num")) <= 6 {
+    let ante_now = crate::gs::int(&g(gs, "ante_num"));
+    if jp != 0.0 && fc.is_some() && ante_now <= 6 && ante_now >= crate::experiment::get().joker_prior_from {
         let held: Vec<String> = crate::gs::cards_of(gs, "jokers").iter().map(|c| crate::gs::s(&g(c, "key")).to_string()).collect();
         for it in items.iter_mut() {
             let parts: Vec<&str> = it.key.split('_').collect();
