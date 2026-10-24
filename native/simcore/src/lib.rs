@@ -1088,6 +1088,10 @@ pub static ROLLOUT_SHOP: std::sync::atomic::AtomicBool = std::sync::atomic::Atom
 pub static ROLLOUT_SHOP_FLOOR: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(10);
 /// Lab (`rollout-shop-first`): rollouts take the first affordable joker in the shop (in effect a random one), not the priciest.
 pub static ROLLOUT_SHOP_FIRST: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab (`rollout-shop-value`): rollouts take the affordable joker with the highest learned value (ROLLOUT_VALUE, by joker
+/// key), price breaking ties, instead of the priciest.
+pub static ROLLOUT_SHOP_VALUE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub static ROLLOUT_VALUE: std::sync::OnceLock<fn(&str) -> f64> = std::sync::OnceLock::new();
 /// Lab (`rollout-free-first`): a free (tag) joker is bought before the priciest one.
 pub static FREE_FIRST: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
@@ -1103,7 +1107,14 @@ fn rollout_shop(g: &mut GameState) {
             // a free joker (a tag's) first, then the priciest
             .max_by_key(|(i, sl)| {
                 let free = FREE_FIRST.load(std::sync::atomic::Ordering::Relaxed) && g.slot_price(sl) == 0;
-                if ROLLOUT_SHOP_FIRST.load(std::sync::atomic::Ordering::Relaxed) { (free, 0, std::cmp::Reverse(*i)) } else { (free, g.slot_price(sl), std::cmp::Reverse(*i)) }
+                let value = match (ROLLOUT_SHOP_VALUE.load(std::sync::atomic::Ordering::Relaxed), ROLLOUT_VALUE.get()) {
+                    (true, Some(f)) => {
+                        let name = sl.joker.as_ref().unwrap().borrow().spec.name;
+                        (1000.0 * rumbot_sim::joker_data::joker_row(name).map_or(0.0, |r| f(r.key))).round() as i64
+                    }
+                    _ => 0,
+                };
+                if ROLLOUT_SHOP_FIRST.load(std::sync::atomic::Ordering::Relaxed) { (free, 0, 0, std::cmp::Reverse(*i)) } else { (free, value, g.slot_price(sl), std::cmp::Reverse(*i)) }
             })
             .map(|(i, _)| i);
         let Some(i) = pick else { break };
