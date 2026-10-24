@@ -2000,5 +2000,16 @@
   "wins": 331,
   "baseline_wins": 333,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Rollouts buy the highest-valued joker, not the priciest",
+  "theme": "Forecast",
+  "baseline": "v62",
+  "games": 600,
+  "delta_ante": -0.035,
+  "se": 0.043,
+  "wins": 330,
+  "baseline_wins": 333,
+  "outcome": "neutral"
  }
 ]
