@@ -430,6 +430,10 @@ measured the wrong thing or was never asked:
   Joker + Ramen +3.6, Ice Cream + Photograph -3.1. A held-out fit of all pairs (`pairfit.py`) gained nothing (log loss
   0.6123 both ways). The 4 as bonuses (`JOKER_PAIRS=joker-study/strong_pairs.json`, shrunk logit excess): first 600
   seeds 320 vs 319 wins, 5 games changed. No usable synergy signal at this sample size; dropped.
+  v61's extra early deaths (antes 1-4: 122 vs 99 of 2,000) are spread over all seed blocks, at strength-check bosses
+  (The Wall, Mouth, Water, Arm at ante 4). The prior scaled by min(1, P(clear the 3 bosses | buy) / P(... | skip))^K
+  (`prior-safe=K`): K = 1 319 vs 319 wins (17/17, 43 changed), K = 3 313 vs 319 (21/27): the forecast's survival
+  numbers do not single out the risky buys; dropped.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

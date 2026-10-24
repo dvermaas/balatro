@@ -1890,5 +1890,27 @@
   "wins": 320,
   "baseline_wins": 319,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker prior scaled by survival ratio (K=1)",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": 0.007,
+  "se": 0.021,
+  "wins": 319,
+  "baseline_wins": 319,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker prior scaled by survival ratio (K=3)",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": -0.015,
+  "se": 0.024,
+  "wins": 313,
+  "baseline_wins": 319,
+  "outcome": "neutral"
  }
 ]
