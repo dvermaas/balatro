@@ -420,6 +420,11 @@ measured the wrong thing or was never asked:
   bias; correlation with the v60 table 0.75; Castle 0.76 -> 0.15, Scholar 0.47 -> -0.20, Stuntman 0.84 -> 1.26, Egg
   0.02 -> 0.70), averaged with the old table (`joker-study/joker_prior_iter2.json`): first 600 seeds 323 vs 319 wins
   (44/40), -0.020 +- 0.029 ante: neutral. The v61 table stays.
+  A bigger table from 11,330 v61 games that reach ante 5 (the second set plus 10,000 new seeds, `e16k`; first set held
+  out; at least 20 holds; 141 jokers, 38 new, e.g. Cavendish 1.5, Madness 1.08, Vampire 0.72, Family -0.82, Driver's
+  License -0.71; correlation with the v61 table 0.78; Flower Pot 0.64 -> -0.11, Certificate -0.42 -> 0.57): first
+  600 seeds 310 vs 319 wins (73/82), -0.042 +- 0.044 ante: not better. More data on the bot's own games does not improve
+  the table: once the prior steers what it buys, a value measured on those games partly measures the prior.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

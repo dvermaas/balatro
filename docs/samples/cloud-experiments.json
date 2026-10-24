@@ -1868,5 +1868,16 @@
   "wins": 323,
   "baseline_wins": 319,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker values from 11k v61 games (141 jokers)",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": -0.042,
+  "se": 0.044,
+  "wins": 310,
+  "baseline_wins": 319,
+  "outcome": "neutral"
  }
 ]
