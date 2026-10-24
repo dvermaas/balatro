@@ -1879,5 +1879,16 @@
   "wins": 310,
   "baseline_wins": 319,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker prior + 4 strongest pair bonuses",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": 0.008,
+  "se": 0.006,
+  "wins": 320,
+  "baseline_wins": 319,
+  "outcome": "neutral"
  }
 ]

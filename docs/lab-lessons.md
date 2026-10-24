@@ -425,6 +425,11 @@ measured the wrong thing or was never asked:
   License -0.71; correlation with the v61 table 0.78; Flower Pot 0.64 -> -0.11, Certificate -0.42 -> 0.57): first
   600 seeds 310 vs 319 wins (73/82), -0.042 +- 0.044 ante: not better. More data on the bot's own games does not improve
   the table: once the prior steers what it buys, a value measured on those games partly measures the prior.
+  Pair terms: of 1,015 pairs held together at ante 5 at least 30 times in those games, 4 differ from the main-effects
+  prediction by |z| > 3 (about 3 expected by chance): Hanging Chad + Photograph +5.0, Burglar + Green Joker +4.0, Half
+  Joker + Ramen +3.6, Ice Cream + Photograph -3.1. A held-out fit of all pairs (`pairfit.py`) gained nothing (log loss
+  0.6123 both ways). The 4 as bonuses (`JOKER_PAIRS=joker-study/strong_pairs.json`, shrunk logit excess): first 600
+  seeds 320 vs 319 wins, 5 games changed. No usable synergy signal at this sample size; dropped.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
