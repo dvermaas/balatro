@@ -110,6 +110,8 @@ pub struct Exp {
     pub pack_prior: f64,
     /// `prior-sell`: swap sell candidates add the held joker with the lowest JOKER_PRIOR value
     pub prior_sell: bool,
+    /// `prior-safe=K`: the joker prior x min(1, p_survive(option) / p_survive(skip))^K (horizon survival from the forecast)
+    pub prior_safe: f64,
     pub free_discard: bool,
     pub money_tail: f64,
     pub eye_plan: bool,
@@ -170,7 +172,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: num("pack-prior"), joker_prior_from: num("joker-prior-from") as i64, prior_sell: has("prior-sell"), eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: num("pack-prior"), joker_prior_from: num("joker-prior-from") as i64, prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,

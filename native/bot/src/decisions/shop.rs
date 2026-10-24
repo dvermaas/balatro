@@ -743,7 +743,15 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             // lab (JOKER_PAIRS): + the pair terms with the jokers kept (the sold one's terms with them go)
             let kept: Vec<&String> = held.iter().enumerate().filter(|(j, _)| Some(*j) != sold).map(|(_, h)| h).collect();
             let with = |x: &str| crate::experiment::joker_value(x) + kept.iter().map(|h| crate::experiment::joker_pair(x, h)).sum::<f64>();
-            let b = jp * (with(&k) - sold.and_then(|j| held.get(j)).map_or(0.0, |h| with(h)));
+            let mut b = jp * (with(&k) - sold.and_then(|j| held.get(j)).map_or(0.0, |h| with(h)));
+            let ps = crate::experiment::get().prior_safe;
+            if ps != 0.0 {
+                let o = &fc.as_ref().unwrap()["options"];
+                let (po, pk) = (fnum(&o[&it.key], "p_survive", 1.0), fnum(&o["skip"], "p_survive", 1.0));
+                if pk > 0.0 {
+                    b *= (po / pk).min(1.0).powf(ps);
+                }
+            }
             let d = fnum(&it.obj, "_fc_delta", 0.0) + b;
             it.obj["_fc_delta"] = json!(d);
         }
