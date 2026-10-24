@@ -456,6 +456,11 @@ measured the wrong thing or was never asked:
   `prior-sell` alone on v62: first 600 seeds 331 vs 333 wins (32/34), -0.040 +- 0.023 ante: dropped.
   Rollouts buying the highest-valued joker instead of the priciest (`rollout-shop-value`): 330 vs 333 (64/67), 150
   changed, -0.035 +- 0.043 ante: neutral; price stays.
+- **Boss death rates when faced, v62** (4,000 lab games): Violet Vessel 56% (v38 78%), Crimson Heart 21% (43%),
+  Verdant Leaf 19% (38%), The Wall 13%, Amber Acorn 11%, Cerulean Bell 9%, The Water 9%, the rest under 8%. Losses end
+  at a median 50% of the target against Violet Vessel (a power gap), 68% against The Wall, 76-78% against Crimson Heart
+  and Verdant Leaf (a quarter reach 90%). 75 of 104 Verdant Leaf deaths hold 4 jokers: slots were full, so it sold a
+  real one.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
