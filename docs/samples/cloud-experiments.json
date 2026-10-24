@@ -1922,7 +1922,7 @@
   "se": 0.036,
   "wins": 311,
   "baseline_wins": 319,
-  "outcome": "worse"
+  "outcome": "dropped"
  },
  {
   "experiment": "Joker prior through ante 7",
@@ -1933,6 +1933,6 @@
   "se": 0.011,
   "wins": 310,
   "baseline_wins": 319,
-  "outcome": "worse"
+  "outcome": "dropped"
  }
 ]
