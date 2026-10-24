@@ -1945,5 +1945,27 @@
   "wins": 315,
   "baseline_wins": 319,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Pack picks + 0.3 x joker prior",
+  "theme": "Packs",
+  "baseline": "v61",
+  "games": 1200,
+  "delta_ante": 0.003,
+  "se": 0.019,
+  "wins": 634,
+  "baseline_wins": 623,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Pack picks + 3 x joker prior",
+  "theme": "Packs",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": -0.027,
+  "se": 0.04,
+  "wins": 325,
+  "baseline_wins": 319,
+  "outcome": "neutral"
  }
 ]

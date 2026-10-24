@@ -444,6 +444,11 @@ measured the wrong thing or was never asked:
   Delayed Gratification 0.56 vs 0.16, Egg 0.52 vs 0.02, Golden 0.33 vs -0.11, since the ante-5 model holds money fixed):
   315 vs 319 wins (32/36), 99 changed: neutral. Every variant of the prior so far (table, B, antes, pairs) lands within
   noise of v61 or below it.
+  Pack picks valued with the prior alone (`pack-prior=P`: the Picker's joker value, a relative score gain, + P x the
+  learned value): P = 0.3 first 600 seeds 328 vs 319 wins (25/16), next 600 306 vs 304; P = 1 333 vs 319 (37/23),
+  next 600 316 vs 304: **first 1,200 seeds 649 vs 623 (73/47, z = 2.37)**, 142 changed; P = 3 325 vs 319 (44/38).
+  Held at ante 5 with P = 1: Blackboard 49 -> 60, Zany 32 -> 44, Constellation 57 -> 65, Mr. Bones 63 -> 71;
+  Wrathful 39 -> 25.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
