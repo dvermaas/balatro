@@ -255,3 +255,17 @@ pub fn joker_value(key: &str) -> f64 {
     });
     t.get(key).cloned().unwrap_or(0.0)
 }
+
+/// Lab (`JOKER_PAIRS=<json {"j_a|j_b": v}>`, keys sorted): the pair term of two held jokers (0 when unlisted or no file).
+pub fn joker_pair(a: &str, b: &str) -> f64 {
+    static T: std::sync::OnceLock<std::collections::HashMap<String, f64>> = std::sync::OnceLock::new();
+    let t = T.get_or_init(|| match std::env::var("JOKER_PAIRS") {
+        Ok(p) => serde_json::from_str(&std::fs::read_to_string(&p).expect("JOKER_PAIRS file")).expect("JOKER_PAIRS json"),
+        Err(_) => Default::default(),
+    });
+    if t.is_empty() {
+        return 0.0;
+    }
+    let k = if a <= b { format!("{a}|{b}") } else { format!("{b}|{a}") };
+    t.get(&k).cloned().unwrap_or(0.0)
+}
