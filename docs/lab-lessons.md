@@ -439,6 +439,11 @@ measured the wrong thing or was never asked:
   3-boss forecast reaches the end of the run, so it no longer needs the prior.
   Boss rerolls at ante 8: in 479 v60 games that reached an ante-8 shop, Director's Cut or Retcon was offered with Violet
   Vessel ahead in 3. No lever there.
+  Early shops on their own table (`JOKER_PRIOR_EARLY=joker-study/joker_prior_c2k_a3.json`, values held at ante 3 of the
+  same v60 games, 54 jokers, through ante 3; correlation with the ante-5 table 0.69; economy jokers rate higher there,
+  Delayed Gratification 0.56 vs 0.16, Egg 0.52 vs 0.02, Golden 0.33 vs -0.11, since the ante-5 model holds money fixed):
+  315 vs 319 wins (32/36), 99 changed: neutral. Every variant of the prior so far (table, B, antes, pairs) lands within
+  noise of v61 or below it.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

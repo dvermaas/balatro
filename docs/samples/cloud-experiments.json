@@ -1934,5 +1934,16 @@
   "wins": 310,
   "baseline_wins": 319,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Joker prior: ante-3 table for antes 1-3",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": -0.008,
+  "se": 0.032,
+  "wins": 315,
+  "baseline_wins": 319,
+  "outcome": "neutral"
  }
 ]
