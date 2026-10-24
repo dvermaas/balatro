@@ -87,7 +87,9 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
-    "v61 + lab tooling (plays unchanged): JOKER_PAIRS=<file> adds learned pair terms to the joker prior; prior-safe=K scales it by the survival ratio vs buying nothing; joker-prior-to=A extends it past ante 6; JOKER_PRIOR_EARLY=<file> gives early shops their own table. Based on: ",
+    "v62 (lab measured): pack picks add the learned joker value to a joker's score gain (Buffoon packs and the like ",
+    "pick the jokers that win runs). Lab vs v61: 2,153 vs 2,109 wins on 4,000 seeds (z = 2.2). Lab tooling: JOKER_PAIRS, ",
+    "prior-safe, joker-prior-to, JOKER_PRIOR_EARLY (all neutral or worse). Based on: ",
     "v61 (lab measured): a learned value per joker. Through ante 6 each shop joker's forecast gain (blinds vs buying ",
     "nothing) gets its value minus the sold joker's: the logit of winning when held at ante 5, from 2,000 v60 games ",
     "(Constellation, Hologram, Baseball Card +1.5; Stuntman, Castle, Seeing Double, Blackboard, Duo +0.6-0.85; Faceless, ",

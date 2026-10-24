@@ -449,6 +449,10 @@ measured the wrong thing or was never asked:
   next 600 316 vs 304: **first 1,200 seeds 649 vs 623 (73/47, z = 2.37)**, 142 changed; P = 3 325 vs 319 (44/38).
   Held at ante 5 with P = 1: Blackboard 49 -> 60, Zany 32 -> 44, Constellation 57 -> 65, Mr. Bones 63 -> 71;
   Wrathful 39 -> 25.
+  **Shipped as v62** (`PACK_PRIOR` = 1). Whole first set: **1,083 vs 1,048 wins (54.2% vs 52.4%; 118/83, z = 2.47)**,
+  +0.005 +- 0.019 ante; second set: 1,070 vs 1,061 (98/89), +0.017 +- 0.017 ante. Both: 2,153 vs 2,109 (216/172,
+  z = 2.23); without the 600 seeds P was picked on, 179/149 (z = 1.66). Small, positive in every chunk, ~11% of games
+  changed. v62 with no flags replays the `pack-prior=1` games exactly (40 seeds).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

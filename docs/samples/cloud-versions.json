@@ -853,5 +853,35 @@
   "died_ante_1_4": 113,
   "died_ante_5_7": 462,
   "died_ante_8": 364
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v62",
+  "version_id": "rust",
+  "change": "Pack picks use the learned joker values",
+  "games": 2000,
+  "mean_ante": 7.295,
+  "se": 0.033,
+  "wins": 1083,
+  "win_rate": 0.541,
+  "mean_round": 19.76,
+  "died_ante_1_4": 122,
+  "died_ante_5_7": 440,
+  "died_ante_8": 355
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v62",
+  "version_id": "rust",
+  "change": "Pack picks use the learned joker values",
+  "games": 2000,
+  "mean_ante": 7.313,
+  "se": 0.032,
+  "wins": 1070,
+  "win_rate": 0.535,
+  "mean_round": 19.8,
+  "died_ante_1_4": 110,
+  "died_ante_5_7": 446,
+  "died_ante_8": 374
  }
 ]

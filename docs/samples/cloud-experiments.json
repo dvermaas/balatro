@@ -1967,5 +1967,27 @@
   "wins": 325,
   "baseline_wins": 319,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "v62: pack picks + 1 x joker prior, first seed set",
+  "theme": "Packs",
+  "baseline": "v61",
+  "games": 2000,
+  "delta_ante": 0.005,
+  "se": 0.019,
+  "wins": 1083,
+  "baseline_wins": 1048,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v62: pack picks + 1 x joker prior, second seed set",
+  "theme": "Packs",
+  "baseline": "v61",
+  "games": 2000,
+  "delta_ante": 0.017,
+  "se": 0.017,
+  "wins": 1070,
+  "baseline_wins": 1061,
+  "outcome": "shipped"
  }
 ]

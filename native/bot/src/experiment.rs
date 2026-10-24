@@ -110,7 +110,8 @@ pub struct Exp {
     pub joker_prior_to: i64,
     /// lab `joker-prior-early-to=A`: the JOKER_PRIOR_EARLY table through ante A (default 3)
     pub joker_prior_early_to: i64,
-    /// `pack-prior=P`: the Picker's joker value (score gain, $1 = 0.01) gains P x the joker's JOKER_PRIOR value (floor 0.01)
+    /// v62: the Picker's joker value (score gain, $1 = 0.01) gains P x the joker's learned value (floor 0.01); P = PACK_PRIOR
+    /// (lab `pack-prior=P`, `no-pack-prior`)
     pub pack_prior: f64,
     /// `prior-sell`: swap sell candidates add the held joker with the lowest JOKER_PRIOR value
     pub prior_sell: bool,
@@ -176,7 +177,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: num("pack-prior"), joker_prior_from: num("joker-prior-from") as i64, joker_prior_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-to=")?.parse().ok()).unwrap_or(6), joker_prior_early_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-early-to=")?.parse().ok()).unwrap_or(3), prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: s.split(',').find_map(|x| x.trim().strip_prefix("pack-prior=")?.parse().ok()).unwrap_or(if has("no-pack-prior") { 0.0 } else { PACK_PRIOR }), joker_prior_from: num("joker-prior-from") as i64, joker_prior_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-to=")?.parse().ok()).unwrap_or(6), joker_prior_early_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-early-to=")?.parse().ok()).unwrap_or(3), prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,
@@ -246,6 +247,8 @@ pub fn is_pair_joker(label: Option<&str>) -> bool {
 
 /// v61: the joker prior's weight, in blinds per unit of learned value.
 pub const JOKER_PRIOR: f64 = 1.0;
+/// v62: pack picks value a joker at its score gain + PACK_PRIOR x its learned value (lab `pack-prior=P`, `no-pack-prior`)
+pub const PACK_PRIOR: f64 = 1.0;
 
 /// v61: a joker's learned value (data/joker_values.json: the logit of winning when held at ante 5's first shop, from
 /// 2,000 v60 lab games, docs/samples/cloud-lab/joker-study/jval.py; clipped to [-1, 1.5]); 0 for a joker it does not
