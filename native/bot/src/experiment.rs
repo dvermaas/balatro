@@ -108,6 +108,8 @@ pub struct Exp {
     pub joker_prior_from: i64,
     /// lab `joker-prior-to=A`: the joker prior through ante A (v61: 6)
     pub joker_prior_to: i64,
+    /// lab `joker-prior-early-to=A`: the JOKER_PRIOR_EARLY table through ante A (default 3)
+    pub joker_prior_early_to: i64,
     /// `pack-prior=P`: the Picker's joker value (score gain, $1 = 0.01) gains P x the joker's JOKER_PRIOR value (floor 0.01)
     pub pack_prior: f64,
     /// `prior-sell`: swap sell candidates add the held joker with the lowest JOKER_PRIOR value
@@ -174,7 +176,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: num("pack-prior"), joker_prior_from: num("joker-prior-from") as i64, joker_prior_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-to=")?.parse().ok()).unwrap_or(6), prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: num("pack-prior"), joker_prior_from: num("joker-prior-from") as i64, joker_prior_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-to=")?.parse().ok()).unwrap_or(6), joker_prior_early_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-early-to=")?.parse().ok()).unwrap_or(3), prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,
@@ -258,6 +260,23 @@ pub fn joker_value(key: &str) -> f64 {
         serde_json::from_str(&text).expect("joker values json")
     });
     t.get(key).cloned().unwrap_or(0.0)
+}
+
+/// Lab (`JOKER_PRIOR_EARLY=<json>`, through ante `joker-prior-early-to=A`, default 3): the joker prior's value in early
+/// shops from a table measured at an earlier ante (economy jokers pay off as money, which the ante-5 model holds fixed);
+/// falls back to joker_value for jokers it does not list.
+pub fn joker_value_at(key: &str, ante: i64) -> f64 {
+    static T: std::sync::OnceLock<std::collections::HashMap<String, f64>> = std::sync::OnceLock::new();
+    let t = T.get_or_init(|| match std::env::var("JOKER_PRIOR_EARLY") {
+        Ok(p) => serde_json::from_str(&std::fs::read_to_string(&p).expect("JOKER_PRIOR_EARLY file")).expect("JOKER_PRIOR_EARLY json"),
+        Err(_) => Default::default(),
+    });
+    if ante <= get().joker_prior_early_to {
+        if let Some(v) = t.get(key) {
+            return *v;
+        }
+    }
+    joker_value(key)
 }
 
 /// Lab (`JOKER_PAIRS=<json {"j_a|j_b": v}>`, keys sorted): the pair term of two held jokers (0 when unlisted or no file).

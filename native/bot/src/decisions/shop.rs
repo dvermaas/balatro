@@ -742,7 +742,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             }
             // lab (JOKER_PAIRS): + the pair terms with the jokers kept (the sold one's terms with them go)
             let kept: Vec<&String> = held.iter().enumerate().filter(|(j, _)| Some(*j) != sold).map(|(_, h)| h).collect();
-            let with = |x: &str| crate::experiment::joker_value(x) + kept.iter().map(|h| crate::experiment::joker_pair(x, h)).sum::<f64>();
+            let with = |x: &str| crate::experiment::joker_value_at(x, ante_now) + kept.iter().map(|h| crate::experiment::joker_pair(x, h)).sum::<f64>();
             let mut b = jp * (with(&k) - sold.and_then(|j| held.get(j)).map_or(0.0, |h| with(h)));
             let ps = crate::experiment::get().prior_safe;
             if ps != 0.0 {
