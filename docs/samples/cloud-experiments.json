@@ -1989,5 +1989,16 @@
   "wins": 1070,
   "baseline_wins": 1061,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Offer the lowest-valued held joker for sale",
+  "theme": "Jokers",
+  "baseline": "v62",
+  "games": 600,
+  "delta_ante": -0.04,
+  "se": 0.023,
+  "wins": 331,
+  "baseline_wins": 333,
+  "outcome": "dropped"
  }
 ]

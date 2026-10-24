@@ -453,6 +453,7 @@ measured the wrong thing or was never asked:
   +0.005 +- 0.019 ante; second set: 1,070 vs 1,061 (98/89), +0.017 +- 0.017 ante. Both: 2,153 vs 2,109 (216/172,
   z = 2.23); without the 600 seeds P was picked on, 179/149 (z = 1.66). Small, positive in every chunk, ~11% of games
   changed. v62 with no flags replays the `pack-prior=1` games exactly (40 seeds).
+  `prior-sell` alone on v62: first 600 seeds 331 vs 333 wins (32/34), -0.040 +- 0.023 ante: dropped.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
