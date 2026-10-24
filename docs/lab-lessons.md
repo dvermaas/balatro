@@ -434,6 +434,11 @@ measured the wrong thing or was never asked:
   (The Wall, Mouth, Water, Arm at ante 4). The prior scaled by min(1, P(clear the 3 bosses | buy) / P(... | skip))^K
   (`prior-safe=K`): K = 1 319 vs 319 wins (17/17, 43 changed), K = 3 313 vs 319 (21/27): the forecast's survival
   numbers do not single out the risky buys; dropped.
+  B = 1.5: first 600 seeds 311 vs 319 wins (43/51), -0.085 +- 0.036 ante: worse (B = 2 was too); B = 1 stays.
+  The prior through ante 7 (`joker-prior-to=7`): 310 vs 319 (17/26), -0.023 +- 0.011 ante: worse. From ante 7 the
+  3-boss forecast reaches the end of the run, so it no longer needs the prior.
+  Boss rerolls at ante 8: in 479 v60 games that reached an ante-8 shop, Director's Cut or Retcon was offered with Violet
+  Vessel ahead in 3. No lever there.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

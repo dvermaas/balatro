@@ -1912,5 +1912,27 @@
   "wins": 313,
   "baseline_wins": 319,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker prior B=1.5",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": -0.085,
+  "se": 0.036,
+  "wins": 311,
+  "baseline_wins": 319,
+  "outcome": "worse"
+ },
+ {
+  "experiment": "Joker prior through ante 7",
+  "theme": "Forecast",
+  "baseline": "v61",
+  "games": 600,
+  "delta_ante": -0.023,
+  "se": 0.011,
+  "wins": 310,
+  "baseline_wins": 319,
+  "outcome": "worse"
  }
 ]
