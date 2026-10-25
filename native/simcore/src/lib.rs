@@ -1090,6 +1090,8 @@ pub static ROLLOUT_SHOP: std::sync::atomic::AtomicBool = std::sync::atomic::Atom
 pub static ROLLOUT_SHOP_FLOOR: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(10);
 /// Lab (`rollout-shop-first`): rollouts take the first affordable joker in the shop (in effect a random one), not the priciest.
 pub static ROLLOUT_SHOP_FIRST: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab (`rollout-easy=K`): rollout blind targets / K, standing in for the real bot's stronger play (calibration probe).
+pub static ROLLOUT_EASY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0x3FF0000000000000); // 1.0
 /// Lab (`rollout-last-discard`): rollouts may discard before their last hand when it cannot clear the blind.
 pub static LAST_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Lab (`rollout-shop-value`): rollouts take the affordable joker with the highest learned value (ROLLOUT_VALUE, by joker
@@ -1278,6 +1280,12 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                 }
                 act(g, ActionType::SelectBlind);
                 failed.retain(|f| f.1 != SELECTING_HAND); // the bot retries targeted cards each round
+                let k = f64::from_bits(ROLLOUT_EASY.load(std::sync::atomic::Ordering::Relaxed));
+                if k != 1.0 {
+                    if let Some(b) = g.blind.as_mut() {
+                        b.target = (b.target as f64 / k) as i64;
+                    }
+                }
                 // Python refreshes its policy right after the select (Madness, Riff-raff act in it)
                 if strict {
                     refresh_or_rebuild(g, &mut pol, &mut pol_uids, &mut pol_names, &mut rebuild)?;
