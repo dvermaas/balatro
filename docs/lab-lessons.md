@@ -476,6 +476,11 @@ measured the wrong thing or was never asked:
   Both together on 600 seeds (`rollout-easy=1.15,rollout-last-discard`): **300 vs 333 wins (76/109, z = -2.43)**, ante-8
   deaths 106 -> 134. A forecast closer to the truth plays worse: late in the run the pessimism is what pushes it to buy
   power before the finishers, and v62's tuning (the joker prior included) sits on top of it.
+  Calibrated only through ante 5 (`rollout-easy=1.15,rollout-easy-to=5`, the farm antes; the end left pessimistic):
+  301 vs 333 (74/106, z = -2.39), ante-8 deaths 106 -> 124. A less fearful early forecast also builds worse late.
+  Neither arm buys less (33 buys a game, $32 and 5.1 jokers at ante 5 in all three): the change is in which items.
+  Chosen options' forecast gains are ~0.2-0.3 blinds from ante 3 (0.08 at ante 8) against the prior's +-1, so since
+  v61 the learned values choose the jokers and the rollouts the rest.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

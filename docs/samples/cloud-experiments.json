@@ -2022,5 +2022,16 @@
   "wins": 300,
   "baseline_wins": 333,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Calibrated rollouts through ante 5 only (targets / 1.15)",
+  "theme": "Forecast",
+  "baseline": "v62",
+  "games": 600,
+  "delta_ante": -0.047,
+  "se": 0.054,
+  "wins": 301,
+  "baseline_wins": 333,
+  "outcome": "dropped"
  }
 ]
