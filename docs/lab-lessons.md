@@ -461,6 +461,18 @@ measured the wrong thing or was never asked:
   at a median 50% of the target against Violet Vessel (a power gap), 68% against The Wall, 76-78% against Crimson Heart
   and Verdant Leaf (a quarter reach 90%). 75 of 104 Verdant Leaf deaths hold 4 jokers: slots were full, so it sold a
   real one.
+- **Forecast calibration, v62 (200 traced games, 5,429 shop forecasts, `samples/cloud-lab/calib62.py`).** P(clear the
+  next boss) predicted vs actual by ante: 1 96/99.5%, 2 93/98.5%, 3 94/100%, 4 90/98%, 5 86/97%, 6 74/89%, 7 67/90%,
+  8 42/77%. The rollouts' median boss score as a share of the bot's: 0.76-0.92 at every ante, 0.89 even from the
+  ante's last shop (build all but final), so most of the gap is the rollouts' play, not later purchases. Forecasts
+  under 10% come true 46% of the time. By boss (last two shops, bosses the bot then cleared): Verdant Leaf 33%
+  predicted, Crimson Heart 41%, Violet Vessel 47%, The Needle 62%, Amber Acorn 63%, Cerulean Bell 71%, The Mouth 79%;
+  ordinary bosses 90-96%. Rollouts handle only The Psychic, Eye, Mouth and Serpent; they never sell a joker (Verdant
+  Leaf) and never discard before their last hand (`hands_left > 1`), which is every hand under The Needle.
+  Discarding before a losing last hand (`rollout-last-discard`): The Needle 67% -> 81% predicted, antes 1-4 1-2 points
+  closer; 200 seeds 109 vs 111 wins. Rollout targets / 1.15 (`rollout-easy=1.15`, a blunt stand-in for the bot's
+  stronger play): score ratio 0.90-0.95 at antes 1-7 (0.81 at 8), but P(clear) still low at ante 8 (49 vs 73%):
+  the rollouts lose more of their bad draws than the bot does, not only by a constant factor.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
