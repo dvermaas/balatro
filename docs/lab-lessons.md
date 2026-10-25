@@ -473,6 +473,9 @@ measured the wrong thing or was never asked:
   closer; 200 seeds 109 vs 111 wins. Rollout targets / 1.15 (`rollout-easy=1.15`, a blunt stand-in for the bot's
   stronger play): score ratio 0.90-0.95 at antes 1-7 (0.81 at 8), but P(clear) still low at ante 8 (49 vs 73%):
   the rollouts lose more of their bad draws than the bot does, not only by a constant factor.
+  Both together on 600 seeds (`rollout-easy=1.15,rollout-last-discard`): **300 vs 333 wins (76/109, z = -2.43)**, ante-8
+  deaths 106 -> 134. A forecast closer to the truth plays worse: late in the run the pessimism is what pushes it to buy
+  power before the finishers, and v62's tuning (the joker prior included) sits on top of it.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

@@ -123,6 +123,8 @@ pub struct Exp {
     pub rollout_last_discard: bool,
     /// `rollout-easy=K`: rollout blind targets / K (simcore::ROLLOUT_EASY; 1 = off)
     pub rollout_easy: f64,
+    /// `rollout-easy-to=A`: rollout-easy only for blinds at ante <= A (default every ante)
+    pub rollout_easy_to: i32,
     pub free_discard: bool,
     pub money_tail: f64,
     pub eye_plan: bool,
@@ -183,7 +185,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: s.split(',').find_map(|x| x.trim().strip_prefix("pack-prior=")?.parse().ok()).unwrap_or(if has("no-pack-prior") { 0.0 } else { PACK_PRIOR }), joker_prior_from: num("joker-prior-from") as i64, joker_prior_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-to=")?.parse().ok()).unwrap_or(6), joker_prior_early_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-early-to=")?.parse().ok()).unwrap_or(3), prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), rollout_shop_value: has("rollout-shop-value"), rollout_last_discard: has("rollout-last-discard"), rollout_easy: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-easy=")?.parse().ok()).unwrap_or(1.0), eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: s.split(',').find_map(|x| x.trim().strip_prefix("pack-prior=")?.parse().ok()).unwrap_or(if has("no-pack-prior") { 0.0 } else { PACK_PRIOR }), joker_prior_from: num("joker-prior-from") as i64, joker_prior_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-to=")?.parse().ok()).unwrap_or(6), joker_prior_early_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-early-to=")?.parse().ok()).unwrap_or(3), prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), rollout_shop_value: has("rollout-shop-value"), rollout_last_discard: has("rollout-last-discard"), rollout_easy: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-easy=")?.parse().ok()).unwrap_or(1.0), rollout_easy_to: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-easy-to=")?.parse().ok()).unwrap_or(99), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,
@@ -239,6 +241,7 @@ pub fn get() -> &'static Exp {
         simcore::ROLLOUT_SHOP_VALUE.store(e.rollout_shop_value, std::sync::atomic::Ordering::Relaxed);
         simcore::LAST_DISCARD.store(e.rollout_last_discard, std::sync::atomic::Ordering::Relaxed);
         simcore::ROLLOUT_EASY.store(e.rollout_easy.to_bits(), std::sync::atomic::Ordering::Relaxed);
+        simcore::ROLLOUT_EASY_TO.store(e.rollout_easy_to, std::sync::atomic::Ordering::Relaxed);
         let _ = simcore::ROLLOUT_VALUE.set(joker_value);
         simcore::FREE_FIRST.store(e.rollout_free_first, std::sync::atomic::Ordering::Relaxed);
         if let Some(f) = e.rollout_shop {

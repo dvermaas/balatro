@@ -1092,6 +1092,8 @@ pub static ROLLOUT_SHOP_FLOOR: std::sync::atomic::AtomicI32 = std::sync::atomic:
 pub static ROLLOUT_SHOP_FIRST: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Lab (`rollout-easy=K`): rollout blind targets / K, standing in for the real bot's stronger play (calibration probe).
 pub static ROLLOUT_EASY: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0x3FF0000000000000); // 1.0
+/// Lab (`rollout-easy-to=A`): ROLLOUT_EASY only for blinds at ante <= A (farm antes calibrated, the end left pessimistic).
+pub static ROLLOUT_EASY_TO: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(99);
 /// Lab (`rollout-last-discard`): rollouts may discard before their last hand when it cannot clear the blind.
 pub static LAST_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Lab (`rollout-shop-value`): rollouts take the affordable joker with the highest learned value (ROLLOUT_VALUE, by joker
@@ -1281,7 +1283,7 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                 act(g, ActionType::SelectBlind);
                 failed.retain(|f| f.1 != SELECTING_HAND); // the bot retries targeted cards each round
                 let k = f64::from_bits(ROLLOUT_EASY.load(std::sync::atomic::Ordering::Relaxed));
-                if k != 1.0 {
+                if k != 1.0 && g.ante <= ROLLOUT_EASY_TO.load(std::sync::atomic::Ordering::Relaxed) {
                     if let Some(b) = g.blind.as_mut() {
                         b.target = (b.target as f64 / k) as i64;
                     }

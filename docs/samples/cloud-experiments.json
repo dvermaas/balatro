@@ -2011,5 +2011,16 @@
   "wins": 330,
   "baseline_wins": 333,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Calibrated rollouts (targets / 1.15 + last-hand discard)",
+  "theme": "Forecast",
+  "baseline": "v62",
+  "games": 600,
+  "delta_ante": -0.045,
+  "se": 0.057,
+  "wins": 300,
+  "baseline_wins": 333,
+  "outcome": "dropped"
  }
 ]
