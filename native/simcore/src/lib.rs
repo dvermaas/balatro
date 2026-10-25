@@ -536,7 +536,9 @@ impl Policy {
         let behind = score * (hands_left as f64) < need as f64;
         let k = f64::from_bits(ROLLOUT_BEHIND.load(std::sync::atomic::Ordering::Relaxed));
         let behind_d = if k == 1.0 { behind } else { score * (hands_left as f64) * k < need as f64 };
-        if discards_left > 0 && hands_left > 1 && behind_d && !NO_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
+        // lab `rollout-last-discard`: the last hand may discard too when it cannot clear (The Needle: always the last)
+        let last_ok = LAST_DISCARD.load(std::sync::atomic::Ordering::Relaxed) && hands_left == 1 && score < need as f64;
+        if discards_left > 0 && (hands_left > 1 || last_ok) && behind_d && !NO_DISCARD.load(std::sync::atomic::Ordering::Relaxed) {
             let smart = SMART_DISCARD.load(std::sync::atomic::Ordering::Relaxed);
             let toss = if smart > 0 { smart_discard(g, &scorer, &infos, &forced, &combo, smart) } else { discard(&infos, &forced) };
             if !toss.is_empty() {
@@ -1088,6 +1090,8 @@ pub static ROLLOUT_SHOP: std::sync::atomic::AtomicBool = std::sync::atomic::Atom
 pub static ROLLOUT_SHOP_FLOOR: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(10);
 /// Lab (`rollout-shop-first`): rollouts take the first affordable joker in the shop (in effect a random one), not the priciest.
 pub static ROLLOUT_SHOP_FIRST: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab (`rollout-last-discard`): rollouts may discard before their last hand when it cannot clear the blind.
+pub static LAST_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Lab (`rollout-shop-value`): rollouts take the affordable joker with the highest learned value (ROLLOUT_VALUE, by joker
 /// key), price breaking ties, instead of the priciest.
 pub static ROLLOUT_SHOP_VALUE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
