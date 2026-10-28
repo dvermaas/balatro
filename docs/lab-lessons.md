@@ -481,6 +481,17 @@ measured the wrong thing or was never asked:
   Neither arm buys less (33 buys a game, $32 and 5.1 jokers at ante 5 in all three): the change is in which items.
   Chosen options' forecast gains are ~0.2-0.3 blinds from ante 3 (0.08 at ante 8) against the prior's +-1, so since
   v61 the learned values choose the jokers and the rollouts the rest.
+- **What winners have beyond the build's power** (`samples/cloud-lab/beyond/`: ~17,000 v61/v62 games with power
+  snapshots; logistic win models at the first shop of an ante, trained on the second set and e16k, tested on the
+  first). Power (the best play's score over 32 deals, 4 hands, which is roughly what the forecast sees) alone predicts
+  little: held-out AUC 0.53 at ante 3, 0.64 at 5, 0.68 at 7; with everything below 0.63 / 0.73 / 0.77. Per 1 SD, with
+  the rest held fixed (ante 5): joker values +0.62 logit (z 28), money +0.31 per $16 (z 15), editions +0.27 (z 12),
+  vouchers +0.24 (z 12), power's 90th percentile +0.26 (z 8; its median +0.11, its 10th percentile slightly negative:
+  the ceiling matters, not the floor), fewer hand types played +0.05 (z 3); deck size, hand size and Pair vs Flush vs
+  Straight builds ~0. By voucher: Grabber +0.62 (z 12), Paint Brush +0.33 (z 7), Nacho Tong +0.75, Palette +0.58; but the
+  bot already owns Grabber in 83% and Paint Brush in 81% of games that see them (v60 offers), so that is not a lever.
+  By edition: Negative +0.62, Polychrome +0.41, Foil +0.21, Holographic +0.08 per joker. Early on, what decides a run is
+  what the build will become (joker quality, money), not how strong it is now: the reason the joker prior helped.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
