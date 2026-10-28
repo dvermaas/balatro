@@ -495,6 +495,9 @@ measured the wrong thing or was never asked:
 - **8-boss forecast horizon on v62** (`fc-bosses=8`; only ~1.4x slower, 22 vs 15 s a game, since most rollouts die or
   reach ante 8 first): first 600 seeds 306 vs 333 wins (52/79, z = -2.36), -0.137 +- 0.043 ante; more deaths at
   antes 1-7 (189 vs 161), The Mouth 12 -> 25. Longer horizons have now been neutral (4) or worse (8).
+  8 bosses without the joker values (`fc-bosses=8,no-joker-prior,no-pack-prior`, does the long horizon find what the
+  values add?): first 480 seeds 211 vs 263 wins (43/95, z = -4.43), and below v60 (3 bosses, no values: 224). No: the
+  longer the rollout, the more its weak play and frozen build compound; the learned values carry what it cannot see.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

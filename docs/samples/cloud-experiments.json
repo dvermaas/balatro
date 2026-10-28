@@ -2044,5 +2044,16 @@
   "wins": 306,
   "baseline_wins": 333,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "8-boss forecast horizon without joker values",
+  "theme": "Forecast",
+  "baseline": "v62",
+  "games": 480,
+  "delta_ante": -0.163,
+  "se": 0.059,
+  "wins": 211,
+  "baseline_wins": 263,
+  "outcome": "dropped"
  }
 ]
