@@ -2033,5 +2033,16 @@
   "wins": 301,
   "baseline_wins": 333,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "8-boss forecast horizon",
+  "theme": "Forecast",
+  "baseline": "v62",
+  "games": 600,
+  "delta_ante": -0.137,
+  "se": 0.043,
+  "wins": 306,
+  "baseline_wins": 333,
+  "outcome": "dropped"
  }
 ]

@@ -492,6 +492,9 @@ measured the wrong thing or was never asked:
   bot already owns Grabber in 83% and Paint Brush in 81% of games that see them (v60 offers), so that is not a lever.
   By edition: Negative +0.62, Polychrome +0.41, Foil +0.21, Holographic +0.08 per joker. Early on, what decides a run is
   what the build will become (joker quality, money), not how strong it is now: the reason the joker prior helped.
+- **8-boss forecast horizon on v62** (`fc-bosses=8`; only ~1.4x slower, 22 vs 15 s a game, since most rollouts die or
+  reach ante 8 first): first 600 seeds 306 vs 333 wins (52/79, z = -2.36), -0.137 +- 0.043 ante; more deaths at
+  antes 1-7 (189 vs 161), The Mouth 12 -> 25. Longer horizons have now been neutral (4) or worse (8).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
