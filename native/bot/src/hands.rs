@@ -472,6 +472,20 @@ pub fn best_score(infos: &[Info], scorer: ScorerArg, allowed: Allowed) -> i64 {
     best.unwrap_or(0)
 }
 
+/// lab (`round-search`): the best play's score, hand name and cards (positions in `infos`); (0, "", []) without any.
+pub fn best_play_cards(infos: &[Info], scorer: ScorerArg, allowed: Allowed) -> (i64, &'static str, Vec<usize>) {
+    if let Some(best) = native::best_play_cards(scorer, infos, allowed) {
+        return best;
+    }
+    let mut best: (i64, &'static str, Vec<usize>) = (0, "", vec![]);
+    for r in evaluated_plays(infos, &Levels::new(), scorer, allowed) {
+        if best.2.is_empty() || r.score > best.0 {
+            best = (r.score, r.name, r.combo);
+        }
+    }
+    best
+}
+
 // hands.py 154-159
 /// max((score, hand name)) over the plays, (0, None) without any: ties go to the larger name.
 pub fn best_play(infos: &[Info], hand_levels: &Levels, scorer: ScorerArg, allowed: Allowed) -> (i64, Option<&'static str>) {
@@ -952,6 +966,18 @@ pub mod native {
             }
         });
         Some(best.unwrap_or(0.0) as i64)
+    }
+
+    /// hands::best_play_cards on the kernel, or None for the Python path.
+    pub fn best_play_cards(scorer: ScorerArg, infos: &[Info], allowed: Allowed) -> Option<(i64, &'static str, Vec<usize>)> {
+        let (ns, cards, allow) = inputs(scorer, infos, allowed)?;
+        let mut best: (f64, &'static str, Vec<usize>) = (0.0, "", vec![]);
+        jev_kernel::each_best_candidate(ns, &cards, allow, |score, name, combo, _| {
+            if best.2.is_empty() || score > best.0 {
+                best = (score, HAND_NAMES[name], combo.to_vec());
+            }
+        });
+        Some((best.0 as i64, best.1, best.2))
     }
 
     // native.py 178-184

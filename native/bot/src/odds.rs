@@ -304,3 +304,113 @@ pub fn arg_window(missing: &[String], hand_infos: &[Info], keep: &[usize]) -> Ve
     w.dedup();
     w
 }
+
+/// A first move for `round_search`: play these cards (scoring this much) or discard them.
+pub enum RootAct {
+    Play(Vec<usize>, i64),
+    Discard(Vec<usize>),
+}
+
+/// The round as `round_search` sees it.
+pub struct RoundState<'a> {
+    pub hand: &'a [Info],
+    pub deck: &'a [Info],
+    pub need: f64,
+    pub hands_left: i64,
+    pub discards_left: i64,
+    pub hand_size: usize,
+    pub cap: usize,
+    pub serpent: bool,
+}
+
+fn take(h: &mut Vec<Info>, cards: &[usize]) {
+    let mut cs = cards.to_vec();
+    cs.sort();
+    for &c in cs.iter().rev() {
+        if c < h.len() {
+            h.remove(c);
+        }
+    }
+}
+
+/// The rollout's discard: with no flush in hand, keep 4+ cards of one suit; else keep the best play. Toss up to
+/// `cap` of the rest, lowest first.
+fn sim_discard(h: &[Info], best: &[usize], name: &str, cap: usize) -> Vec<usize> {
+    let mut keep: Vec<usize> = best.to_vec();
+    if !name.contains("Flush") {
+        for s in ["Hearts", "Diamonds", "Clubs", "Spades"] {
+            let of: Vec<usize> = (0..h.len()).filter(|&i| h[i].suit_is(s) && !h[i].enh_is("STONE")).collect();
+            if of.len() >= 4 {
+                keep = of;
+                break;
+            }
+        }
+    }
+    let mut rest: Vec<usize> = (0..h.len()).filter(|i| !keep.contains(i)).collect();
+    rest.sort_by_key(|&i| (hands::_rank_value(&h[i]), i));
+    rest.truncate(cap);
+    rest
+}
+
+/// lab (`round-search=N`): P(reaching `need` this round) after each first move, playing on with a simple policy
+/// (play the best hand; while behind pace with discards left, or on the last hand, discard around it) over N
+/// shuffles of the draw pile. The pile is sorted before shuffling, so its real order never matters; the same
+/// shuffles score every move. The scorer is the current one (no joker growth within the round).
+pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, allowed: Allowed, samples: usize) -> Vec<f64> {
+    let mut deck: Vec<Info> = st.deck.to_vec();
+    sort_by_card_key(&mut deck);
+    let mut wins = vec![0usize; acts.len()];
+    let mut rng = Random::new_int(24024);
+    for _ in 0..samples {
+        let mut order: Vec<usize> = (0..deck.len()).collect();
+        rng.shuffle(&mut order);
+        for (a, act) in acts.iter().enumerate() {
+            let mut h: Vec<Info> = st.hand.to_vec();
+            let mut next = 0usize;
+            let (mut r, mut hl, mut dl) = (st.need, st.hands_left, st.discards_left);
+            let mut first = Some(act);
+            loop {
+                let (play, cards, score) = match first.take() {
+                    Some(RootAct::Play(c, s)) => (true, c.clone(), *s),
+                    Some(RootAct::Discard(c)) => (false, c.clone(), 0),
+                    None => {
+                        let (s, name, best) = hands::best_play_cards(&h, ScorerArg::Jokers(scorer), allowed);
+                        if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r) {
+                            (true, best, s)
+                        } else {
+                            let d = sim_discard(&h, &best, name, st.cap);
+                            if d.is_empty() { (true, best, s) } else { (false, d, 0) }
+                        }
+                    }
+                };
+                take(&mut h, &cards);
+                if play {
+                    r -= score as f64;
+                    hl -= 1;
+                    if r <= 0.0 {
+                        wins[a] += 1;
+                        break;
+                    }
+                    if hl <= 0 {
+                        break;
+                    }
+                } else {
+                    dl -= 1;
+                }
+                let want = if st.serpent { 3 } else { st.hand_size.saturating_sub(h.len()) };
+                for _ in 0..want {
+                    if next >= order.len() {
+                        break;
+                    }
+                    h.push(deck[order[next]].clone());
+                    next += 1;
+                }
+                h.sort_by_cached_key(future_key);
+                if h.is_empty() {
+                    break;
+                }
+            }
+        }
+    }
+    wins.iter().map(|&w| w as f64 / samples as f64).collect()
+}
