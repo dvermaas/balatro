@@ -2143,5 +2143,16 @@
   "wins": 1121,
   "baseline_wins": 1089,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Round search with a 15-point bar",
+  "theme": "Play",
+  "baseline": "v64",
+  "games": 450,
+  "delta_ante": -0.053,
+  "se": 0.041,
+  "wins": 264,
+  "baseline_wins": 272,
+  "outcome": "dropped"
  }
 ]

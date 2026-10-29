@@ -530,6 +530,7 @@ measured the wrong thing or was never asked:
   change. Where it helps (first set): ante-1 deaths 32 -> 13; Big Blind 107 -> 81 and The Wall 64 -> 50 (first 1,800); more runs reach
   ante 8 (1,526 vs 1,453). The second set's first 740 seeds were flat (only 4 ante-1 deaths to fix there), the rest
   +30 wins. **Shipped as v64** (`ROUND_SEARCH` = 128, `ROUND_SEARCH_TOL` = 0.1).
+  A higher bar, T = 0.15: first 450 seeds 264 vs 272 wins (10/18) vs v64; 0.1 stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
