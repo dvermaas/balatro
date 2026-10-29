@@ -2198,5 +2198,16 @@
   "wins": 235,
   "baseline_wins": 254,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Rollouts discard on their last hand",
+  "theme": "Forecast",
+  "baseline": "v64",
+  "games": 420,
+  "delta_ante": -0.069,
+  "se": 0.056,
+  "wins": 222,
+  "baseline_wins": 254,
+  "outcome": "dropped"
  }
 ]
