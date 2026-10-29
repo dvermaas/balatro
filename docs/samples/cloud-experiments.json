@@ -2220,5 +2220,16 @@
   "wins": 221,
   "baseline_wins": 254,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Round search's own discard as an extra option",
+  "theme": "Play",
+  "baseline": "v64",
+  "games": 450,
+  "delta_ante": 0.018,
+  "se": 0.022,
+  "wins": 236,
+  "baseline_wins": 234,
+  "outcome": "neutral"
  }
 ]

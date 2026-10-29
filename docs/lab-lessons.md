@@ -543,6 +543,8 @@ measured the wrong thing or was never asked:
   Harder rollout blinds (`rollout-easy=0.9`, targets / 0.9): 221 vs 254 (36/69, z = -3.22): worse too; the rollouts sit
   at an optimum both ways. Caution: these v64 variants were screened on the seeds the 0.1 bar was picked on (b2k
   0-419, +19 there), so that baseline is flattered by selection; later v64 variants are screened on c2k 0-449.
+  The search's own discard as one more option (`round-search-extra`): c2k 0-449 236 vs 234 wins (10/8), 21 changed.
+  Neutral; dropped.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
