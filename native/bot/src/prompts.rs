@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v63 + lab tooling (plays unchanged): pack-edition=W adds edition values to pack picks. Based on: ",
     "v63 (lab measured): the shop joker prior adds a learned value per edition (Negative 0.62, Polychrome 0.41, ",
     "Foil 0.21, Holographic 0.08 logit). Lab vs v62: 2,198 vs 2,153 wins on 4,000 seeds (z = 3.0). Based on: ",
     "v62 + lab tooling (plays unchanged): rollout-shop-value makes rollouts buy the highest-valued joker; rollout-last-discard lets rollouts discard before a losing last hand; rollout-easy=K divides rollout blind targets by K (rollout-easy-to=A: only through ante A); edition-prior=W adds learned edition values to the joker prior. Based on: ",

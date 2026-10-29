@@ -312,7 +312,12 @@ impl<'a> Picker<'a> {
             let base = match self.gain(Some(c), None) { None => 0.05, Some(g) => pmax(g, 0.0) };
             // lab (`pack-prior=P`): + P x the joker's learned value
             let pp = crate::experiment::get().pack_prior;
-            let prior = if pp != 0.0 { pp * crate::experiment::joker_value(gs::s(gs::get(c, "key"))) } else { 0.0 };
+            let mut prior = if pp != 0.0 { pp * crate::experiment::joker_value(gs::s(gs::get(c, "key"))) } else { 0.0 };
+            // lab (`pack-edition=W`): + W x the edition's learned value (v63's shop prior has it)
+            let pe = crate::experiment::get().pack_edition;
+            if pe != 0.0 {
+                prior += pe * crate::experiment::edition_value(gs::s(gs::mget(m, "edition")));
+            }
             self.memo.insert(k.clone(), pmax(base + prior, 0.0) + 0.01);
         }
         self.memo[&k]
