@@ -629,7 +629,8 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     };
     let mut best = if p_play >= bar { argmax(&pp) } else { argmax(&dp) };
     let rs = crate::experiment::get().round_search;
-    if rs > 0 && gs::int(gs::get(gs_, "ante_num")) <= crate::experiment::get().round_search_to && !matches!(boss.as_str(), "The Mouth" | "The Eye" | "Cerulean Bell" | "The Hook") && play_opts.len() + disc_opts.len() > 1 {
+    if rs > 0 && gs::int(gs::get(gs_, "ante_num")) <= crate::experiment::get().round_search_to && !matches!(boss.as_str(), "Cerulean Bell" | "The Hook")
+        && (crate::experiment::get().round_search_boss || !matches!(boss.as_str(), "The Mouth" | "The Eye")) && play_opts.len() + disc_opts.len() > 1 {
         // lab (`round-search=N`): play each first move out to the end of the round on shuffled draws (not under the
         // bosses whose rules it does not model: a locked or banned hand type, a forced card, random discards)
         let deck: Vec<Info> = cards_of(gs_, "cards").iter().map(card_info).collect();
@@ -639,9 +640,9 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             hands_left: hands_left as i64, discards_left: if disc_opts.is_empty() { 0 } else { dl as i64 }, hand_size, cap,
             serpent: boss == "The Serpent" };
         let keys: Vec<&String> = play_opts.iter().map(|(k, _)| k).chain(disc_opts.iter().map(|(k, _)| k)).collect();
-        let acts: Vec<odds::RootAct> = play_opts.iter().map(|(_, p)| odds::RootAct::Play(idx_list(gs::get(p, "cards")), gs::int(gs::get(p, "estimate"))))
+        let acts: Vec<odds::RootAct> = play_opts.iter().map(|(_, p)| odds::RootAct::Play(idx_list(gs::get(p, "cards")), gs::int(gs::get(p, "estimate")), gs::s(gs::get(p, "hand")).to_string()))
             .chain(disc_opts.iter().map(|(_, d)| odds::RootAct::Discard(idx_list(gs::get(d, "cards"))))).collect();
-        let pr = crate::prof::time("sh.round_search", || odds::round_search(&acts, &st, &scorer, Allowed::Boss(&allowed), rs));
+        let pr = crate::prof::time("sh.round_search", || odds::round_search(&acts, &st, &scorer, &allowed, crate::experiment::get().round_search_boss, rs));
         if let Some(cur) = keys.iter().position(|k| **k == best) {
             let bi = (0..pr.len()).fold(0, |b, i| if pr[i] > pr[b] { i } else { b });
             if pr[bi] > pr[cur] + crate::experiment::get().round_search_tol {

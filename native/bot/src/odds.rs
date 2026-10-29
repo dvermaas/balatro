@@ -307,7 +307,8 @@ pub fn arg_window(missing: &[String], hand_infos: &[Info], keep: &[usize]) -> Ve
 
 /// A first move for `round_search`: play these cards (scoring this much) or discard them.
 pub enum RootAct {
-    Play(Vec<usize>, i64),
+    /// cards, score, hand type
+    Play(Vec<usize>, i64, String),
     Discard(Vec<usize>),
 }
 
@@ -356,7 +357,9 @@ fn sim_discard(h: &[Info], best: &[usize], name: &str, cap: usize) -> Vec<usize>
 /// (play the best hand; while behind pace with discards left, or on the last hand, discard around it) over N
 /// shuffles of the draw pile. The pile is sorted before shuffling, so its real order never matters; the same
 /// shuffles score every move. The scorer is the current one (no joker growth within the round).
-pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, allowed: Allowed, samples: usize) -> Vec<f64> {
+/// `track` (lab `round-search-boss`): The Eye and The Mouth see each simulated play (a copy of `allow` marks its type
+/// played this round), so repeats are banned or the type is locked.
+pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<f64> {
     let mut deck: Vec<Info> = st.deck.to_vec();
     sort_by_card_key(&mut deck);
     let mut wins = vec![0usize; acts.len()];
@@ -369,20 +372,27 @@ pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, 
             let mut next = 0usize;
             let (mut r, mut hl, mut dl) = (st.need, st.hands_left, st.discards_left);
             let mut first = Some(act);
+            let mut al = if track { Some(allow.clone()) } else { None };
             loop {
-                let (play, cards, score) = match first.take() {
-                    Some(RootAct::Play(c, s)) => (true, c.clone(), *s),
-                    Some(RootAct::Discard(c)) => (false, c.clone(), 0),
+                let allowed = Allowed::Boss(al.as_ref().unwrap_or(allow));
+                let (play, cards, score, played) = match first.take() {
+                    Some(RootAct::Play(c, s, n)) => (true, c.clone(), *s, n.clone()),
+                    Some(RootAct::Discard(c)) => (false, c.clone(), 0, String::new()),
                     None => {
                         let (s, name, best) = hands::best_play_cards(&h, ScorerArg::Jokers(scorer), allowed);
                         if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r) {
-                            (true, best, s)
+                            (true, best, s, name.to_string())
                         } else {
                             let d = sim_discard(&h, &best, name, st.cap);
-                            if d.is_empty() { (true, best, s) } else { (false, d, 0) }
+                            if d.is_empty() { (true, best, s, name.to_string()) } else { (false, d, 0, String::new()) }
                         }
                     }
                 };
+                if let (Some(a), true) = (al.as_mut(), play) {
+                    if let Some(lv) = a.levels.get_mut(&played).and_then(|v| v.as_object_mut()) {
+                        lv.insert("played_this_round".into(), json!(1));
+                    }
+                }
                 take(&mut h, &cards);
                 if play {
                     r -= score as f64;
