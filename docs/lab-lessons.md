@@ -506,6 +506,11 @@ measured the wrong thing or was never asked:
   **Shipped as v63** (`EDITION_PRIOR` = 1); v63 with no flags replays the `edition-prior=1` games exactly (40 seeds).
   Edition values in pack picks too (`pack-edition=1`): first 600 seeds 345 vs 346 wins, 9 games changed (editioned
   jokers rarely come in packs); dropped.
+- **Hand levels and the deck beyond power** (`samples/cloud-lab/beyond/levels.py`, antes 4 and 6): per level, with power,
+  money and joker + edition values held fixed, every hand type is worth -0.03..+0.06 logit (the most-played hand's level
+  +0.05, z 3-4); enhanced cards +0.03 each at ante 6 (z 5); deck size and hand size ~0. Vouchers +0.33 each (z 11-14).
+  Planets are priced about right; vouchers are the next blind spot (the bot buys Overstock in 11% of the games that
+  offer it, Hone 16%, Seed Money 29%, Wasteful 44%).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

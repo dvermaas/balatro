@@ -761,6 +761,19 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             it.obj["_fc_delta"] = json!(d);
         }
     }
+    // lab (`voucher-prior=W`): through ante 6 a voucher's forecast delta gains W x its learned value (most vouchers pay
+    // off past the 3-boss horizon)
+    let vw = crate::experiment::get().voucher_prior;
+    if vw != 0.0 && fc.is_some() && ante_now <= crate::experiment::get().joker_prior_to {
+        for it in items.iter_mut() {
+            let Some(i) = it.key.strip_prefix("buy_voucher_").and_then(|x| x.parse::<usize>().ok()) else { continue };
+            if !_d(&it.obj).contains_key("_fc_delta") {
+                continue;
+            }
+            let v = vw * crate::experiment::voucher_value(crate::gs::s(&g(&voucher_cards[i], "key")));
+            it.obj["_fc_delta"] = json!(fnum(&it.obj, "_fc_delta", 0.0) + v);
+        }
+    }
     if fc.is_some() {
         // v19: hide items the forecast finds clearly worse than buying nothing, unless economic
         let src = |k: &str| -> Value {
