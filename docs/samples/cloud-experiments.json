@@ -2088,5 +2088,16 @@
   "wins": 345,
   "baseline_wins": 346,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Edition values x 1.5",
+  "theme": "Jokers",
+  "baseline": "v63",
+  "games": 600,
+  "delta_ante": -0.002,
+  "se": 0.006,
+  "wins": 346,
+  "baseline_wins": 346,
+  "outcome": "neutral"
  }
 ]

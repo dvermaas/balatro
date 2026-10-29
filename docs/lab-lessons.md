@@ -506,6 +506,7 @@ measured the wrong thing or was never asked:
   **Shipped as v63** (`EDITION_PRIOR` = 1); v63 with no flags replays the `edition-prior=1` games exactly (40 seeds).
   Edition values in pack picks too (`pack-edition=1`): first 600 seeds 345 vs 346 wins, 9 games changed (editioned
   jokers rarely come in packs); dropped.
+  Edition weight 1.5 (`edition-prior=1.5`): 346 vs 346 wins, 12 games changed; W = 1 stays.
 - **Hand levels and the deck beyond power** (`samples/cloud-lab/beyond/levels.py`, antes 4 and 6): per level, with power,
   money and joker + edition values held fixed, every hand type is worth -0.03..+0.06 logit (the most-played hand's level
   +0.05, z 3-4); enhanced cards +0.03 each at ante 6 (z 5); deck size and hand size ~0. Vouchers +0.33 each (z 11-14).
