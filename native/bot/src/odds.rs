@@ -336,7 +336,7 @@ fn take(h: &mut Vec<Info>, cards: &[usize]) {
 
 /// The rollout's discard: with no flush in hand, keep 4+ cards of one suit; else keep the best play. Toss up to
 /// `cap` of the rest, lowest first.
-fn sim_discard(h: &[Info], best: &[usize], name: &str, cap: usize) -> Vec<usize> {
+pub fn sim_discard(h: &[Info], best: &[usize], name: &str, cap: usize) -> Vec<usize> {
     let mut keep: Vec<usize> = best.to_vec();
     if !name.contains("Flush") {
         for s in ["Hearts", "Diamonds", "Clubs", "Spades"] {

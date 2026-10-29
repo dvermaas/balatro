@@ -508,6 +508,15 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         {
             discards.push(preserve);
         }
+        if crate::experiment::get().round_search_extra {
+            // lab (`round-search-extra`): the round search's own discard as one more option
+            let toss = odds::sim_discard(&infos, &idx_list(gs::get(&plays[0], "cards")), gs::s(gs::get(&plays[0], "hand")), cap);
+            let ts: HashSet<usize> = toss.iter().copied().collect();
+            if !ts.is_empty() && discards.iter().all(|d| idx_list(gs::get(d, "cards")).into_iter().collect::<HashSet<_>>() != ts) {
+                discards.push(json!({"label": "Keep the best play (or a four-card flush); cycle the rest, lowest first",
+                    "cards": toss, "tossed": toss.iter().map(|&i| describe(&hand[i])).collect::<Vec<_>>(), "goal": ["preserve", Value::Null]}));
+            }
+        }
         let mut next_round = gs::d(rnd).clone();
         let dl = gs::mget(gs::d(rnd), "discards_left");
         next_round.insert("discards_left".into(),
