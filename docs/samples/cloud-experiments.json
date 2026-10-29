@@ -2077,5 +2077,16 @@
   "wins": 1089,
   "baseline_wins": 1070,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Pack picks + edition values",
+  "theme": "Packs",
+  "baseline": "v63",
+  "games": 600,
+  "delta_ante": -0.01,
+  "se": 0.008,
+  "wins": 345,
+  "baseline_wins": 346,
+  "outcome": "dropped"
  }
 ]

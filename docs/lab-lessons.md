@@ -504,6 +504,8 @@ measured the wrong thing or was never asked:
   sold joker's goes. W = 1: first set **1,109 vs 1,083 wins (55.5% vs 54.2%; 67/41, z = 2.50)**, +0.021 +- 0.010 ante;
   second set 1,089 vs 1,070 (69/50), +0.027 +- 0.010 ante; both 2,198 vs 2,153 (136/91, z = 2.99). ~6% of games change.
   **Shipped as v63** (`EDITION_PRIOR` = 1); v63 with no flags replays the `edition-prior=1` games exactly (40 seeds).
+  Edition values in pack picks too (`pack-edition=1`): first 600 seeds 345 vs 346 wins, 9 games changed (editioned
+  jokers rarely come in packs); dropped.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
