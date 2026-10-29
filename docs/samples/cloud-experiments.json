@@ -2176,5 +2176,27 @@
   "wins": 258,
   "baseline_wins": 254,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Play-now ratio 0.8 under round search",
+  "theme": "Play",
+  "baseline": "v64",
+  "games": 420,
+  "delta_ante": -0.133,
+  "se": 0.049,
+  "wins": 229,
+  "baseline_wins": 254,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Play-now ratio 0.45 under round search",
+  "theme": "Play",
+  "baseline": "v64",
+  "games": 420,
+  "delta_ante": -0.095,
+  "se": 0.057,
+  "wins": 235,
+  "baseline_wins": 254,
+  "outcome": "dropped"
  }
 ]
