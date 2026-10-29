@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v64 (lab measured): in a round no play clears (not under The Mouth, The Eye, Cerulean Bell or The Hook), each first move (the play options and the discards) is played out to the end of the round on 128 shuffles of the draw pile with a simple policy (play the best hand; behind pace or on the last hand, discard around it), and the move that clears most often replaces the usual choice when it clears at least 10 points more often. Lab vs v63: 2,292 vs 2,198 wins on 4,000 seeds (z = 4.5). Based on: ",
     "v63 + lab tooling (plays unchanged): round-search=N plays each first move of a round no play clears to the end of the round on N shuffles of the draw pile and takes the one that clears most often (not under The Mouth, The Eye, Cerulean Bell or The Hook; round-search-to=A: through ante A). Based on: v63 + lab tooling (plays unchanged): pack-edition=W adds edition values to pack picks; voucher-prior=W adds learned voucher values to the shop forecast. Based on: ",
     "v63 (lab measured): the shop joker prior adds a learned value per edition (Negative 0.62, Polychrome 0.41, ",
     "Foil 0.21, Holographic 0.08 logit). Lab vs v62: 2,198 vs 2,153 wins on 4,000 seeds (z = 3.0). Based on: ",

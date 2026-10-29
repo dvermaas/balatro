@@ -2110,5 +2110,38 @@
   "wins": 331,
   "baseline_wins": 346,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Round search, 48 shuffles, 3-point bar",
+  "theme": "Play",
+  "baseline": "v63",
+  "games": 450,
+  "delta_ante": -0.016,
+  "se": 0.068,
+  "wins": 248,
+  "baseline_wins": 252,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "v64: round search, each first move played out on 128 shuffles, first seed set",
+  "theme": "Play",
+  "baseline": "v63",
+  "games": 2000,
+  "delta_ante": 0.136,
+  "se": 0.025,
+  "wins": 1171,
+  "baseline_wins": 1109,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v64: round search, each first move played out on 128 shuffles, second seed set",
+  "theme": "Play",
+  "baseline": "v63",
+  "games": 2000,
+  "delta_ante": 0.08,
+  "se": 0.025,
+  "wins": 1121,
+  "baseline_wins": 1089,
+  "outcome": "shipped"
  }
 ]

@@ -516,6 +516,20 @@ measured the wrong thing or was never asked:
   (27/42, z = -1.81); vouchers 1.22 -> 1.77 a game (Hone 39 -> 140, Overstock 33 -> 139, Seed Money 62 -> 128 of 600).
   Owning them marked runs with money to spare, not a cause: unlike jokers and editions, the correlation does not
   survive being acted on. Dropped.
+- **v64: round search for in-round play** (`round-search=N`, `round-search-tol=T`, `round-search-to=A`;
+  `odds::round_search`). In a round no play clears, each first move (the play options and the discards) is played out
+  to the end of the round on N shuffles of the draw pile (sorted first, so the real order never matters; the same
+  shuffles for every move) with a simple policy: play the best hand; behind pace, or on the last hand, discard around it
+  (keeping a 4-flush). The scorer stays fixed (no joker growth within the round). The move that clears most often
+  replaces the usual choice when it clears at least T more often. Skipped under The Mouth, The Eye, Cerulean Bell and The
+  Hook, whose rules it does not model (Cerulean Bell deaths 8 -> 14 on 880 seeds before that). 33 ms a decision; games
+  ~22 vs ~17 s.
+  N = 48, T = 0.03: 450 seeds 248 vs 252 wins; with a 3-point bar it mostly chases sampling noise.
+  N = 128, T = 0.1: first set **1,171 vs 1,109 wins (58.6% vs 55.5%; 136/74, z = 4.28)**, +0.136 +- 0.025 ante; second
+  set 1,121 vs 1,089 (127/95, z = 2.15), +0.080 +- 0.025; both 2,292 vs 2,198 (263/169, z = 4.5). ~15% of games
+  change. Where it helps (first set): ante-1 deaths 32 -> 13; Big Blind 107 -> 81 and The Wall 64 -> 50 (first 1,800); more runs reach
+  ante 8 (1,526 vs 1,453). The second set's first 740 seeds were flat (only 4 ante-1 deaths to fix there), the rest
+  +30 wins. **Shipped as v64** (`ROUND_SEARCH` = 128, `ROUND_SEARCH_TOL` = 0.1).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
