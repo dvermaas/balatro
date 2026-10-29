@@ -533,6 +533,8 @@ measured the wrong thing or was never asked:
   A higher bar, T = 0.15: first 450 seeds 264 vs 272 wins (10/18) vs v64; 0.1 stays.
   Under The Eye and The Mouth too (`round-search-boss`, each simulated play marks its type played): first 450 seeds
   267 vs 272 wins (5/10), 19 games changed; Mouth deaths 10 -> 6, Eye 5 -> 7. Dropped.
+  More shuffles, N = 256, T = 0.07: first 420 seeds 258 vs 254 wins (16/12), -0.019 +- 0.044 ante, twice the cost;
+  128 stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

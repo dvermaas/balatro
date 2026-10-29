@@ -2165,5 +2165,16 @@
   "wins": 267,
   "baseline_wins": 272,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Round search with 256 shuffles and a 7-point bar",
+  "theme": "Play",
+  "baseline": "v64",
+  "games": 420,
+  "delta_ante": -0.019,
+  "se": 0.044,
+  "wins": 258,
+  "baseline_wins": 254,
+  "outcome": "neutral"
  }
 ]
