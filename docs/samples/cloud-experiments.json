@@ -2154,5 +2154,16 @@
   "wins": 264,
   "baseline_wins": 272,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Round search under The Eye and The Mouth too",
+  "theme": "Bosses",
+  "baseline": "v64",
+  "games": 450,
+  "delta_ante": -0.009,
+  "se": 0.023,
+  "wins": 267,
+  "baseline_wins": 272,
+  "outcome": "dropped"
  }
 ]
