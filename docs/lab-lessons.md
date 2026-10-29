@@ -498,6 +498,12 @@ measured the wrong thing or was never asked:
   8 bosses without the joker values (`fc-bosses=8,no-joker-prior,no-pack-prior`, does the long horizon find what the
   values add?): first 480 seeds 211 vs 263 wins (43/95, z = -4.43), and below v60 (3 bosses, no values: 224). No: the
   longer the rollout, the more its weak play and frozen build compound; the learned values carry what it cannot see.
+- **v63: edition values in the joker prior** (`edition-prior=W`; per joker at ante 5 with power, money and joker values
+  held fixed: Negative 0.62, Polychrome 0.41, Foil 0.21, Holographic 0.08 logit; refit without the first seed set:
+  0.60 / 0.41 / 0.19 / 0.09, so its test is effectively held out). A bought joker's prior gains its edition's value, a
+  sold joker's goes. W = 1: first set **1,109 vs 1,083 wins (55.5% vs 54.2%; 67/41, z = 2.50)**, +0.021 +- 0.010 ante;
+  second set 1,089 vs 1,070 (69/50), +0.027 +- 0.010 ante; both 2,198 vs 2,153 (136/91, z = 2.99). ~6% of games change.
+  **Shipped as v63** (`EDITION_PRIOR` = 1); v63 with no flags replays the `edition-prior=1` games exactly (40 seeds).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

@@ -125,7 +125,7 @@ pub struct Exp {
     pub rollout_easy: f64,
     /// `rollout-easy-to=A`: rollout-easy only for blinds at ante <= A (default every ante)
     pub rollout_easy_to: i32,
-    /// `edition-prior=W`: the joker prior also adds W x edition_value of the bought joker's edition (minus the sold one's)
+    /// v63: the joker prior also adds W x edition_value of the bought joker's edition (minus the sold one's)
     pub edition_prior: f64,
     pub free_discard: bool,
     pub money_tail: f64,
@@ -187,7 +187,7 @@ pub fn get() -> &'static Exp {
         let has = |f: &str| s.split(',').any(|x| x.trim() == f || (x.trim() == "pair" && f.starts_with("pair-")));
         let num = |f: &str| s.split(',').find_map(|x| x.trim().strip_prefix(f)?.strip_prefix('=')?.parse::<f64>().ok()).unwrap_or(0.0);
         let e = Exp { pair_planets: has("pair-planets"), pair_jokers: has("pair-jokers"), pair_keep: has("pair-keep"), pair_play: has("pair-play"),
-              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: s.split(',').find_map(|x| x.trim().strip_prefix("pack-prior=")?.parse().ok()).unwrap_or(if has("no-pack-prior") { 0.0 } else { PACK_PRIOR }), joker_prior_from: num("joker-prior-from") as i64, joker_prior_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-to=")?.parse().ok()).unwrap_or(6), joker_prior_early_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-early-to=")?.parse().ok()).unwrap_or(3), prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), rollout_shop_value: has("rollout-shop-value"), rollout_last_discard: has("rollout-last-discard"), rollout_easy: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-easy=")?.parse().ok()).unwrap_or(1.0), edition_prior: num("edition-prior"), rollout_easy_to: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-easy-to=")?.parse().ok()).unwrap_or(99), eye_plan: has("eye-plan"),
+              value_tail: s.split(',').find_map(|x| x.trim().strip_prefix("value-tail=")?.parse().ok()).unwrap_or(VALUE_TAIL), free_discard: has("free-discard"), money_tail: num("money-tail"), power_bonus: num("power-bonus"), power_bonus_ante: num("power-bonus-ante") as i64, joker_prior: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior=")?.parse().ok()).unwrap_or(if has("no-joker-prior") { 0.0 } else { JOKER_PRIOR }), pack_prior: s.split(',').find_map(|x| x.trim().strip_prefix("pack-prior=")?.parse().ok()).unwrap_or(if has("no-pack-prior") { 0.0 } else { PACK_PRIOR }), joker_prior_from: num("joker-prior-from") as i64, joker_prior_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-to=")?.parse().ok()).unwrap_or(6), joker_prior_early_to: s.split(',').find_map(|x| x.trim().strip_prefix("joker-prior-early-to=")?.parse().ok()).unwrap_or(3), prior_sell: has("prior-sell"), prior_safe: num("prior-safe"), rollout_shop_value: has("rollout-shop-value"), rollout_last_discard: has("rollout-last-discard"), rollout_easy: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-easy=")?.parse().ok()).unwrap_or(1.0), edition_prior: s.split(',').find_map(|x| x.trim().strip_prefix("edition-prior=")?.parse().ok()).unwrap_or(if has("no-edition-prior") { 0.0 } else { EDITION_PRIOR }), rollout_easy_to: s.split(',').find_map(|x| x.trim().strip_prefix("rollout-easy-to=")?.parse().ok()).unwrap_or(99), eye_plan: has("eye-plan"),
               late_floor: num("late-floor") as i64,
               skip_tags: s.split(',').find_map(|x| x.trim().strip_prefix("skip-tags=")).map_or(vec![], |v| v.split('+').map(|t| format!("{t} Tag")).collect()),
               skip_min: num("skip-min") as i64,
@@ -264,6 +264,9 @@ pub fn is_pair_joker(label: Option<&str>) -> bool {
 pub const JOKER_PRIOR: f64 = 1.0;
 /// v62: pack picks value a joker at its score gain + PACK_PRIOR x its learned value (lab `pack-prior=P`, `no-pack-prior`)
 pub const PACK_PRIOR: f64 = 1.0;
+/// v63: the shop joker prior also adds the joker edition's learned value (edition_value) x EDITION_PRIOR (lab
+/// `edition-prior=W`, `no-edition-prior`)
+pub const EDITION_PRIOR: f64 = 1.0;
 
 /// v61: a joker's learned value (data/joker_values.json: the logit of winning when held at ante 5's first shop, from
 /// 2,000 v60 lab games, docs/samples/cloud-lab/joker-study/jval.py; clipped to [-1, 1.5]); 0 for a joker it does not
@@ -297,7 +300,7 @@ pub fn joker_value_at(key: &str, ante: i64) -> f64 {
     joker_value(key)
 }
 
-/// Lab (`edition-prior=W`): a joker edition's learned value (logit of winning per joker at ante 5 with power, money and
+/// v63: a joker edition's learned value (logit of winning per joker at ante 5 with power, money and
 /// joker values held fixed; docs/samples/cloud-lab/beyond/vouch.py on ~17,000 v61/v62 games).
 pub fn edition_value(e: &str) -> f64 {
     match e {

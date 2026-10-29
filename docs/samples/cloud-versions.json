@@ -883,5 +883,35 @@
   "died_ante_1_4": 110,
   "died_ante_5_7": 446,
   "died_ante_8": 374
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v63",
+  "version_id": "rust",
+  "change": "Joker prior adds learned edition values",
+  "games": 2000,
+  "mean_ante": 7.316,
+  "se": 0.033,
+  "wins": 1109,
+  "win_rate": 0.554,
+  "mean_round": 19.82,
+  "died_ante_1_4": 121,
+  "died_ante_5_7": 426,
+  "died_ante_8": 344
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v63",
+  "version_id": "rust",
+  "change": "Joker prior adds learned edition values",
+  "games": 2000,
+  "mean_ante": 7.34,
+  "se": 0.032,
+  "wins": 1089,
+  "win_rate": 0.544,
+  "mean_round": 19.88,
+  "died_ante_1_4": 109,
+  "died_ante_5_7": 428,
+  "died_ante_8": 374
  }
 ]

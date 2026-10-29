@@ -728,7 +728,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     let ante_now = crate::gs::int(&g(gs, "ante_num"));
     if jp != 0.0 && fc.is_some() && ante_now <= crate::experiment::get().joker_prior_to && ante_now >= crate::experiment::get().joker_prior_from {
         let held: Vec<String> = crate::gs::cards_of(gs, "jokers").iter().map(|c| crate::gs::s(&g(c, "key")).to_string()).collect();
-        // lab (`edition-prior=W`): + W x the learned value of the joker's edition (the sold joker's goes)
+        // v63: + EDITION_PRIOR x the learned value of the joker's edition (the sold joker's goes)
         let ew = crate::experiment::get().edition_prior;
         let ed = |c: &Value| -> f64 { if ew == 0.0 { 0.0 } else { ew * crate::experiment::edition_value(crate::gs::s(&g(&g(c, "modifier"), "edition"))) } };
         let held_ed: Vec<f64> = crate::gs::cards_of(gs, "jokers").iter().map(|c| ed(c)).collect();

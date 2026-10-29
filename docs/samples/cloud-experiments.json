@@ -2055,5 +2055,27 @@
   "wins": 211,
   "baseline_wins": 263,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "v63: joker prior + learned edition values, first seed set",
+  "theme": "Jokers",
+  "baseline": "v62",
+  "games": 2000,
+  "delta_ante": 0.021,
+  "se": 0.01,
+  "wins": 1109,
+  "baseline_wins": 1083,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v63: joker prior + learned edition values, second seed set",
+  "theme": "Jokers",
+  "baseline": "v62",
+  "games": 2000,
+  "delta_ante": 0.027,
+  "se": 0.01,
+  "wins": 1089,
+  "baseline_wins": 1070,
+  "outcome": "shipped"
  }
 ]
