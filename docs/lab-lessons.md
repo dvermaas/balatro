@@ -512,6 +512,10 @@ measured the wrong thing or was never asked:
   +0.05, z 3-4); enhanced cards +0.03 each at ante 6 (z 5); deck size and hand size ~0. Vouchers +0.33 each (z 11-14).
   Planets are priced about right; vouchers are the next blind spot (the bot buys Overstock in 11% of the games that
   offer it, Hone 16%, Seed Money 29%, Wasteful 44%).
+  Voucher values in the shop forecast (`voucher-prior=1`, |z| > 2 vouchers only): first 600 seeds 331 vs 346 wins
+  (27/42, z = -1.81); vouchers 1.22 -> 1.77 a game (Hone 39 -> 140, Overstock 33 -> 139, Seed Money 62 -> 128 of 600).
+  Owning them marked runs with money to spare, not a cause: unlike jokers and editions, the correlation does not
+  survive being acted on. Dropped.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

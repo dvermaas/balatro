@@ -2099,5 +2099,16 @@
   "wins": 346,
   "baseline_wins": 346,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Learned voucher values in the shop forecast",
+  "theme": "Shop",
+  "baseline": "v63",
+  "games": 600,
+  "delta_ante": -0.028,
+  "se": 0.024,
+  "wins": 331,
+  "baseline_wins": 346,
+  "outcome": "dropped"
  }
 ]
