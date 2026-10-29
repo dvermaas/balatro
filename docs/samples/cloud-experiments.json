@@ -2209,5 +2209,16 @@
   "wins": 222,
   "baseline_wins": 254,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Harder rollout blinds (targets / 0.9)",
+  "theme": "Forecast",
+  "baseline": "v64",
+  "games": 420,
+  "delta_ante": -0.157,
+  "se": 0.06,
+  "wins": 221,
+  "baseline_wins": 254,
+  "outcome": "dropped"
  }
 ]
