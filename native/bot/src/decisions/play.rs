@@ -280,6 +280,18 @@ fn _leaf_sale(bot: &mut JevBot, gs_: &Value, boss: &str, hand: &[Value]) -> bool
     }
     // hand size and hands don't show in measured scores: sell those last (TIXQA7PH sold Troubadour)
     let keep: HashSet<usize> = (0..js.len()).filter(|&j| gs::get(&js[j], "label").as_str().is_some_and(|l| LEAF_KEEP.contains(&l))).collect();
+    if crate::experiment::get().leaf_search {
+        if let Some((j, p, p0)) = leaf_search_pick(gs_, js, &keep) {
+            let label = gs::get(&js[j], "label").as_str().unwrap_or("None").to_string();
+            bot.emit("auto", json!({"question": "move", "choice": "sell_joker", "desc": format!("sell {label}"),
+                "reason": format!("Verdant Leaf: the round search clears {:.0}% after this sale (worst sale {:.0}%)", 100.0 * p, 100.0 * p0)}));
+            if bot.act("sell", Some(&json!({"joker": j}))).is_err() {
+                bot._leaf_failed = key;
+                return false;
+            }
+            return true;
+        }
+    }
     let recent = super::recent(bot, gs_);
     let mut weak: Vec<usize> = super::shop::weakest_jokers(gs_, &recent, js.len()).difference(&keep).copied().collect();
     if weak.is_empty() {
@@ -307,6 +319,61 @@ fn _leaf_sale(bot: &mut JevBot, gs_: &Value, boss: &str, hand: &[Value]) -> bool
         return false;
     }
     true
+}
+
+/// Lab (`leaf-search`): Verdant Leaf is the last boss, so sell the joker whose sale leaves the round most likely
+/// cleared: for each sellable joker (eternal and LEAF_KEEP ones kept), the round search from the undebuffed hand
+/// with that joker gone (first move: the best play or the search's own discard). Some((joker, P(clear), worst P)).
+fn leaf_search_pick(gs_: &Value, js: &[Value], keep: &HashSet<usize>) -> Option<(usize, f64, f64)> {
+    let cands: Vec<usize> = (0..js.len())
+        .filter(|&j| !keep.contains(&j) && !gs::truthy(gs::mget(gs::d(gs::get(&js[j], "modifier")), "eternal")))
+        .collect();
+    if cands.len() < 2 {
+        return None;
+    }
+    let info = super::round_info(gs_);
+    let undebuffed = |c: &Value| {
+        let mut i = card_info(c);
+        i.debuff = false;
+        i
+    };
+    let hand: Vec<Info> = cards_of(gs_, "hand").iter().map(undebuffed).collect();
+    let deck: Vec<Info> = cards_of(gs_, "cards").iter().map(undebuffed).collect();
+    let levels: Levels = gs::d(gs::get(gs_, "hands")).clone();
+    let hl = gs::num(gs::get(&info, "hands_left")) as i64;
+    let dl = gs::num(gs::get(&info, "discards_left")) as i64;
+    let lim = gs::mget(area(gs_, "hand"), "highlighted_limit");
+    let cap = if gs::truthy(lim) { gs::int(lim) } else { 5 } as usize;
+    let ls = gs::mget(area(gs_, "hand"), "limit");
+    let hand_size = if gs::truthy(ls) { gs::int(ls) as usize } else { hand.len() };
+    let st = odds::RoundState { hand: &hand, deck: &deck, need: gs::num(gs::get(&info, "chips_still_needed")), hands_left: hl,
+        discards_left: dl, hand_size, cap, serpent: false, bell: false, hook: false, crimson_live: vec![], crimson_prev: None };
+    let allow = BossAllow::new(&levels, "");
+    let samples = crate::experiment::get().round_search.max(32);
+    let mut best: Option<(f64, usize)> = None;
+    let mut worst = 1.0f64;
+    for &k in &cands {
+        let rest: Vec<Value> = js.iter().enumerate().filter(|(i, _)| *i != k).map(|(_, c)| c.clone()).collect();
+        let jb = jokers::build(gs_, Some(&rest));
+        let grid: Vec<Vec<Scorer>> = (0..=hl.max(0)).map(|h| (0..=dl.max(0)).map(|d| Scorer::new(levels.clone(), jb.clone(),
+            Rnd { hands_left: (h as f64).max(1.0), discards_left: d as f64 })).collect()).collect();
+        let sc = &grid[hl.max(0) as usize][dl.max(0) as usize];
+        let (s, name, cards) = crate::hands::best_play_cards(&hand, ScorerArg::Jokers(sc), Allowed::Boss(&allow));
+        let mut acts = vec![odds::RootAct::Play(cards.clone(), s, name.to_string())];
+        if dl > 0 {
+            let d = odds::sim_discard(&hand, &cards, name, cap);
+            if !d.is_empty() {
+                acts.push(odds::RootAct::Discard(d));
+            }
+        }
+        let hits = odds::round_search_full(&acts, &st, sc, Some(&grid), None, None, &allow, false, samples);
+        let p = hits.iter().map(|h| h.iter().filter(|&&x| x).count() as f64 / samples as f64).fold(0.0, f64::max);
+        worst = worst.min(p);
+        if best.map_or(true, |b| p > b.0) {
+            best = Some((p, k));
+        }
+    }
+    best.map(|(p, k)| (k, p, worst))
 }
 
 pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
