@@ -581,6 +581,8 @@ measured the wrong thing or was never asked:
   its own state. Few games change (~2%), but nearly all for the better: c2k 0-899 511 vs 494 wins (20/3), b2k 420-869
   268 vs 259 (9/0); together 29 vs 3 games won by only one side (z = 4.6). **Shipped as v66** (`no-round-search-rnd`
   restores the fixed scorer).
+  The same for hand types played earlier in the simulated round (`round-search-played`: Card Sharp's x3, Supernova):
+  c2k 0-449 249 vs 249 wins, 7 games changed (2/2). Correct, too rare to measure; parked to ship with the next change.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

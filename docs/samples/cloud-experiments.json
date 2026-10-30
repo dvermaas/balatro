@@ -2352,5 +2352,16 @@
   "wins": 268,
   "baseline_wins": 259,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Round search sees hand types played earlier in the round",
+  "theme": "Play",
+  "baseline": "v66",
+  "games": 450,
+  "delta_ante": 0.011,
+  "se": 0.009,
+  "wins": 249,
+  "baseline_wins": 249,
+  "outcome": "neutral"
  }
 ]
