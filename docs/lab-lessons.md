@@ -583,6 +583,10 @@ measured the wrong thing or was never asked:
   restores the fixed scorer).
   The same for hand types played earlier in the simulated round (`round-search-played`: Card Sharp's x3, Supernova):
   c2k 0-449 249 vs 249 wins, 7 games changed (2/2). Correct, too rare to measure; parked to ship with the next change.
+  Full sets: c2k 1,165 vs 1,131 wins vs v65 (46/12 won by only one side, z = 4.5).
+- **Blind skips retested on v66** (v45-v48 tuned them when the bot won ~25%; it now wins ~58%). Skipping through
+  ante 5 (`skip-max=5`): c2k 0-449 250 vs 249 wins (21/20), -0.036 +- 0.021 ante. Uncommon Tag added to the list:
+  233 vs 249 (12/28, z = -2.5). v48's list and limit still hold.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

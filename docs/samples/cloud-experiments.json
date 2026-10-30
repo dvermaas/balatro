@@ -2363,5 +2363,27 @@
   "wins": 249,
   "baseline_wins": 249,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Blind skips for tags through ante 5 (v48: 4)",
+  "theme": "Skips",
+  "baseline": "v66",
+  "games": 450,
+  "delta_ante": -0.036,
+  "se": 0.021,
+  "wins": 250,
+  "baseline_wins": 249,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Uncommon Tag added to the skip list",
+  "theme": "Skips",
+  "baseline": "v66",
+  "games": 450,
+  "delta_ante": -0.076,
+  "se": 0.04,
+  "wins": 233,
+  "baseline_wins": 249,
+  "outcome": "dropped"
  }
 ]
