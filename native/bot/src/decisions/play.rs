@@ -651,7 +651,12 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         let keys: Vec<&String> = play_opts.iter().map(|(k, _)| k).chain(disc_opts.iter().map(|(k, _)| k)).collect();
         let acts: Vec<odds::RootAct> = play_opts.iter().map(|(_, p)| odds::RootAct::Play(idx_list(gs::get(p, "cards")), gs::int(gs::get(p, "estimate")), gs::s(gs::get(p, "hand")).to_string()))
             .chain(disc_opts.iter().map(|(_, d)| odds::RootAct::Discard(idx_list(gs::get(d, "cards"))))).collect();
-        let hits = crate::prof::time("sh.round_search", || odds::round_search_hits(&acts, &st, &scorer, &allowed, crate::experiment::get().round_search_boss, rs));
+        // lab (`round-search-rnd`): a scorer per hands and discards left
+        let grid: Option<Vec<Vec<Scorer>>> = crate::experiment::get().round_search_rnd.then(|| {
+            (0..=st.hands_left.max(0)).map(|h| (0..=st.discards_left.max(0)).map(|d| Scorer::new(levels.clone(), js.clone(),
+                Rnd { hands_left: (h as f64).max(1.0), discards_left: d as f64 })).collect()).collect()
+        });
+        let hits = crate::prof::time("sh.round_search", || odds::round_search_hits(&acts, &st, &scorer, grid.as_deref(), &allowed, crate::experiment::get().round_search_boss, rs));
         let pr: Vec<f64> = hits.iter().map(|h| h.iter().filter(|&&x| x).count() as f64 / rs as f64).collect();
         if let Some(cur) = keys.iter().position(|k| **k == best) {
             let bi = (0..pr.len()).fold(0, |b, i| if pr[i] > pr[b] { i } else { b });

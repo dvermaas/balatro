@@ -360,11 +360,13 @@ pub fn sim_discard(h: &[Info], best: &[usize], name: &str, cap: usize) -> Vec<us
 /// `track` (lab `round-search-boss`): The Eye and The Mouth see each simulated play (a copy of `allow` marks its type
 /// played this round), so repeats are banned or the type is locked.
 pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<f64> {
-    round_search_hits(acts, st, scorer, allow, track, samples).iter().map(|h| h.iter().filter(|&&x| x).count() as f64 / samples as f64).collect()
+    round_search_hits(acts, st, scorer, None, allow, track, samples).iter().map(|h| h.iter().filter(|&&x| x).count() as f64 / samples as f64).collect()
 }
 
 /// `round_search`'s outcome per move and shuffle (true: the round was cleared), for paired tests.
-pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
+/// `grid` (lab `round-search-rnd`): a scorer per [hands left][discards left], so jokers that read them (Banner,
+/// Mystic Summit, Acrobat, Dusk) score each simulated play in its own state; else `scorer` throughout.
+pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
     let mut deck: Vec<Info> = st.deck.to_vec();
     sort_by_card_key(&mut deck);
     let mut hits = vec![vec![false; samples]; acts.len()];
@@ -384,7 +386,8 @@ pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
                     Some(RootAct::Play(c, s, n)) => (true, c.clone(), *s, n.clone()),
                     Some(RootAct::Discard(c)) => (false, c.clone(), 0, String::new()),
                     None => {
-                        let (s, name, best) = hands::best_play_cards(&h, ScorerArg::Jokers(scorer), allowed);
+                        let sc = grid.and_then(|g| g.get(hl.max(0) as usize)).and_then(|row| row.get(dl.max(0) as usize)).unwrap_or(scorer);
+                        let (s, name, best) = hands::best_play_cards(&h, ScorerArg::Jokers(sc), allowed);
                         if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r) {
                             (true, best, s, name.to_string())
                         } else {
