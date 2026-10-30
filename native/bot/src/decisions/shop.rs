@@ -495,6 +495,9 @@ fn planet_rule(gs: &Value, items: &[Item], money: i64) -> Option<usize> {
             }
         }
     }
+    if crate::experiment::get().planet_rule.as_deref() == Some("shop") {
+        return None; // lab (`planet-rule=shop`): the top hand's shop planet only, no Celestial packs
+    }
     let mut best: Option<usize> = None;
     for (n, it) in items.iter().enumerate() {
         if it.key.starts_with("buy_pack_") && money - it.cost >= super::planet_floor()
@@ -895,7 +898,8 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             return Ok(shop_act(bot, gs, &iaction)?);
         }
     }
-    if let Some(k) = planet_rule(gs, &items, money) {
+    // lab (`planet-rule=none`): no planet rule; the forecasts and the item scores decide planets and packs
+    if let Some(k) = planet_rule(gs, &items, money).filter(|_| crate::experiment::get().planet_rule.as_deref() != Some("none")) {
         let it = &items[k];
         let (ik, idesc, icost, iaction) = (it.key.clone(), it.desc.clone(), it.cost, it.action.clone());
         bot.emit("auto", json!({"question": "shop", "choice": ik, "action": crate::jev_bot::action_value(&iaction),
