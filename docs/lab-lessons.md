@@ -565,6 +565,15 @@ measured the wrong thing or was never asked:
   the shop), and the forecast's rollouts hold it last too. On those 57 seeds: 31 vs 17 wins (18/4, z = 3.0), 5.1 vs
   3.7 jokers from ante 4; every other game is unchanged. **Shipped as v65** (`no-dagger-last` restores the old
   order). Whole sets (v64 rows with those seeds replaced): 1,175 and 1,131 wins.
+- **Scan of 200 traced v65 games** (`samples/cloud-lab/trace-scan/`: vanish.py, anom.py, cons.py, churn.py). Jokers
+  that leave without a sale: Gros Michel 45, Mr. Bones 22 (each a saved run), Popcorn 15, Ice Cream 7 (all by design);
+  Madness ate 10 jokers in one run, yet runs holding Madness win 65% (37 of 4,000). No losing round ended with
+  discards unused; 6 plays scored 0. Consumables held through 3+ shops: Judgement (needs a free joker slot) in 10 of
+  12 games that had one, The Lovers 10 of 18, Death 4 of 22. 975 joker sales (4.9 a game), 154 within a round of
+  arriving. Nothing else like the Dagger.
+- **The shop planet rule** (top hand's shop planet, else the biggest Celestial pack, while $4 stays; ~9 Celestial packs
+  a game): without its Celestial packs (`planet-rule=shop`) c2k 0-449 231 vs 236 wins (44/49); without the rule
+  (`planet-rule=none`) 230 vs 236 (44/50). Neutral both ways; it stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

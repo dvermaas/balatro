@@ -2308,5 +2308,27 @@
   "wins": 31,
   "baseline_wins": 17,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Planet rule without Celestial packs",
+  "theme": "Shop",
+  "baseline": "v65",
+  "games": 450,
+  "delta_ante": -0.011,
+  "se": 0.041,
+  "wins": 231,
+  "baseline_wins": 236,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "No shop planet rule",
+  "theme": "Shop",
+  "baseline": "v65",
+  "games": 450,
+  "delta_ante": 0.009,
+  "se": 0.041,
+  "wins": 230,
+  "baseline_wins": 236,
+  "outcome": "neutral"
  }
 ]
