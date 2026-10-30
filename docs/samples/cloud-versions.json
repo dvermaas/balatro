@@ -973,5 +973,35 @@
   "died_ante_1_4": 88,
   "died_ante_5_7": 418,
   "died_ante_8": 363
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v66",
+  "version_id": "rust",
+  "change": "round search scores each play in its own state",
+  "games": 2000,
+  "mean_ante": 7.458,
+  "se": 0.028,
+  "wins": 1176,
+  "win_rate": 0.588,
+  "mean_round": 20.26,
+  "died_ante_1_4": 87,
+  "died_ante_5_7": 379,
+  "died_ante_8": 358
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v66",
+  "version_id": "rust",
+  "change": "round search scores each play in its own state",
+  "games": 2000,
+  "mean_ante": 7.438,
+  "se": 0.029,
+  "wins": 1165,
+  "win_rate": 0.583,
+  "mean_round": 20.19,
+  "died_ante_1_4": 85,
+  "died_ante_5_7": 406,
+  "died_ante_8": 344
  }
 ]

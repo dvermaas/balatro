@@ -583,7 +583,8 @@ measured the wrong thing or was never asked:
   restores the fixed scorer).
   The same for hand types played earlier in the simulated round (`round-search-played`: Card Sharp's x3, Supernova):
   c2k 0-449 249 vs 249 wins, 7 games changed (2/2). Correct, too rare to measure; parked to ship with the next change.
-  Full sets: c2k 1,165 vs 1,131 wins vs v65 (46/12 won by only one side, z = 4.5).
+  Full sets vs v65: c2k 1,165 vs 1,131 wins (46/12, z = 4.5), b2k 1,176 vs 1,175 (23/22): the gain did not repeat on
+  the first set; both 69/34 (z = 3.4).
 - **Blind skips retested on v66** (v45-v48 tuned them when the bot won ~25%; it now wins ~58%). Skipping through
   ante 5 (`skip-max=5`): c2k 0-449 250 vs 249 wins (21/20), -0.036 +- 0.021 ante. Uncommon Tag added to the list:
   233 vs 249 (12/28, z = -2.5). v48's list and limit still hold.
