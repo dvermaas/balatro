@@ -606,6 +606,10 @@ measured the wrong thing or was never asked:
   The Mouth and The Eye in the search (`round-search-boss`) retested the same way on the 830 c2k seeds that meet them
   (v64's test was on all seeds): 489 vs 490 wins (21/22). Mouth deaths 41 -> 32 and Eye 31 -> 29, but those runs die
   later instead. Neutral; still off.
+- **Crimson Heart in the round search** (`round-search-crimson`: after each simulated play a random other joker is disabled,
+  as the game does, instead of keeping the one disabled now): the 310 c2k seeds that meet it, 243 vs 244 wins, 1 game
+  changed. The pick only matters from the second simulated play on, and its average rarely flips the first move;
+  Crimson Heart deaths (61) are a strength check. Parked.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

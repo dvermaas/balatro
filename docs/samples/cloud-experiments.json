@@ -2451,5 +2451,16 @@
   "wins": 489,
   "baseline_wins": 490,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Round search re-picks Crimson Heart's joker after each simulated play (seeds that meet it)",
+  "theme": "Play",
+  "baseline": "v67",
+  "games": 310,
+  "delta_ante": 0.0,
+  "se": 0.0,
+  "wins": 243,
+  "baseline_wins": 244,
+  "outcome": "neutral"
  }
 ]
