@@ -2330,5 +2330,27 @@
   "wins": 230,
   "baseline_wins": 236,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "v66: round search scores each play in its own state (second set 0-899)",
+  "theme": "Play",
+  "baseline": "v65",
+  "games": 900,
+  "delta_ante": 0.01,
+  "se": 0.006,
+  "wins": 511,
+  "baseline_wins": 494,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v66: round search scores each play in its own state (first set 420-869)",
+  "theme": "Play",
+  "baseline": "v65",
+  "games": 450,
+  "delta_ante": 0.018,
+  "se": 0.013,
+  "wins": 268,
+  "baseline_wins": 259,
+  "outcome": "shipped"
  }
 ]

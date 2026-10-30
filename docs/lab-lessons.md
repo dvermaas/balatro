@@ -574,6 +574,13 @@ measured the wrong thing or was never asked:
 - **The shop planet rule** (top hand's shop planet, else the biggest Celestial pack, while $4 stays; ~9 Celestial packs
   a game): without its Celestial packs (`planet-rule=shop`) c2k 0-449 231 vs 236 wins (44/49); without the rule
   (`planet-rule=none`) 230 vs 236 (44/50). Neutral both ways; it stays.
+- **v66, the round search's scorer per state** (found reading a traced near miss lost by 6 chips with Banner held). The
+  search scored every simulated play with the round's current hands and discards left, so after a simulated discard
+  Banner (+30 chips per discard left) kept its chips, Mystic Summit (+15 Mult at 0 discards) never fired, and Acrobat
+  (x3) and Dusk (retrigger) never saw the final hand. Now a scorer per (hands left, discards left) scores each play in
+  its own state. Few games change (~2%), but nearly all for the better: c2k 0-899 511 vs 494 wins (20/3), b2k 420-869
+  268 vs 259 (9/0); together 29 vs 3 games won by only one side (z = 4.6). **Shipped as v66** (`no-round-search-rnd`
+  restores the fixed scorer).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
