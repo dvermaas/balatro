@@ -555,6 +555,8 @@ measured the wrong thing or was never asked:
 - **Spending out at ante 8** (`final-spend`: no interest floor and up to 10 rerolls a shop at ante 8; runs that die there
   hold $35 at their last shop): c2k 0-449 227 vs 234 wins (9/16) vs v64; rerolls 10.0 -> 12.1 a game. As with
   `late-floor` (v43), spending the reserve buys nothing that matters. Dropped.
+- **128 forecast rollouts on v64** (`fc-n=128`, 32 vs 22 s a game): c2k 0-539 297 vs 288 wins (72/63, z = 0.77), -0.013 +-
+  0.050 ante. Neutral, as at v52; 64 stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

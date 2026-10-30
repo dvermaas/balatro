@@ -2286,5 +2286,16 @@
   "wins": 227,
   "baseline_wins": 234,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "128 forecast rollouts on v64",
+  "theme": "Forecast",
+  "baseline": "v64",
+  "games": 540,
+  "delta_ante": -0.013,
+  "se": 0.05,
+  "wins": 297,
+  "baseline_wins": 288,
+  "outcome": "neutral"
  }
 ]
