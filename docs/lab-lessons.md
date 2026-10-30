@@ -590,6 +590,9 @@ measured the wrong thing or was never asked:
 - **A win bonus in the forecast** (`win-bonus=W`: a rollout that beats the ante-8 boss counts W blinds more, an alive
   one W x value-tail x the value model's P(win); the forecast counts blinds cleared while only a win counts): W = 3,
   c2k 0-449 241 vs 249 wins (18/26), +0.009 +- 0.020 ante. Dropped: blinds cleared already ranks the options as well.
+- **Buying anything at ante 8** (runs that die at ante 8 still hold $37 at their last shop, median; joker slots are full
+  in ~95% of late losses). `final-sure-se=0` (auto-buy bar 0 paired SE at ante 8, was 1) with `final-spend`: c2k 0-449
+  241 vs 249 wins (14/22). Spending out at ante 8 has now lost twice: the extra buys are the forecast's noise.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

@@ -2396,5 +2396,16 @@
   "wins": 241,
   "baseline_wins": 249,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Ante 8: auto-buy bar 0 SE, no interest floor, 10 rerolls (final-sure-se=0 + final-spend)",
+  "theme": "Money",
+  "baseline": "v66",
+  "games": 450,
+  "delta_ante": 0.0,
+  "se": 0.0,
+  "wins": 241,
+  "baseline_wins": 249,
+  "outcome": "dropped"
  }
 ]
