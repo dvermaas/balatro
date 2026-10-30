@@ -251,16 +251,22 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
             if gs::get(gs_, "state").as_str() != Some("SHOP") {
                 return None;
             }
-            let found = crate::readiness::best_joker_order(gs_, 12);
             if crate::experiment::get().dagger_last {
+                // move Ceremonial Dagger last first; then take a searched order only if it leaves it there (taking
+                // the search's order and moving the Dagger back could cycle between two orders)
                 let labels: Vec<&str> = jokers.iter().map(|j| gs::get(j, "label").as_str().unwrap_or("")).collect();
-                let order = dagger_last(&labels, found.unwrap_or_else(|| (0..jokers.len()).collect()));
-                if order == (0..jokers.len()).collect::<Vec<usize>>() {
-                    return None;
+                let ident: Vec<usize> = (0..jokers.len()).collect();
+                let order = dagger_last(&labels, ident.clone());
+                if order != ident {
+                    return Some(("rearrange".to_string(), json!({"jokers": order}), "Ceremonial Dagger last: it destroys the joker to its right".to_string()));
                 }
-                return Some(("rearrange".to_string(), json!({"jokers": order}), "joker order with the best sampled best-play score, Ceremonial Dagger last".to_string()));
+                if labels.contains(&"Ceremonial Dagger") {
+                    return crate::readiness::best_joker_order(gs_, 12).filter(|o| dagger_last(&labels, o.clone()) == *o).map(|order| {
+                        ("rearrange".to_string(), json!({"jokers": order}), "joker order with the best sampled best-play score".to_string())
+                    });
+                }
             }
-            return found.map(|order| {
+            return crate::readiness::best_joker_order(gs_, 12).map(|order| {
                 ("rearrange".to_string(), json!({"jokers": order}), "joker order with the best sampled best-play score".to_string())
             });
         }
