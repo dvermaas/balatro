@@ -2303,7 +2303,7 @@
   "theme": "Jokers",
   "baseline": "v64",
   "games": 57,
-  "delta_ante": 0.034,
+  "delta_ante": 0.035,
   "se": 0.2,
   "wins": 31,
   "baseline_wins": 17,
