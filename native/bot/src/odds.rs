@@ -366,7 +366,16 @@ pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, 
 /// `round_search`'s outcome per move and shuffle (true: the round was cleared), for paired tests.
 /// `grid` (v66): a scorer per [hands left][discards left], so jokers that read them (Banner,
 /// Mystic Summit, Acrobat, Dusk) score each simulated play in its own state; else `scorer` throughout.
+/// `make` (lab `round-search-played`): builds the scorer for (hands left, discards left, mask of the hand types played
+/// earlier in the simulated round; bit = jev_kernel::HAND_NAMES index), so Card Sharp and Supernova see them; cached.
 pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
+    round_search_full(acts, st, scorer, grid, None, allow, track, samples)
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>,
+    make: Option<&dyn Fn(i64, i64, u32) -> jokers::Scorer>, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
+    let mut cache: std::collections::HashMap<(i64, i64, u32), jokers::Scorer> = std::collections::HashMap::new();
     let mut deck: Vec<Info> = st.deck.to_vec();
     sort_by_card_key(&mut deck);
     let mut hits = vec![vec![false; samples]; acts.len()];
@@ -380,13 +389,21 @@ pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
             let (mut r, mut hl, mut dl) = (st.need, st.hands_left, st.discards_left);
             let mut first = Some(act);
             let mut al = if track { Some(allow.clone()) } else { None };
+            let mut mask = 0u32;
             loop {
                 let allowed = Allowed::Boss(al.as_ref().unwrap_or(allow));
                 let (play, cards, score, played) = match first.take() {
                     Some(RootAct::Play(c, s, n)) => (true, c.clone(), *s, n.clone()),
                     Some(RootAct::Discard(c)) => (false, c.clone(), 0, String::new()),
                     None => {
-                        let sc = grid.and_then(|g| g.get(hl.max(0) as usize)).and_then(|row| row.get(dl.max(0) as usize)).unwrap_or(scorer);
+                        let made;
+                        let sc = match make {
+                            Some(mk) if mask != 0 => {
+                                made = cache.entry((hl, dl, mask)).or_insert_with(|| mk(hl, dl, mask));
+                                &*made
+                            }
+                            _ => grid.and_then(|g| g.get(hl.max(0) as usize)).and_then(|row| row.get(dl.max(0) as usize)).unwrap_or(scorer),
+                        };
                         let (s, name, best) = hands::best_play_cards(&h, ScorerArg::Jokers(sc), allowed);
                         if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r) {
                             (true, best, s, name.to_string())
@@ -396,6 +413,11 @@ pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
                         }
                     }
                 };
+                if play && make.is_some() {
+                    if let Some(i) = hands::native::hand_index(&played) {
+                        mask |= 1 << i;
+                    }
+                }
                 if let (Some(a), true) = (al.as_mut(), play) {
                     if let Some(lv) = a.levels.get_mut(&played).and_then(|v| v.as_object_mut()) {
                         lv.insert("played_this_round".into(), json!(1));
