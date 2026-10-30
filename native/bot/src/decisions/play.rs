@@ -638,7 +638,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     };
     let mut best = if p_play >= bar { argmax(&pp) } else { argmax(&dp) };
     let rs = crate::experiment::get().round_search;
-    if rs > 0 && gs::int(gs::get(gs_, "ante_num")) <= crate::experiment::get().round_search_to && !matches!(boss.as_str(), "Cerulean Bell" | "The Hook")
+    if rs > 0 && gs::int(gs::get(gs_, "ante_num")) <= crate::experiment::get().round_search_to && (crate::experiment::get().round_search_bell_hook || !matches!(boss.as_str(), "Cerulean Bell" | "The Hook"))
         && (crate::experiment::get().round_search_boss || !matches!(boss.as_str(), "The Mouth" | "The Eye")) && play_opts.len() + disc_opts.len() > 1 {
         // lab (`round-search=N`): play each first move out to the end of the round on shuffled draws (not under the
         // bosses whose rules it does not model: a locked or banned hand type, a forced card, random discards)
@@ -647,7 +647,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         let hand_size = if gs::truthy(ls) { gs::int(ls) as usize } else { hand.len() };
         let st = odds::RoundState { hand: &infos, deck: &deck, need: gs::num(gs::get(&info, "chips_still_needed")) * margin,
             hands_left: hands_left as i64, discards_left: if disc_opts.is_empty() { 0 } else { dl as i64 }, hand_size, cap,
-            serpent: boss == "The Serpent" };
+            serpent: boss == "The Serpent", bell: boss == "Cerulean Bell", hook: boss == "The Hook" };
         let keys: Vec<&String> = play_opts.iter().map(|(k, _)| k).chain(disc_opts.iter().map(|(k, _)| k)).collect();
         let acts: Vec<odds::RootAct> = play_opts.iter().map(|(_, p)| odds::RootAct::Play(idx_list(gs::get(p, "cards")), gs::int(gs::get(p, "estimate")), gs::s(gs::get(p, "hand")).to_string()))
             .chain(disc_opts.iter().map(|(_, d)| odds::RootAct::Discard(idx_list(gs::get(d, "cards"))))).collect();

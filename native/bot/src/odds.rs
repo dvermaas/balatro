@@ -322,6 +322,10 @@ pub struct RoundState<'a> {
     pub hand_size: usize,
     pub cap: usize,
     pub serpent: bool,
+    /// lab (`round-search-bell-hook`): Cerulean Bell forces a random card into every play and discard
+    pub bell: bool,
+    /// lab (`round-search-bell-hook`): The Hook discards 2 random held cards after every play
+    pub hook: bool,
 }
 
 fn take(h: &mut Vec<Info>, cards: &[usize]) {
@@ -388,13 +392,23 @@ pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
             let mut next = 0usize;
             let (mut r, mut hl, mut dl) = (st.need, st.hands_left, st.discards_left);
             let mut first = Some(act);
-            let mut al = if track { Some(allow.clone()) } else { None };
+            let mut al = if track || st.bell { Some(allow.clone()) } else { None };
             let mut mask = 0u32;
+            // the Bell's and the Hook's random picks: the same stream for every first move (common random numbers)
+            let mut brng = if st.bell || st.hook { Some(Random::new_int(7919 * si as i64 + 1)) } else { None };
+            let with_forced = |mut d: Vec<usize>, f: Option<usize>| -> Vec<usize> {
+                if let Some(f) = f.filter(|f| !d.contains(f)) {
+                    d.truncate(st.cap.saturating_sub(1));
+                    d.push(f);
+                }
+                d
+            };
             loop {
+                let forced = al.as_ref().and_then(|a| a.forced);
                 let allowed = Allowed::Boss(al.as_ref().unwrap_or(allow));
                 let (play, cards, score, played) = match first.take() {
                     Some(RootAct::Play(c, s, n)) => (true, c.clone(), *s, n.clone()),
-                    Some(RootAct::Discard(c)) => (false, c.clone(), 0, String::new()),
+                    Some(RootAct::Discard(c)) => (false, if st.bell { with_forced(c.clone(), forced) } else { c.clone() }, 0, String::new()),
                     None => {
                         let made;
                         let sc = match make {
@@ -408,7 +422,10 @@ pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
                         if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r) {
                             (true, best, s, name.to_string())
                         } else {
-                            let d = sim_discard(&h, &best, name, st.cap);
+                            let mut d = sim_discard(&h, &best, name, st.cap);
+                            if st.bell {
+                                d = with_forced(d, forced);
+                            }
                             if d.is_empty() { (true, best, s, name.to_string()) } else { (false, d, 0, String::new()) }
                         }
                     }
@@ -434,6 +451,15 @@ pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
                     if hl <= 0 {
                         break;
                     }
+                    if st.hook {
+                        let br = brng.as_mut().unwrap();
+                        for _ in 0..2 {
+                            if !h.is_empty() {
+                                let i = br.choice_index(h.len());
+                                h.remove(i);
+                            }
+                        }
+                    }
                 } else {
                     dl -= 1;
                 }
@@ -448,6 +474,11 @@ pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
                 h.sort_by_cached_key(future_key);
                 if h.is_empty() {
                     break;
+                }
+                if st.bell {
+                    // the forced card left with the play or discard; the Bell picks a new one from the hand
+                    let i = brng.as_mut().unwrap().choice_index(h.len());
+                    al.as_mut().unwrap().forced = Some(i);
                 }
             }
         }
