@@ -71,6 +71,14 @@ pub const INVEST_REROLL_FLOOR: i64 = 10;
 pub const FORECAST_TIMEOUT: f64 = 10.0;
 pub const SWAP_SELLS: usize = 2;
 pub const SURE_SE: i64 = 1; // v31 (v20: 2)
+/// The forecasts' auto-buy bar at this ante, in paired SEs: SURE_SE, the lab's `sure-se=X`, or `final-sure-se=X` at ante 8.
+pub fn sure_se(ante: i64) -> f64 {
+    let e = crate::experiment::get();
+    match e.final_sure_se {
+        Some(x) if ante >= 8 => x,
+        _ => e.sure_se.unwrap_or(SURE_SE as f64),
+    }
+}
 pub const HIDE_SE: i64 = 2;
 pub const REROLL_SE: i64 = 1;
 pub const ITEM_MIN_BUDGET: f64 = 1.0;
