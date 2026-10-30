@@ -2275,5 +2275,16 @@
   "wins": 1022,
   "baseline_wins": 1011,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Spend out at ante 8 (no interest floor, 10 rerolls)",
+  "theme": "Money",
+  "baseline": "v64",
+  "games": 450,
+  "delta_ante": 0.0,
+  "se": 0.0,
+  "wins": 227,
+  "baseline_wins": 234,
+  "outcome": "dropped"
  }
 ]

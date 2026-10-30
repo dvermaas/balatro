@@ -552,6 +552,9 @@ measured the wrong thing or was never asked:
   A paired test instead of the 10-point bar (`round-search-z=2`: override when the searched move's extra clears on the
   shared shuffles beat the usual move's by 2 SE): second set 0-899 508 vs 491 wins (49/32), first set 420-1319 514 vs
   520 (37/43); both 1,022 vs 1,011 (86/75). Neutral; the bar stays.
+- **Spending out at ante 8** (`final-spend`: no interest floor and up to 10 rerolls a shop at ante 8; runs that die there
+  hold $35 at their last shop): c2k 0-449 227 vs 234 wins (9/16) vs v64; rerolls 10.0 -> 12.1 a game. As with
+  `late-floor` (v43), spending the reserve buys nothing that matters. Dropped.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
