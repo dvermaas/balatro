@@ -221,7 +221,7 @@ pub fn _cards<'a>(gs_: &'a Value, area: &str) -> &'a [Value] {
     gs::cards_of(gs_, area)
 }
 
-/// Lab (`dagger-last`): `order` with Ceremonial Dagger moved to the end, so no joker sits to its right (it destroys
+/// v65: `order` with Ceremonial Dagger moved to the end, so no joker sits to its right (it destroys
 /// that one each time a blind is selected).
 pub fn dagger_last(labels: &[&str], order: Vec<usize>) -> Vec<usize> {
     let (mut rest, daggers): (Vec<usize>, Vec<usize>) = order.into_iter().partition(|&i| labels.get(i) != Some(&"Ceremonial Dagger"));

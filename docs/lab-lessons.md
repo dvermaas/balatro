@@ -557,6 +557,14 @@ measured the wrong thing or was never asked:
   `late-floor` (v43), spending the reserve buys nothing that matters. Dropped.
 - **128 forecast rollouts on v64** (`fc-n=128`, 32 vs 22 s a game): c2k 0-539 297 vs 288 wins (72/63, z = 0.77), -0.013 +-
   0.050 ante. Neutral, as at v52; 64 stays.
+- **v65, Ceremonial Dagger kept rightmost** (found reading a traced loss: ante 7 with 2 jokers). The Dagger destroys the
+  joker to its right each time a blind is selected, and the v57 order search (which scores one hand, not the blind
+  select) left it with jokers to its right: in one run it ate 10 bought jokers from ante 4. Runs that ever hold it
+  (57 of 4,000) averaged 3.7 jokers from ante 4 (all runs 5.1) and won 30% (all 57%). Now the shop moves it last, the
+  order search only keeps orders that leave it there (moving it back after each search cycled two orders and froze
+  the shop), and the forecast's rollouts hold it last too. On those 57 seeds: 31 vs 17 wins (18/4, z = 3.0), 5.1 vs
+  3.7 jokers from ante 4; every other game is unchanged. **Shipped as v65** (`no-dagger-last` restores the old
+  order). Whole sets (v64 rows with those seeds replaced): 1,175 and 1,131 wins.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

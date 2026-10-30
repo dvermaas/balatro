@@ -98,7 +98,7 @@ pub fn forecast_clock(
         // lab (`fc-order`): the rollouts hold the jokers in the order the bot would put them in (v57's search)
         let mut order = if fc_order { joker_order_after(pub_, &ojs) } else { None };
         if crate::experiment::get().dagger_last {
-            // lab (`dagger-last`): the rollouts keep Ceremonial Dagger last too, as the bot's shop does
+            // v65: the rollouts keep Ceremonial Dagger last too, as the bot's shop does
             let labels: Vec<&str> = ojs.iter().map(|c| gs::get(c, "label").as_str().unwrap_or("")).collect();
             let o = crate::strategy::dagger_last(&labels, order.clone().unwrap_or_else(|| (0..ojs.len()).collect()));
             order = if o == (0..ojs.len()).collect::<Vec<usize>>() { None } else { Some(o) };

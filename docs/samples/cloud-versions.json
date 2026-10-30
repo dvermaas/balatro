@@ -943,5 +943,35 @@
   "died_ante_1_4": 87,
   "died_ante_5_7": 422,
   "died_ante_8": 370
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v65",
+  "version_id": "rust",
+  "change": "Ceremonial Dagger kept rightmost",
+  "games": 2000,
+  "mean_ante": 7.452,
+  "se": 0.028,
+  "wins": 1175,
+  "win_rate": 0.588,
+  "mean_round": 20.23,
+  "died_ante_1_4": 90,
+  "died_ante_5_7": 380,
+  "died_ante_8": 355
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v65",
+  "version_id": "rust",
+  "change": "Ceremonial Dagger kept rightmost",
+  "games": 2000,
+  "mean_ante": 7.421,
+  "se": 0.029,
+  "wins": 1131,
+  "win_rate": 0.566,
+  "mean_round": 20.13,
+  "died_ante_1_4": 88,
+  "died_ante_5_7": 418,
+  "died_ante_8": 363
  }
 ]
