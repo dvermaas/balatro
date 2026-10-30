@@ -221,6 +221,14 @@ pub fn _cards<'a>(gs_: &'a Value, area: &str) -> &'a [Value] {
     gs::cards_of(gs_, area)
 }
 
+/// Lab (`dagger-last`): `order` with Ceremonial Dagger moved to the end, so no joker sits to its right (it destroys
+/// that one each time a blind is selected).
+pub fn dagger_last(labels: &[&str], order: Vec<usize>) -> Vec<usize> {
+    let (mut rest, daggers): (Vec<usize>, Vec<usize>) = order.into_iter().partition(|&i| labels.get(i) != Some(&"Ceremonial Dagger"));
+    rest.extend(daggers);
+    rest
+}
+
 // strategy.py 104-119
 pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
     let state = gs::get(gs_, "state").as_str();
@@ -243,7 +251,16 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
             if gs::get(gs_, "state").as_str() != Some("SHOP") {
                 return None;
             }
-            return crate::readiness::best_joker_order(gs_, 12).map(|order| {
+            let found = crate::readiness::best_joker_order(gs_, 12);
+            if crate::experiment::get().dagger_last {
+                let labels: Vec<&str> = jokers.iter().map(|j| gs::get(j, "label").as_str().unwrap_or("")).collect();
+                let order = dagger_last(&labels, found.unwrap_or_else(|| (0..jokers.len()).collect()));
+                if order == (0..jokers.len()).collect::<Vec<usize>>() {
+                    return None;
+                }
+                return Some(("rearrange".to_string(), json!({"jokers": order}), "joker order with the best sampled best-play score, Ceremonial Dagger last".to_string()));
+            }
+            return found.map(|order| {
                 ("rearrange".to_string(), json!({"jokers": order}), "joker order with the best sampled best-play score".to_string())
             });
         }
