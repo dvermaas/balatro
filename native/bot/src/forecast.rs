@@ -34,6 +34,10 @@ pub fn tail_value(rows: &mut [Value], g: &rumbot_sim::game::GameState) {
         let mut v = 0.0;
         if e.value_tail > 0.0 {
             v += e.value_tail * crate::value_model::tail(g, cleared);
+            if e.win_bonus > 0.0 && cleared && g.phase != rumbot_sim::game::Phase::Won && g.phase != rumbot_sim::game::Phase::GameOver && g.ante <= 8 {
+                // lab (`win-bonus=W`): an alive rollout's share of the win bonus
+                v += e.value_tail * e.win_bonus * crate::value_model::p_win_x(&crate::value_model::features(g), g.ante);
+            }
         }
         let alive = cleared && g.phase != rumbot_sim::game::Phase::Won && g.phase != rumbot_sim::game::Phase::GameOver;
         if e.money_tail > 0.0 && alive {

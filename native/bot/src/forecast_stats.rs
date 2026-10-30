@@ -185,9 +185,15 @@ pub fn m_next_boss(r: &[Value]) -> f64 {
 pub fn m_blinds(r: &[Value]) -> f64 {
     let n = r.iter().filter(|b| gs::truthy(gs::get(b, "cleared"))).count() as f64;
     let e = crate::experiment::get();
-    if e.value_tail > 0.0 || e.money_tail > 0.0 {
+    let won = if e.win_bonus > 0.0 && r.iter().any(|b| gs::get(b, "type").as_str() == Some("Boss") && gs::int(gs::get(b, "ante")) >= 8 && gs::truthy(gs::get(b, "cleared"))) {
+        // lab (`win-bonus=W`): a won run is worth W blinds more than the blinds it cleared
+        e.win_bonus
+    } else {
+        0.0
+    };
+    if e.value_tail > 0.0 || e.money_tail > 0.0 || won > 0.0 {
         // lab: + the weighted value of the run after the horizon (forecast::tail_value)
-        return n + r.last().map_or(0.0, |b| gs::num(gs::get(b, "value")));
+        return n + won + r.last().map_or(0.0, |b| gs::num(gs::get(b, "value")));
     }
     n
 }

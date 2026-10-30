@@ -87,7 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
-    "v66 + lab tooling (plays unchanged): round-search-played lets the round search's scorer see the hand types played earlier in the simulated round (Card Sharp, Supernova). Based on: ",
+    "v66 + lab tooling (plays unchanged): round-search-played lets the round search's scorer see the hand types played earlier in the simulated round (Card Sharp, Supernova); win-bonus=W counts a forecast rollout that wins the run W blinds more. Based on: ",
     "v66 (lab measured): the round search scores each simulated play with that play's own hands and discards left, so Banner (chips per discard left), Mystic Summit (0 discards), Acrobat and Dusk (final hand) count right; it used the current state throughout. Lab vs v65: 1,350 seeds, games won by only one side 29 vs 3 (z = 4.6). Based on: ",
     "v65 + lab tooling (plays unchanged): planet-rule=none drops the shop planet rule; planet-rule=shop keeps its planet but buys no Celestial packs; round-search-rnd scores each simulated play with its own hands and discards left (Banner, Mystic Summit, Acrobat, Dusk). Based on: ",
     "v65 (lab measured): Ceremonial Dagger is kept rightmost in the shop and in the forecast's rollouts, since it destroys the joker to its right each blind (runs holding it averaged 3.7 jokers from ante 4 and won 30%). On the 57 of 4,000 lab seeds that hold it: 31 vs 17 wins (z = 3.0). Based on: ",
