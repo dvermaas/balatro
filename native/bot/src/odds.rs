@@ -360,11 +360,16 @@ pub fn sim_discard(h: &[Info], best: &[usize], name: &str, cap: usize) -> Vec<us
 /// `track` (lab `round-search-boss`): The Eye and The Mouth see each simulated play (a copy of `allow` marks its type
 /// played this round), so repeats are banned or the type is locked.
 pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<f64> {
+    round_search_hits(acts, st, scorer, allow, track, samples).iter().map(|h| h.iter().filter(|&&x| x).count() as f64 / samples as f64).collect()
+}
+
+/// `round_search`'s outcome per move and shuffle (true: the round was cleared), for paired tests.
+pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
     let mut deck: Vec<Info> = st.deck.to_vec();
     sort_by_card_key(&mut deck);
-    let mut wins = vec![0usize; acts.len()];
+    let mut hits = vec![vec![false; samples]; acts.len()];
     let mut rng = Random::new_int(24024);
-    for _ in 0..samples {
+    for si in 0..samples {
         let mut order: Vec<usize> = (0..deck.len()).collect();
         rng.shuffle(&mut order);
         for (a, act) in acts.iter().enumerate() {
@@ -398,7 +403,7 @@ pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, 
                     r -= score as f64;
                     hl -= 1;
                     if r <= 0.0 {
-                        wins[a] += 1;
+                        hits[a][si] = true;
                         break;
                     }
                     if hl <= 0 {
@@ -422,5 +427,5 @@ pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, 
             }
         }
     }
-    wins.iter().map(|&w| w as f64 / samples as f64).collect()
+    hits
 }

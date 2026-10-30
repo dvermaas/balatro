@@ -651,10 +651,19 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         let keys: Vec<&String> = play_opts.iter().map(|(k, _)| k).chain(disc_opts.iter().map(|(k, _)| k)).collect();
         let acts: Vec<odds::RootAct> = play_opts.iter().map(|(_, p)| odds::RootAct::Play(idx_list(gs::get(p, "cards")), gs::int(gs::get(p, "estimate")), gs::s(gs::get(p, "hand")).to_string()))
             .chain(disc_opts.iter().map(|(_, d)| odds::RootAct::Discard(idx_list(gs::get(d, "cards"))))).collect();
-        let pr = crate::prof::time("sh.round_search", || odds::round_search(&acts, &st, &scorer, &allowed, crate::experiment::get().round_search_boss, rs));
+        let hits = crate::prof::time("sh.round_search", || odds::round_search_hits(&acts, &st, &scorer, &allowed, crate::experiment::get().round_search_boss, rs));
+        let pr: Vec<f64> = hits.iter().map(|h| h.iter().filter(|&&x| x).count() as f64 / rs as f64).collect();
         if let Some(cur) = keys.iter().position(|k| **k == best) {
             let bi = (0..pr.len()).fold(0, |b, i| if pr[i] > pr[b] { i } else { b });
-            if pr[bi] > pr[cur] + crate::experiment::get().round_search_tol {
+            let better = match crate::experiment::get().round_search_z {
+                // lab (`round-search-z=K`): a paired test on the shared shuffles instead of the fixed bar
+                Some(k) => {
+                    let (b, c) = hits[bi].iter().zip(&hits[cur]).fold((0, 0), |(b, c), (x, y)| (b + (*x && !*y) as i32, c + (!*x && *y) as i32));
+                    b > c && (b - c) as f64 > k * ((b + c) as f64).sqrt()
+                }
+                None => pr[bi] > pr[cur] + crate::experiment::get().round_search_tol,
+            };
+            if better {
                 bot.emit("auto", json!({"question": "move", "choice": keys[bi], "desc": format!("round search: {} clears {:.0}% vs {} {:.0}%",
                     keys[bi], 100.0 * pr[bi], best, 100.0 * pr[cur])}));
                 best = keys[bi].clone();
