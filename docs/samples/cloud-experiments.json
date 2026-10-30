@@ -2231,5 +2231,38 @@
   "wins": 236,
   "baseline_wins": 234,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Value tail 0.7 on v64",
+  "theme": "Forecast",
+  "baseline": "v64",
+  "games": 450,
+  "delta_ante": 0.024,
+  "se": 0.02,
+  "wins": 240,
+  "baseline_wins": 234,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Value tail 1.0 on v64 (second seed set)",
+  "theme": "Forecast",
+  "baseline": "v64",
+  "games": 2000,
+  "delta_ante": 0.037,
+  "se": 0.017,
+  "wins": 1151,
+  "baseline_wins": 1121,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Value tail 1.0 on v64 (first set, seeds 420-1999)",
+  "theme": "Forecast",
+  "baseline": "v64",
+  "games": 1580,
+  "delta_ante": -0.009,
+  "se": 0.02,
+  "wins": 929,
+  "baseline_wins": 917,
+  "outcome": "neutral"
  }
 ]
