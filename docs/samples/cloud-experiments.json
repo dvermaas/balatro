@@ -2407,5 +2407,16 @@
   "wins": 241,
   "baseline_wins": 249,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Free discards retested on v66 (free-discard)",
+  "theme": "Play",
+  "baseline": "v66",
+  "games": 450,
+  "delta_ante": -0.011,
+  "se": 0.026,
+  "wins": 246,
+  "baseline_wins": 249,
+  "outcome": "neutral"
  }
 ]
