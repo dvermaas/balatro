@@ -549,6 +549,9 @@ measured the wrong thing or was never asked:
   second set 1,151 vs 1,121 (174/144, z = 1.68), +0.037 +- 0.017 ante; first set seeds 420-1999 929 vs 917 (126/114),
   -0.009 +- 0.020 ante; both 2,080 vs 2,038 (300/258, z = 1.78). It opened at +35 wins on 900 seeds and faded to
   noise; 0.5 stays.
+  A paired test instead of the 10-point bar (`round-search-z=2`: override when the searched move's extra clears on the
+  shared shuffles beat the usual move's by 2 SE): second set 0-899 508 vs 491 wins (49/32), first set 420-1319 514 vs
+  520 (37/43); both 1,022 vs 1,011 (86/75). Neutral; the bar stays.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

@@ -2264,5 +2264,16 @@
   "wins": 929,
   "baseline_wins": 917,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Round search overrides on a paired 2-SE test",
+  "theme": "Play",
+  "baseline": "v64",
+  "games": 1800,
+  "delta_ante": 0.009,
+  "se": 0.019,
+  "wins": 1022,
+  "baseline_wins": 1011,
+  "outcome": "neutral"
  }
 ]
