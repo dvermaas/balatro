@@ -2385,5 +2385,16 @@
   "wins": 233,
   "baseline_wins": 249,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Forecast counts a won run 3 blinds more (win-bonus=3)",
+  "theme": "Forecast",
+  "baseline": "v66",
+  "games": 450,
+  "delta_ante": 0.009,
+  "se": 0.02,
+  "wins": 241,
+  "baseline_wins": 249,
+  "outcome": "dropped"
  }
 ]

@@ -587,6 +587,9 @@ measured the wrong thing or was never asked:
 - **Blind skips retested on v66** (v45-v48 tuned them when the bot won ~25%; it now wins ~58%). Skipping through
   ante 5 (`skip-max=5`): c2k 0-449 250 vs 249 wins (21/20), -0.036 +- 0.021 ante. Uncommon Tag added to the list:
   233 vs 249 (12/28, z = -2.5). v48's list and limit still hold.
+- **A win bonus in the forecast** (`win-bonus=W`: a rollout that beats the ante-8 boss counts W blinds more, an alive
+  one W x value-tail x the value model's P(win); the forecast counts blinds cleared while only a win counts): W = 3,
+  c2k 0-449 241 vs 249 wins (18/26), +0.009 +- 0.020 ante. Dropped: blinds cleared already ranks the options as well.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
