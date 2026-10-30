@@ -364,7 +364,7 @@ pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, 
 }
 
 /// `round_search`'s outcome per move and shuffle (true: the round was cleared), for paired tests.
-/// `grid` (lab `round-search-rnd`): a scorer per [hands left][discards left], so jokers that read them (Banner,
+/// `grid` (v66): a scorer per [hands left][discards left], so jokers that read them (Banner,
 /// Mystic Summit, Acrobat, Dusk) score each simulated play in its own state; else `scorer` throughout.
 pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
     let mut deck: Vec<Info> = st.deck.to_vec();
