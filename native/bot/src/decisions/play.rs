@@ -640,8 +640,8 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let rs = crate::experiment::get().round_search;
     if rs > 0 && gs::int(gs::get(gs_, "ante_num")) <= crate::experiment::get().round_search_to && (crate::experiment::get().round_search_bell_hook || !matches!(boss.as_str(), "Cerulean Bell" | "The Hook"))
         && (crate::experiment::get().round_search_boss || !matches!(boss.as_str(), "The Mouth" | "The Eye")) && play_opts.len() + disc_opts.len() > 1 {
-        // lab (`round-search=N`): play each first move out to the end of the round on shuffled draws (not under the
-        // bosses whose rules it does not model: a locked or banned hand type, a forced card, random discards)
+        // v64: play each first move out to the end of the round on shuffled draws (not under The Mouth and The Eye
+        // unless `round-search-boss`; v67: Cerulean Bell's forced card and The Hook's random discards are modelled)
         let deck: Vec<Info> = cards_of(gs_, "cards").iter().map(card_info).collect();
         let ls = gs::mget(area(gs_, "hand"), "limit");
         let hand_size = if gs::truthy(ls) { gs::int(ls) as usize } else { hand.len() };
