@@ -326,6 +326,9 @@ pub struct RoundState<'a> {
     pub bell: bool,
     /// lab (`round-search-bell-hook`): The Hook discards 2 random held cards after every play
     pub hook: bool,
+    /// lab (`round-search-crimson`): Crimson Heart's jokers it may pick (positions; empty = off) and the one it holds
+    pub crimson_live: Vec<usize>,
+    pub crimson_prev: Option<usize>,
 }
 
 fn take(h: &mut Vec<Info>, cards: &[usize]) {
@@ -373,13 +376,16 @@ pub fn round_search(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, 
 /// `make` (lab `round-search-played`): builds the scorer for (hands left, discards left, mask of the hand types played
 /// earlier in the simulated round; bit = jev_kernel::HAND_NAMES index), so Card Sharp and Supernova see them; cached.
 pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
-    round_search_full(acts, st, scorer, grid, None, allow, track, samples)
+    round_search_full(acts, st, scorer, grid, None, None, allow, track, samples)
 }
 
 #[allow(clippy::too_many_arguments)]
 pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>,
-    make: Option<&dyn Fn(i64, i64, u32) -> jokers::Scorer>, allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
+    make: Option<&dyn Fn(i64, i64, u32) -> jokers::Scorer>, cmake: Option<&dyn Fn(i64, i64, usize) -> jokers::Scorer>,
+    allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
     let mut cache: std::collections::HashMap<(i64, i64, u32), jokers::Scorer> = std::collections::HashMap::new();
+    let mut ccache: std::collections::HashMap<(i64, i64, usize), jokers::Scorer> = std::collections::HashMap::new();
+    let crimson = cmake.is_some() && !st.crimson_live.is_empty();
     let mut deck: Vec<Info> = st.deck.to_vec();
     sort_by_card_key(&mut deck);
     let mut hits = vec![vec![false; samples]; acts.len()];
@@ -395,7 +401,9 @@ pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
             let mut al = if track || st.bell { Some(allow.clone()) } else { None };
             let mut mask = 0u32;
             // the Bell's and the Hook's random picks: the same stream for every first move (common random numbers)
-            let mut brng = if st.bell || st.hook { Some(Random::new_int(7919 * si as i64 + 1)) } else { None };
+            let mut brng = if st.bell || st.hook || crimson { Some(Random::new_int(7919 * si as i64 + 1)) } else { None };
+            // Crimson Heart: the joker it holds now (None = the round's own scorers) and the one it held last
+            let (mut cj, mut cprev): (Option<usize>, Option<usize>) = (None, st.crimson_prev);
             let with_forced = |mut d: Vec<usize>, f: Option<usize>| -> Vec<usize> {
                 if let Some(f) = f.filter(|f| !d.contains(f)) {
                     d.truncate(st.cap.saturating_sub(1));
@@ -411,8 +419,13 @@ pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
                     Some(RootAct::Discard(c)) => (false, if st.bell { with_forced(c.clone(), forced) } else { c.clone() }, 0, String::new()),
                     None => {
                         let made;
-                        let sc = match make {
-                            Some(mk) if mask != 0 => {
+                        let sc = match (make, cmake) {
+                            (_, Some(cm)) if cj.is_some() => {
+                                let j = cj.unwrap();
+                                made = ccache.entry((hl, dl, j)).or_insert_with(|| cm(hl, dl, j));
+                                &*made
+                            }
+                            (Some(mk), _) if mask != 0 => {
                                 made = cache.entry((hl, dl, mask)).or_insert_with(|| mk(hl, dl, mask));
                                 &*made
                             }
@@ -450,6 +463,14 @@ pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
                     }
                     if hl <= 0 {
                         break;
+                    }
+                    if crimson {
+                        // the game re-picks after a play (never after a discard): a joker not debuffed, not the last one
+                        let el: Vec<usize> = st.crimson_live.iter().copied().filter(|&j| Some(j) != cprev).collect();
+                        let el = if el.is_empty() { st.crimson_live.clone() } else { el };
+                        let j = el[brng.as_mut().unwrap().choice_index(el.len())];
+                        cj = Some(j);
+                        cprev = Some(j);
                     }
                     if st.hook {
                         let br = brng.as_mut().unwrap();

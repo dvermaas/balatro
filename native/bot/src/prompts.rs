@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v67 + lab tooling (plays unchanged): round-search-crimson re-picks Crimson Heart's disabled joker after each simulated play in the round search. Based on: ",
     "v67 (lab measured): the round search also runs under Cerulean Bell (a random card forced into every play and discard, re-picked after each draw) and The Hook (2 random held cards discarded after every play), which it used to skip. Seeds that meet either boss: 20 vs 12 games won by only one side over 1,480 seeds of both sets; Bell deaths 52 -> 45. `no-round-search-bell-hook` restores v66. Based on: ",
     "v66 + lab tooling (plays unchanged): round-search-played lets the round search's scorer see the hand types played earlier in the simulated round (Card Sharp, Supernova); win-bonus=W counts a forecast rollout that wins the run W blinds more; final-sure-se=X sets the auto-buy bar at ante 8; round-search-bell-hook runs the round search under Cerulean Bell and The Hook, modelling the forced card and the random discards. Based on: ",
     "v66 (lab measured): the round search scores each simulated play with that play's own hands and discards left, so Banner (chips per discard left), Mystic Summit (0 discards), Acrobat and Dusk (final hand) count right; it used the current state throughout. Lab vs v65: 1,350 seeds, games won by only one side 29 vs 3 (z = 4.6). Based on: ",

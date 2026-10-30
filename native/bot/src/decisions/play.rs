@@ -647,7 +647,29 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         let hand_size = if gs::truthy(ls) { gs::int(ls) as usize } else { hand.len() };
         let st = odds::RoundState { hand: &infos, deck: &deck, need: gs::num(gs::get(&info, "chips_still_needed")) * margin,
             hands_left: hands_left as i64, discards_left: if disc_opts.is_empty() { 0 } else { dl as i64 }, hand_size, cap,
-            serpent: boss == "The Serpent", bell: boss == "Cerulean Bell", hook: boss == "The Hook" };
+            serpent: boss == "The Serpent", bell: boss == "Cerulean Bell", hook: boss == "The Hook", crimson_live: vec![], crimson_prev: None };
+        // lab (`round-search-crimson`): Crimson Heart disables a random other joker after each play; with exactly one
+        // joker debuffed now (the one it holds), each later simulated play is scored with its pick instead
+        let jcards: Vec<Value> = cards_of(gs_, "jokers").to_vec();
+        let debuffed: Vec<usize> = (0..jcards.len()).filter(|&i| gs::truthy(gs::mget(gs::d(gs::get(&jcards[i], "state")), "debuff"))).collect();
+        let mut st = st;
+        if crate::experiment::get().round_search_crimson && boss == "Crimson Heart" && debuffed.len() == 1 && jcards.len() > 1 {
+            st.crimson_live = (0..jcards.len()).collect();
+            st.crimson_prev = Some(debuffed[0]);
+        }
+        let cmake = |h: i64, d: i64, j: usize| -> Scorer {
+            let cs: Vec<Value> = jcards.iter().enumerate().map(|(i, c)| {
+                let mut c = c.clone();
+                if let Some(o) = c.as_object_mut() {
+                    let mut stt = gs::d(o.get("state").unwrap_or(&Value::Null)).clone();
+                    stt.insert("debuff".into(), json!(i == j));
+                    o.insert("state".into(), Value::Object(stt));
+                }
+                c
+            }).collect();
+            Scorer::new(levels.clone(), jokers::build(gs_, Some(&cs)), Rnd { hands_left: (h as f64).max(1.0), discards_left: d as f64 })
+        };
+        let cm: Option<&dyn Fn(i64, i64, usize) -> Scorer> = if st.crimson_live.is_empty() { None } else { Some(&cmake) };
         let keys: Vec<&String> = play_opts.iter().map(|(k, _)| k).chain(disc_opts.iter().map(|(k, _)| k)).collect();
         let acts: Vec<odds::RootAct> = play_opts.iter().map(|(_, p)| odds::RootAct::Play(idx_list(gs::get(p, "cards")), gs::int(gs::get(p, "estimate")), gs::s(gs::get(p, "hand")).to_string()))
             .chain(disc_opts.iter().map(|(_, d)| odds::RootAct::Discard(idx_list(gs::get(d, "cards"))))).collect();
@@ -671,7 +693,7 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             Scorer::new(lv, js.clone(), Rnd { hands_left: (h as f64).max(1.0), discards_left: d as f64 })
         };
         let mk: Option<&dyn Fn(i64, i64, u32) -> Scorer> = if crate::experiment::get().round_search_played { Some(&make) } else { None };
-        let hits = crate::prof::time("sh.round_search", || odds::round_search_full(&acts, &st, &scorer, grid.as_deref(), mk, &allowed, crate::experiment::get().round_search_boss, rs));
+        let hits = crate::prof::time("sh.round_search", || odds::round_search_full(&acts, &st, &scorer, grid.as_deref(), mk, cm, &allowed, crate::experiment::get().round_search_boss, rs));
         let pr: Vec<f64> = hits.iter().map(|h| h.iter().filter(|&&x| x).count() as f64 / rs as f64).collect();
         if let Some(cur) = keys.iter().position(|k| **k == best) {
             let bi = (0..pr.len()).fold(0, |b, i| if pr[i] > pr[b] { i } else { b });
