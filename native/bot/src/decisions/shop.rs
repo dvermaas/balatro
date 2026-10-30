@@ -813,10 +813,10 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     // buy only 1 time in 5, and left ante 2-3 balances at $7-12 instead of $16-23 (lost interest).
     // v13: when readiness says we're behind, rerolls hunt for power down to a low floor.
     let mut can_reroll = money - reroll >= (if mode == "invest" { super::INVEST_REROLL_FLOOR } else { super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) })
-        && bot._rerolls < crate::experiment::get().max_rerolls.unwrap_or(super::MAX_REROLLS);
+        && bot._rerolls < super::max_rerolls(crate::gs::int(&g(gs, "ante_num")).max(1));
     if fc.is_some() {
         // v19: reroll when nothing here beats buying nothing by 1 SE, from money above the interest floor
-        can_reroll = money - reroll >= super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) && bot._rerolls < crate::experiment::get().max_rerolls.unwrap_or(super::MAX_REROLLS)
+        can_reroll = money - reroll >= super::interest_buffer(crate::gs::int(&g(gs, "ante_num")).max(1)) && bot._rerolls < super::max_rerolls(crate::gs::int(&g(gs, "ante_num")).max(1))
             && !items.iter().any(|it| !flag(&it.obj, "_fc_item")
                 && fnum(&it.obj, "_fc_delta", 0.0) > (super::REROLL_SE as f64) * fnum(&it.obj, "_fc_se", 0.0).max(1e-9));
     }

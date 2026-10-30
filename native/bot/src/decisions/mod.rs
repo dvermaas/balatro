@@ -52,10 +52,18 @@ pub const SKIP_ANTE: i64 = 4; // v48 (was 3)
 pub const NEVER_VOUCHERS: &[&str] = &["Hieroglyph", "Petroglyph"];
 /// The money kept for interest at this ante: INTEREST_BUFFER (lab `late-floor=N`: $N less per ante after 4).
 pub fn interest_buffer(ante: i64) -> i64 {
+    if crate::experiment::get().final_spend && ante >= 8 {
+        return 0; // lab (`final-spend`): money is worth nothing after the last boss
+    }
     let n = crate::experiment::get().late_floor;
     if n > 0 && ante > 4 { (INTEREST_BUFFER - n * (ante - 4)).max(0) } else { INTEREST_BUFFER }
 }
 pub const MAX_REROLLS: i64 = 2;
+/// Rerolls allowed in one shop: MAX_REROLLS, the lab's `max-rerolls=N`, or 10 at ante 8 with `final-spend`.
+pub fn max_rerolls(ante: i64) -> i64 {
+    let e = crate::experiment::get();
+    if e.final_spend && ante >= 8 { 10 } else { e.max_rerolls.unwrap_or(MAX_REROLLS) }
+}
 pub const INVEST_BELOW: f64 = 0.6;
 pub const BANK_ABOVE: f64 = 1.2;
 pub const INVEST_FLOOR: i64 = 5;
