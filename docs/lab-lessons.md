@@ -595,6 +595,16 @@ measured the wrong thing or was never asked:
   241 vs 249 wins (14/22). Spending out at ante 8 has now lost twice: the extra buys are the forecast's noise.
 - **Free discards retested on v66** (`free-discard`, last tried on 260 seeds at v35): c2k 0-449 246 vs 249 wins (21/24),
   -0.011 +- 0.026 ante, 62 games changed. Still neutral.
+- **v67, the round search under Cerulean Bell and The Hook** (`round-search-bell-hook`; it skipped both). The Bell's card
+  goes into every simulated play and discard and is re-picked at random after each draw; The Hook drops 2 random held
+  cards after each play (one random stream per sample, shared by all first moves). Only seeds that meet either boss can
+  change (46% of games), so those were run alone: c2k 926 seeds 614 vs 608 wins (14/8), b2k 0-1199 554 seeds 368 vs 366
+  (6/4); together 20 vs 12 won by only one side (z = 1.4); Bell deaths 52 -> 45, Hook deaths 18 -> 18. Small but the
+  model is right, at no cost in time. **Shipped as v67** (`no-round-search-bell-hook` restores v66; v67 with no flags
+  replays the flagged games, 40 seeds).
+  The Mouth and The Eye in the search (`round-search-boss`) retested the same way on the 830 c2k seeds that meet them
+  (v64's test was on all seeds): 489 vs 490 wins (21/22). Mouth deaths 41 -> 32 and Eye 31 -> 29, but those runs die
+  later instead. Neutral; still off.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

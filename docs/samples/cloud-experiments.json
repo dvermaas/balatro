@@ -2418,5 +2418,38 @@
   "wins": 246,
   "baseline_wins": 249,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "v67: round search under Cerulean Bell and The Hook (second set, seeds that meet them)",
+  "theme": "Play",
+  "baseline": "v66",
+  "games": 926,
+  "delta_ante": 0.0,
+  "se": 0.005,
+  "wins": 614,
+  "baseline_wins": 608,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v67: round search under Cerulean Bell and The Hook (first set 0-1199, seeds that meet them)",
+  "theme": "Play",
+  "baseline": "v66",
+  "games": 554,
+  "delta_ante": -0.009,
+  "se": 0.021,
+  "wins": 368,
+  "baseline_wins": 366,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "Round search under The Mouth and The Eye, retested on v66 (seeds that meet them)",
+  "theme": "Play",
+  "baseline": "v66",
+  "games": 830,
+  "delta_ante": 0.016,
+  "se": 0.021,
+  "wins": 489,
+  "baseline_wins": 490,
+  "outcome": "neutral"
  }
 ]
