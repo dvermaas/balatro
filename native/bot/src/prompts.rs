@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v68 + lab tooling (plays unchanged): clear-pick takes, of the plays that clear the blind, the one best for the scaling jokers held (no Obelisk or Ride the Bus reset, then Runner, Spare Trousers, Square, Hiker, Wee, To Do List growth). Based on: ",
     "v68 (lab measured): at Verdant Leaf (the last boss) the joker sold is the one whose sale leaves the round search's best chance to clear the round (each sellable joker removed in turn, the undebuffed hand played out on 128 shuffles), not the one with the smallest loss on recent hands. Seeds that meet it: c2k 302 seeds 254 vs 248 wins (10/4), b2k 315 seeds 257 vs 254 (6/3); together 16 vs 7 (z = 1.9), Leaf deaths 100 -> 91. `no-leaf-search` restores v67. Based on: ",
     "v67 + lab tooling (plays unchanged): round-search-crimson re-picks Crimson Heart's disabled joker after each simulated play in the round search. Based on: ",
     "v67 (lab measured): the round search also runs under Cerulean Bell (a random card forced into every play and discard, re-picked after each draw) and The Hook (2 random held cards discarded after every play), which it used to skip. Seeds that meet either boss: 24 vs 14 games won by only one side over 1,873 seeds of both sets; Bell deaths 59 -> 50. `no-round-search-bell-hook` restores v66. Based on: ",

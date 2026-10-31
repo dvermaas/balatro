@@ -321,6 +321,58 @@ fn _leaf_sale(bot: &mut JevBot, gs_: &Value, boss: &str, hand: &[Value]) -> bool
     true
 }
 
+macro_rules! rx {
+    ($p:expr) => {{
+        static R: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
+        R.get_or_init(|| regex::Regex::new($p).expect("valid regex"))
+    }};
+}
+
+/// Lab (`clear-pick`): of the plays that clear the blind, the one that is best for the scaling jokers held: first no
+/// reset (Obelisk on the most played hand, Ride the Bus on a scoring face card), then the most growth (Runner on a
+/// straight, Spare Trousers on two pair, Square Joker on 4 cards, Hiker per scoring card, Wee Joker per scoring 2,
+/// To Do List's hand), then the highest estimate.
+fn clear_pick<'a>(gs_: &Value, plays: &'a [Value], info: &Value, margin: f64) -> Option<&'a Value> {
+    let js = cards_of(gs_, "jokers");
+    let live = |k: &str| js.iter().filter(|c| gs::get(c, "key").as_str() == Some(k) && !gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff"))).collect::<Vec<_>>();
+    let eff = |c: &Value| gs::s(gs::mget(gs::d(gs::get(c, "value")), "effect")).to_string();
+    let current = |c: &Value, re: &regex::Regex| re.captures(&eff(c)).and_then(|m| m[1].parse::<f64>().ok()).unwrap_or(0.0);
+    let obelisk = live("j_obelisk").iter().any(|c| current(c, rx!(r"Currently X(\d+(?:\.\d+)?)")) > 1.0);
+    let bus = live("j_ride_the_bus").iter().any(|c| current(c, rx!(r"Currently \+(\d+)")) > 0.0);
+    let n = |k: &str| live(k).len() as f64;
+    let (runner, trousers, square, hiker, wee) = (n("j_runner"), n("j_trousers"), n("j_square"), n("j_hiker"), n("j_wee"));
+    let todo: Vec<String> = live("j_todo_list").iter().filter_map(|c| rx!(r"poker hand is a (.+?),").captures(&eff(c)).map(|m| m[1].to_string())).collect();
+    let hands = gs::d(gs::get(gs_, "hands"));
+    let played = |h: &str| gs::num(gs::mget(gs::d(hands.get(h).unwrap_or(&Value::Null)), "played"));
+    let key = |p: &Value| -> (i32, f64) {
+        let h = gs::s(gs::get(p, "hand"));
+        let scoring: Vec<String> = gs::list(gs::get(p, "scoring")).iter().map(|x| gs::s(x).to_string()).collect();
+        let mut resets = 0;
+        if obelisk && hands.keys().all(|o| o == h || played(o) < played(h) + 1.0) {
+            resets += 1;
+        }
+        if bus && scoring.iter().any(|c| c.starts_with("Jack") || c.starts_with("Queen") || c.starts_with("King")) {
+            resets += 1;
+        }
+        let mut grow = 0.0;
+        if h.contains("Straight") { grow += runner; }
+        if matches!(h, "Two Pair" | "Full House") { grow += 2.0 * trousers; }
+        if gs::list(gs::get(p, "cards")).len() == 4 { grow += square; }
+        grow += hiker * 0.2 * scoring.len() as f64;
+        grow += wee * scoring.iter().filter(|c| c.starts_with("2 ")).count() as f64;
+        if todo.iter().any(|t| t == h) { grow += 1.0; }
+        (-resets, grow)
+    };
+    let mut best: Option<(&Value, (i32, f64))> = None;
+    for p in plays.iter().filter(|p| clears(p, info, margin)) {
+        let k = key(p);
+        if best.map_or(true, |(_, b)| k.0 > b.0 || (k.0 == b.0 && k.1 > b.1)) {
+            best = Some((p, k)); // plays come by estimate, so ties keep the highest
+        }
+    }
+    best.map(|(p, _)| p)
+}
+
 /// v68: Verdant Leaf is the last boss, so sell the joker whose sale leaves the round most likely
 /// cleared: for each sellable joker (eternal and LEAF_KEEP ones kept), the round search from the undebuffed hand
 /// with that joker gone (first move: the best play or the search's own discard). Some((joker, P(clear), worst P)).
@@ -463,7 +515,8 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     } else {
         e.clear_margin.unwrap_or(1.0)
     };
-    if let Some(c) = plays.iter().find(|p| clears(p, &info, margin)) {
+    let clearing = if crate::experiment::get().clear_pick { clear_pick(gs_, &plays, &info, margin) } else { plays.iter().find(|p| clears(p, &info, margin)) };
+    if let Some(c) = clearing {
         let desc = format!("{} ({}) clears the blind", gs::s(gs::get(c, "hand")), gs::int(gs::get(c, "estimate")));
         let cards = idx_list(gs::get(c, "cards"));
         bot.emit("forced", json!({"question": "move", "choice": "play_1", "desc": desc}));
