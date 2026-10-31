@@ -1003,5 +1003,35 @@
   "died_ante_1_4": 85,
   "died_ante_5_7": 406,
   "died_ante_8": 344
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v67",
+  "version_id": "rust",
+  "change": "round search under Cerulean Bell and The Hook",
+  "games": 2000,
+  "mean_ante": 7.456,
+  "se": 0.028,
+  "wins": 1180,
+  "win_rate": 0.59,
+  "mean_round": 20.25,
+  "died_ante_1_4": 88,
+  "died_ante_5_7": 379,
+  "died_ante_8": 353
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v67",
+  "version_id": "rust",
+  "change": "round search under Cerulean Bell and The Hook",
+  "games": 2000,
+  "mean_ante": 7.438,
+  "se": 0.029,
+  "wins": 1171,
+  "win_rate": 0.586,
+  "mean_round": 20.19,
+  "died_ante_1_4": 84,
+  "died_ante_5_7": 409,
+  "died_ante_8": 336
  }
 ]

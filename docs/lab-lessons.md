@@ -599,10 +599,11 @@ measured the wrong thing or was never asked:
 - **v67, the round search under Cerulean Bell and The Hook** (`round-search-bell-hook`; it skipped both). The Bell's card
   goes into every simulated play and discard and is re-picked at random after each draw; The Hook drops 2 random held
   cards after each play (one random stream per sample, shared by all first moves). Only seeds that meet either boss can
-  change (46% of games), so those were run alone: c2k 926 seeds 614 vs 608 wins (14/8), b2k 0-1199 554 seeds 368 vs 366
-  (6/4); together 20 vs 12 won by only one side (z = 1.4); Bell deaths 52 -> 45, Hook deaths 18 -> 18. Small but the
+  change (46% of games), so those were run alone: c2k 926 seeds 614 vs 608 wins (14/8), b2k 947 seeds 639 vs 635
+  (10/6); together 24 vs 14 won by only one side (z = 1.6); Bell deaths 59 -> 50, Hook deaths 21 -> 20. Small but the
   model is right, at no cost in time. **Shipped as v67** (`no-round-search-bell-hook` restores v66; v67 with no flags
-  replays the flagged games, 40 seeds).
+  replays the flagged games, 40 seeds). Full sets (v66 rows with these seeds replaced): b2k 1,180 wins (59.0%), c2k
+  1,171 (58.6%).
   The Mouth and The Eye in the search (`round-search-boss`) retested the same way on the 830 c2k seeds that meet them
   (v64's test was on all seeds): 489 vs 490 wins (21/22). Mouth deaths 41 -> 32 and Eye 31 -> 29, but those runs die
   later instead. Neutral; still off.

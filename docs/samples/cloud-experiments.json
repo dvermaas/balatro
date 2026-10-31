@@ -2431,14 +2431,14 @@
   "outcome": "shipped"
  },
  {
-  "experiment": "v67: round search under Cerulean Bell and The Hook (first set 0-1199, seeds that meet them)",
+  "experiment": "v67: round search under Cerulean Bell and The Hook (first set, seeds that meet them)",
   "theme": "Play",
   "baseline": "v66",
-  "games": 554,
-  "delta_ante": -0.009,
-  "se": 0.021,
-  "wins": 368,
-  "baseline_wins": 366,
+  "games": 947,
+  "delta_ante": -0.005,
+  "se": 0.012,
+  "wins": 639,
+  "baseline_wins": 635,
   "outcome": "shipped"
  },
  {
