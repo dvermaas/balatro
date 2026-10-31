@@ -1033,5 +1033,35 @@
   "died_ante_1_4": 84,
   "died_ante_5_7": 409,
   "died_ante_8": 336
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v68",
+  "version_id": "rust",
+  "change": "Verdant Leaf sale chosen by round search",
+  "games": 2000,
+  "mean_ante": 7.456,
+  "se": 0.028,
+  "wins": 1183,
+  "win_rate": 0.592,
+  "mean_round": 20.25,
+  "died_ante_1_4": 88,
+  "died_ante_5_7": 379,
+  "died_ante_8": 350
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v68",
+  "version_id": "rust",
+  "change": "Verdant Leaf sale chosen by round search",
+  "games": 2000,
+  "mean_ante": 7.438,
+  "se": 0.029,
+  "wins": 1177,
+  "win_rate": 0.589,
+  "mean_round": 20.19,
+  "died_ante_1_4": 84,
+  "died_ante_5_7": 409,
+  "died_ante_8": 330
  }
 ]

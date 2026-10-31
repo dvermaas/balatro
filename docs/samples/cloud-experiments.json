@@ -2462,5 +2462,27 @@
   "wins": 243,
   "baseline_wins": 244,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "v68: Verdant Leaf's sale chosen by round search (second set, seeds that meet it)",
+  "theme": "Play",
+  "baseline": "v67",
+  "games": 302,
+  "delta_ante": 0.0,
+  "se": 0.0,
+  "wins": 254,
+  "baseline_wins": 248,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v68: Verdant Leaf's sale chosen by round search (first set, seeds that meet it)",
+  "theme": "Play",
+  "baseline": "v67",
+  "games": 315,
+  "delta_ante": 0.0,
+  "se": 0.0,
+  "wins": 257,
+  "baseline_wins": 254,
+  "outcome": "shipped"
  }
 ]

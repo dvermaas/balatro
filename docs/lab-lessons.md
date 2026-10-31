@@ -611,6 +611,14 @@ measured the wrong thing or was never asked:
   as the game does, instead of keeping the one disabled now): the 310 c2k seeds that meet it, 243 vs 244 wins, 1 game
   changed. The pick only matters from the second simulated play on, and its average rarely flips the first move;
   Crimson Heart deaths (61) are a strength check. Parked.
+- **v68, Verdant Leaf's sale by round search** (`leaf-search`). Verdant Leaf debuffs every card until a joker is sold, and
+  it is always the last boss, so the sale should be whichever joker leaves this round most likely cleared. v30 sold the
+  joker with the smallest loss on recent hands (bait first, v38; hand-size and life-saving jokers kept). Now each
+  sellable joker is removed in turn and the round search plays the undebuffed hand out (first move: the best play or
+  the search's discard, 128 shuffles, a scorer per hands and discards left); the best one is sold. Only the seeds that
+  meet the Leaf can change: c2k 302 seeds 254 vs 248 wins (10/4), b2k 315 seeds 257 vs 254 (6/3); together 16 vs 7
+  (z = 1.9), Leaf deaths 100 -> 91. **Shipped as v68** (`no-leaf-search` restores v67; identity 24 seeds). Full sets:
+  b2k 1,183 wins (59.2%), c2k 1,177 (58.9%).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

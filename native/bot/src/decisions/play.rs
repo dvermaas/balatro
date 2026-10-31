@@ -321,7 +321,7 @@ fn _leaf_sale(bot: &mut JevBot, gs_: &Value, boss: &str, hand: &[Value]) -> bool
     true
 }
 
-/// Lab (`leaf-search`): Verdant Leaf is the last boss, so sell the joker whose sale leaves the round most likely
+/// v68: Verdant Leaf is the last boss, so sell the joker whose sale leaves the round most likely
 /// cleared: for each sellable joker (eternal and LEAF_KEEP ones kept), the round search from the undebuffed hand
 /// with that joker gone (first move: the best play or the search's own discard). Some((joker, P(clear), worst P)).
 fn leaf_search_pick(gs_: &Value, js: &[Value], keep: &HashSet<usize>) -> Option<(usize, f64, f64)> {
