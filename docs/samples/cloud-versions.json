@@ -1063,5 +1063,35 @@
   "died_ante_1_4": 84,
   "died_ante_5_7": 409,
   "died_ante_8": 330
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v69",
+  "version_id": "rust",
+  "change": "clearing play chosen for the scaling jokers held",
+  "games": 2000,
+  "mean_ante": 7.457,
+  "se": 0.028,
+  "wins": 1185,
+  "win_rate": 0.593,
+  "mean_round": 20.26,
+  "died_ante_1_4": 87,
+  "died_ante_5_7": 385,
+  "died_ante_8": 343
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v69",
+  "version_id": "rust",
+  "change": "clearing play chosen for the scaling jokers held",
+  "games": 2000,
+  "mean_ante": 7.443,
+  "se": 0.029,
+  "wins": 1194,
+  "win_rate": 0.597,
+  "mean_round": 20.2,
+  "died_ante_1_4": 84,
+  "died_ante_5_7": 400,
+  "died_ante_8": 322
  }
 ]

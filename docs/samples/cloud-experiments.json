@@ -2484,5 +2484,27 @@
   "wins": 257,
   "baseline_wins": 254,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "v69: clearing play chosen for the scaling jokers held (second set)",
+  "theme": "Play",
+  "baseline": "v68",
+  "games": 2000,
+  "delta_ante": 0.005,
+  "se": 0.006,
+  "wins": 1194,
+  "baseline_wins": 1177,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v69: clearing play chosen for the scaling jokers held (first set)",
+  "theme": "Play",
+  "baseline": "v68",
+  "games": 2000,
+  "delta_ante": 0.001,
+  "se": 0.006,
+  "wins": 1185,
+  "baseline_wins": 1183,
+  "outcome": "shipped"
  }
 ]

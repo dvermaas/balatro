@@ -619,6 +619,13 @@ measured the wrong thing or was never asked:
   meet the Leaf can change: c2k 302 seeds 254 vs 248 wins (10/4), b2k 315 seeds 257 vs 254 (6/3); together 16 vs 7
   (z = 1.9), Leaf deaths 100 -> 91. **Shipped as v68** (`no-leaf-search` restores v67; identity 24 seeds). Full sets:
   b2k 1,183 wins (59.2%), c2k 1,177 (58.9%).
+- **v69, the clearing play chosen for the scaling jokers** (`clear-pick`). When several plays clear the blind the round
+  ends either way, so the bot played the highest estimate. Now it takes, among the clearing plays, first one that resets
+  nothing (Obelisk on the most played hand, Ride the Bus on a scoring face card), then the one that grows the most
+  (Runner on a straight, Spare Trousers on two pair, Square Joker on 4 cards, Hiker per scoring card, Wee Joker per
+  scoring 2, To Do List's hand), then the highest estimate. About 2% of games change. Full sets vs v68: c2k 1,194 vs
+  1,177 wins (27/10, z = 2.8), b2k 1,185 vs 1,183 (19/17); together 46 vs 27 (z = 2.2). Like v66, the gain came on
+  the second set. **Shipped as v69** (`no-clear-pick` restores v68; identity 24 seeds).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

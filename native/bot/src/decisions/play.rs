@@ -328,7 +328,7 @@ macro_rules! rx {
     }};
 }
 
-/// Lab (`clear-pick`): of the plays that clear the blind, the one that is best for the scaling jokers held: first no
+/// v69: of the plays that clear the blind, the one that is best for the scaling jokers held: first no
 /// reset (Obelisk on the most played hand, Ride the Bus on a scoring face card), then the most growth (Runner on a
 /// straight, Spare Trousers on two pair, Square Joker on 4 cards, Hiker per scoring card, Wee Joker per scoring 2,
 /// To Do List's hand), then the highest estimate.
