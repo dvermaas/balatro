@@ -18,7 +18,12 @@ git history up to `4628654`. See README.md for setup.
   be regenerated, so a behaviour change makes them stale; check it with the lab instead.
   `kernel/tests/matches_reference.rs` pins the scorer to its original implementation.
 - Lab (no JEV, free): `jevlab --set sim30-a --arm E|F --jobs 8 [--limit N]` (E = bot-forecast-long,
-  F = bot-forecast-items); rows in `runs/_policy_lab/<name>/results.jsonl`. `JEVLAB_TRACE=<dir>` writes
+  F = bot-forecast-items); rows in `runs/_policy_lab/<name>/results.jsonl`. Experiments use `JEVLAB_EXP` flags
+  (`native/bot/src/experiment.rs`) on the two fixed 2,000-seed sets, b2k and c2k (`docs/samples/cloud-lab/seeds-*.txt`),
+  through `scripts/lab/chunk.sh BIN SET START COUNT NAME BASE EXP` (resumable; ~450 seeds per <1 h chunk on 4 cores;
+  copy BIN out of `native/target` first) and `scripts/lab/cmp.py BASE NAME`. Screen on c2k 0-449, confirm on both
+  full sets, judge by games won by only one side (docs/lab-lessons.md "How to experiment"). Current: v69, 59.3% /
+  59.7% wins (b2k / c2k). `JEVLAB_TRACE=<dir>` writes
   every game's calls (and keeps the run dirs in $TMPDIR) and prints the first call that differs from
   `runs/_port/traces`.
 - Sim games with JEV: `jevbot sim --set sim30-a --jobs 8` (recorded in `runs/sim/`; `--code-jev` for no
@@ -77,6 +82,9 @@ git history up to `4628654`. See README.md for setup.
 - Speed-only changes must leave games identical seed by seed: run both lab arms on the same seeds with
   `JEVLAB_TRACE` before and after and compare the call logs and every run's `decisions.jsonl`
   (ignore card ids, timings, `prompt_version`). Every mismatch so far was a real bug.
+- A change that only acts under some bosses can only change the games that meet them: run those seeds alone
+  (`scripts/lab/subset.py`) and splice the rows into the baseline (`splice.py`) instead of replaying 4,000 games.
+- Never delete `/tmp/plab_*` while a lab run is going: jevlab keeps each game's run dir there, and the game errors.
 - Caches must be per game (thread-local, reset at `start`), never process-wide: `jevlab` and
   `jevbot sim` run games on threads, and a shared cache made results depend on the other games.
 - Rust floats must match the old Python bit for bit where they reach JEV or a record: keep the order

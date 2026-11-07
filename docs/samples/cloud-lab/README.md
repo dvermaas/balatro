@@ -1,12 +1,19 @@
-# Cloud lab results (2026-10-16/17)
+# Cloud lab results
 
-Per-game rows (`scripts/policy_lab.py` result format, gzipped) of every policy-lab run from the cloud
+**Since v38 (Rust lab):** the two fixed 2,000-seed sets every experiment runs on are `seeds-b2k.txt` ("fresh 2000",
+the first set) and `seeds-c2k.txt` ("fresh 2000 (2nd)"), in the order `scripts/lab/chunk.sh` indexes them; results
+live in `runs/_policy_lab/` (not in git) and are summarized per version in
+[../cloud-versions.json](../cloud-versions.json) and per experiment in [../cloud-experiments.json](../cloud-experiments.json).
+Some Rust-lab games are kept here (`*-snaps.jsonl.gz`, joker and value studies), plus the scripts that analysed them.
+
+**v27-v32 (2026-10-16/17, Python lab):** per-game rows (`scripts/policy_lab.py` result format, gzipped; that script
+went with the Python code, in git history up to `4628654`) of every policy-lab run from the cloud
 session that took the Python bot from v27 to v31/v32. Decision logs are not included. Write-ups:
 [docs/policy-lab.md](../../policy-lab.md) (from "Mid-game scaling experiments") and
 [docs/lab-lessons.md](../../lab-lessons.md). One row per experiment: [../cloud-experiments.json](../cloud-experiments.json);
 per version: [../cloud-versions.json](../cloud-versions.json).
 
-Seed sets (code only, arm F `bot-forecast-items` unless an experiment arm is named):
+Python-era seed sets (code only, arm F `bot-forecast-items` unless an experiment arm is named):
 
 | file suffix | seeds | command |
 |---|---|---|

@@ -1,23 +1,48 @@
-# What the lab taught us (v27 → v31, 2026-10-16/17)
+# What the lab taught us (v27 → v69)
 
-A cloud session ran about 40 policy-lab experiments (code only, no JEV, Jackdaw sim) on the
-mid-game scaling problem. This page keeps the conclusions; the numbers are in
-[policy-lab.md](policy-lab.md) (from "Mid-game scaling experiments"), one row per experiment in
-[samples/cloud-experiments.json](samples/cloud-experiments.json), and every game in
-[samples/cloud-lab/](samples/cloud-lab/).
+Cloud sessions ran a few hundred policy-lab experiments: the bot with CodeJev in place of JEV (it takes the top-ranked
+option), arm F, on the rumbot simulator, so code only and free. This page keeps the conclusions, newest at the end of
+the log below; one row per experiment is in [samples/cloud-experiments.json](samples/cloud-experiments.json), one row
+per version and seed set in [samples/cloud-versions.json](samples/cloud-versions.json), early numbers in
+[policy-lab.md](policy-lab.md), and games in [samples/cloud-lab/](samples/cloud-lab/). The tooling is in
+[scripts/lab/](../scripts/lab) (see "How to experiment").
 
 ## Where it got to
 
-| | v27 | v31 |
-|---|---:|---:|
-| sim60-a mean ante (wins of 60) | 5.90 (4) | 6.50 (10) |
-| 60 fresh seeds | 6.15 (6) | 6.63 (10) |
-| 200 fresh seeds (v28 → v31) | 6.46 (27) | 6.68 (40) |
+Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.txt`), code only:
 
-About a third of v31 runs reach ante 8. Most losses are antes 5-7 at ~75% of the target (not enough
-scoring), plus the ante-8 finisher (Violet Vessel kills nearly every run that meets it).
+| Version | What it added | Wins | Mean ante |
+|---|---|---:|---:|
+| v31 | planets, Verdant Leaf, a 1-SE auto-buy bar (200 fresh seeds) | 20% | 6.68 |
+| v44 | boss rules and joker-text fixes (v36-v44); the first 2,000-seed sets | 18.1% | 6.54 |
+| v48 | blind skips for tags that give a free joker or $25 (v45-v48) | 25.1% | 6.63 |
+| v52 | 64 forecast rollouts per option (was 16) | 31.0% | 6.74 |
+| v55 | play now unless a discard clearly beats it (v53: a learned value tail) | 42.2% | 7.18 |
+| v60 | forecast rollouts that shop (v56-v59: joker order, scorer fixes, real-game sync) | 48.6% | 7.30 |
+| v63 | learned joker values in the shop, packs and editions (v61-v63) | 55.0% | 7.33 |
+| v64 | the round search: each first move played out to the end of the round | 57.3% | 7.44 |
+| v69 | the search's scorer per state, Bell/Hook, Verdant Leaf's sale, Dagger, clearing plays (v65-v69) | 59.5% | 7.45 |
 
-## What worked: fixing what the forecast measured wrong
+(v59 changed the simulator, so numbers before and after it are not strictly comparable.)
+
+Where v69 loses (4,000 games, 1,621 losses): antes 1-4 171, ante 5 120, ante 6 254, ante 7 411, ante 8 665. A third
+of the late losses end within 80% of the target. The ante-8 bosses kill Violet Vessel 52% of the runs that meet it,
+Crimson Heart 17%, Verdant Leaf 14%, Amber Acorn 9%, Cerulean Bell 8%; Violet Vessel (313) and Big Blind (153) are the
+top killers overall. Joker slots are full in ~95% of late losses: what is left is mostly build strength.
+
+What moved the number, in short:
+- **Fixing what a measurement got wrong** (v28-v31 forecasts, v36-v44 boss rules and joker text, v58 scorer, v66
+  search scorer): the forecast is a good judge of whatever it is asked, so most wins came from asking it right.
+- **Noise was deciding**: 16 rollouts picked wrong buys; 64 fixed it (v52). More than 64 has not helped since.
+- **What the rollouts cannot see** was carried by learned values (v53 tail, v61-v63 joker and edition priors) and by
+  blind skips for a free joker (v45-v48); longer horizons (4, 8 bosses) made things worse.
+- **In-round search** (v64, then v66-v69) beat every hand-written play rule, which it complements rather than replaces.
+- **Reading traced games** found the bugs that rules of thumb never would (Hieroglyph, Misprint, Raised Fist,
+  Ceremonial Dagger, Banner in the search).
+- What never worked: heuristic nudges on top of the forecast, money rules (interest floors, rerolls, spending out),
+  more forecast compute past 64, Pair commitment, and most extra skip tags.
+
+## What worked first (v28-v31): fixing what the forecast measured wrong
 
 The shop forecast (play the next 3 bosses with the build frozen, compare blinds cleared against
 buying nothing) is a good judge of whatever it is asked about. Every gain came from a place where it
@@ -31,7 +56,7 @@ measured the wrong thing or was never asked:
 3. **The auto-buy bar (v31, +0.23 ± 0.10 over 320 seeds).** 2 paired SEs at 16-24 rollouts rejected
    real gains of +0.3 to +0.9 blinds. 1 SE is the optimum (1.5 and 0.5 are worse).
 
-## What did not work, and why
+## What did not work early on (v27-v35), and why
 
 - **Heuristic nudges on top of the forecast** (xMult or scaling credit, engine credit and protection,
   discard commitment to a hand, suit tarots by measured value, Mouth first plays, tag skips): flat or
@@ -100,7 +125,7 @@ measured the wrong thing or was never asked:
   build controls: 0.10 at ante 2, 0.07 at 3, 0.04 at 4-5, 0.03 at 6, 0.02 at 7, 0.01 at 8). W = 0.5 on 260
   seeds: -0.07 +- 0.06 ante, 46 vs 51 wins (91 games changed). Dropped; W = 1 and 2 were stopped unfinished.
 
-## Bugs found by reading what the bot did (v36-v39, Rust only)
+## Experiment log, v36 onward (Rust lab, roughly in order)
 
 - **Audit of predictions** (`samples/cloud-lab/audit.py`, 6,923 plays in 200 traced games): 1.1% of plays
   scored under 2/3 of their estimate, but 27% under Cerulean Bell. Cloud 9 (34%) was a parse bug; Seltzer
@@ -631,7 +656,7 @@ measured the wrong thing or was never asked:
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
   comparable (`docs/samples/real-sync/2026-10-22.md`).
   The scorer's rightmost Blueprint copied the leftmost joker (Brainstorm's rule); in the game it copies nothing
-  (lab flag `blueprint-fix`).
+  (lab flag `blueprint-fix`; shipped with v58's scorer fixes).
 - **v46, no Big-blind skip without a joker:** 2 x 2,000 seeds vs v45: +0.025 +- 0.011 and +0.046 +- 0.015 ante,
   431 vs 428 and 396 vs 391 wins (101 games change).
 - **Shop-side vouchers (dropped, lab flags `strong-vouchers`, `buy-vouchers`, `voucher-floor`):** the lab bot bought
@@ -666,20 +691,43 @@ win more because good seeds deal pairs, not because Pair is the better plan. Row
 
 ## How to experiment (method lessons)
 
-- Pair every comparison by seed and keep the lab deterministic; confirm on 200+ seeds before shipping.
-  Several +0.2 ante or +9 win bumps on 60 seeds vanished at 200-320.
-- Count wins with "seeds won by only one side" (z = (a - b) / sqrt(a + b)), not raw totals.
-- Read the logs before building: the three wins above were found by looking at what the bot did
-  (levels by ante, a boss it never beat, items it never bought), not by tuning knobs.
-- Prototype new rules as `BOT_ARMS` in `scripts/policy_lab.py` (Python, monkeypatched, no version
-  change); port to production and to the Rust bot once they win.
-- In the Rust lab, add a flag to `native/bot/src/experiment.rs` (`JEVLAB_EXP`, unset = production) and run
-  `jevlab --jobs 1` in separate processes on a fixed seed split: threads share `readiness::play_mix`'s cache,
-  so `--jobs N` games can differ between identical runs. ~17 CPU-s a game; screen on 60 seeds, confirm the
-  arms that lead on 200 more.
+The loop:
+1. **Find something real first.** Read traced games (`JEVLAB_TRACE=<dir>` keeps every game's `decisions.jsonl` under
+   `/tmp/plab_<seed>_*`), death tables by ante and boss, items never bought or never used. Nearly every win came from
+   looking at what the bot did, not from turning knobs.
+2. **Add a flag** in `native/bot/src/experiment.rs` (`JEVLAB_EXP`, unset = production) and a "+ lab tooling" line in
+   `VERSION_NOTE`. Build, then copy `native/target/release/jevlab` to a scratch path per experiment, so a later
+   rebuild cannot change a running chunk.
+3. **Screen** on c2k seeds 0-449 against the current baseline: `scripts/lab/chunk.sh BIN c2k 0 450 NAME BASE "flag"`
+   (resumable; ~450 seeds per chunk under an hour on 4 cores; never two at once). Drop anything at or below the
+   baseline.
+4. **Confirm** on the rest of c2k and all of b2k. Ship on z >= ~2 over both sets together, with the mechanism
+   checked in traces. b2k 0-419 flatters v64 and later (winner's curse: v64's bar was picked there), so screen on c2k.
+5. **Ship**: make the flag the default with a `no-...` flag that restores the old behaviour, write the `VERSION_NOTE`
+   entry, and check identity (the new binary with no flags replays the flagged games: 12-40 seeds, 0 changed).
+   Then add version rows (`scripts/lab/verrow.py`), experiment rows, this page's entry, and refresh the dashboard.
+
+What to trust:
+- Pair every comparison by seed and count **games won by only one side** (z = (a - b) / sqrt(a + b)); mean ante and
+  raw totals mislead. At ~60% wins, 450 seeds show only gross effects: +-10 wins is noise.
+- Two seed sets disagree surprisingly often (v66: c2k 46/12, b2k 23/22; v69: 27/10 vs 19/17). Judge on both.
+- A change that only acts under some bosses can only change the games that meet them: run those seeds alone
+  (`subset.py`), which is 3-6x cheaper and far more sensitive, and splice the rows into the baseline (`splice.py`)
+  for the new version's full-set numbers (v65 Dagger, v67 Bell/Hook, v68 Verdant Leaf).
+- Deaths that move to a later boss are not wins: the Mouth/Eye search cut Mouth deaths 41 -> 32 for 21/22 wins.
+- A rollout that is more optimistic (or pessimistic) than now makes worse shop calls both ways: the forecast's
+  settings sit at a measured optimum, so tune its inputs, not its knobs.
+- `jevlab --jobs N` is deterministic (caches are per game); results depend only on the binary, flags and seed.
+- Never delete `/tmp/plab_*` while a run is going (games error out); a chunk killed by the time limit loses only
+  its unfinished games (`chunk.sh` keeps the finished rows of a rerun).
 
 ## Open ideas
 
-- A learned value at the forecast horizon, trained on far more games (hundreds of thousands, which the
-  Rust lab makes feasible) and checked out of sample before use.
-- A JEV benchmark of v31 on the real game, to see whether the lab gains carry over.
+- Violet Vessel kills half the runs that meet it (313 of 1,621 v69 losses): a plan for it from the shops of ante 7
+  onward, when the ante-8 boss is known, rather than a better hand on the day.
+- Small, correct, unshipped flags to fold into the next version that needs new baselines: `round-search-played`
+  (Card Sharp, Supernova in the search) and `round-search-crimson`.
+- More scaling jokers for the clearing-play choice (v69) and for the round search's simulated discards
+  (`rs-keep-straight` is being screened).
+- A learned value at the forecast horizon trained on far more games (hundreds of thousands), checked out of sample.
+- A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).

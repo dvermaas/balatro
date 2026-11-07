@@ -119,19 +119,21 @@ tested in the simulator first (next section).
   [docs/policy-lab.md](docs/policy-lab.md).
 - **Profiling**: `JEV_PERF=1` prints coarse timers per phase. For a real profile, build with
   `CARGO_PROFILE_RELEASE_DEBUG=line-tables-only` and run `jevlab` under `perf record -g`.
-- **Current baseline (v31, 2026-10-17)**, code only (no JEV), arm F (measured with the Python lab):
-  - `sim60-a`: mean ante **6.50**, 10 wins out of 60 (v27: 5.90, 4 wins); Rust gives the same;
-  - 60 fresh seeds: **6.63**, 10 wins (v27: 6.15, 6 wins);
-  - 200 fresh seeds (after those 60): **6.68**, 40 wins (20%; v28: 6.46, 27 wins);
-  - v28 planets, v29 Negative jokers, v30 Verdant Leaf, v31 auto-buy bar 1 SE: conclusions in
-    [docs/lab-lessons.md](docs/lab-lessons.md), numbers in [docs/policy-lab.md](docs/policy-lab.md)
-    ("Mid-game scaling experiments" and after), every game in `docs/samples/cloud-lab/`;
-  - about a third of runs reach ante 8, where the finisher bosses (Violet Vessel, Crimson Heart,
-    Amber Acorn) take most of them.
+- **Lab experiments at scale**: [`scripts/lab/`](scripts/lab) runs the two fixed 2,000-seed sets
+  (`docs/samples/cloud-lab/seeds-b2k.txt` and `seeds-c2k.txt`) in resumable chunks and compares runs seed by seed:
+  `chunk.sh` (play a chunk), `cmp.py` (paired comparison), `subset.py` and `splice.py` (changes that only act under
+  some bosses), `verrow.py` (version rows). How to judge a result: [docs/lab-lessons.md](docs/lab-lessons.md),
+  "How to experiment".
+- **Current baseline (v69, 2026-11-05)**, code only (no JEV), arm F, rumbot: on the two 2,000-seed sets the bot wins
+  **59.3%** and **59.7%** of runs (mean ante 7.46 and 7.44). v31 won about 20% (mean ante ~6.6); the gains since
+  came from the shop forecast's fixes, blind skips for tags, the joker values and the in-round search
+  ([docs/lab-lessons.md](docs/lab-lessons.md) has every experiment; numbers per version in
+  `docs/samples/cloud-versions.json`, per experiment in `docs/samples/cloud-experiments.json`). Losses are now mostly
+  strength checks at antes 6-8, led by Violet Vessel (it kills about half the runs that meet it).
 
-  The last JEV sim benchmark (v23, `sim30-a`, before later sim fixes) reached 6.43. Thirty seeds
-  detect about 0.9 ante, so test changes code-only on 60+ seeds first. The experiment arms of the
-  Python lab (planets, vouchers, engines, ...; none shipped) were not ported to `jevlab`.
+  The last JEV sim benchmark (v23, `sim30-a`, before later sim fixes) reached 6.43; the JEV bot has not been
+  benchmarked on the current code. Thirty seeds detect only about 0.9 ante, so changes are screened in the lab on 450
+  seeds and confirmed on both full sets, judged by the games won by only one side.
 
 ## Rust bot
 
@@ -162,51 +164,12 @@ jevlab --set sim30-a --arm E|F --jobs 8 [--limit N] [--name X]
   [docs/rust-port-scope.md](docs/rust-port-scope.md); open items:
   [docs/port-handoff/followups.md](docs/port-handoff/followups.md).
 
-**Identity.** Tests: `cd native && cargo test --release`. Most compare against fixtures and traces
-recorded from the Python bot in `runs/_port` (not in git; `$JEV_PORT_DATA` overrides the path). They
-stay valid without the Python code, but can no longer be regenerated, so a behaviour change makes
-them stale.
-
-At Python v31 (references regenerated from v32's Python, see [docs/rust-port-guide.md](docs/rust-port-guide.md)
-"Reference data"):
-
-- Bot replay: 60/60 games identical; CodeJev 2535/2535 requests; every decision fixture identical (jokers,
-  picker, readiness, scorer, hands, odds, dec_shop_a, fc_stats). Forecasts: items 2913/2916, packs
-  2223/2224 (`fc_items` is slow, ~2-9 min); all four misses are one Jackdaw bug (an Arcana pack's tarot
-  duplicating one we hold; [followups](docs/port-handoff/followups.md)).
-- sim60-a, arm F: Rust 6.50 +- 0.20 ante, 10/60 wins, the same as Python v31; 60/60 games end the same.
-
-At Python v27 (before the v28-v31 port):
-
-- Bot replay: 60/60 games identical. Forecasts: shop 2475/2475, packs pass, items 3193/3193.
-  All-Rust forecast replay: 60/60.
-- Engine replay (`engine_replay`, `IGNORE="].id"`): 47/60 games identical. The rest are Jackdaw bugs
-  and the Mail-In Rebate rank (followups.md).
-- Live lab, 8 traced seeds: 15/16 calls identical. The one difference (1YJ4DQ2R, arm E) is a Jackdaw
-  Standard-pack bug, not the Rust bot.
-- `kernel/tests/matches_reference.rs` checks the allocation-free scorer against its original
-  implementation, bit for bit, on random hands and joker rules.
-
-**Speed** (8 seeds, summed per-game seconds, arm E / arm F):
-
-| Path | Arm E | Arm F |
-|---|---:|---:|
-| Pure Python (`JEV_NATIVE=0`) | 887 s | 1030 s |
-| Python + native kernels (v27) | 87 s | 115 s |
-| Rust (port) | 49 s | 58 s |
-
-Profiled speed-ups since the port (16 seeds, 4 threads, no tracing, same machine, identical games):
-
-- v33 (on v27's bot): arm E 19.4 s → 11.3 s, arm F 23.2 s → 13.5 s wall. The allocator had taken about
-  a third of the time (now mimalloc), and the scorer kernel no longer allocates per subset.
-- v34 (on v31's bot, whose planet values made pack picks the hot spot): CPU time arm E 71.7 s → 31.4 s,
-  arm F 90.6 s → 37.6 s. Planet values share one scoring of their deals, best plays skip plays with a
-  kicker when a kicker cannot matter, rumbot stopped formatting logs nobody reads.
-- Where the time goes now: the rollouts (rumbot's `GameState::step`, ~25%), subset scoring for the odds
-  forecast, play mix and planet values (~25%), and the BalatroBot-shaped JSON views (~15%).
-
-Live tests (2026-10-17): one real game with CodeJev and one with real JEV, both played through `jevbot play`
-against the modded game.
+**Tests and identity.** `cd native && cargo test --release`. Most tests compare against fixtures and traces
+recorded from the Python bot in `runs/_port` (not in git; `$JEV_PORT_DATA` overrides the path): they pinned the port
+to Python v31 seed by seed, but can no longer be regenerated, so every behaviour change since makes them stale and
+changes are checked in the lab instead. `kernel/tests/matches_reference.rs` still pins the scorer bit for bit. The
+port's identity and speed results are in [docs/rust-port-guide.md](docs/rust-port-guide.md) ("Port results").
+A lab game takes ~22 s of one core at v69 (64-rollout shop forecasts plus the in-round search).
 
 Jackdaw-mirroring flags: the forecasts and the engine set a few rumbot flags that copy Jackdaw's
 quirks so the results match the Python reference (`fool_always_usable`, `pack_ignores_played`,

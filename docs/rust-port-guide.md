@@ -120,3 +120,50 @@ of operations when you combine its results.
    function, compares `serde_json::to_string` of result and expectation (this checks key order and
    int/float types too). Collect mismatches; print the first 5 compactly (`trace::short`); assert
    none. Print "N/N identical".
+
+## Port results (historical, from the README)
+
+Tests: `cd native && cargo test --release`. Most compare against fixtures and traces
+recorded from the Python bot in `runs/_port` (not in git; `$JEV_PORT_DATA` overrides the path). They
+stay valid without the Python code, but can no longer be regenerated, so a behaviour change makes
+them stale.
+
+At Python v31 (references regenerated from v32's Python, see "Reference data" above):
+
+- Bot replay: 60/60 games identical; CodeJev 2535/2535 requests; every decision fixture identical (jokers,
+  picker, readiness, scorer, hands, odds, dec_shop_a, fc_stats). Forecasts: items 2913/2916, packs
+  2223/2224 (`fc_items` is slow, ~2-9 min); all four misses are one Jackdaw bug (an Arcana pack's tarot
+  duplicating one we hold; [followups](port-handoff/followups.md)).
+- sim60-a, arm F: Rust 6.50 +- 0.20 ante, 10/60 wins, the same as Python v31; 60/60 games end the same.
+
+At Python v27 (before the v28-v31 port):
+
+- Bot replay: 60/60 games identical. Forecasts: shop 2475/2475, packs pass, items 3193/3193.
+  All-Rust forecast replay: 60/60.
+- Engine replay (`engine_replay`, `IGNORE="].id"`): 47/60 games identical. The rest are Jackdaw bugs
+  and the Mail-In Rebate rank (followups.md).
+- Live lab, 8 traced seeds: 15/16 calls identical. The one difference (1YJ4DQ2R, arm E) is a Jackdaw
+  Standard-pack bug, not the Rust bot.
+- `kernel/tests/matches_reference.rs` checks the allocation-free scorer against its original
+  implementation, bit for bit, on random hands and joker rules.
+
+**Speed** (8 seeds, summed per-game seconds, arm E / arm F):
+
+| Path | Arm E | Arm F |
+|---|---:|---:|
+| Pure Python (`JEV_NATIVE=0`) | 887 s | 1030 s |
+| Python + native kernels (v27) | 87 s | 115 s |
+| Rust (port) | 49 s | 58 s |
+
+Profiled speed-ups since the port (16 seeds, 4 threads, no tracing, same machine, identical games):
+
+- v33 (on v27's bot): arm E 19.4 s → 11.3 s, arm F 23.2 s → 13.5 s wall. The allocator had taken about
+  a third of the time (now mimalloc), and the scorer kernel no longer allocates per subset.
+- v34 (on v31's bot, whose planet values made pack picks the hot spot): CPU time arm E 71.7 s → 31.4 s,
+  arm F 90.6 s → 37.6 s. Planet values share one scoring of their deals, best plays skip plays with a
+  kicker when a kicker cannot matter, rumbot stopped formatting logs nobody reads.
+- Where the time goes now: the rollouts (rumbot's `GameState::step`, ~25%), subset scoring for the odds
+  forecast, play mix and planet values (~25%), and the BalatroBot-shaped JSON views (~15%).
+
+Live tests (2026-10-17): one real game with CodeJev and one with real JEV, both played through `jevbot play`
+against the modded game.
