@@ -354,6 +354,35 @@ pub fn sim_discard(h: &[Info], best: &[usize], name: &str, cap: usize) -> Vec<us
             }
         }
     }
+    if crate::experiment::get().rs_keep_straight && keep == best && matches!(name, "High Card" | "Pair") {
+        // lab (`rs-keep-straight`): no 4-flush either: keep four ranks of a straight (the 5-rank window holding most)
+        let ro: Vec<char> = hands::RANK_ORDER.chars().collect();
+        let mut four: Vec<usize> = Vec::new();
+        for lo in -1i32..9 {
+            let window: Vec<char> = if lo >= 0 { (0..5).map(|k| ro[lo as usize + k]).collect() } else { "A2345".chars().collect() };
+            let mut got: Vec<usize> = Vec::new();
+            let mut used: Vec<char> = Vec::new();
+            for i in 0..h.len() {
+                if let Some(r) = h[i].rank.as_deref().and_then(|r| r.chars().next()).filter(|_| !h[i].enh_is("STONE")) {
+                    if window.contains(&r) && !used.contains(&r) {
+                        got.push(i);
+                        used.push(r);
+                    }
+                }
+            }
+            if got.len() >= 4 && got.len() > four.len() {
+                four = got;
+            }
+        }
+        if four.len() == 4 {
+            keep = four;
+            for &i in best {
+                if !keep.contains(&i) {
+                    keep.push(i);
+                }
+            }
+        }
+    }
     let mut rest: Vec<usize> = (0..h.len()).filter(|i| !keep.contains(i)).collect();
     rest.sort_by_key(|&i| (hands::_rank_value(&h[i]), i));
     rest.truncate(cap);
