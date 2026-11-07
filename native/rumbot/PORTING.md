@@ -1,5 +1,8 @@
 # Porting `jimbot_sim` to Rust
 
+> Upstream design notes (rumbot-sim `888c516`): paths such as `tests/*.rs` and `rust/handcrafted/` are upstream's and
+> not in this repo; local changes are in [VENDORED.md](VENDORED.md).
+
 The Python simulator is the `jimbot-sim` repository
 (`git@github.com:mmank/jimbot-sim.git`, package `src/jimbot_sim`); `rumbot`
 carries it as the submodule `external/jimbot-sim`. This crate, `rumbot_sim`, is a

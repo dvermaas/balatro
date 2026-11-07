@@ -1,5 +1,8 @@
 # jevbot handoff: the `JevBot` interface for decisions porters
 
+> **Historical handoff** (2026-10-17, Rust port task `jevbot`): the task is done; "todo", "not committed" and "next
+> step" notes below are a record. Open items: [followups.md](followups.md).
+
 Files: `native/bot/src/jev_bot.rs` (bot), `codejev.rs` (JEV stand-in), `replay.rs` (trace harness),
 `tests/bot_replay.rs`. Handlers are fn stubs with `todo!()` bodies that you replace, signature fixed:
 

@@ -1,5 +1,7 @@
 # Jackdaw full-game fidelity audit
 
+> **Historical** (2026-10-15, Python era): Jackdaw was retired with the Python code; the simulator is now rumbot.
+
 Question: can [Jackdaw](https://github.com/TylerFlar/jackdaw-balatro) (pinned `e66de788`,
 checkout in `runs/_research/jackdaw`) replace the real Balatro client so we can run games
 headless, for example in the cloud?

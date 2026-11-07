@@ -1,5 +1,8 @@
 # Handoff: typesafe (Rust TypeSafe client)
 
+> **Historical handoff** (2026-10-17, Rust port task `typesafe`): the task is done; "todo", "not committed" and "next
+> step" notes below are a record. Open items: [followups.md](followups.md).
+
 ## Done
 - `native/typesafe` (crate `typesafe`): `TypeSafeClient::new` / `with_transport`, `system_one(&Value, &Map)`, `Transport` trait (injectable), `UreqTransport` (ureq 2, rustls), retry loop (max 2 retries, backoff, Retry-After, 30 s budget), error classes and `Display` matching the SDK.
 - `scripts/port/fixtures/typesafe.py`: runs the real SDK 0.7.4 through its httpx2 transport hook, with a scripted server. Wrote `runs/_port/fixtures/typesafe.jsonl.gz`: 120 real JEV calls (both arms), 11 error/retry cases, 8 backoff rows.

@@ -1,5 +1,7 @@
 # Methodology audit: why progress is slowing, and what to change
 
+> **Historical** (2026-10-15, JEV bot v18, Python era).
+
 2026-10-15. Requested while v18 `d22adb59` was running `bench30-a`.
 The current benchmark was left untouched. This audit made no game actions,
 model requests, strategy changes, server restarts or draw-order inspections.

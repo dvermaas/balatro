@@ -1,5 +1,7 @@
 # V17: preserve a useful next hand when discards run out
 
+> **Historical** (2026-10-15, JEV bot v17, Python era).
+
 The user approved one more focused change and the same seven-seed pilot before
 deciding whether to spend a full bench30-a evaluation on it. V16 improved three
 weak seeds but failed the persistent worst pair and regressed a winning control.

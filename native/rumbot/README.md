@@ -14,22 +14,11 @@ while !game.is_over() {
 }
 ```
 
-Its user is [rumbot](https://github.com/mmank/rumbot), the handcrafted policy
-that plays it, which carries this repository as the submodule
-`external/rumbot-sim` and depends on it by path.
+Upstream, its user is [rumbot](https://github.com/mmank/rumbot), the handcrafted policy that plays it. **In this repo**
+it is jevbot's simulator: the shop forecasts' rollouts (`native/simcore`), whole sim games (`engine::RumbotGame`) and
+the policy lab (`jevlab`). This copy keeps only the library: upstream's tests, bins (`sim_bench`) and build profiles
+were left out. Local changes, each citing the game's Lua, are in [VENDORED.md](VENDORED.md).
 
-- [PORTING.md](PORTING.md) -- the frozen interface (shared `Rc<RefCell<_>>`
+- [PORTING.md](PORTING.md) -- upstream's design notes: the frozen interface (shared `Rc<RefCell<_>>`
   handles, `fn`-pointer hooks, the module map), how the differential fixtures
   work, and the bugs each one caught.
-- `src/bin/sim_bench.rs` -- the speed benchmark, against the Python's
-  `tools/bench_python.py`.
-
-```bash
-cargo test --profile quick      # 633 tests, ~2.5 min
-cargo test --profile quick --test rng_fixture --test hands_fixture \
-    --test blinds_fixture --test state_fixture      # the fast ones
-cargo run --release --bin sim_bench -- 1200
-```
-
-`--profile quick` is release without `lto` and `codegen-units = 1`: a third of
-the build time and identical answers. Use `--release` only to measure speed.

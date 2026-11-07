@@ -1,5 +1,8 @@
 # scoring handoff (branch port/scoring)
 
+> **Historical handoff** (2026-10-17, Rust port task `scoring`): the task is done; "todo", "not committed" and "next
+> step" notes below are a record. Open items: [followups.md](followups.md).
+
 ## Done
 - native/bot/src/hands.rs written in full (NOT yet compiled; depends on jokers.rs which is not written):
   hands.py (card_info, describe, classify, estimate, evaluated_plays, best_score, best_play,

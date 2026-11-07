@@ -4,7 +4,19 @@
 the first set) and `seeds-c2k.txt` ("fresh 2000 (2nd)"), in the order `scripts/lab/chunk.sh` indexes them; results
 live in `runs/_policy_lab/` (not in git) and are summarized per version in
 [../cloud-versions.json](../cloud-versions.json) and per experiment in [../cloud-experiments.json](../cloud-experiments.json).
-Some Rust-lab games are kept here (`*-snaps.jsonl.gz`, joker and value studies), plus the scripts that analysed them.
+Rust-lab material kept here (each item is written up in [lab-lessons.md](../../lab-lessons.md)):
+
+| What | Files |
+|---|---|
+| Seed sets | `seeds-b2k.txt`, `seeds-c2k.txt` (2,000 each), `seeds-e16k.txt` (10,000 more, for the v61 joker table) |
+| Games with a `snaps` list (one per shop visit) | `b2k-v38/39/41-snaps`, `c2k-pw-v60-snaps` (with build power), `v1000-snaps`, `v4k-snaps`, `b2k/c2k-v45-base` |
+| Joker values (v61-v63) | `joker_prior_c2k_a5.json` (the shipped table, also `native/bot/data/joker_values.json`), `joker-study/` (`jval.py` fit, `offan.py` offer analysis, pair studies, the e16k driver and other tables tried) |
+| Learned value tail (v53, v55-v58 retrains) | `value_model_*.json`, `vtrain.py`, `ptrain.py`, `vcurve.py` |
+| Analysis scripts | `audit.py`, `estaudit.py` (play estimates vs outcomes), `calib.py`, `calib62.py` (forecast calibration), `bossrate.py` (death rate per boss), `castle_why.py`, `discards.py`, `cmpbase.py`, `beyond/` (what winners have beyond power), `trace-scan/` (scans of traced games: vanished jokers, anomalies, churn) |
+| Real-game sync | `sync_check.py` (docs/real-game-sync.md) |
+
+The lab's own scripts (chunk runner, paired comparison, boss subsets, version rows) are in
+[scripts/lab/](../../../scripts/lab).
 
 **v27-v32 (2026-10-16/17, Python lab):** per-game rows (`scripts/policy_lab.py` result format, gzipped; that script
 went with the Python code, in git history up to `4628654`) of every policy-lab run from the cloud
@@ -24,8 +36,9 @@ Python-era seed sets (code only, arm F `bot-forecast-items` unless an experiment
 
 Versions in `prompt_version`: 79a88610 v27, cb57eae7 v28, a0adcc12 v29, 9ecfe423 v30, e56f8685 v31,
 3ba3b355 the merged tree before its v32 note (identical to v31), 5d1e91ea v28 + the Rust smart-discard
-experiment (`docs/samples/smart-discard.patch`). Experiment arms are defined in `BOT_ARMS` in
-`scripts/policy_lab.py`; any row can be reproduced by re-running its arm on its seed set at its version.
+experiment (`docs/samples/smart-discard.patch`). Experiment arms were defined in `BOT_ARMS` in
+`scripts/policy_lab.py` (Python era, git history); Rust-lab arms are `JEVLAB_EXP` flags in
+`native/bot/src/experiment.rs`.
 `v1000-snaps` and `v4k-snaps` are 1,000 and 4,000 fresh Rust-lab games with a `snaps` list (one per shop visit; `vcurve.py`).
 `free-discard` holds the free-discard arm (sim60-a + 200 fresh seeds; baselines in `value-tail`).
 `value-tail` holds the learned tail-value arms (sim60-a and 200 fresh seeds; lab-lessons.md).

@@ -1,5 +1,7 @@
 # v13 concept: readiness-driven shopping + plan memory
 
+> **Historical** (2026-10-12, JEV bot v13, Python era).
+
 ## Why
 
 v5–v12 all plateau at ~12–13 blinds cleared on bench30-a, dying around ante 5 at ~50% of the

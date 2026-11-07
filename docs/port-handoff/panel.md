@@ -1,5 +1,8 @@
 # panel handoff
 
+> **Historical handoff** (2026-10-17, Rust port task `panel`): the task is done; "todo", "not committed" and "next
+> step" notes below are a record. Open items: [followups.md](followups.md).
+
 `native/bot/src/panel.rs` ports `src/panel.py`; `jevbot panel` is the CLI.
 
 Run (sim, no JEV tokens, no game):

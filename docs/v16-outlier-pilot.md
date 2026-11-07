@@ -1,5 +1,7 @@
 # V16: investigate and raise the early-failure floor
 
+> **Historical** (2026-10-15, JEV bot v16, Python era).
+
 The user asked to iterate first on persistently weak seeds rather than only
 raising the overall average. V15 `6725b5bb` completed bench30-a with two verified
 wins and 14.90 mean cleared blinds, but several runs still ended in antes 1–2.

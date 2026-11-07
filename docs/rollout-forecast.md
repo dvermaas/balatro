@@ -1,5 +1,8 @@
 # Rollout forecast for shop decisions (phase 1, offline)
 
+> **Historical** (2026-10-16, Python v19-v22): the first rollout forecast. It lives on as `native/bot/src/forecast*.rs`
+> and `native/simcore`; later changes are in [lab-lessons.md](lab-lessons.md).
+
 2026-10-16. `src/rollout.py` (new, not wired in, not hashed) forecasts each shop option by
 simulating the next blinds in Jackdaw. `scripts/validate_rollout.py` checks it against ground truth
 in the sim. Data: [samples/rollout-validation.json](samples/rollout-validation.json). No JEV calls.

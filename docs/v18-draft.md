@@ -1,5 +1,7 @@
 # V18 draft: take usable economy and value an early joker generator
 
+> **Historical** (2026-10-15, JEV bot v18, Python era): abandoned (see loss-audit.md).
+
 The user requested iterations on particular weak seeds and saved positions,
 including the ante-1 loss, before recommending another version. This draft
 builds on v17 and the [new tutorial review](ultimate-guide-lessons.md).

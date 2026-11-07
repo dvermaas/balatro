@@ -115,8 +115,8 @@ tested in the simulator first (next section).
 - **Policy lab (no JEV)**: `jevlab --set sim30-a --arm E|F --jobs 8 [--limit N] [--name X]` plays the
   bot with CodeJev standing in for JEV, in parallel and at no token cost: arm E is
   `bot-forecast-long`, arm F `bot-forecast-items`. Rows go to
-  `runs/_policy_lab/<name>/results.jsonl`. Arms compare policies on the same seeds (paired); see
-  [docs/policy-lab.md](docs/policy-lab.md).
+  `runs/_policy_lab/<name>/results.jsonl`. Experiments switch on `JEVLAB_EXP` flags
+  (`native/bot/src/experiment.rs`) and compare with the baseline on the same seeds (paired).
 - **Profiling**: `JEV_PERF=1` prints coarse timers per phase. For a real profile, build with
   `CARGO_PROFILE_RELEASE_DEBUG=line-tables-only` and run `jevlab` under `perf record -g`.
 - **Lab experiments at scale**: [`scripts/lab/`](scripts/lab) runs the two fixed 2,000-seed sets
@@ -203,8 +203,9 @@ refuse, for example Judgement with full joker slots.
 - *Jackdaw vs the game* (Python era): 336 recorded real games replayed action by action through
   Jackdaw with its fixes; 329 replayed to the end with every recorded state identical, and 25,304 of
   25,454 states matched exactly. The 7 that diverge are listed in `docs/samples/sim-parity.json`;
-  known gaps are in [docs/sim-backend.md](docs/sim-backend.md). This check needed Jackdaw and went
-  with the Python code: rumbot has no real-replay parity check of its own yet.
+  Jackdaw's known gaps are in [docs/sim-backend.md](docs/sim-backend.md) (historical). This check needed Jackdaw and
+  went with the Python code. rumbot's own check is the real-game sync ([docs/real-game-sync.md](docs/real-game-sync.md):
+  seeds played on both, state by state); its fixes are in [native/rumbot/VENDORED.md](native/rumbot/VENDORED.md).
 - *rumbot vs Jackdaw*: the engine replay above (47/60 games identical; the rest are Jackdaw bugs).
 - *Live tests* in the real game for mechanics a replay can't settle.
 - The simulator matches today's real game only with **every item unlocked** (the profile we play
@@ -244,7 +245,8 @@ native/                 the bot, as one Cargo workspace (see "Rust bot")
   kernel/ simcore/ rumbot/ pycompat/ typesafe/
 mods/jev_tweaks/        companion Balatro mod: skips blocking "unlocked" popups
 scripts/launch_fast.cmd starts Balatro in BalatroBot fast mode
-docs/                   experiment write-ups, fidelity audits, sample states (many from the Python era)
+scripts/lab/            policy-lab tooling: chunk runner, paired comparison, boss subsets, version rows
+docs/                   lab lessons, sim checks, sample data, historical write-ups (index: docs/README.md)
 runs/                   recordings (git-ignored except runs/_prompts version snapshots)
 ```
 

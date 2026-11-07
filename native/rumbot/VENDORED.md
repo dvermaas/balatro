@@ -5,7 +5,9 @@ Source of [mmank/rumbot-sim](https://github.com/mmank/rumbot-sim) at commit
 `src/bin/`), `Cargo.toml` (release profiles removed: this is a dependency of `native/`), the README and
 PORTING.md are copied; upstream's tests and fixtures (36 MB) are not.
 
-Stage B of the Rust port (docs/rust-port-scope.md, issue #1) uses it as the rollout and sim engine.
+It is the bot's simulator: the shop forecasts' rollouts (`native/simcore`), whole sim games (`engine::RumbotGame`)
+and the policy lab (`jevlab`).
+
 Local changes to this copy are listed here, newest last:
 
 - `GameState.no_shop` (game.rs, game_clone.rs): `_open_shop` leaves the shop empty when set, for
@@ -31,7 +33,6 @@ Local changes to this copy are listed here, newest last:
   itself (`ability.forced_selection`, blind.lua drawn_to_hand) and only nominates again on a draw; rumbot kept the old
   card, so after a tarot made a new card of it (new uid) every discard was illegal until the next draw (the bot's
   discards were refused 5 times and the lab game stopped: SGWJTLJ6, value-tail=1).
-
 - shop_pool.rs `soulable`: a Spectral Soul hit still makes the Black Hole roll (common_events.lua:2088-2100).
   `Tarot_Planet` pool (interleaved by `order`) + `random_consumables_set`; The Fool with nothing to copy draws from it
   (Jackdaw patch). GameState flags `fool_always_usable`, `pack_ignores_played` (default false) mirror Jackdaw's pack

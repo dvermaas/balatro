@@ -1,3 +1,5 @@
+> **Historical** (2026-10-16): a GitHub comment on Jackdaw mechanics bugs, from the Python era (Jackdaw is retired).
+
 Checked all four against the game's patched Lua (`%APPDATA%\Balatro\Mods\lovely\dump`). Marble was also live-tested in the real game. **All four are Jackdaw bugs; the Rust engines were right.** Fixed in `src/sim_patches.py` (commits eacdcbe, 8e2aa48), with tests in `tests/test_sim_backend.py`. Real-replay parity is unchanged at 329/336, with every number the same.
 
 1. **Madness + Ceremonial Dagger: Jackdaw wrong.** `card.lua:2870`: the whole `setting_blind` branch requires `not self.getting_sliced`. Madness marks its victim at once (`2890-2891`), and so does Dagger (`2954-2956`), in board order. Jackdaw collected every result first and rolled Madness in the apply step. Fix: `setting_blind_slices_in_order` fires jokers one at a time, skips sliced ones, and rolls `pseudoseed('madness')` on Madness's turn (only when there is a victim).

@@ -1,5 +1,7 @@
 # Loss audit: where and by how much runs die
 
+> **Historical** (2026-10-15, JEV bot v15-v18 benchmark runs, Python era).
+
 2026-10-15. `scripts/audit_losses.py` reads `summary.json` + `decisions.jsonl` of the bench30-a
 cells for v15 `6725b5bb`, v17 `11845ce8` and v18 `d22adb59` (12 cells, abandoned). No game, no API.
 Data: [samples/loss-audit.json](samples/loss-audit.json).

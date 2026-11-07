@@ -1,5 +1,8 @@
 # Forecast port plan (rollout.py + rollout_items.py -> Rust)
 
+> **Historical handoff** (2026-10-17, Rust port task `forecast-plan`): the task is done; "todo", "not committed" and "next
+> step" notes below are a record. Open items: [followups.md](followups.md).
+
 Scope: `rollout.forecast(pub,n,bosses,keys,budget_s)`, `rollout_items.forecast(...)`, `Picker.values`, `Picker.pick_pub`.
 Oracles: trace lines `{"k":"oracle","fn","args","ret"}` (scripts/port/trace_game.py). `args.pub` is the public gamestate, so a
 Rust forecast can be replayed from the trace alone. `budget_s` is wall-clock: see risk 6.

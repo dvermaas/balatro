@@ -1,5 +1,8 @@
 # Port follow-ups (small gaps found while merging)
 
+Gaps found during the Rust port (2026-10-17, v27-v31); still open unless marked done. Jackdaw-mirroring items can go
+now that Jackdaw is no longer the reference, but dropping them changes behaviour (a new lab baseline).
+
 - recorder: `states.jsonl.gz` deflate bytes differ from CPython zlib (header and content identical). Fine
   unless something hashes the raw .gz bytes.
 - recorder: `list_runs` ported (`recorder::list_runs(root, limit)`, `RunRecorder::list_runs`; fixture test
@@ -19,14 +22,11 @@
 - engine view: slot 0 of the first shop shows `p_buffoon_normal_1` until bought, to match Jackdaw
   (shop.py:180 always deals _1; the game and rumbot roll 1-2). Remove once Jackdaw is no longer the
   reference (identical in play).
-- forecast_stats: `usable()` copies tarots.py's TARGETED/SAFE_UNTARGETED keys (`// SHARED?`); point it at
-  tarots.rs once that is merged.
 - forecast_apply: selling a ready Invisible Joker (draws RNG) returns Err; untested (not in the sample).
   Campfire/Hologram bumps, negative editions, Juggler/Troubadour/Turtle Bean hand size are coded from
   Jackdaw but may be unexercised by the 400-call fixture.
-- engine text: Hiker perma_bonus, Oops! All 6s probability text, and perma_mult/x_mult/h_chips/dollars card
-  lines are never emitted because rumbot cards lack those fields. Check how rumbot tracks Hiker's per-card
-  chip bonus (does Hiker work in rumbot at all?) and add the fields if needed.
+- engine text: Oops! All 6s probability text and perma_mult/x_mult/h_chips/dollars card lines are never emitted
+  because rumbot cards lack those fields. (Hiker's per-card bonus is emitted now, as "+N extra chips".)
 - decisions: `log_forecast_error` now takes the error message and writes `<JevBot.runs_root>/_forecast_errors.log`
   (default "runs", relative to the repo root), with run= set to the current run dir. Python's traceback is replaced
   by the caller's file:line:col (`#[track_caller]`). Python's jev_bot.py step errors log no traceback (only the
@@ -39,17 +39,17 @@
 - fc_packs: part 3 compares `describe_lite` (money, names, counts, slots, RNG pools), not the full post-pack
   description; its num_eq treats ints and floats alike. The items end-to-end forecast test covers it.
 - forecast_items sets rumbot flags that mirror Jackdaw's OpenBooster/PickPackCard shortcuts
-  (`fool_always_usable`, `pack_ignores_played`, `jackdaw_unmarked_jokers`) for v27 identity; drop them once Jackdaw is not the reference.
+  for v27 identity (the flags are listed in native/rumbot/VENDORED.md); drop them once Jackdaw is not the reference.
 - analytics (Python too): run_metrics "progress" never adds the final-blind share (last_move only holds
   discards_left, so target is 0): progress == rounds_won. Ported as-is; fix in both if the share was intended.
 - panel: `--legacy` (the v1 bot) went with the Python code. Error-event tracebacks not ported (see decisions above).
 - forecast_items (fc-items4): more Jackdaw-mirroring for v27 identity, forecast only: Cryptid copies don't grow
   Hologram (Jackdaw game.py:2606-2625 skips playing_card_added), `pack_ignores_played` now also makes rumbot
-  `add_random_joker` ignore seen centers (Jackdaw never fills used_jokers); not yet noted in native/rumbot/VENDORED.md.
+  `add_random_joker` ignore seen centers (Jackdaw never fills used_jokers); see VENDORED.md (fc-items4/5).
   Deck/draw pile are re-sorted by uid after a pick (Jackdaw sort_id order). Drop with the other flags once
   Jackdaw is not the reference. fc_packs' describe_lite still skips deck cards, hand levels, joker counters.
 - v31 port (2026-10-17): fc_items 2913/2916 and fc_packs post-option state 2223/2224. All four are Arcana
   packs: Jackdaw's pack-created tarot can duplicate one we hold (fc_packs row: The Emperor in a pack with
   The Lovers held makes a second Lovers; rumbot makes The Magician). The game excludes held consumables
   from the pool (G.GAME.used_jokers), so this is a Jackdaw bug: some acquisition path leaves a held card
-  unflagged. Not fixed (a sim change is a new baseline and needs sim_parity on the main machine).
+  unflagged. Not fixed (a sim change is a new baseline and needs a real-game check, docs/real-game-sync.md).

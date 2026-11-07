@@ -1,5 +1,7 @@
 # Mechanics and decision diagnostics — first milestone
 
+> **Historical** (2026-10-15, Python era): its commands ran the removed Python code.
+
 2026-10-15. This implements the first part of the methodology audit. Production
 remains byte-identical to v18 `d22adb59`. JEV remains the decision model. There
 has been no new full benchmark, full-game simulator adoption, or win-rate claim.

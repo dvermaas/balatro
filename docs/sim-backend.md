@@ -1,5 +1,9 @@
 # Sim backend (Jackdaw)
 
+> **Historical** (2026-10-15, Python bot up to v32): the Jackdaw backend went with the Python code (git history up
+> to `4628654`). The simulator is now rumbot (`native/rumbot`, changes in its VENDORED.md); real-game checks are in
+> [real-game-sync.md](real-game-sync.md).
+
 JevBot can play full games against [Jackdaw](https://github.com/TylerFlar/jackdaw-balatro), a
 Python re-implementation of Balatro, instead of the real game: headless, parallel, Linux-friendly.
 The policy code is unchanged (no hashed file is edited), so prompt versions are the same as on the

@@ -1,5 +1,8 @@
 # lab (jevlab, RustOracle)
 
+> **Historical handoff** (2026-10-17, Rust port task `lab`): the task is done; "todo", "not committed" and "next
+> step" notes below are a record. Open items: [followups.md](followups.md).
+
 - `native/bot/src/oracle.rs`: `RustOracle` (Rust shop forecast, Picker values/pick_pub). `items_forecast` calls
   `forecast_items::items_forecast` (the Rust items forecast).
   `CheckedOracle` serves recorded calls and panics if the computed result differs (ignoring `seconds`, `_runs`).

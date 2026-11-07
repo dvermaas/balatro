@@ -1,5 +1,8 @@
 # Rust port: scope, spike and plan
 
+> **Historical** (2026-10-16): the plan for the Rust port, since carried out (the Python code was removed at
+> `4628654`). Its "Plan" section is a record, not open work.
+
 2026-10-16. The goal is the whole lab game in Rust (engine and policy), so benchmarks scale with
 cores instead of with Python. Today 600 seeds take about 80 minutes on a 7800X3D. This doc covers
 three things: where the time goes, a lockstep spike against two existing Rust engines, and the

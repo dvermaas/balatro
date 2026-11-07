@@ -1,5 +1,8 @@
 # Rust port: guide for porting agents
 
+> **Historical**: the port is complete and the Python code was removed (git history up to `4628654`). Still useful:
+> "Porting conventions" and "Reference data" (the references can no longer be regenerated) and "Port results".
+
 Branch `rust-port` (worktree `C:/Users/admin/Documents/Repos/balatro-rust`), frozen at v27. Goal: the
 whole bot in Rust, with **identical behaviour** to the v27 Python bot, checked seed by seed. Plan
 and status: [rust-port-scope.md](rust-port-scope.md) and the README section "Rust port".
@@ -16,13 +19,14 @@ and status: [rust-port-scope.md](rust-port-scope.md) and the README section "Rus
   - `trace.rs`: reference traces and fixture paths.
 - `native/kernel` (`jev_kernel`): the existing hand scorer (`classify`, `Scorer`, `each_play`).
   `src/native.py` shows how the Python side encodes inputs for it; in Rust call it directly.
-- `native/rumbot`: the game engine (rumbot-sim fork). `native/sim`: today's PyO3 rollouts on it.
+- `native/rumbot`: the game engine (rumbot-sim fork). `native/simcore`: the rollouts on it (the PyO3 `native/sim`
+  crate of the Python era is gone).
 
 ## Reference data (not in git)
 
-`runs/_port/` of a checkout (Rust tests read `JEV_PORT_DATA`, default
-`C:/Users/admin/Documents/Repos/balatro-rust/runs/_port`). Regenerate it from the current Python bot after
-any Python behaviour change (v31: 60 traces in ~3 min, every fixture in ~10 min on 4 cores):
+`runs/_port/` of a checkout (Rust tests read `$JEV_PORT_DATA`, else this repo's `runs/_port`, else the old port
+worktree's; `native/bot/src/trace.rs`). It was regenerated from the Python bot after each Python behaviour change
+(v31: 60 traces in ~3 min, every fixture in ~10 min on 4 cores); with the Python code gone it can no longer be:
 `scripts/port/trace_game.py --set sim30-a --count 30 --arm <arm> --out runs/_port/traces/<arm>` for both
 arms, then every `scripts/port/fixtures/*.py` (analytics, panel, typesafe, pycompat and recorder_list read
 or write fixed Windows paths of the main machine).

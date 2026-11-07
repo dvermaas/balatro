@@ -1,5 +1,8 @@
 # engine (phase 1) handoff
 
+> **Historical handoff** (2026-10-17, Rust port task `engine`): the task is done; "todo", "not committed" and "next
+> step" notes below are a record. Open items: [followups.md](followups.md).
+
 Branch port/engine. Files: native/bot/src/engine/{mod.rs,actions.rs,view.rs,tables.json}, native/bot/tests/engine_replay.rs,
 scripts/port/engine_tables.py (makes tables.json from Jackdaw data: hand examples, joker center "effect", enh labels, tag names), `pub mod engine;` in lib.rs.
 

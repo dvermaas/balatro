@@ -1,5 +1,8 @@
 # Policy lab: shop valuation at scale, no JEV
 
+> **Historical** (2026-10-16/17, Python lab v18-v32 on Jackdaw). The lab is now `jevlab` (Rust, rumbot) with
+> `JEVLAB_EXP` flags and `scripts/lab/`; conclusions and every later experiment are in [lab-lessons.md](lab-lessons.md).
+
 2026-10-16. `scripts/policy_lab.py` plays full games (ante 8 or death) on the Jackdaw sim with
 code-only shop policies. Data: [samples/policy-lab.json](samples/policy-lab.json). Raw results:
 `runs/_policy_lab/main/results.jsonl` (gitignored).

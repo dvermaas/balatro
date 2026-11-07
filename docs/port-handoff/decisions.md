@@ -1,5 +1,8 @@
 # decisions handoff: layout of `native/bot/src/decisions/` (task dec-core)
 
+> **Historical handoff** (2026-10-17, Rust port task `decisions`): the task is done; "todo", "not committed" and "next
+> step" notes below are a record. Open items: [followups.md](followups.md).
+
 Branch `port/dec-core`. All signatures are final; fill in the `todo!("decisions <name>")` bodies.
 Python line ranges are for `src/decisions.py`. Replay: stops at `selecting_hand todo!` after 10 matched
 records in all 60 games (before: 4, at blind_select).
