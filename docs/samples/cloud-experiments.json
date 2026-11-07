@@ -2517,5 +2517,16 @@
   "wins": 233,
   "baseline_wins": 240,
   "outcome": "dropped"
+ },
+ {
+  "experiment": "Round search override bar 0.07 (was 0.1), retested on v69",
+  "theme": "Play",
+  "baseline": "v69",
+  "games": 450,
+  "delta_ante": 0.064,
+  "se": 0.044,
+  "wins": 254,
+  "baseline_wins": 258,
+  "outcome": "neutral"
  }
 ]

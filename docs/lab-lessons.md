@@ -654,6 +654,11 @@ measured the wrong thing or was never asked:
 - **A straight draw in the round search's simulated discard** (`rs-keep-straight`: with a High Card or Pair as the best
   play and no 4-flush, keep four ranks of a straight and cycle the rest): 420 c2k seeds 233 vs 240 wins (10/17),
   +0.029 +- 0.035 ante. Dropped: a better-looking continuation policy is not a better judge of the first move.
+- **The round search's bar retested on v69** (`round-search-tol=0.07`; v66-v68 made the search more accurate):
+  c2k 0-449 254 vs 258 wins (18/22), +0.064 +- 0.044 ante. Neutral; 0.1 stays.
+- **Amber Acorn, a leak left alone:** the view (like BalatroBot's) still names face-down jokers, so the bot could put
+  them back in order after Acorn shuffles them. That is hidden information, like the draw pile's order, so it is not
+  used (Acorn kills 9% of the runs that meet it).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
