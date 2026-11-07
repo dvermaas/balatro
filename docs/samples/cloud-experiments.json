@@ -2506,5 +2506,16 @@
   "wins": 1185,
   "baseline_wins": 1183,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Round search's simulated discard keeps four ranks of a straight (rs-keep-straight)",
+  "theme": "Play",
+  "baseline": "v69",
+  "games": 420,
+  "delta_ante": 0.029,
+  "se": 0.035,
+  "wins": 233,
+  "baseline_wins": 240,
+  "outcome": "dropped"
  }
 ]

@@ -651,6 +651,9 @@ measured the wrong thing or was never asked:
   scoring 2, To Do List's hand), then the highest estimate. About 2% of games change. Full sets vs v68: c2k 1,194 vs
   1,177 wins (27/10, z = 2.8), b2k 1,185 vs 1,183 (19/17); together 46 vs 27 (z = 2.2). Like v66, the gain came on
   the second set. **Shipped as v69** (`no-clear-pick` restores v68; identity 24 seeds).
+- **A straight draw in the round search's simulated discard** (`rs-keep-straight`: with a High Card or Pair as the best
+  play and no 4-flush, keep four ranks of a straight and cycle the rest): 420 c2k seeds 233 vs 240 wins (10/17),
+  +0.029 +- 0.035 ante. Dropped: a better-looking continuation policy is not a better judge of the first move.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
@@ -727,7 +730,6 @@ What to trust:
   onward, when the ante-8 boss is known, rather than a better hand on the day.
 - Small, correct, unshipped flags to fold into the next version that needs new baselines: `round-search-played`
   (Card Sharp, Supernova in the search) and `round-search-crimson`.
-- More scaling jokers for the clearing-play choice (v69) and for the round search's simulated discards
-  (`rs-keep-straight` is being screened).
+- More scaling jokers for the clearing-play choice (v69).
 - A learned value at the forecast horizon trained on far more games (hundreds of thousands), checked out of sample.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).
