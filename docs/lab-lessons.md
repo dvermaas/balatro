@@ -656,7 +656,7 @@ measured the wrong thing or was never asked:
   +0.029 +- 0.035 ante. Dropped: a better-looking continuation policy is not a better judge of the first move.
 - **The round search's bar retested on v69** (`round-search-tol=0.07`; v66-v68 made the search more accurate):
   c2k 0-449 254 vs 258 wins (18/22), +0.064 +- 0.044 ante. Neutral; 0.1 stays.
-- **Amber Acorn, a leak left alone:** the view (like BalatroBot's) still names face-down jokers, so the bot could put
+- **Amber Acorn, a leak left alone:** the sim's view still names face-down jokers (BalatroBot's probably does too; unchecked), so the bot could put
   them back in order after Acorn shuffles them. That is hidden information, like the draw pile's order, so it is not
   used (Acorn kills 9% of the runs that meet it).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
