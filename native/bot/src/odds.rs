@@ -412,6 +412,32 @@ pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
 pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>,
     make: Option<&dyn Fn(i64, i64, u32) -> jokers::Scorer>, cmake: Option<&dyn Fn(i64, i64, usize) -> jokers::Scorer>,
     allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
+    let paces = &crate::experiment::get().rs_paces;
+    if paces.is_empty() {
+        return round_search_pace(acts, st, scorer, grid, make, cmake, allow, track, samples, 1.0);
+    }
+    // lab `rs-paces=A+B+..`: each first move played out under several continuation rules (play on when the best hand x
+    // hands left reaches pace x the chips needed), on the same shuffles; a move counts with its best rule
+    let mut best: Vec<Vec<bool>> = Vec::new();
+    for &p in paces {
+        let h = round_search_pace(acts, st, scorer, grid, make, cmake, allow, track, samples, p);
+        if best.is_empty() {
+            best = h;
+            continue;
+        }
+        for (a, row) in h.into_iter().enumerate() {
+            if row.iter().filter(|&&x| x).count() > best[a].iter().filter(|&&x| x).count() {
+                best[a] = row;
+            }
+        }
+    }
+    best
+}
+
+#[allow(clippy::too_many_arguments)]
+fn round_search_pace(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>,
+    make: Option<&dyn Fn(i64, i64, u32) -> jokers::Scorer>, cmake: Option<&dyn Fn(i64, i64, usize) -> jokers::Scorer>,
+    allow: &hands::BossAllow, track: bool, samples: usize, pace: f64) -> Vec<Vec<bool>> {
     let mut cache: std::collections::HashMap<(i64, i64, u32), jokers::Scorer> = std::collections::HashMap::new();
     let mut ccache: std::collections::HashMap<(i64, i64, usize), jokers::Scorer> = std::collections::HashMap::new();
     let crimson = cmake.is_some() && !st.crimson_live.is_empty();
@@ -461,7 +487,7 @@ pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
                             _ => grid.and_then(|g| g.get(hl.max(0) as usize)).and_then(|row| row.get(dl.max(0) as usize)).unwrap_or(scorer),
                         };
                         let (s, name, best) = hands::best_play_cards(&h, ScorerArg::Jokers(sc), allowed);
-                        if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r) {
+                        if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r * pace) {
                             (true, best, s, name.to_string())
                         } else {
                             let mut d = sim_discard(&h, &best, name, st.cap);
