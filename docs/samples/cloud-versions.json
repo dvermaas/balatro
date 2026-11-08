@@ -1123,5 +1123,35 @@
   "died_ante_1_4": 86,
   "died_ante_5_7": 387,
   "died_ante_8": 319
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v71",
+  "version_id": "rust",
+  "change": "Pareidolia makes every card a face card in the scorer",
+  "games": 2000,
+  "mean_ante": 7.455,
+  "se": 0.028,
+  "wins": 1196,
+  "win_rate": 0.598,
+  "mean_round": 20.26,
+  "died_ante_1_4": 89,
+  "died_ante_5_7": 378,
+  "died_ante_8": 337
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v71",
+  "version_id": "rust",
+  "change": "Pareidolia makes every card a face card in the scorer",
+  "games": 2000,
+  "mean_ante": 7.455,
+  "se": 0.029,
+  "wins": 1214,
+  "win_rate": 0.607,
+  "mean_round": 20.24,
+  "died_ante_1_4": 86,
+  "died_ante_5_7": 382,
+  "died_ante_8": 318
  }
 ]

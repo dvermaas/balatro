@@ -528,7 +528,7 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
                 | if live("j_smeared") { jev_kernel::MOD_SMEARED } else { 0 },
         );
     }
-    // lab `pareidolia-fix`: with Pareidolia every card is a face card (the game's Card:is_face), so face-card effects
+    // v71: with Pareidolia every card is a face card (the game's Card:is_face), so face-card effects
     // (Smiley Face, Scary Face, Sock and Buskin) apply to every card and Photograph to the first scoring card
     if crate::experiment::get().pareidolia_fix
         && cards.iter().any(|c| gs::get(c, "key").as_str() == Some("j_pareidolia") && !gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")))

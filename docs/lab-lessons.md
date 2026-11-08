@@ -1,4 +1,4 @@
-# What the lab taught us (v27 → v70)
+# What the lab taught us (v27 → v71)
 
 Cloud sessions ran a few hundred policy-lab experiments: the bot with CodeJev in place of JEV (it takes the top-ranked
 option), arm F, on the rumbot simulator, so code only and free. This page keeps the conclusions, newest at the end of
@@ -23,6 +23,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v64 | the round search: each first move played out to the end of the round | 57.3% | 7.44 |
 | v69 | the search's scorer per state, Bell/Hook, Verdant Leaf's sale, Dagger, clearing plays (v65-v69) | 59.5% | 7.45 |
 | v70 | six overrated vouchers never bought | 60.1% | 7.45 |
+| v71 | Pareidolia in the scorer (every card a face card) | 60.3% | 7.46 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -689,6 +690,20 @@ measured the wrong thing or was never asked:
   c2k 0-449 seeds that held one plus 40 controls: 63 vs 69 wins (9/15). A weak joker marks a weak run (it is bought
   when nothing better is offered) and still helps it; a voucher costs $10 for no power now, which is why the ban
   worked there. The other vouchers check out neutral or better (worst: Tarot Merchant, z = -1.3).
+- **v71, Pareidolia in the scorer** (`pareidolia-fix`). An estimate-vs-actual audit of traced games (each play's
+  estimate against the chips it scored) showed a Pareidolia + Smiley Face run underestimated 1.3-4x on every play: the
+  scorer read "face cards" as J/Q/K, while Pareidolia makes every card a face card (Smiley Face, Scary Face, Sock and
+  Buskin on every card, Photograph on the first). Only games that hold Pareidolia can change, so every seed of both
+  sets where v70 held it ran, plus 30 controls (none changed): c2k 48 seeds 29 vs 23 wins (7/1), b2k 51 seeds 33 vs 31
+  (3/1); together 10 vs 2 (z = 2.3). Full sets c2k 1,214, b2k 1,196 wins. Not run: seeds where the fix would make the
+  bot buy a Pareidolia that v70 passed up (the rollouts' play policy uses the same scorer). **Shipped as v71**
+  (`no-pareidolia-fix` restores v70; identity 12 seeds).
+- **Hand-shaping jokers in the classifier** (`hand-mods`): the same audit found a Four Fingers A-A-4-3-2 estimated as
+  a Pair (1,374) that the game scored as a Straight (7,814). The bot's classifier (and the kernel's) ignored Four
+  Fingers, Shortcut and Smeared Joker, so it never looked for 4-card flushes and straights, gapped straights or
+  two-colour flushes, in play, discards or the rollouts' policy. The kernel now classifies as rumbot's
+  hands::evaluate does when a per-thread flag says they are held (kernel/tests/hand_mods.rs). Screening on the 190
+  seeds of both sets that held one.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

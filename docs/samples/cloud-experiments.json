@@ -2616,5 +2616,16 @@
   "wins": 63,
   "baseline_wins": 69,
   "outcome": "worse"
+ },
+ {
+  "experiment": "Pareidolia: every card a face card in the scorer (v71; seeds that held Pareidolia)",
+  "theme": "Shipped",
+  "baseline": "v70",
+  "games": 99,
+  "delta_ante": 0.05,
+  "se": 0.055,
+  "wins": 62,
+  "baseline_wins": 54,
+  "outcome": "shipped v71"
  }
 ]
