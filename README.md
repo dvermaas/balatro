@@ -124,8 +124,8 @@ tested in the simulator first (next section).
   `chunk.sh` (play a chunk), `cmp.py` (paired comparison), `subset.py` and `splice.py` (changes that only act under
   some bosses), `verrow.py` (version rows). How to judge a result: [docs/lab-lessons.md](docs/lab-lessons.md),
   "How to experiment".
-- **Current baseline (v71, 2026-11-08)**, code only (no JEV), arm F, rumbot: on the two 2,000-seed sets the bot wins
-  **59.8%** and **60.7%** of runs (mean ante 7.46 and 7.46). v31 won about 20% (mean ante ~6.6); the gains since
+- **Current baseline (v72, 2026-11-08)**, code only (no JEV), arm F, rumbot: on the two 2,000-seed sets the bot wins
+  **60.2%** and **61.2%** of runs (mean ante 7.46 and 7.45). v31 won about 20% (mean ante ~6.6); the gains since
   came from the shop forecast's fixes, blind skips for tags, the joker values and the in-round search
   ([docs/lab-lessons.md](docs/lab-lessons.md) has every experiment; numbers per version in
   `docs/samples/cloud-versions.json`, per experiment in `docs/samples/cloud-experiments.json`). Losses are now mostly
@@ -169,7 +169,7 @@ recorded from the Python bot in `runs/_port` (not in git; `$JEV_PORT_DATA` overr
 to Python v31 seed by seed, but can no longer be regenerated, so every behaviour change since makes them stale and
 changes are checked in the lab instead. `kernel/tests/matches_reference.rs` still pins the scorer bit for bit. The
 port's identity and speed results are in [docs/rust-port-guide.md](docs/rust-port-guide.md) ("Port results").
-A lab game takes ~22 s of one core at v71 (64-rollout shop forecasts plus the in-round search).
+A lab game takes ~22 s of one core at v72 (64-rollout shop forecasts plus the in-round search).
 
 Jackdaw-mirroring flags: the forecasts and the engine set a few rumbot flags that copy Jackdaw's
 quirks so the results match the Python reference (`fool_always_usable`, `pack_ignores_played`,

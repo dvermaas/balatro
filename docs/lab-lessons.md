@@ -1,4 +1,4 @@
-# What the lab taught us (v27 → v71)
+# What the lab taught us (v27 → v72)
 
 Cloud sessions ran a few hundred policy-lab experiments: the bot with CodeJev in place of JEV (it takes the top-ranked
 option), arm F, on the rumbot simulator, so code only and free. This page keeps the conclusions, newest at the end of
@@ -24,6 +24,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v69 | the search's scorer per state, Bell/Hook, Verdant Leaf's sale, Dagger, clearing plays (v65-v69) | 59.5% | 7.45 |
 | v70 | six overrated vouchers never bought | 60.1% | 7.45 |
 | v71 | Pareidolia in the scorer (every card a face card) | 60.3% | 7.46 |
+| v72 | an ante-8 blind skipped for a Boss Tag against Violet Vessel | 60.7% | 7.45 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -735,6 +736,15 @@ measured the wrong thing or was never asked:
   ante-8 shops rarely buy, so a tag might be worth more than the blind): c2k 0-449 256 vs 266 wins (13/23, z = -1.7), 175
   games changed. The forecast skips often and the lost shops cost more than its tags bring. The one tag with a clear
   mechanism, a Boss Tag against Violet Vessel (it rerolls into another finisher), is tested alone below.
+- **v72, a Boss Tag against Violet Vessel** (`boss-tag-skip=Violet_Vessel`, now the default; `no-boss-tag-skip` = v71). A
+  Boss Tag rerolls the ante's boss, and at ante 8 rumbot's pool, like the game's, holds only the other finishers (the
+  current one is used, so it cannot come back). Violet Vessel ended 53% of the v71 runs that met it; the other finishers
+  9-21%. So when an ante-8 Small or Big blind offers a Boss Tag and the boss is Violet Vessel, the bot skips the blind
+  (the skipped shop and cash matter little at ante 8). Only those games can change: the 611 seeds where v71 met Violet
+  Vessel, 34 + 31 changed (a Boss Tag on offer in ~11%). c2k 144 vs 135 wins (10/1), b2k 159 vs 151 (9/1); together
+  19 vs 2 games won by only one side (z = 3.7). Full sets (v71 rows with these seeds replaced): b2k 1,204 wins (60.2%),
+  c2k 1,223 (61.2%). v72 with no flags replays the flagged games (30 seeds, 0 changed). Rerolling Crimson Heart or
+  Verdant Leaf would not pay: the average other finisher kills ~24% of the runs that meet it, more than either.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
@@ -813,7 +823,8 @@ What to trust:
 
 ## Open ideas
 
-- Violet Vessel kills half the runs that meet it (313 of 1,621 v69 losses): a plan for it from the shops of ante 7
-  onward, when the ante-8 boss is known, rather than a better hand on the day.
+- Violet Vessel kills half the runs that meet it (313 of 1,621 v69 losses): a plan for it from the shops of ante 8,
+  when the boss is known, rather than a better hand on the day. v72 rerolls it when a Boss Tag is on offer; Director's
+  Cut or Retcon would do the same but are almost never offered with Violet Vessel ahead.
 - A learned value at the forecast horizon trained on far more games (hundreds of thousands), checked out of sample.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).

@@ -2737,5 +2737,16 @@
   "wins": 256,
   "baseline_wins": 266,
   "outcome": "worse"
+ },
+ {
+  "experiment": "Skip an ante-8 blind for a Boss Tag when the boss is Violet Vessel (boss-tag-skip), seeds that met it",
+  "theme": "Shipped",
+  "baseline": "v71",
+  "games": 611,
+  "delta_ante": 0.0,
+  "se": 0.002,
+  "wins": 303,
+  "baseline_wins": 286,
+  "outcome": "shipped v72"
  }
 ]

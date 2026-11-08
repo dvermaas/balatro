@@ -1153,5 +1153,35 @@
   "died_ante_1_4": 86,
   "died_ante_5_7": 382,
   "died_ante_8": 318
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v72",
+  "version_id": "rust",
+  "change": "Skip an ante-8 blind for a Boss Tag against Violet Vessel",
+  "games": 2000,
+  "mean_ante": 7.455,
+  "se": 0.028,
+  "wins": 1204,
+  "win_rate": 0.602,
+  "mean_round": 20.24,
+  "died_ante_1_4": 89,
+  "died_ante_5_7": 378,
+  "died_ante_8": 329
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v72",
+  "version_id": "rust",
+  "change": "Skip an ante-8 blind for a Boss Tag against Violet Vessel",
+  "games": 2000,
+  "mean_ante": 7.454,
+  "se": 0.029,
+  "wins": 1223,
+  "win_rate": 0.612,
+  "mean_round": 20.23,
+  "died_ante_1_4": 86,
+  "died_ante_5_7": 383,
+  "died_ante_8": 308
  }
 ]
