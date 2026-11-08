@@ -87,7 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
-    "v70 + lab tooling (plays unchanged): ban-jokers=A+B never buys or takes those jokers; pareidolia-fix makes the scorer treat every card as a face card while Pareidolia is held. Based on: ",
+    "v70 + lab tooling (plays unchanged): ban-jokers=A+B never buys or takes those jokers; pareidolia-fix makes the scorer treat every card as a face card while Pareidolia is held. hand-mods classifies hands with Four Fingers, Shortcut and Smeared Joker as the game does (the bot ignored all three). Based on: ",
     "v70 (lab measured): the shop never buys Hone, Telescope, Director's Cut, Crystal Ball, Reroll Surplus or Planet Merchant (v69 bought one in ~11% of games, and those games won less than average even though voucher buyers tend to last longer). Only those games change: c2k 1,208 vs 1,194 wins (30/16), b2k 1,194 vs 1,185 (26/17); together 56 vs 33 games won by only one side (z = 2.4). `no-ban-vouchers` restores v69. Based on: ",
     "v69 + lab tooling (plays unchanged): clear-pick2 adds Supernova, Space Joker, Midas Mask, Lucky Cat, glass breaks and money (gold and blue seals, gold cards, Rough Gem, Business Card, Golden Ticket) to the clearing-play choice; free-joker buys a $0 joker into an open slot; ban-vouchers=A+B never buys those vouchers. Based on: ",
     "v69 + lab tooling (plays unchanged): rs-keep-straight makes the round search's simulated discard keep four ranks of a straight when the best play is High Card or Pair and no 4-flush is held. Based on: ",

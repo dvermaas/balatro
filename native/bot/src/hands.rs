@@ -195,6 +195,13 @@ pub fn _is_straight(ranks: &[&str]) -> bool {
 // hands.py 63-72 (the memo is a pure cache: not ported)
 /// Return (hand name, positions of scoring cards) for 1-5 card infos.
 pub fn classify(cards: &[Info]) -> (&'static str, Vec<usize>) {
+    if jev_kernel::mods() != 0 {
+        // lab `hand-mods`: Four Fingers / Shortcut / Smeared Joker held; the kernel classifies as the game does
+        if let Some(enc) = native::encode_cards(cards) {
+            let (name, sc) = jev_kernel::classify(&jev_kernel::cards_of(&enc));
+            return (jev_kernel::HAND_NAMES[name], sc);
+        }
+    }
     _classify(cards)
 }
 

@@ -93,6 +93,10 @@ pub fn classify(cs: &[Card]) -> (usize, Vec<usize>) {
 /// Ranked cards are the non-Stone cards with a rank; Stones always score, after the ranked ones.
 pub fn classify_into(cs: &[Card], out: &mut Vec<usize>) -> usize {
     out.clear();
+    let m = mods();
+    if m != 0 {
+        return classify_mods(cs, out, m);
+    }
     let mut by_rank = [0usize; 15];
     let mut n_ranked = 0;
     for c in cs.iter().filter(|c| ranked(c)) {
@@ -168,6 +172,163 @@ pub fn classify_into(cs: &[Card], out: &mut Vec<usize>) -> usize {
 }
 
 // ---------------------------------------------------------------------------
+// Hand-shaping jokers (lab `hand-mods`): Four Fingers, Shortcut, Smeared Joker
+// ---------------------------------------------------------------------------
+
+pub const MOD_FOUR_FINGERS: u8 = 1;
+pub const MOD_SHORTCUT: u8 = 2;
+pub const MOD_SMEARED: u8 = 4;
+
+thread_local! {
+    /// The hand-shaping jokers held, set per game state by the caller (0 = none: the original classifier).
+    static MODS: std::cell::Cell<u8> = const { std::cell::Cell::new(0) };
+}
+
+pub fn set_mods(m: u8) {
+    MODS.with(|c| c.set(m));
+}
+
+pub fn mods() -> u8 {
+    MODS.with(|c| c.get())
+}
+
+/// Card:is_suit(suit, flush_calc) for flushes: a Stone never, an undebuffed Wild always, Smeared Joker by colour.
+fn flush_suit(c: &Card, suit: u8, smeared: bool) -> bool {
+    if c.enh == STONE {
+        return false;
+    }
+    if c.enh == WILD && !c.debuff {
+        return true;
+    }
+    if smeared {
+        return (c.suit == 1 || c.suit == 2) == (suit == 1 || suit == 2) && c.suit != 0;
+    }
+    c.suit == suit
+}
+
+/// The game's evaluate_poker_hand with Four Fingers / Shortcut / Smeared Joker (rumbot hands::evaluate, which
+/// mirrors misc_functions.lua get_flush, get_straight and the hand order). Scoring positions in played order.
+fn classify_mods(cs: &[Card], out: &mut Vec<usize>, m: u8) -> usize {
+    let needed = if m & MOD_FOUR_FINGERS != 0 { 4 } else { 5 };
+    let smeared = m & MOD_SMEARED != 0;
+    let shortcut = m & MOD_SHORTCUT != 0;
+    let n = cs.len();
+    let ranked_p: Vec<usize> = (0..n).filter(|&p| ranked(&cs[p])).collect();
+    // flush: the first suit in get_flush's order (Spades, Hearts, Clubs, Diamonds) with enough cards
+    let mut flush: Option<Vec<usize>> = None;
+    if n <= 5 {
+        for suit in [4u8, 1, 3, 2] {
+            let g: Vec<usize> = (0..n).filter(|&p| flush_suit(&cs[p], suit, smeared)).collect();
+            if g.len() >= needed {
+                flush = Some(g);
+                break;
+            }
+        }
+    }
+    // straight: get_straight over rank ids (Ace low and high), every card of a rank in the run
+    let mut straight: Option<Vec<usize>> = None;
+    if n <= 5 {
+        let of = |r: u8| -> Vec<usize> { (0..n).filter(|&p| cs[p].enh != STONE && cs[p].rank == r).collect() };
+        let (mut run, mut length, mut found, mut skipped) = (Vec::new(), 0usize, false, false);
+        for j in 1..=14u8 {
+            let r = if j == 1 { 14 } else { j };
+            let l = of(r);
+            if !l.is_empty() {
+                length += 1;
+                skipped = false;
+                run.extend(l);
+            } else if shortcut && !skipped && j != 14 {
+                skipped = true;
+            } else {
+                length = 0;
+                skipped = false;
+                if found {
+                    break;
+                }
+                run.clear();
+            }
+            if length >= needed {
+                found = true;
+            }
+        }
+        if found {
+            run.sort();
+            straight = Some(run);
+        }
+    }
+    // rank counts in first-seen order; most_common = by count descending, ties first-seen
+    let mut counts: Vec<(u8, usize)> = Vec::new();
+    for &p in &ranked_p {
+        match counts.iter_mut().find(|(r, _)| *r == cs[p].rank) {
+            Some((_, k)) => *k += 1,
+            None => counts.push((cs[p].rank, 1)),
+        }
+    }
+    let mut common = counts.clone();
+    common.sort_by(|a, b| b.1.cmp(&a.1));
+    let take = |r: u8, k: usize| -> Vec<usize> { ranked_p.iter().copied().filter(|&p| cs[p].rank == r).take(k).collect() };
+    let of_rank = |k: usize| -> Option<Vec<usize>> { common.iter().find(|(_, c)| *c >= k).map(|&(r, _)| take(r, k)) };
+    let five = of_rank(5);
+    let four = of_rank(4);
+    let trips = of_rank(3);
+    let pairs: Vec<u8> = counts.iter().filter(|(_, c)| *c >= 2).map(|&(r, _)| r).collect();
+    let full_house = trips.as_ref().and_then(|t| {
+        let mut rest: Vec<(u8, usize)> = Vec::new();
+        for &p in ranked_p.iter().filter(|p| !t.contains(p)) {
+            match rest.iter_mut().find(|(r, _)| *r == cs[p].rank) {
+                Some((_, k)) => *k += 1,
+                None => rest.push((cs[p].rank, 1)),
+            }
+        }
+        rest.sort_by(|a, b| b.1.cmp(&a.1));
+        rest.first().filter(|(_, c)| *c >= 2).map(|&(r, _)| {
+            let mut v = t.clone();
+            v.extend(ranked_p.iter().copied().filter(|&p| cs[p].rank == r).take(2));
+            v
+        })
+    });
+    let (name, sc): (usize, Vec<usize>) = if let (Some(f), Some(_)) = (&five, &flush) {
+        (FLUSH_FIVE, f.clone())
+    } else if let (Some(h), Some(_)) = (&full_house, &flush) {
+        (FLUSH_HOUSE, h.clone())
+    } else if let Some(f) = &five {
+        (FIVE_KIND, f.clone())
+    } else if let (Some(st), Some(fl)) = (&straight, &flush) {
+        let mut u = fl.clone();
+        u.extend(st.iter().filter(|p| !fl.contains(p)));
+        (STRAIGHT_FLUSH, u)
+    } else if let Some(f) = &four {
+        (FOUR_KIND, f.clone())
+    } else if let Some(h) = &full_house {
+        (FULL_HOUSE, h.clone())
+    } else if let Some(f) = &flush {
+        (FLUSH, f.clone())
+    } else if let Some(st) = &straight {
+        (STRAIGHT, st.clone())
+    } else if let Some(t) = &trips {
+        (THREE_KIND, t.clone())
+    } else if pairs.len() >= 2 {
+        let mut top = pairs.clone();
+        top.sort_by(|a, b| b.cmp(a));
+        top.truncate(2);
+        (TWO_PAIR, ranked_p.iter().copied().filter(|&p| top.contains(&cs[p].rank)).take(4).collect())
+    } else if let Some(&r) = pairs.first() {
+        (PAIR, take(r, 2))
+    } else {
+        let mut best: Option<usize> = None;
+        for &p in &ranked_p {
+            if best.map_or(true, |b| cs[p].rank >= cs[b].rank) {
+                best = Some(p);
+            }
+        }
+        (HIGH_CARD, best.into_iter().collect())
+    };
+    // scoring in played order, Stones (and rankless cards) always included
+    out.extend((0..n).filter(|p| sc.contains(p) || !ranked(&cs[*p])));
+    name
+}
+
+// ---------------------------------------------------------------------------
 // Joker rules (jokers.parse data tuples, encoded by native._rule)
 // ---------------------------------------------------------------------------
 
@@ -181,7 +342,7 @@ pub type RuleIn = (Vec<(u8, u32, f64, f64, f64)>, Vec<(u8, u32, i64)>, Vec<(u8, 
 fn pred(kind: u8, arg: u32, c: &Card) -> bool {
     match kind {
         0 => true,
-        1 => c.suit as u32 == arg || c.enh == WILD,
+        1 => c.suit as u32 == arg || c.enh == WILD || (mods() & MOD_SMEARED != 0 && c.suit != 0 && (c.suit <= 2) == (arg <= 2)),
         2 => c.rank != 0 && arg & (1 << c.rank) != 0,
         6 => c.rank != 0 && c.rank as u32 == arg & 0xff && (c.suit as u32 == arg >> 8 || c.enh == WILD),
         _ => false,
@@ -414,7 +575,7 @@ impl Scorer {
 /// cards, no Steel card is in hand (held Steel multiplies), and the boss does not count cards (The
 /// Psychic). So the best score, and the best (score, hand) pair, are the same as over every play.
 pub fn each_best_candidate(s: &Scorer, cards: &[Card], allow: (u8, u32, bool), mut f: impl FnMut(f64, usize, &[usize], &[usize])) {
-    let prune = allow.0 != 1 && s.ignores_held() && !s.splash && !cards.iter().any(|c| c.enh == STEEL);
+    let prune = allow.0 != 1 && s.ignores_held() && !s.splash && !cards.iter().any(|c| c.enh == STEEL) && mods() == 0;
     if !prune {
         return each_play(s, cards, allow, f);
     }

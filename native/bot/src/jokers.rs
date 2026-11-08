@@ -518,6 +518,16 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
             out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, 0.0, x.powf(n as f64)))), ..Default::default() });
         }
     }
+    // lab `hand-mods`: Four Fingers, Shortcut and Smeared Joker change what a hand is; the kernel's classifier reads
+    // them from a per-thread flag, set here from the jokers this scorer is for
+    if crate::experiment::get().hand_mods {
+        let live = |k: &str| cards.iter().any(|c| gs::get(c, "key").as_str() == Some(k) && !gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")));
+        jev_kernel::set_mods(
+            if live("j_four_fingers") { jev_kernel::MOD_FOUR_FINGERS } else { 0 }
+                | if live("j_shortcut") { jev_kernel::MOD_SHORTCUT } else { 0 }
+                | if live("j_smeared") { jev_kernel::MOD_SMEARED } else { 0 },
+        );
+    }
     // lab `pareidolia-fix`: with Pareidolia every card is a face card (the game's Card:is_face), so face-card effects
     // (Smiley Face, Scary Face, Sock and Buskin) apply to every card and Photograph to the first scoring card
     if crate::experiment::get().pareidolia_fix
