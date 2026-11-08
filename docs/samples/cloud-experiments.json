@@ -2528,5 +2528,27 @@
   "wins": 254,
   "baseline_wins": 258,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Auto-buy bar 0.5 SE (was 1), retested at 64 rollouts",
+  "theme": "Shop",
+  "baseline": "v69",
+  "games": 450,
+  "delta_ante": -0.04,
+  "se": 0.045,
+  "wins": 248,
+  "baseline_wins": 258,
+  "outcome": "dropped"
+ },
+ {
+  "experiment": "Auto-buy bar 1.5 SE (was 1), retested at 64 rollouts",
+  "theme": "Shop",
+  "baseline": "v69",
+  "games": 450,
+  "delta_ante": -0.022,
+  "se": 0.04,
+  "wins": 256,
+  "baseline_wins": 258,
+  "outcome": "neutral"
  }
 ]

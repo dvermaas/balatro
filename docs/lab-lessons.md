@@ -659,6 +659,9 @@ measured the wrong thing or was never asked:
 - **Amber Acorn, a leak left alone:** the sim's view still names face-down jokers (BalatroBot's probably does too; unchecked), so the bot could put
   them back in order after Acorn shuffles them. That is hidden information, like the draw pile's order, so it is not
   used (Acorn kills 9% of the runs that meet it).
+- **The auto-buy bar retested at 64 rollouts** (v31 set 1 paired SE at 16-24 rollouts; at 64 the SE halves): `sure-se=0.5`
+  c2k 0-449 248 vs 258 wins (47/57), `sure-se=1.5` 256 vs 258 (45/47). 1 SE stays; ~100 games change either way
+  without a gain, so the bar sits on a flat optimum.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
