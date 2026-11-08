@@ -2596,14 +2596,14 @@
   "outcome": "shipped v70"
  },
  {
-  "experiment": "Buy a $0 joker into an open slot (free-joker), screen",
+  "experiment": "Buy a $0 joker into an open slot (free-joker), c2k full",
   "theme": "Shop",
   "baseline": "v69",
-  "games": 450,
-  "delta_ante": 0.04,
-  "se": 0.02,
-  "wins": 262,
-  "baseline_wins": 258,
+  "games": 2000,
+  "delta_ante": 0.016,
+  "se": 0.008,
+  "wins": 1216,
+  "baseline_wins": 1208,
   "outcome": "promising"
  },
  {
@@ -2627,5 +2627,16 @@
   "wins": 62,
   "baseline_wins": 54,
   "outcome": "shipped v71"
+ },
+ {
+  "experiment": "Four Fingers, Shortcut, Smeared Joker in the classifier (hand-mods), c2k 0-449",
+  "theme": "Play",
+  "baseline": "v70",
+  "games": 450,
+  "delta_ante": 0.018,
+  "se": 0.016,
+  "wins": 265,
+  "baseline_wins": 266,
+  "outcome": "neutral"
  }
 ]
