@@ -409,6 +409,55 @@ pub fn round_search_hits(acts: &[RootAct], st: &RoundState, scorer: &jokers::Sco
 }
 
 #[allow(clippy::too_many_arguments)]
+/// Lab `rs-depth2`: does the base continuation clear from this state, drawing from `rem` in its given order (the
+/// caller shuffles the unseen cards)? `first` = (play?, cards, score) is applied before the base rule takes over.
+#[allow(clippy::too_many_arguments)]
+fn playout(mut h: Vec<Info>, rem: &[Info], mut r: f64, mut hl: i64, mut dl: i64, first: (bool, Vec<usize>, i64), st: &RoundState,
+    scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>, allow: &hands::BossAllow) -> bool {
+    let mut next = 0usize;
+    let mut first = Some(first);
+    loop {
+        let (play, cards, score) = match first.take() {
+            Some(f) => f,
+            None => {
+                let sc = grid.and_then(|g| g.get(hl.max(0) as usize)).and_then(|row| row.get(dl.max(0) as usize)).unwrap_or(scorer);
+                let (s, name, best) = hands::best_play_cards(&h, ScorerArg::Jokers(sc), Allowed::Boss(allow));
+                if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r) {
+                    (true, best, s)
+                } else {
+                    let d = sim_discard(&h, &best, name, st.cap);
+                    if d.is_empty() { (true, best, s) } else { (false, d, 0) }
+                }
+            }
+        };
+        take(&mut h, &cards);
+        if play {
+            r -= score as f64;
+            hl -= 1;
+            if r <= 0.0 {
+                return true;
+            }
+            if hl <= 0 {
+                return false;
+            }
+        } else {
+            dl -= 1;
+        }
+        let want = if st.serpent { 3 } else { st.hand_size.saturating_sub(h.len()) };
+        for _ in 0..want {
+            if next >= rem.len() {
+                break;
+            }
+            h.push(rem[next].clone());
+            next += 1;
+        }
+        h.sort_by_cached_key(future_key);
+        if h.is_empty() {
+            return false;
+        }
+    }
+}
+
 pub fn round_search_full(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer, grid: Option<&[Vec<jokers::Scorer>]>,
     make: Option<&dyn Fn(i64, i64, u32) -> jokers::Scorer>, cmake: Option<&dyn Fn(i64, i64, usize) -> jokers::Scorer>,
     allow: &hands::BossAllow, track: bool, samples: usize) -> Vec<Vec<bool>> {
@@ -445,6 +494,9 @@ fn round_search_pace(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer,
     sort_by_card_key(&mut deck);
     let mut hits = vec![vec![false; samples]; acts.len()];
     let mut rng = Random::new_int(24024);
+    let d2n = crate::experiment::get().rs_depth2;
+    let depth2 = d2n > 0 && make.is_none() && cmake.is_none() && !st.bell && !st.hook && !track
+        && st.hands_left <= crate::experiment::get().rs_depth2_hl;
     for si in 0..samples {
         let mut order: Vec<usize> = (0..deck.len()).collect();
         rng.shuffle(&mut order);
@@ -455,6 +507,7 @@ fn round_search_pace(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer,
             let mut first = Some(act);
             let mut al = if track || st.bell { Some(allow.clone()) } else { None };
             let mut mask = 0u32;
+            let mut step = 0usize;
             // the Bell's and the Hook's random picks: the same stream for every first move (common random numbers)
             let mut brng = if st.bell || st.hook || crimson { Some(Random::new_int(7919 * si as i64 + 1)) } else { None };
             // Crimson Heart: the joker it holds now (None = the round's own scorers) and the one it held last
@@ -487,7 +540,26 @@ fn round_search_pace(acts: &[RootAct], st: &RoundState, scorer: &jokers::Scorer,
                             _ => grid.and_then(|g| g.get(hl.max(0) as usize)).and_then(|row| row.get(dl.max(0) as usize)).unwrap_or(scorer),
                         };
                         let (s, name, best) = hands::best_play_cards(&h, ScorerArg::Jokers(sc), allowed);
-                        if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r * pace) {
+                        step += 1;
+                        if depth2 && step == 1 && s as f64 > 0.0 && (s as f64) < r && dl > 0 && hl > 1 && !best.is_empty() {
+                            // lab `rs-depth2`: the second move by its own playouts, on reshuffles of the unseen cards
+                            let d = sim_discard(&h, &best, name, st.cap);
+                            if d.is_empty() {
+                                (true, best, s, name.to_string())
+                            } else {
+                                let unseen: Vec<Info> = order[next..].iter().map(|&i| deck[i].clone()).collect();
+                                let mut irng = Random::new_int(104729 * si as i64 + 17 * a as i64 + 3);
+                                let (mut wp, mut wd) = (0usize, 0usize);
+                                for _ in 0..d2n {
+                                    let mut io: Vec<usize> = (0..unseen.len()).collect();
+                                    irng.shuffle(&mut io);
+                                    let rem: Vec<Info> = io.iter().map(|&i| unseen[i].clone()).collect();
+                                    wp += playout(h.clone(), &rem, r, hl, dl, (true, best.clone(), s), st, scorer, grid, allow) as usize;
+                                    wd += playout(h.clone(), &rem, r, hl, dl, (false, d.clone(), 0), st, scorer, grid, allow) as usize;
+                                }
+                                if wd > wp { (false, d, 0, String::new()) } else { (true, best, s, name.to_string()) }
+                            }
+                        } else if s as f64 >= r || dl <= 0 || best.is_empty() || (hl > 1 && (s * hl) as f64 >= r * pace) {
                             (true, best, s, name.to_string())
                         } else {
                             let mut d = sim_discard(&h, &best, name, st.cap);
