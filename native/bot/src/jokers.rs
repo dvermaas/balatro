@@ -518,6 +518,27 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
             out[j].rule = Some(Rule { hand: Some(HandSpec::Const((0.0, 0.0, x.powf(n as f64)))), ..Default::default() });
         }
     }
+    // lab `pareidolia-fix`: with Pareidolia every card is a face card (the game's Card:is_face), so face-card effects
+    // (Smiley Face, Scary Face, Sock and Buskin) apply to every card and Photograph to the first scoring card
+    if crate::experiment::get().pareidolia_fix
+        && cards.iter().any(|c| gs::get(c, "key").as_str() == Some("j_pareidolia") && !gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")))
+    {
+        let faces = ranks(FACES);
+        let fix = |p: &mut Pred| {
+            if *p == faces {
+                *p = Pred::All;
+            } else if *p == Pred::FirstFace {
+                *p = Pred::First;
+            }
+        };
+        for e in out.iter_mut() {
+            if let Some(r) = e.rule.as_mut() {
+                r.card.iter_mut().for_each(|x| fix(&mut x.0));
+                r.retrigger.iter_mut().for_each(|x| fix(&mut x.0));
+                r.held.iter_mut().for_each(|x| fix(&mut x.0));
+            }
+        }
+    }
     // v42: Misprint's exported effect is only "+" (its text is a random dynatext, v16 note), so it scored 0; count
     // the average of its +0-23 Mult
     for (j, c) in cards.iter().enumerate() {
