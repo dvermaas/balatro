@@ -68,6 +68,7 @@
 //!   boss-tag-skip=A+B  skip a Small/Big blind for a Boss Tag when the ante's boss is A or B (v72 default: Violet_Vessel)
 //!   no-boss-tag-skip   v71: no Boss Tag skips
 //!   acorn-order      under Amber Acorn, put the shuffled jokers back in the best sampled order during the round
+//!   round-order      the searched best joker order in every round too (jokers made at a blind's start land rightmost)
 //!   skip-fc-from=F   the skip forecast acts only from ante F (with skip-forecast-add=8: at ante 8 only)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
@@ -256,6 +257,8 @@ pub struct Exp {
     pub skip_fc_from: i64,
     /// lab `acorn-order`: under Amber Acorn, rearrange the shuffled jokers to the searched best order in the round
     pub acorn_order: bool,
+    /// lab `round-order`: rearrange the jokers to the searched best order in every round, not only the shop
+    pub round_order: bool,
     /// v72: skip a Small/Big blind for a Boss Tag when this ante's boss is listed (default Violet Vessel; lab `boss-tag-skip=A+B`
     /// with `_` for spaces, `no-boss-tag-skip` = v71)
     pub boss_tag_skip: Vec<String>,
@@ -320,6 +323,7 @@ pub fn get() -> &'static Exp {
               boss_tag_skip: s.split(',').find_map(|x| x.trim().strip_prefix("boss-tag-skip=")).map(|v| v.split('+').map(|n| n.replace('_', " ")).collect())
                   .unwrap_or_else(|| if has("no-boss-tag-skip") { vec![] } else { vec!["Violet Vessel".to_string()] }),
               acorn_order: has("acorn-order"),
+              round_order: has("round-order"),
               skip_fc_from: s.split(',').find_map(|x| x.trim().strip_prefix("skip-fc-from=")?.parse().ok()).unwrap_or(1),
               rollout_free_first: has("rollout-free-first"),
               rollout_shop: if has("no-rollout-shop") { None } else { Some(s.split(',').find_map(|x| x.trim().strip_prefix("rollout-shop=")?.parse().ok()).unwrap_or(10)) },

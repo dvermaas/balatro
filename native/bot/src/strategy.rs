@@ -251,9 +251,11 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
             if gs::get(gs_, "state").as_str() != Some("SHOP") {
                 // lab `acorn-order`: Amber Acorn shuffles the jokers at the blind's start; jokers can be moved during a
                 // round (face down, but the state still names them), so put them back in the searched best order
-                if crate::experiment::get().acorn_order && state == Some("SELECTING_HAND")
+                // lab `round-order`: the same in every round (a Riff-raff or Cartomancer joker made at the blind's
+                // start lands rightmost, past the xMult jokers the shop put last)
+                if state == Some("SELECTING_HAND") && (crate::experiment::get().round_order || (crate::experiment::get().acorn_order
                     && gs::d(gs::get(gs_, "blinds")).values().any(|b| gs::get(b, "name").as_str() == Some("Amber Acorn")
-                        && gs::get(b, "status").as_str() == Some("CURRENT"))
+                        && gs::get(b, "status").as_str() == Some("CURRENT"))))
                 {
                     return crate::readiness::best_joker_order(gs_, 12).map(|order| {
                         ("rearrange".to_string(), json!({"jokers": order}), "Amber Acorn shuffled the jokers: best sampled order back".to_string())
