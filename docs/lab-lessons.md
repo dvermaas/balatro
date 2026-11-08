@@ -666,6 +666,10 @@ measured the wrong thing or was never asked:
   and ~30% faster (12.4 vs 18.0 s a game). Neutral on wins; 3 stays, but 2 is the cheap setting if lab time gets tight.
 - **One reroll a shop** (`max-rerolls=1`, 2): c2k 0-449 256 vs 258 wins (25/27), -0.024 +- 0.025 ante. Neutral, like 4
   on v60: the reroll cap is flat.
+- **More jokers in the clearing-play choice** (`clear-pick2`: Supernova and Space Joker on the most played hand, Midas
+  Mask and Lucky Cat growth, a scoring glass card as a loss, then money: gold and blue seals, gold cards kept in hand,
+  Rough Gem, Business Card, Golden Ticket): c2k 0-449 258 vs 258 wins (12/12), +0.013 +- 0.024 ante, 149 games changed.
+  Neutral; v69's set held the jokers that matter.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

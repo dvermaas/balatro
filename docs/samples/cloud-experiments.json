@@ -2572,5 +2572,16 @@
   "wins": 256,
   "baseline_wins": 258,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Clearing-play choice also weighs Supernova, Space, Midas, Lucky Cat, glass, money (clear-pick2)",
+  "theme": "Play",
+  "baseline": "v69",
+  "games": 450,
+  "delta_ante": 0.013,
+  "se": 0.024,
+  "wins": 258,
+  "baseline_wins": 258,
+  "outcome": "neutral"
  }
 ]
