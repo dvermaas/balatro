@@ -2596,15 +2596,15 @@
   "outcome": "shipped v70"
  },
  {
-  "experiment": "Buy a $0 joker into an open slot (free-joker), c2k full",
+  "experiment": "Buy a $0 joker into an open slot (free-joker), c2k full + b2k 0-1199",
   "theme": "Shop",
   "baseline": "v69",
-  "games": 2000,
-  "delta_ante": 0.016,
-  "se": 0.008,
-  "wins": 1216,
-  "baseline_wins": 1208,
-  "outcome": "promising"
+  "games": 3200,
+  "delta_ante": 0.013,
+  "se": 0.006,
+  "wins": 1928,
+  "baseline_wins": 1922,
+  "outcome": "dropped"
  },
  {
   "experiment": "Never buy or take Popcorn (ban-jokers=Popcorn), seeds that held one",

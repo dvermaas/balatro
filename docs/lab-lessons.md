@@ -708,7 +708,9 @@ measured the wrong thing or was never asked:
   rollouts setting the flag from their own game: held seeds c2k 16/9, b2k 7/5 (+0.12 and +0.14 ante); c2k 0-449 265 vs
   266 (7/8; 43 non-holders still change, legitimately: an offered Shortcut is now worth more, which moves rerolls and
   rankings). Confirming on the rest of both sets.
-- **free-joker, c2k full:** 1,216 vs 1,208 wins (23/15), +0.016 +- 0.008 ante; b2k running.
+- **free-joker, both sets:** c2k full 1,216 vs 1,208 wins (23/15), +0.016 +- 0.008 ante; b2k 0-1199 712 vs 714 (10/12),
+  +0.008 +- 0.007. Together 33 vs 27 over 3,200 games: a free joker clears a few more blinds but wins no more runs.
+  Dropped (`free-joker` stays a lab flag).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
