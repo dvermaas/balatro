@@ -800,6 +800,10 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
         items.retain(|it| !hidden.contains(&it.key));
     }
+    if let Some(ban) = &crate::experiment::get().ban_vouchers {
+        // lab `ban-vouchers=A+B`: never buy these vouchers ('_' for a space)
+        items.retain(|it| !(it.key.starts_with("buy_voucher") && ban.split('+').any(|n| it.desc.starts_with(&format!("{}:", n.replace('_', " "))))));
+    }
 
     let mut shown: Vec<String> = Vec::new();
     for cards in [shop_cards, voucher_cards, pack_cards] {
@@ -864,6 +868,16 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
                 it.key.starts_with("buy_card") && crate::gs::s(&g(&it.obj, "kind")).contains("joker") && eff(i) > 0.0
             }).collect();
             why = "early slot fill";
+        }
+        if auto.is_empty() && crate::experiment::get().free_joker && !jokers_full {
+            // lab `free-joker`: a free joker (a Rare/Uncommon/edition tag, a Coupon) in an open slot costs nothing and
+            // sells for $1 or more later; only the forecast's hidden ones (clearly worse than nothing) stay
+            auto = (0..items.len()).filter(|&i| {
+                let it = &items[i];
+                it.key.starts_with("buy_card") && it.cost == 0 && crate::gs::s(&g(&it.obj, "kind")).contains("joker")
+                    && !it.desc.starts_with("Madness") && !it.desc.starts_with("Ceremonial Dagger")
+            }).collect();
+            why = "free joker";
         }
         if !auto.is_empty() {
             let mut k = auto[0];

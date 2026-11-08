@@ -344,9 +344,46 @@ fn clear_pick<'a>(gs_: &Value, plays: &'a [Value], info: &Value, margin: f64) ->
     let todo: Vec<String> = live("j_todo_list").iter().filter_map(|c| rx!(r"poker hand is a (.+?),").captures(&eff(c)).map(|m| m[1].to_string())).collect();
     let hands = gs::d(gs::get(gs_, "hands"));
     let played = |h: &str| gs::num(gs::mget(gs::d(hands.get(h).unwrap_or(&Value::Null)), "played"));
-    let key = |p: &Value| -> (i32, f64) {
+    let x2 = crate::experiment::get().clear_pick2;
+    let (supernova, space, midas, lucky_cat, glass_joker) = if x2 {
+        (n("j_supernova"), n("j_space"), n("j_midas_mask"), n("j_lucky_cat"), n("j_glass"))
+    } else {
+        (0.0, 0.0, 0.0, 0.0, 0.0)
+    };
+    let (rough_gem, business, ticket) = if x2 { (n("j_rough_gem"), n("j_business"), n("j_ticket")) } else { (0.0, 0.0, 0.0) };
+    let held = cards_of(gs_, "hand");
+    let key = |p: &Value| -> (i32, f64, f64) {
         let h = gs::s(gs::get(p, "hand"));
         let scoring: Vec<String> = gs::list(gs::get(p, "scoring")).iter().map(|x| gs::s(x).to_string()).collect();
+        // lab clear-pick2: the played cards split into scoring and kicked (both lists keep the play's order)
+        let mut money = 0.0;
+        let mut x2grow = 0.0;
+        if x2 {
+            let mut si = 0;
+            for i in idx_list(gs::get(p, "cards")) {
+                let Some(c) = held.get(i) else { continue };
+                let ci = card_info(c);
+                let scores = si < scoring.len() && crate::hands::describe(c) == scoring[si];
+                if scores {
+                    si += 1;
+                }
+                if ci.enh_is("GOLD") { money -= 3.0; } // held at the end of the round it pays $3
+                if ci.seal.as_deref() == Some("BLUE") { money -= 3.0; } // held at the end it makes a planet
+                if !scores || ci.debuff {
+                    continue;
+                }
+                let face = matches!(ci.rank.as_deref(), Some("J" | "Q" | "K"));
+                if ci.seal.as_deref() == Some("GOLD") { money += 3.0; }
+                if ci.enh_is("GOLD") { money += 4.0 * ticket; }
+                if ci.enh_is("LUCKY") { money += 20.0 / 15.0; x2grow += 0.2 * 0.25 * lucky_cat; }
+                if ci.suit.as_deref() == Some("D") { money += rough_gem; }
+                if face { money += business; x2grow += 0.5 * midas; }
+                if ci.enh_is("GLASS") && glass_joker == 0.0 { x2grow -= 1.0; } // 1 in 4 breaks
+            }
+            if hands.keys().all(|o| o == h || played(o) < played(h) + 1.0) {
+                x2grow += supernova + 0.25 * space; // the most played hand is the one that comes back
+            }
+        }
         let mut resets = 0;
         if obelisk && hands.keys().all(|o| o == h || played(o) < played(h) + 1.0) {
             resets += 1;
@@ -361,12 +398,12 @@ fn clear_pick<'a>(gs_: &Value, plays: &'a [Value], info: &Value, margin: f64) ->
         grow += hiker * 0.2 * scoring.len() as f64;
         grow += wee * scoring.iter().filter(|c| c.starts_with("2 ")).count() as f64;
         if todo.iter().any(|t| t == h) { grow += 1.0; }
-        (-resets, grow)
+        (-resets, grow + x2grow, money)
     };
-    let mut best: Option<(&Value, (i32, f64))> = None;
+    let mut best: Option<(&Value, (i32, f64, f64))> = None;
     for p in plays.iter().filter(|p| clears(p, info, margin)) {
         let k = key(p);
-        if best.map_or(true, |(_, b)| k.0 > b.0 || (k.0 == b.0 && k.1 > b.1)) {
+        if best.map_or(true, |(_, b)| k.0 > b.0 || (k.0 == b.0 && (k.1 > b.1 || (k.1 == b.1 && k.2 > b.2)))) {
             best = Some((p, k)); // plays come by estimate, so ties keep the highest
         }
     }
