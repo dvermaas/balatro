@@ -664,6 +664,8 @@ measured the wrong thing or was never asked:
   without a gain, so the bar sits on a flat optimum.
 - **A 2-boss forecast horizon** (`fc-bosses=2`, was 3): c2k 0-449 254 vs 258 wins (59/63), -0.004 +- 0.051 ante,
   and ~30% faster (12.4 vs 18.0 s a game). Neutral on wins; 3 stays, but 2 is the cheap setting if lab time gets tight.
+- **One reroll a shop** (`max-rerolls=1`, 2): c2k 0-449 256 vs 258 wins (25/27), -0.024 +- 0.025 ante. Neutral, like 4
+  on v60: the reroll cap is flat.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not

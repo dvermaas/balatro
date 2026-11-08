@@ -2561,5 +2561,16 @@
   "wins": 254,
   "baseline_wins": 258,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "1 reroll a shop (max-rerolls=1; was 2)",
+  "theme": "Shop",
+  "baseline": "v69",
+  "games": 450,
+  "delta_ante": -0.024,
+  "se": 0.025,
+  "wins": 256,
+  "baseline_wins": 258,
+  "outcome": "neutral"
  }
 ]
