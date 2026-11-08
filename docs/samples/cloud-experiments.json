@@ -2637,6 +2637,17 @@
   "se": 0.016,
   "wins": 265,
   "baseline_wins": 266,
+  "outcome": "neutral (folded into the bundle)"
+ },
+ {
+  "experiment": "Correct-but-rare scorer bundle (hand-mods, extra-chips, splash, baseball-fix, round-search-played, round-search-crimson)",
+  "theme": "Play",
+  "baseline": "v71",
+  "games": 1336,
+  "delta_ante": 0.014,
+  "se": 0.013,
+  "wins": 803,
+  "baseline_wins": 806,
   "outcome": "neutral"
  }
 ]

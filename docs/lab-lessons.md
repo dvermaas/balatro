@@ -713,8 +713,10 @@ measured the wrong thing or was never asked:
   The misses cluster on Misprint (random by design) and Splash: a kicker's chips go uncounted (Two Pair A-A-K-K + 3:
   1,054 estimated, 1,105 scored = 3 chips x 17 mult), which the `splash` lab flag already fixes. The rare-joker flags
   (`extra-chips`, `splash`, `baseball-fix`, v58) and the round-search ones (`round-search-played`,
-  `round-search-crimson`) are each right but too rare to measure alone; with `hand-mods` they now run as one bundle on
-  both full sets against v71.
+  `round-search-crimson`) are each right but too rare to measure alone; with `hand-mods` they ran as one bundle against
+  v71: c2k 0-885 527 vs 534 wins (23/30), b2k 0-449 276 vs 272 (18/14); together 41 vs 44, +0.014 +- 0.013 ante.
+  Neutral; stopped. Pareidolia paid because it misread every play of the runs that held it; these misread a few plays
+  of a few runs, and the round search and the forecast's rollouts (on the real rules) already absorb most of it.
 - **free-joker, both sets:** c2k full 1,216 vs 1,208 wins (23/15), +0.016 +- 0.008 ante; b2k 0-1199 712 vs 714 (10/12),
   +0.008 +- 0.007. Together 33 vs 27 over 3,200 games: a free joker clears a few more blinds but wins no more runs.
   Dropped (`free-joker` stays a lab flag).
@@ -792,7 +794,5 @@ What to trust:
 
 - Violet Vessel kills half the runs that meet it (313 of 1,621 v69 losses): a plan for it from the shops of ante 7
   onward, when the ante-8 boss is known, rather than a better hand on the day.
-- Small, correct, unshipped flags to fold into the next version that needs new baselines: `round-search-played`
-  (Card Sharp, Supernova in the search) and `round-search-crimson`.
 - A learned value at the forecast horizon trained on far more games (hundreds of thousands), checked out of sample.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).
