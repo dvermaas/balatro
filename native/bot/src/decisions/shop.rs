@@ -800,6 +800,13 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         }
         items.retain(|it| !hidden.contains(&it.key));
     }
+    if crate::experiment::get().ban_jokers.is_some() {
+        // lab `ban-jokers=A+B`: never buy these jokers (nor swap one in)
+        items.retain(|it| {
+            let i = if it.key.starts_with("buy_card_") || it.key.starts_with("replace_") { it.key.rsplit('_').next().and_then(|x| x.parse::<usize>().ok()) } else { None };
+            !i.and_then(|i| shop_cards.get(i)).is_some_and(|c| crate::experiment::banned_joker(g(c, "label").as_str().unwrap_or("")))
+        });
+    }
     if let Some(ban) = &crate::experiment::get().ban_vouchers {
         // v70: never buy these vouchers (experiment::BAN_VOUCHERS, '_' for a space)
         items.retain(|it| !(it.key.starts_with("buy_voucher") && ban.split('+').any(|n| it.desc.starts_with(&format!("{}:", n.replace('_', " "))))));

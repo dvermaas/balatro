@@ -78,7 +78,7 @@ pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     let mut items: ShopItems = vec![];
     for (i, c) in pack.iter().enumerate() {
         let set_v = gs::get(c, "set");
-        if gs::s(set_v) == "JOKER" && jokers_full {
+        if gs::s(set_v) == "JOKER" && (jokers_full || crate::experiment::banned_joker(gs::get(c, "label").as_str().unwrap_or(""))) {
             continue;
         }
         let kind = if gs::truthy(set_v) { gs::s(set_v).to_lowercase() } else { "card".to_string() };
@@ -352,6 +352,7 @@ fn pack_joker_forecast(bot: &mut JevBot, gs_: &Value, jokers_full: bool) -> Opti
     let pack = cards_of(gs_, "pack");
     let idx: Vec<usize> = (0..pack.len())
         .filter(|&i| gs::get(&pack[i], "set").as_str() == Some("JOKER")
+            && !crate::experiment::banned_joker(gs::get(&pack[i], "label").as_str().unwrap_or(""))
             && (!jokers_full || gs::get(gs::get(&pack[i], "modifier"), "edition").as_str() == Some("NEGATIVE")))
         .collect();
     if idx.is_empty() {
