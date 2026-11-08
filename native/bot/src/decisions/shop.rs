@@ -866,7 +866,11 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             auto = non_item;
         }
         let mut why = "forecast";
-        if auto.is_empty() && ante <= super::early_ante() && jok_count < super::early_jokers() {
+        if auto.is_empty() && ((ante <= super::early_ante() && jok_count < super::early_jokers())
+            || (crate::experiment::get().slot_fill && !jokers_full))
+        {
+            // lab `slot-fill`: the same at any ante while a joker slot is open (late losses that lost jokers to Mr.
+            // Bones, Gros Michel or Madness left slots empty with money in hand, every offer below the 1 SE bar)
             // v23: early slots are filled by code. Ante-1/2 blinds are easy enough that no single joker
             // clears the 2 SE bar, so every early joker was a close call, and the code-only bot (top
             // option = buy nothing) died with empty slots on seeds where JEV filled them and went deep.
