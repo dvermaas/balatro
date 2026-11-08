@@ -65,6 +65,7 @@
 //!   skip-forecast=A  up to ante A, skip-or-play at a Small/Big blind is decided by a forecast from the blind select
 //!                 with the real tags (forecast::skip_forecast), not the static tag list
 //!   skip-forecast-add=A  the static skips stay; up to ante A the skip forecast may add a skip for another tag
+//!   boss-tag-skip=A+B  skip a Small/Big blind for a Boss Tag when the ante's boss is A or B (e.g. Violet_Vessel)
 //!   skip-fc-from=F   the skip forecast acts only from ante F (with skip-forecast-add=8: at ante 8 only)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
 //!                 play (default codejev::PLAY_NOW_RATIO = 0.6 since v55; was 1)
@@ -251,6 +252,8 @@ pub struct Exp {
     pub skip_forecast_add: Option<i64>,
     /// lab `skip-fc-from=F`: the skip forecast (skip-forecast / skip-forecast-add) only from ante F (default 1)
     pub skip_fc_from: i64,
+    /// lab `boss-tag-skip=A+B`: skip a Small/Big blind for a Boss Tag when this ante's boss is A or B (`_` for spaces)
+    pub boss_tag_skip: Vec<String>,
     pub rollout_free_first: bool,
     pub strong_vouchers: bool,
     pub buy_vouchers: Vec<String>,
@@ -309,6 +312,7 @@ pub fn get() -> &'static Exp {
               rollout_shop_first: has("rollout-shop-first"),
               skip_forecast: s.split(',').find_map(|x| x.trim().strip_prefix("skip-forecast=")?.parse().ok()),
               skip_forecast_add: s.split(',').find_map(|x| x.trim().strip_prefix("skip-forecast-add=")?.parse().ok()),
+              boss_tag_skip: s.split(',').find_map(|x| x.trim().strip_prefix("boss-tag-skip=")).map(|v| v.split('+').map(|n| n.replace('_', " ")).collect()).unwrap_or_default(),
               skip_fc_from: s.split(',').find_map(|x| x.trim().strip_prefix("skip-fc-from=")?.parse().ok()).unwrap_or(1),
               rollout_free_first: has("rollout-free-first"),
               rollout_shop: if has("no-rollout-shop") { None } else { Some(s.split(',').find_map(|x| x.trim().strip_prefix("rollout-shop=")?.parse().ok()).unwrap_or(10)) },

@@ -318,6 +318,18 @@ pub fn blind_select(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     // v46: never skip a Big blind with no joker: after a skipped Small blind that would reach the boss without a shop
     let no_joker = cards_of(gs_, "jokers").is_empty() && gs::get(&b, "type").as_str() == Some("BIG");
     let static_skip = listed && ante <= e.skip_max.unwrap_or(SKIP_ANTE) && ante >= e.skip_min && !no_joker;
+    // lab (`boss-tag-skip=A+B`): a Boss Tag rerolls this ante's boss (at ante 8 into another finisher); skip for it when
+    // the boss is one of the listed killers (Violet Vessel ends ~78% of the runs that face it)
+    if tag == "Boss Tag" && !no_joker && !e.boss_tag_skip.is_empty() {
+        let boss = gs::d(gs::get(gs_, "blinds")).values().find(|x| gs::get(x, "type").as_str() == Some("BOSS"))
+            .map(|x| gs::s(gs::get(x, "name")).to_string()).unwrap_or_default();
+        if e.boss_tag_skip.contains(&boss) {
+            bot.emit("auto", json!({"question": "blind", "choice": "skip", "desc": format!("skip for {tag}"),
+                "reason": format!("lab boss-tag-skip: reroll {boss}")}));
+            bot.act("skip", None)?;
+            return Ok(());
+        }
+    }
     // lab (`skip-forecast-add=A`): keep the static skips; the forecast may add skips for other tags up to ante A
     let fc_add = e.skip_forecast_add.is_some_and(|m| !static_skip && ante <= m && ante >= e.skip_min.max(e.skip_fc_from) && !no_joker && !tag.is_empty());
     if fc_add || e.skip_forecast.is_some_and(|m| ante <= m && ante >= e.skip_min.max(e.skip_fc_from) && !no_joker && !tag.is_empty()) {
