@@ -707,7 +707,14 @@ measured the wrong thing or was never asked:
   unrelated buys (5/10): a rollout that bought Shortcut left the per-thread flag set for the rollouts after it. With
   rollouts setting the flag from their own game: held seeds c2k 16/9, b2k 7/5 (+0.12 and +0.14 ante); c2k 0-449 265 vs
   266 (7/8; 43 non-holders still change, legitimately: an offered Shortcut is now worth more, which moves rerolls and
-  rankings). Confirming on the rest of both sets.
+  rankings). Against v71 (the fixed binary also carried v71's Pareidolia fix, so v70 was the wrong base): c2k
+  1,437 seeds 878 vs 872 (29/23), b2k holders 8/5. Folded into a bundle of the correct-but-rare scorer fixes below.
+- **A 40-game estimate audit on v71** (each play's estimate against the chips it scored): 83% of non-Lucky plays exact.
+  The misses cluster on Misprint (random by design) and Splash: a kicker's chips go uncounted (Two Pair A-A-K-K + 3:
+  1,054 estimated, 1,105 scored = 3 chips x 17 mult), which the `splash` lab flag already fixes. The rare-joker flags
+  (`extra-chips`, `splash`, `baseball-fix`, v58) and the round-search ones (`round-search-played`,
+  `round-search-crimson`) are each right but too rare to measure alone; with `hand-mods` they now run as one bundle on
+  both full sets against v71.
 - **free-joker, both sets:** c2k full 1,216 vs 1,208 wins (23/15), +0.016 +- 0.008 ante; b2k 0-1199 712 vs 714 (10/12),
   +0.008 +- 0.007. Together 33 vs 27 over 3,200 games: a free joker clears a few more blinds but wins no more runs.
   Dropped (`free-joker` stays a lab flag).
