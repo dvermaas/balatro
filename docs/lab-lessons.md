@@ -684,7 +684,7 @@ measured the wrong thing or was never asked:
   screen: Hone 14 vs 11 wins of 25 games, Planet Merchant 8 vs 6 of 11, Director's Cut 3 vs 1 of 5).
 - **A free joker into an open slot** (`free-joker`; a Rare Tag's free Campfire was left in the shop with two slots
   empty): c2k 0-449 262 vs 258 wins (9/5), +0.040 +- 0.020 ante, 45 games changed vs v69; on v70, c2k 0-829 500 vs
-  497 (9/6), +0.036 +- 0.014 ante. A steady ante gain, few wins; confirmation running.
+  497 (9/6), +0.036 +- 0.014 ante. A steady ante gain, few wins (c2k full below).
 - **The same check on jokers misleads** (`ban-jokers=Popcorn`): games that picked up Popcorn won 53% against 63% for
   the games alive at the same ante (597 games, z = -5.2; Misprint, Ice Cream, Mystic Summit next). Banning it, on the 79
   c2k 0-449 seeds that held one plus 40 controls: 63 vs 69 wins (9/15). A weak joker marks a weak run (it is bought
@@ -702,8 +702,13 @@ measured the wrong thing or was never asked:
   a Pair (1,374) that the game scored as a Straight (7,814). The bot's classifier (and the kernel's) ignored Four
   Fingers, Shortcut and Smeared Joker, so it never looked for 4-card flushes and straights, gapped straights or
   two-colour flushes, in play, discards or the rollouts' policy. The kernel now classifies as rumbot's
-  hands::evaluate does when a per-thread flag says they are held (kernel/tests/hand_mods.rs). Screening on the 190
-  seeds of both sets that held one.
+  hands::evaluate does when a per-thread flag says they are held (kernel/tests/hand_mods.rs). First run: the 190
+  seeds of both sets that held one, 26 vs 15, but 53 of 425 c2k 0-449 seeds that never held one changed too, at
+  unrelated buys (5/10): a rollout that bought Shortcut left the per-thread flag set for the rollouts after it. With
+  rollouts setting the flag from their own game: held seeds c2k 16/9, b2k 7/5 (+0.12 and +0.14 ante); c2k 0-449 265 vs
+  266 (7/8; 43 non-holders still change, legitimately: an offered Shortcut is now worth more, which moves rerolls and
+  rankings). Confirming on the rest of both sets.
+- **free-joker, c2k full:** 1,216 vs 1,208 wins (23/15), +0.016 +- 0.008 ante; b2k running.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
