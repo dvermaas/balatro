@@ -2726,5 +2726,16 @@
   "wins": 264,
   "baseline_wins": 266,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Skip forecast at ante 8 only (skip-forecast-add=8,skip-fc-from=8)",
+  "theme": "Skips",
+  "baseline": "v71",
+  "games": 450,
+  "delta_ante": 0.009,
+  "se": 0.008,
+  "wins": 256,
+  "baseline_wins": 266,
+  "outcome": "worse"
  }
 ]

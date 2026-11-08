@@ -731,6 +731,10 @@ measured the wrong thing or was never asked:
   play-best vs the best discard each judged by 16 playouts of the base policy on reshuffled unseen cards): 264 vs 266
   (5/7), 26 games changed, 3x slower (unrestricted 9.5x). Neutral both: the close losses are draws that never came,
   not a discard the one-step search got wrong. Both stay lab flags.
+- **Skips at ante 8 by forecast** (`skip-forecast-add=8,skip-fc-from=8`: money is worthless after the last boss and the
+  ante-8 shops rarely buy, so a tag might be worth more than the blind): c2k 0-449 256 vs 266 wins (13/23, z = -1.7), 175
+  games changed. The forecast skips often and the lost shops cost more than its tags bring. The one tag with a clear
+  mechanism, a Boss Tag against Violet Vessel (it rerolls into another finisher), is tested alone below.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
