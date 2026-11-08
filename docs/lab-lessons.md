@@ -724,6 +724,9 @@ measured the wrong thing or was never asked:
   slot is open; a traced ante-7 loss had lost Mr. Bones and Gros Michel and left two $5 +Mult jokers in the shop with
   $27): c2k 0-449 264 vs 266 wins (9/11), b2k 0-449 270 vs 272 (4/6). Neutral: only ~7% of late losses have an open
   slot, and there the forecast's "nothing" is as often right.
+- **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
+  seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
+  v70's six stay the list.
 - **free-joker, both sets:** c2k full 1,216 vs 1,208 wins (23/15), +0.016 +- 0.008 ante; b2k 0-1199 712 vs 714 (10/12),
   +0.008 +- 0.007. Together 33 vs 27 over 3,200 games: a free joker clears a few more blinds but wins no more runs.
   Dropped (`free-joker` stays a lab flag).

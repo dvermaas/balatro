@@ -2693,5 +2693,16 @@
   "wins": 534,
   "baseline_wins": 538,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Also ban Tarot Merchant, Blank, Magic Trick (seeds that bought one)",
+  "theme": "Shop",
+  "baseline": "v71",
+  "games": 210,
+  "delta_ante": 0.087,
+  "se": 0.057,
+  "wins": 121,
+  "baseline_wins": 122,
+  "outcome": "neutral"
  }
 ]
