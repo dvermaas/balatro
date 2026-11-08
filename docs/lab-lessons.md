@@ -720,6 +720,10 @@ measured the wrong thing or was never asked:
 - **How many weak jokers a swap may sell** (`swap-sells`, 2 since v19): 1, c2k 0-449 232 vs 266 wins (23/57, z = -3.8);
   3, 256 vs 266 (20/30); 4, 410 seeds 226 vs 242 (21/37, z = -2.1). 2 stays: one candidate throws away good swaps, four let the forecast's
   noise pick sales.
+- **Open slots late** (`slot-fill`: the early slot fill, a joker beating nothing in the forecast, at any ante while a
+  slot is open; a traced ante-7 loss had lost Mr. Bones and Gros Michel and left two $5 +Mult jokers in the shop with
+  $27): c2k 0-449 264 vs 266 wins (9/11), b2k 0-449 270 vs 272 (4/6). Neutral: only ~7% of late losses have an open
+  slot, and there the forecast's "nothing" is as often right.
 - **free-joker, both sets:** c2k full 1,216 vs 1,208 wins (23/15), +0.016 +- 0.008 ante; b2k 0-1199 712 vs 714 (10/12),
   +0.008 +- 0.007. Together 33 vs 27 over 3,200 games: a free joker clears a few more blinds but wins no more runs.
   Dropped (`free-joker` stays a lab flag).

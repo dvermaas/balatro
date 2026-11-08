@@ -2682,5 +2682,16 @@
   "wins": 256,
   "baseline_wins": 266,
   "outcome": "worse"
+ },
+ {
+  "experiment": "Fill an open joker slot at any ante (slot-fill; was ante <= 3)",
+  "theme": "Shop",
+  "baseline": "v71",
+  "games": 900,
+  "delta_ante": -0.001,
+  "se": 0.012,
+  "wins": 534,
+  "baseline_wins": 538,
+  "outcome": "neutral"
  }
 ]
