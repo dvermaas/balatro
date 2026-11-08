@@ -2550,5 +2550,16 @@
   "wins": 256,
   "baseline_wins": 258,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "2-boss forecast horizon (fc-bosses=2; was 3)",
+  "theme": "Forecast",
+  "baseline": "v69",
+  "games": 450,
+  "delta_ante": -0.004,
+  "se": 0.051,
+  "wins": 254,
+  "baseline_wins": 258,
+  "outcome": "neutral"
  }
 ]

@@ -662,6 +662,8 @@ measured the wrong thing or was never asked:
 - **The auto-buy bar retested at 64 rollouts** (v31 set 1 paired SE at 16-24 rollouts; at 64 the SE halves): `sure-se=0.5`
   c2k 0-449 248 vs 258 wins (47/57), `sure-se=1.5` 256 vs 258 (45/47). 1 SE stays; ~100 games change either way
   without a gain, so the bar sits on a flat optimum.
+- **A 2-boss forecast horizon** (`fc-bosses=2`, was 3): c2k 0-449 254 vs 258 wins (59/63), -0.004 +- 0.051 ante,
+  and ~30% faster (12.4 vs 18.0 s a game). Neutral on wins; 3 stays, but 2 is the cheap setting if lab time gets tight.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
