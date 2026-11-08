@@ -2583,5 +2583,27 @@
   "wins": 258,
   "baseline_wins": 258,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Never buy Hone, Telescope, Director's Cut, Crystal Ball, Reroll Surplus, Planet Merchant (v70)",
+  "theme": "Shipped",
+  "baseline": "v69",
+  "games": 4000,
+  "delta_ante": 0.004,
+  "se": 0.004,
+  "wins": 2402,
+  "baseline_wins": 2379,
+  "outcome": "shipped v70"
+ },
+ {
+  "experiment": "Buy a $0 joker into an open slot (free-joker), screen",
+  "theme": "Shop",
+  "baseline": "v69",
+  "games": 450,
+  "delta_ante": 0.04,
+  "se": 0.02,
+  "wins": 262,
+  "baseline_wins": 258,
+  "outcome": "promising"
  }
 ]

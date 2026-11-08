@@ -1,4 +1,4 @@
-# What the lab taught us (v27 → v69)
+# What the lab taught us (v27 → v70)
 
 Cloud sessions ran a few hundred policy-lab experiments: the bot with CodeJev in place of JEV (it takes the top-ranked
 option), arm F, on the rumbot simulator, so code only and free. This page keeps the conclusions, newest at the end of
@@ -22,6 +22,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v63 | learned joker values in the shop, packs and editions (v61-v63) | 55.0% | 7.33 |
 | v64 | the round search: each first move played out to the end of the round | 57.3% | 7.44 |
 | v69 | the search's scorer per state, Bell/Hook, Verdant Leaf's sale, Dagger, clearing plays (v65-v69) | 59.5% | 7.45 |
+| v70 | six overrated vouchers never bought | 60.1% | 7.45 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -670,6 +671,18 @@ measured the wrong thing or was never asked:
   Mask and Lucky Cat growth, a scoring glass card as a loss, then money: gold and blue seals, gold cards kept in hand,
   Rough Gem, Business Card, Golden Ticket): c2k 0-449 258 vs 258 wins (12/12), +0.013 +- 0.024 ante, 149 games changed.
   Neutral; v69's set held the jokers that matter.
+- **v70, six vouchers never bought** (`ban-vouchers=A+B`). Traced early losses showed $10 going on Hone at ante 2
+  with two jokers held. Of v69's voucher buys, the games that bought Hone won 57.7%, Telescope 42%, Director's Cut 45%,
+  Reroll Surplus 54%, Crystal Ball 58%, Planet Merchant 59%, below the 59.7% average although buying any voucher means
+  a longer run (Grabber 70%, Paint Brush 68%). The forecast's single best item clears a 1 SE bar more easily than it
+  should when one rollout shop with the voucher looks good. Banning those six changes only the ~11% of games that
+  bought one (51 of 450 screened, exactly the seeds whose v69 buys list one), so the confirmation ran just those
+  seeds and spliced the rest: c2k 0-449 266 vs 258 wins (9/1); c2k rest 21/15; b2k 26/17. Full sets c2k 1,208 vs
+  1,194 (30/16), b2k 1,194 vs 1,185 (26/17); together 56 vs 33 (z = 2.4), and both sets agree. **Shipped as v70**
+  (`no-ban-vouchers` restores v69; identity 18 seeds). The gain spreads over the six (first banned voucher bought,
+  screen: Hone 14 vs 11 wins of 25 games, Planet Merchant 8 vs 6 of 11, Director's Cut 3 vs 1 of 5).
+- **A free joker into an open slot** (`free-joker`; a Rare Tag's free Campfire was left in the shop with two slots
+  empty): c2k 0-449 262 vs 258 wins (9/5), +0.040 +- 0.020 ante, 45 games changed. Promising; to confirm on v70.
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
@@ -746,6 +759,7 @@ What to trust:
   onward, when the ante-8 boss is known, rather than a better hand on the day.
 - Small, correct, unshipped flags to fold into the next version that needs new baselines: `round-search-played`
   (Card Sharp, Supernova in the search) and `round-search-crimson`.
-- More scaling jokers for the clearing-play choice (v69).
+- Other overrated buys: the v70 check (win rate of the games that bought an item vs the average, then a ban
+  screened on just those seeds) applies to any shop item, e.g. jokers or packs bought in early antes.
 - A learned value at the forecast horizon trained on far more games (hundreds of thousands), checked out of sample.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).

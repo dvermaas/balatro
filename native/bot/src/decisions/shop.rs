@@ -801,7 +801,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
         items.retain(|it| !hidden.contains(&it.key));
     }
     if let Some(ban) = &crate::experiment::get().ban_vouchers {
-        // lab `ban-vouchers=A+B`: never buy these vouchers ('_' for a space)
+        // v70: never buy these vouchers (experiment::BAN_VOUCHERS, '_' for a space)
         items.retain(|it| !(it.key.starts_with("buy_voucher") && ban.split('+').any(|n| it.desc.starts_with(&format!("{}:", n.replace('_', " "))))));
     }
 

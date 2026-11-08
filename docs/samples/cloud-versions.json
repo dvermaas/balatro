@@ -1093,5 +1093,35 @@
   "died_ante_1_4": 84,
   "died_ante_5_7": 400,
   "died_ante_8": 322
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v70",
+  "version_id": "rust",
+  "change": "six overrated vouchers never bought",
+  "games": 2000,
+  "mean_ante": 7.457,
+  "se": 0.028,
+  "wins": 1194,
+  "win_rate": 0.597,
+  "mean_round": 20.26,
+  "died_ante_1_4": 88,
+  "died_ante_5_7": 378,
+  "died_ante_8": 340
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v70",
+  "version_id": "rust",
+  "change": "six overrated vouchers never bought",
+  "games": 2000,
+  "mean_ante": 7.45,
+  "se": 0.029,
+  "wins": 1208,
+  "win_rate": 0.604,
+  "mean_round": 20.23,
+  "died_ante_1_4": 86,
+  "died_ante_5_7": 387,
+  "died_ante_8": 319
  }
 ]
