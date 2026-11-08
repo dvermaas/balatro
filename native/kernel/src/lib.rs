@@ -192,6 +192,20 @@ pub fn mods() -> u8 {
     MODS.with(|c| c.get())
 }
 
+thread_local! {
+    /// Whether the caller wants hand-shaping jokers honoured at all (lab `hand-mods`): rollouts then set MODS from
+    /// their own game's jokers each time they build a scorer, instead of inheriting the last caller's.
+    static MODS_ON: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+pub fn set_mods_on(on: bool) {
+    MODS_ON.with(|c| c.set(on));
+}
+
+pub fn mods_on() -> bool {
+    MODS_ON.with(|c| c.get())
+}
+
 /// Card:is_suit(suit, flush_calc) for flushes: a Stone never, an undebuffed Wild always, Smeared Joker by colour.
 fn flush_suit(c: &Card, suit: u8, smeared: bool) -> bool {
     if c.enh == STONE {

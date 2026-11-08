@@ -457,8 +457,21 @@ pub fn hand_type(i: usize) -> HandType {
     hand_of(HAND_NAMES[i]).expect("kernel hand names are rumbot-sim labels")
 }
 
+/// Lab `hand-mods`: the rollout game's own Four Fingers / Shortcut / Smeared Joker, for the kernel's classifier.
+fn set_hand_mods(g: &GameState) {
+    if kernel::mods_on() {
+        let live = |n: &str| g.jokers.iter().any(|j| !j.borrow().debuffed && j.borrow().spec.name == n);
+        kernel::set_mods(
+            if live("Four Fingers") { kernel::MOD_FOUR_FINGERS } else { 0 }
+                | if live("Shortcut") { kernel::MOD_SHORTCUT } else { 0 }
+                | if live("Smeared Joker") { kernel::MOD_SMEARED } else { 0 },
+        );
+    }
+}
+
 impl Policy {
     fn scorer(&self, g: &GameState) -> kernel::Scorer {
+        set_hand_mods(g);
         let levels = (0..HAND_NAMES.len())
             .map(|i| {
                 let h = hand_type(i);
@@ -592,6 +605,7 @@ pub fn power(g: &GameState, pol: &Policy, samples: usize, seed: u64) -> Vec<f64>
             (chips as f64, mult as f64, g.hand_levels.played(hand_type(i)) as f64, false)
         })
         .collect();
+    set_hand_mods(g);
     let scorer = kernel::Scorer::new(levels, pol.jokers.clone(), 4.0, 3.0).expect("12 levels");
     let deck: Vec<kernel::Card> = g.full_deck.iter().map(info).collect();
     let n = (g.hand_size().max(1) as usize).min(deck.len());

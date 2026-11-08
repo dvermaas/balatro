@@ -521,6 +521,7 @@ pub fn build(gs_: &Value, cards: Option<&[Value]>) -> Vec<JokerEntry> {
     // lab `hand-mods`: Four Fingers, Shortcut and Smeared Joker change what a hand is; the kernel's classifier reads
     // them from a per-thread flag, set here from the jokers this scorer is for
     if crate::experiment::get().hand_mods {
+        jev_kernel::set_mods_on(true);
         let live = |k: &str| cards.iter().any(|c| gs::get(c, "key").as_str() == Some(k) && !gs::truthy(gs::mget(gs::d(gs::get(c, "state")), "debuff")));
         jev_kernel::set_mods(
             if live("j_four_fingers") { jev_kernel::MOD_FOUR_FINGERS } else { 0 }
