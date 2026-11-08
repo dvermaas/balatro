@@ -682,7 +682,13 @@ measured the wrong thing or was never asked:
   (`no-ban-vouchers` restores v69; identity 18 seeds). The gain spreads over the six (first banned voucher bought,
   screen: Hone 14 vs 11 wins of 25 games, Planet Merchant 8 vs 6 of 11, Director's Cut 3 vs 1 of 5).
 - **A free joker into an open slot** (`free-joker`; a Rare Tag's free Campfire was left in the shop with two slots
-  empty): c2k 0-449 262 vs 258 wins (9/5), +0.040 +- 0.020 ante, 45 games changed. Promising; to confirm on v70.
+  empty): c2k 0-449 262 vs 258 wins (9/5), +0.040 +- 0.020 ante, 45 games changed vs v69; on v70, c2k 0-829 500 vs
+  497 (9/6), +0.036 +- 0.014 ante. A steady ante gain, few wins; confirmation running.
+- **The same check on jokers misleads** (`ban-jokers=Popcorn`): games that picked up Popcorn won 53% against 63% for
+  the games alive at the same ante (597 games, z = -5.2; Misprint, Ice Cream, Mystic Summit next). Banning it, on the 79
+  c2k 0-449 seeds that held one plus 40 controls: 63 vs 69 wins (9/15). A weak joker marks a weak run (it is bought
+  when nothing better is offered) and still helps it; a voucher costs $10 for no power now, which is why the ban
+  worked there. The other vouchers check out neutral or better (worst: Tarot Merchant, z = -1.3).
 - **v59 (local agent, real-game check of v58):** all 8 seeds identical on the real game and rumbot after two rumbot
   fixes (Crimson Heart releasing Juggler dealt a card; a tag-free joker kept its price once owned); the 18 v57
   rearranges all match; real-game estaudit 223/297 plays exact. A new sim baseline: lab numbers before it are not
@@ -759,7 +765,5 @@ What to trust:
   onward, when the ante-8 boss is known, rather than a better hand on the day.
 - Small, correct, unshipped flags to fold into the next version that needs new baselines: `round-search-played`
   (Card Sharp, Supernova in the search) and `round-search-crimson`.
-- Other overrated buys: the v70 check (win rate of the games that bought an item vs the average, then a ban
-  screened on just those seeds) applies to any shop item, e.g. jokers or packs bought in early antes.
 - A learned value at the forecast horizon trained on far more games (hundreds of thousands), checked out of sample.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).

@@ -2605,5 +2605,16 @@
   "wins": 262,
   "baseline_wins": 258,
   "outcome": "promising"
+ },
+ {
+  "experiment": "Never buy or take Popcorn (ban-jokers=Popcorn), seeds that held one",
+  "theme": "Shop",
+  "baseline": "v70",
+  "games": 119,
+  "delta_ante": -0.017,
+  "se": 0.099,
+  "wins": 63,
+  "baseline_wins": 69,
+  "outcome": "worse"
  }
 ]
