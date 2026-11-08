@@ -2671,5 +2671,16 @@
   "wins": 226,
   "baseline_wins": 242,
   "outcome": "worse"
+ },
+ {
+  "experiment": "Swaps may sell the weakest 3 jokers (swap-sells=3; 2)",
+  "theme": "Shop",
+  "baseline": "v71",
+  "games": 450,
+  "delta_ante": -0.011,
+  "se": 0.028,
+  "wins": 256,
+  "baseline_wins": 266,
+  "outcome": "worse"
  }
 ]
