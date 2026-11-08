@@ -717,6 +717,9 @@ measured the wrong thing or was never asked:
   v71: c2k 0-885 527 vs 534 wins (23/30), b2k 0-449 276 vs 272 (18/14); together 41 vs 44, +0.014 +- 0.013 ante.
   Neutral; stopped. Pareidolia paid because it misread every play of the runs that held it; these misread a few plays
   of a few runs, and the round search and the forecast's rollouts (on the real rules) already absorb most of it.
+- **How many weak jokers a swap may sell** (`swap-sells`, 2 since v19): 1, c2k 0-449 232 vs 266 wins (23/57, z = -3.8);
+  4, 410 seeds 226 vs 242 (21/37, z = -2.1). 2 stays: one candidate throws away good swaps, four let the forecast's
+  noise pick sales.
 - **free-joker, both sets:** c2k full 1,216 vs 1,208 wins (23/15), +0.016 +- 0.008 ante; b2k 0-1199 712 vs 714 (10/12),
   +0.008 +- 0.007. Together 33 vs 27 over 3,200 games: a free joker clears a few more blinds but wins no more runs.
   Dropped (`free-joker` stays a lab flag).

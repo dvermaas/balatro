@@ -2649,5 +2649,27 @@
   "wins": 803,
   "baseline_wins": 806,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Swaps may sell the weakest 1 joker (swap-sells=1; 2)",
+  "theme": "Shop",
+  "baseline": "v71",
+  "games": 450,
+  "delta_ante": -0.064,
+  "se": 0.033,
+  "wins": 232,
+  "baseline_wins": 266,
+  "outcome": "worse"
+ },
+ {
+  "experiment": "Swaps may sell the weakest 4 jokers (swap-sells=4; 2)",
+  "theme": "Shop",
+  "baseline": "v71",
+  "games": 410,
+  "delta_ante": -0.022,
+  "se": 0.034,
+  "wins": 226,
+  "baseline_wins": 242,
+  "outcome": "worse"
  }
 ]
