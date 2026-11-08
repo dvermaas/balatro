@@ -724,6 +724,13 @@ measured the wrong thing or was never asked:
   slot is open; a traced ante-7 loss had lost Mr. Bones and Gros Michel and left two $5 +Mult jokers in the shop with
   $27): c2k 0-449 264 vs 266 wins (9/11), b2k 0-449 270 vs 272 (4/6). Neutral: only ~7% of late losses have an open
   slot, and there the forecast's "nothing" is as often right.
+- **Deeper in-round search** (v71 losses: 838 of 1,590 end at 70%+ of the target, so the last round looked like the
+  lever). Paces (`rs-paces=0.7+1+1.5`: the round search's "keep going while score x hands left reaches pace x the
+  target" rule run at three paces, each act taking the pace with the most hits): c2k 0-449 262 vs 266 wins (11/15,
+  z = -0.8). Depth 2 (`rs-depth2=16,rs-depth2-hl=3`: at the first decision with 2-3 hands left, behind, discards left,
+  play-best vs the best discard each judged by 16 playouts of the base policy on reshuffled unseen cards): 264 vs 266
+  (5/7), 26 games changed, 3x slower (unrestricted 9.5x). Neutral both: the close losses are draws that never came,
+  not a discard the one-step search got wrong. Both stay lab flags.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

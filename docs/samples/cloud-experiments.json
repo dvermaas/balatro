@@ -2704,5 +2704,27 @@
   "wins": 121,
   "baseline_wins": 122,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Round search at three paces (rs-paces=0.7+1+1.5), best per act",
+  "theme": "Play",
+  "baseline": "v71",
+  "games": 450,
+  "delta_ante": 0.036,
+  "se": 0.034,
+  "wins": 262,
+  "baseline_wins": 266,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Depth-2 round search: discard vs play by 16 nested playouts, hands left <= 3 (rs-depth2=16,rs-depth2-hl=3)",
+  "theme": "Play",
+  "baseline": "v71",
+  "games": 450,
+  "delta_ante": 0.009,
+  "se": 0.023,
+  "wins": 264,
+  "baseline_wins": 266,
+  "outcome": "neutral"
  }
 ]
