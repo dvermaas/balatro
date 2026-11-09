@@ -3067,5 +3067,16 @@
   "wins": 258,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Early slot fill to 5 jokers through ante 4 (early-jokers=5,early-ante=4)",
+  "theme": "Shop",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": 0.011,
+  "se": 0.014,
+  "wins": 271,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
