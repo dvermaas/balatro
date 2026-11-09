@@ -839,6 +839,8 @@ measured the wrong thing or was never asked:
   wins (5/6), 11 games changed. Neutral.
 - **Free discards retested on v75** (`free-discard`): c2k 0-449 272 vs 272 wins (21/21), +0.004 +- 0.027 ante. Neutral
   for the third time.
+- **Discards ranked by a weak next play** (`discard-key=low`: the 20th-percentile next play, not the mean): c2k 0-449
+  252 vs 272 wins (32/52, z = -2.2), -0.062 +- 0.059 ante. Worse; the mean stays.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

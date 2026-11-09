@@ -3089,5 +3089,16 @@
   "wins": 272,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Discards ranked by the 20th-percentile next play (discard-key=low)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.062,
+  "se": 0.059,
+  "wins": 252,
+  "baseline_wins": 272,
+  "outcome": "worse"
  }
 ]
