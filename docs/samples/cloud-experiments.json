@@ -2836,5 +2836,16 @@
   "wins": 2497,
   "baseline_wins": 2460,
   "outcome": "shipped v74"
+ },
+ {
+  "experiment": "Tarot targets by measurement (tarot-measure), retested on v74",
+  "theme": "Packs",
+  "baseline": "v74",
+  "games": 450,
+  "delta_ante": -0.098,
+  "se": 0.041,
+  "wins": 257,
+  "baseline_wins": 272,
+  "outcome": "worse"
  }
 ]

@@ -779,6 +779,8 @@ measured the wrong thing or was never asked:
   order now counts in close rounds. c2k 0-449 272 vs 267 (7/2), then both full sets: c2k 1,259 vs 1,236 wins (41/18),
   b2k 1,238 vs 1,224 (40/26); together 81 vs 44 games won by only one side (z = 3.3), +0.018 ante. v74 with no flags
   replays the flagged games (30 seeds, 0 changed). Re-run old neutral ideas on today's bot: the bot around them changed.
+- **Old neutral flags retested on v74** (after `card-order` paid on its retest): `tarot-measure` (tarot targets by
+  measured mean best play over 24 deals) c2k 0-449 257 vs 272 wins (42/57), -0.098 +- 0.041 ante: worse, as at v57.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
