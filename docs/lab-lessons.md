@@ -843,6 +843,8 @@ measured the wrong thing or was never asked:
   252 vs 272 wins (32/52, z = -2.2), -0.062 +- 0.059 ante. Worse; the mean stays.
 - **`setup-play=clear` on v75** (out of discards with hands to spare, the play whose two plays most likely clear):
   c2k 0-449 273 vs 272 wins (2/1); 3 games change, since the round search decides most of those spots now.
+- **Three rerolls a shop on v75** (`max-rerolls=3`, 2): c2k 0-449 267 vs 272 wins (14/19), -0.011 +- 0.020 ante. Neutral,
+  like 1 and 4 before.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

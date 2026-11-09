@@ -3111,5 +3111,16 @@
   "wins": 273,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Up to 3 rerolls a shop, retested on v75 (max-rerolls=3)",
+  "theme": "Shop",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.011,
+  "se": 0.02,
+  "wins": 267,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
