@@ -244,7 +244,7 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
         }
     }
     if let (Some("SELECTING_HAND"), Some(from)) = (state, crate::experiment::get().luchador) {
-        // lab `luchador=A`: Luchador's sale disables the current boss (Violet Vessel's target / 3, The Wall's / 2, The
+        // v75 (`luchador=A`, default 8): Luchador's sale disables the current boss (Violet Vessel's target / 3, The Wall's / 2, The
         // Needle's hands back, ...); sell it at the first hand of a boss blind from ante A
         let boss_now = gs::d(gs::get(gs_, "blinds")).values().any(|b| gs::get(b, "type").as_str() == Some("BOSS")
             && gs::get(b, "status").as_str() == Some("CURRENT"));
@@ -264,7 +264,7 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
             if gs::get(gs_, "state").as_str() != Some("SHOP") {
                 // v73: Amber Acorn shuffles the jokers at the blind's start; jokers can be moved during a
                 // round (face down, but the state still names them), so put them back in the searched best order
-                // lab `round-order`: the same in every round (a Riff-raff or Cartomancer joker made at the blind's
+                // v75 (`no-round-order` = v74): the same in every round (a Riff-raff or Cartomancer joker made at the blind's
                 // start lands rightmost, past the xMult jokers the shop put last)
                 if state == Some("SELECTING_HAND") && (crate::experiment::get().round_order || (crate::experiment::get().acorn_order
                     && gs::d(gs::get(gs_, "blinds")).values().any(|b| gs::get(b, "name").as_str() == Some("Amber Acorn")

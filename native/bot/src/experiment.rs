@@ -68,8 +68,8 @@
 //!   boss-tag-skip=A+B  skip a Small/Big blind for a Boss Tag when the ante's boss is A or B (v72 default: Violet_Vessel)
 //!   no-boss-tag-skip   v71: no Boss Tag skips
 //!   no-acorn-order   v72: leave the jokers Amber Acorn shuffled where they land (v73 puts them back in the best order)
-//!   round-order      the searched best joker order in every round too (jokers made at a blind's start land rightmost)
-//!   luchador=A       sell Luchador at a boss blind from ante A (the sale disables the boss)
+//!   no-round-order   v74: the searched joker order in the shop (and under Amber Acorn) only; v75 also at every round's start
+//!   luchador=A       sell Luchador at a boss blind from ante A (the sale disables the boss; v75 default 8, no-luchador = v74)
 //!   rollout-card-order  the forecasts' rollouts play cards in their best-scoring order too (when order can matter)
 //!   skip-fc-from=F   the skip forecast acts only from ante F (with skip-forecast-add=8: at ante 8 only)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
@@ -260,11 +260,11 @@ pub struct Exp {
     pub skip_fc_from: i64,
     /// v73: under Amber Acorn, rearrange the shuffled jokers to the searched best order in the round (`no-acorn-order` = v72)
     pub acorn_order: bool,
-    /// lab `round-order`: rearrange the jokers to the searched best order in every round, not only the shop
+    /// v75: rearrange the jokers to the searched best order at every round's start, not only the shop (`no-round-order`)
     pub round_order: bool,
     /// lab `rollout-card-order`: the forecasts' rollouts play cards in their best-scoring order too (simcore::CARD_ORDER)
     pub rollout_card_order: bool,
-    /// lab `luchador=A`: sell Luchador at the first hand of a boss blind from ante A (its sale disables the boss)
+    /// v75: sell Luchador at the first hand of a boss blind from ante A (default 8; its sale disables the boss; `no-luchador`)
     pub luchador: Option<i64>,
     /// v72: skip a Small/Big blind for a Boss Tag when this ante's boss is listed (default Violet Vessel; lab `boss-tag-skip=A+B`
     /// with `_` for spaces, `no-boss-tag-skip` = v71)
@@ -330,9 +330,9 @@ pub fn get() -> &'static Exp {
               boss_tag_skip: s.split(',').find_map(|x| x.trim().strip_prefix("boss-tag-skip=")).map(|v| v.split('+').map(|n| n.replace('_', " ")).collect())
                   .unwrap_or_else(|| if has("no-boss-tag-skip") { vec![] } else { vec!["Violet Vessel".to_string()] }),
               acorn_order: !has("no-acorn-order"),
-              round_order: has("round-order"),
+              round_order: !has("no-round-order"),
               rollout_card_order: has("rollout-card-order"),
-              luchador: s.split(',').find_map(|x| x.trim().strip_prefix("luchador=")?.parse().ok()),
+              luchador: s.split(',').find_map(|x| x.trim().strip_prefix("luchador=")?.parse().ok()).or(if has("no-luchador") { None } else { Some(8) }),
               skip_fc_from: s.split(',').find_map(|x| x.trim().strip_prefix("skip-fc-from=")?.parse().ok()).unwrap_or(1),
               rollout_free_first: has("rollout-free-first"),
               rollout_shop: if has("no-rollout-shop") { None } else { Some(s.split(',').find_map(|x| x.trim().strip_prefix("rollout-shop=")?.parse().ok()).unwrap_or(10)) },

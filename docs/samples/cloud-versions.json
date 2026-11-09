@@ -1243,5 +1243,35 @@
   "died_ante_1_4": 85,
   "died_ante_5_7": 362,
   "died_ante_8": 294
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v75",
+  "version_id": "rust",
+  "change": "Joker order at every round's start; Luchador sold at the ante-8 boss",
+  "games": 2000,
+  "mean_ante": 7.465,
+  "se": 0.029,
+  "wins": 1239,
+  "win_rate": 0.62,
+  "mean_round": 20.27,
+  "died_ante_1_4": 90,
+  "died_ante_5_7": 362,
+  "died_ante_8": 309
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v75",
+  "version_id": "rust",
+  "change": "Joker order at every round's start; Luchador sold at the ante-8 boss",
+  "games": 2000,
+  "mean_ante": 7.476,
+  "se": 0.028,
+  "wins": 1260,
+  "win_rate": 0.63,
+  "mean_round": 20.29,
+  "died_ante_1_4": 85,
+  "died_ante_5_7": 362,
+  "died_ante_8": 293
  }
 ]

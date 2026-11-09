@@ -22,7 +22,7 @@ git history up to `4628654`. See README.md for setup.
   (`native/bot/src/experiment.rs`) on the two fixed 2,000-seed sets, b2k and c2k (`docs/samples/cloud-lab/seeds-*.txt`),
   through `scripts/lab/chunk.sh BIN SET START COUNT NAME BASE EXP` (resumable; ~450 seeds per <1 h chunk on 4 cores;
   copy BIN out of `native/target` first) and `scripts/lab/cmp.py BASE NAME`. Screen on c2k 0-449, confirm on both
-  full sets, judge by games won by only one side (docs/lab-lessons.md "How to experiment"). Current: v74, 61.9% /
+  full sets, judge by games won by only one side (docs/lab-lessons.md "How to experiment"). Current: v75, 62.0% /
   63.0% wins (b2k / c2k). `JEVLAB_TRACE=<dir>` writes
   every game's calls (and keeps the run dirs in $TMPDIR) and prints the first call that differs from
   `runs/_port/traces`.
