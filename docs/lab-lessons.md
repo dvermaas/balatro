@@ -820,6 +820,13 @@ measured the wrong thing or was never asked:
   The tail's model retrained on v75's 1,994 c2k games (same inputs; `ptrain.py --set base`; held-out AUC 0.54 at ante 2
   to 0.74 at ante 8), tested on b2k 0-449 (`VALUE_MODEL=`): 268 vs 283 wins (43/58, z = -1.5), -0.038 +- 0.047 ante.
   Not better, like the re-learned joker values: v53's model stays.
+- **The Ox and The Tooth cost money** (v75, money after the boss minus money at the ante's last shop, antes 6+: The Ox
+  -$17.7, The Tooth -$11.0, every other boss -$1 to +$3). The bot ignored both. `ox-avoid` keeps plays off the most
+  played hand (The Ox zeroes money when it is played; the view leaves the hand's name out, so the bot takes the most
+  played count, ties to the weakest hand as rumbot does): a clearing play of another hand first, and while nothing
+  clears no play of it before the last hand. On the 391 seeds that meet The Ox: the loss falls to ~$7 (c2k -18.2 ->
+  -8.9, b2k -17.2 -> -5.1), but c2k 128 vs 130 wins (6/8), -0.049 +- 0.021 ante, b2k 137 vs 134 (11/8). Neutral: late
+  money buys little, as every money rule found.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

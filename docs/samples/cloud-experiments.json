@@ -3023,5 +3023,16 @@
   "wins": 268,
   "baseline_wins": 283,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Keep off The Ox's most played hand (ox-avoid; 391 seeds of both sets that meet it)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 391,
+  "delta_ante": -0.026,
+  "se": 0.015,
+  "wins": 265,
+  "baseline_wins": 264,
+  "outcome": "neutral"
  }
 ]
