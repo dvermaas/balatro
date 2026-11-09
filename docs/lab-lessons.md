@@ -28,7 +28,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v73 | Amber Acorn's shuffled jokers put back in the best order | 61.5% | 7.45 |
 | v74 | played cards ordered for the best score before each play | 62.4% | 7.47 |
 | v75 | joker order at every round's start; Luchador sold at the ante-8 boss | 62.5% | 7.47 |
-| v76 | hands classified with Four Fingers, Shortcut and Smeared Joker | 62.7% | 7.48 |
+| v76 | hands classified with Four Fingers, Shortcut and Smeared Joker | 62.6% | 7.47 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -853,8 +853,9 @@ measured the wrong thing or was never asked:
   v75 held Four Fingers, Shortcut or Smeared Joker at a shop): c2k 115 seeds 80 vs 75 wins (13/8), b2k 80 seeds 59 vs 58
   (6/5); together 19 vs 13, +0.11 ante; with the v70-v71 holder runs 42 vs 27 (z = 1.8), every run the same way. The 425
   c2k 0-449 seeds that never held one: 28 changed (an offered Shortcut is worth more), 4 vs 3. Shipped as a correctness
-  fix (the bot classifies as the game does). Full sets (v75 rows with the holder seeds and c2k 0-449 replaced; other
-  non-holders kept): b2k 1,240 wins (62.0%), c2k 1,266 (63.3%). v76 with no flags replays the flagged games (30 seeds).
+  fix (the bot classifies as the game does). b2k 0-449 run on v76 too: its 432 non-holders 23 changed, 2 vs 3. Full
+  sets (v75 rows with the holder seeds and both 0-449 ranges replaced; other non-holders kept): b2k 1,239 wins (62.0%),
+  c2k 1,266 (63.3%). v76 with no flags replays the flagged games (30 seeds).
 - **The other rare scorer fixes on their holders** (`extra-chips,splash,baseball-fix` on the 334 c2k seeds where v76
   held Hiker, Splash or Baseball Card): 252 vs 255 wins (17/20), -0.021 +- 0.027 ante. Neutral, unlike hand-mods: those
   fix an estimate, hand-mods let the bot find hands it could not see.

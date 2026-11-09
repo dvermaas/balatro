@@ -1280,14 +1280,14 @@
   "version_id": "rust",
   "change": "hands classified with Four Fingers, Shortcut, Smeared Joker",
   "games": 2000,
-  "mean_ante": 7.47,
+  "mean_ante": 7.468,
   "se": 0.028,
-  "wins": 1240,
+  "wins": 1239,
   "win_rate": 0.62,
   "mean_round": 20.28,
-  "died_ante_1_4": 89,
-  "died_ante_5_7": 362,
-  "died_ante_8": 309
+  "died_ante_1_4": 90,
+  "died_ante_5_7": 361,
+  "died_ante_8": 310
  },
  {
   "seed_set": "fresh 2000 (2nd)",
