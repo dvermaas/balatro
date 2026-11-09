@@ -845,6 +845,8 @@ measured the wrong thing or was never asked:
   c2k 0-449 273 vs 272 wins (2/1); 3 games change, since the round search decides most of those spots now.
 - **Three rerolls a shop on v75** (`max-rerolls=3`, 2): c2k 0-449 267 vs 272 wins (14/19), -0.011 +- 0.020 ante. Neutral,
   like 1 and 4 before.
+- **Rollouts spending to $0** (`rollout-shop=0`; they keep $10): c2k 0-449 258 vs 272 wins (41/55, z = -1.4), -0.042 +-
+  0.057 ante. Not better; $10 stays ($25 was neutral on v60).
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

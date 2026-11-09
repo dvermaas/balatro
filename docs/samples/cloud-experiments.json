@@ -3122,5 +3122,16 @@
   "wins": 267,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Rollouts spend down to $0 on jokers (rollout-shop=0; $10 floor)",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.042,
+  "se": 0.057,
+  "wins": 258,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
