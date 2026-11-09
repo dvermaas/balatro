@@ -831,6 +831,8 @@ measured the wrong thing or was never asked:
   `tooth-trim` (under The Tooth a play keeps only its scoring cards; discards still cycle for free), on the 449 c2k
   seeds that meet it: 294 vs 307 wins (15/28, z = -2.0), -0.033 +- 0.022 ante. Worse: the kickers' cycling is worth
   more than $1 a card. Both stay lab flags.
+- **The margin for uncertain estimates retested on v75** (`clear-risky=1.0`, 1.1 since v56): c2k 0-449 267 vs 272
+  wins (2/7), +0.009 +- 0.010 ante, 9 games changed. 1.1 stays.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

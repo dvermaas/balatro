@@ -3045,5 +3045,16 @@
   "wins": 294,
   "baseline_wins": 307,
   "outcome": "worse"
+ },
+ {
+  "experiment": "No margin for uncertain estimates, retested on v75 (clear-risky=1.0)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": 0.009,
+  "se": 0.01,
+  "wins": 267,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
