@@ -817,6 +817,9 @@ measured the wrong thing or was never asked:
 - **The forecast's learned tail retested on v75** (`value-tail`, 0.5 with v53's model): without it (`value-tail=0`) c2k
   0-449 254 vs 272 wins (41/59, z = -1.8), -0.040 +- 0.045 ante; at 1, 268 vs 272 (29/33). The tail still earns its place
   at 0.5.
+  The tail's model retrained on v75's 1,994 c2k games (same inputs; `ptrain.py --set base`; held-out AUC 0.54 at ante 2
+  to 0.74 at ante 8), tested on b2k 0-449 (`VALUE_MODEL=`): 268 vs 283 wins (43/58, z = -1.5), -0.038 +- 0.047 ante.
+  Not better, like the re-learned joker values: v53's model stays.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

@@ -3012,5 +3012,16 @@
   "wins": 268,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Forecast tail model retrained on v75's 2,000 c2k games, tested on b2k 0-449",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.038,
+  "se": 0.047,
+  "wins": 268,
+  "baseline_wins": 283,
+  "outcome": "neutral"
  }
 ]
