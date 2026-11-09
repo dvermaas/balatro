@@ -814,6 +814,9 @@ measured the wrong thing or was never asked:
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
+- **The forecast's learned tail retested on v75** (`value-tail`, 0.5 with v53's model): without it (`value-tail=0`) c2k
+  0-449 254 vs 272 wins (41/59, z = -1.8), -0.040 +- 0.045 ante; at 1, 268 vs 272 (29/33). The tail still earns its place
+  at 0.5.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

@@ -15,6 +15,7 @@ from sklearn.model_selection import GroupKFold
 HANDS = ["High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind", "Straight Flush"]
 args = sys.argv[1:]; out_path = None; OUT_SET = "power"
 if "--only" in args: args.remove("--only"); OUT_SET = "power only"  # build strength alone (no money: the rollouts value it)
+if "--set" in args: i = args.index("--set"); OUT_SET = args[i + 1]; args = args[:i] + args[i + 2:]  # which set --out writes (base = the built-in model's inputs)
 if "--out" in args: i = args.index("--out"); out_path = args[i + 1]; args = args[:i] + args[i + 2:]
 def rows_of(files):
     rows = []
@@ -52,7 +53,7 @@ for a in range(2, 9):
     print(line)
 if out_path:
     cols, keys = SETS[OUT_SET]
-    out = {"features": cols, "keys": keys, "hands": HANDS, "power": POW, "trained_on": f"{len(set(r['seed'] for r in rows))} lab games, first shop of each ante", "models": {}}
+    out = {"features": cols, "keys": keys, "hands": HANDS, **({"power": POW} if OUT_SET.startswith("power") else {}), "trained_on": f"{len(set(r['seed'] for r in rows))} lab games, first shop of each ante", "models": {}}
     for a in range(2, 9):
         rs = [r for r in rows if r["ante"] == a]; y = np.array([r["won"] for r in rs])
         m = fit(X(rs, cols, keys), y); sc, lr = m[0], m[-1]

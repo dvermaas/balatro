@@ -2990,5 +2990,27 @@
   "wins": 276,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "No learned tail in the forecast, retested on v75 (value-tail=0)",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.04,
+  "se": 0.045,
+  "wins": 254,
+  "baseline_wins": 272,
+  "outcome": "worse"
+ },
+ {
+  "experiment": "Learned tail at double weight, retested on v75 (value-tail=1)",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.002,
+  "se": 0.034,
+  "wins": 268,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
