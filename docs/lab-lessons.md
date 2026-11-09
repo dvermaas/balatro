@@ -805,6 +805,8 @@ measured the wrong thing or was never asked:
 - **128 forecast rollouts retested on v75** (`fc-n=128`, 64): c2k 0-449 265 vs 272 wins (46/53), -0.036 +- 0.054
   ante. Neutral, as on v64; 64 stays. (Sell-to-use jokers checked too: Invisible Joker is held in 15 of 4,000 v75
   games and the forecast cannot sell a ready one, Diet Cola in 18: too rare to matter.)
+- **Rollouts in the searched joker order, retested on v75** (`fc-order`; neutral on v57, before the round-start order
+  search): c2k 0-449 272 vs 272 wins (14/14), -0.022 +- 0.018 ante. Still neutral: the forecast's comparisons barely move.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
