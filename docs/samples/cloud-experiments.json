@@ -3056,5 +3056,16 @@
   "wins": 267,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "No shop planet rule, retested on v75 (planet-rule=none)",
+  "theme": "Shop",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": 0.013,
+  "se": 0.038,
+  "wins": 258,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
