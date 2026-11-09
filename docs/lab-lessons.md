@@ -827,6 +827,9 @@ measured the wrong thing or was never asked:
   clears no play of it before the last hand. On the 391 seeds that meet The Ox: the loss falls to ~$7 (c2k -18.2 ->
   -8.9, b2k -17.2 -> -5.1), but c2k 128 vs 130 wins (6/8), -0.049 +- 0.021 ante, b2k 137 vs 134 (11/8). Neutral: late
   money buys little, as every money rule found.
+  `tooth-trim` (under The Tooth a play keeps only its scoring cards; discards still cycle for free), on the 449 c2k
+  seeds that meet it: 294 vs 307 wins (15/28, z = -2.0), -0.033 +- 0.022 ante. Worse: the kickers' cycling is worth
+  more than $1 a card. Both stay lab flags.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

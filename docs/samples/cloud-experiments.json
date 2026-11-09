@@ -3034,5 +3034,16 @@
   "wins": 265,
   "baseline_wins": 264,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Drop unscored kickers under The Tooth (tooth-trim; 449 c2k seeds that meet it)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 449,
+  "delta_ante": -0.033,
+  "se": 0.022,
+  "wins": 294,
+  "baseline_wins": 307,
+  "outcome": "worse"
  }
 ]
