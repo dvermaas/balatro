@@ -2913,5 +2913,27 @@
   "wins": 270,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Plays under The Arm scored a level lower (arm-fix; 522 c2k seeds that meet it)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 522,
+  "delta_ante": -0.01,
+  "se": 0.015,
+  "wins": 337,
+  "baseline_wins": 341,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "arm-fix plus clearing plays under The Arm prefer a level-1 hand (arm-keep)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 522,
+  "delta_ante": -0.015,
+  "se": 0.016,
+  "wins": 338,
+  "baseline_wins": 341,
+  "outcome": "neutral"
  }
 ]

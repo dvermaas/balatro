@@ -796,6 +796,12 @@ measured the wrong thing or was never asked:
   today's forecast buys more than it should at 0.5 SE. 1 SE stays; the optimum is flat above it.
 - **256 round-search shuffles retested on v75** (`round-search=256`, 128): c2k 0-449 270 vs 272 wins (13/15),
   +0.051 +- 0.038 ante, 18 vs 15 s a game. Only 28 games change; 128 stays.
+- **The Arm in the scorer** (a 60-game estimate audit on v75: 89% of plays without Misprint, Lucky cards or Bloodstone
+  exact; under The Arm every estimate was 13-34% high, because the game takes the played hand's level before it
+  scores and the bot ignored the boss). `arm-fix` scores plays there a level lower (first play then exact); `arm-keep`
+  also makes a clearing play prefer a hand at level 1, which loses nothing for good. On the 522 c2k seeds that meet
+  The Arm: arm-fix 337 vs 341 wins (8/12), with arm-keep 338 vs 341 (16/19; vs arm-fix 8/7). Neutral: The Arm ends ~0.7%
+  of runs, and the round search and forecasts already play on the real rules. Both stay lab flags.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
