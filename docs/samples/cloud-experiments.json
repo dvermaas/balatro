@@ -3133,5 +3133,16 @@
   "wins": 258,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Four Fingers, Shortcut and Smeared Joker in the classifier, on v75's holders (hand-mods; 195 seeds)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 195,
+  "delta_ante": 0.113,
+  "se": 0.059,
+  "wins": 139,
+  "baseline_wins": 133,
+  "outcome": "neutral"
  }
 ]
