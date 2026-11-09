@@ -791,6 +791,9 @@ measured the wrong thing or was never asked:
   when a Glass or Polychrome card or a first-card / per-card xMult joker makes order matter): c2k 0-449 267 vs 272 wins
   (27/32), -0.044 +- 0.034 ante. Like every rollout-play upgrade so far, it moves the forecast's comparisons without
   making them better. Dropped.
+- **The auto-buy bar retested on v75** (`sure-se`, 1 SE): `sure-se=0.5` c2k 0-449 249 vs 272 wins (39/62, z = -2.3),
+  -0.064 +- 0.043 ante; `sure-se=1.5` 275 vs 272 (46/43). A lower bar now costs games (at v69 it was neutral, 47/57):
+  today's forecast buys more than it should at 0.5 SE. 1 SE stays; the optimum is flat above it.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

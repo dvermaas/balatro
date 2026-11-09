@@ -2880,5 +2880,27 @@
   "wins": 267,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Auto-buy bar 0.5 SE, retested on v75 (sure-se=0.5)",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.064,
+  "se": 0.043,
+  "wins": 249,
+  "baseline_wins": 272,
+  "outcome": "worse"
+ },
+ {
+  "experiment": "Auto-buy bar 1.5 SE, retested on v75 (sure-se=1.5)",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.011,
+  "se": 0.037,
+  "wins": 275,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
