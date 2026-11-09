@@ -40,8 +40,8 @@
 //!                 (default codejev::FORECAST_N = 16)
 //!   no-order-search  the v56 joker order (xMult jokers to the right, nothing around a copier) instead of v57's
 //!                 search by sampled score (readiness::best_joker_order)
-//!   card-order    before a play, the played cards are moved to the front of the hand in the order that scores
-//!                 most (decisions::best_card_order)
+//!   no-card-order  v73: play cards where they sit (v74 moves the played cards to the front of the hand in the order
+//!                 that scores most, decisions::best_card_order)
 //!   tarot-measure  targeted tarots pick their cards by measurement (readiness::measured_plan) instead of
 //!                 tarots::plan's card-value rule
 //!   fc-order      the shop forecast's rollouts hold each option's jokers in v57's searched order (a bought joker
@@ -237,6 +237,7 @@ pub struct Exp {
     pub setup_play: Option<String>,
     pub cj_fc_n: Option<i64>,
     pub no_order_search: bool,
+    /// v74: before a play, the played cards go to the front of the hand in their best-scoring order (`no-card-order` = v73)
     pub card_order: bool,
     pub tarot_measure: bool,
     pub fc_order: bool,
@@ -305,7 +306,7 @@ pub fn get() -> &'static Exp {
               setup_play: s.split(',').find_map(|x| x.trim().strip_prefix("setup-play=")).map(String::from),
               cj_fc_n: s.split(',').find_map(|x| x.trim().strip_prefix("cj-fc-n=")?.parse().ok()),
               no_order_search: has("no-order-search"),
-              card_order: has("card-order"),
+              card_order: !has("no-card-order"),
               tarot_measure: has("tarot-measure"),
               fc_order: has("fc-order"),
               early_jokers: s.split(',').find_map(|x| x.trim().strip_prefix("early-jokers=")?.parse().ok()),

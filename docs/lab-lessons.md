@@ -1,4 +1,4 @@
-# What the lab taught us (v27 → v73)
+# What the lab taught us (v27 → v74)
 
 Cloud sessions ran a few hundred policy-lab experiments: the bot with CodeJev in place of JEV (it takes the top-ranked
 option), arm F, on the rumbot simulator, so code only and free. This page keeps the conclusions, newest at the end of
@@ -26,6 +26,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v71 | Pareidolia in the scorer (every card a face card) | 60.3% | 7.46 |
 | v72 | an ante-8 blind skipped for a Boss Tag against Violet Vessel | 60.7% | 7.45 |
 | v73 | Amber Acorn's shuffled jokers put back in the best order | 61.5% | 7.45 |
+| v74 | played cards ordered for the best score before each play | 62.4% | 7.47 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -770,6 +771,14 @@ measured the wrong thing or was never asked:
 - **Spending out against Violet Vessel only** (`final-spend,final-sure-se=0` on the 288 c2k seeds that met it, where the
   run is a coin flip and the money is worthless): 146 vs 144 wins (16/14). A third loss for spending the ante-8
   reserve: the forecast's extra buys are noise even when the stakes are highest.
+- **v74, played-card order** (`card-order`, now the default; `no-card-order` = v73). Cards score left to right, so a Mult
+  card before a Glass card, or the best card first under Hanging Chad or Photograph, scores more; v73 played the chosen
+  cards where they sat in the hand. Before each play the bot now moves them to the front in the order that scores most
+  (all orders of up to 5 cards, kept only if 0.5% better). Neutral when tried around v58 (1,000 seeds, 50 changed, the
+  reorders mostly on plays that cleared anyway); the in-round search since v64 plans with exact scores, so a better
+  order now counts in close rounds. c2k 0-449 272 vs 267 (7/2), then both full sets: c2k 1,259 vs 1,236 wins (41/18),
+  b2k 1,238 vs 1,224 (40/26); together 81 vs 44 games won by only one side (z = 3.3), +0.018 ante. v74 with no flags
+  replays the flagged games (30 seeds, 0 changed). Re-run old neutral ideas on today's bot: the bot around them changed.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

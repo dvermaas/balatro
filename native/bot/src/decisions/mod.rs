@@ -438,7 +438,8 @@ pub(crate) fn play(bot: &mut JevBot, gs_: &Value, hand: &[Value], cards: &[usize
     remember(bot, gs_, hand, cards);
     if crate::experiment::get().card_order {
         if let Some(order) = best_card_order(gs_, hand, cards) {
-            // lab (`card-order`): the played cards first, in the order that scores most, then the held cards
+            // v74: the played cards first, in the order that scores most (cards score left to right: +Mult before
+            // xMult, Hanging Chad's or Photograph's first card), then the held cards; `no-card-order` = v73
             bot.act("rearrange", Some(&json!({"hand": order})))?;
             let first: Vec<usize> = (0..cards.len()).collect();
             bot.act("play", Some(&json!({"cards": first})))?;

@@ -2825,5 +2825,16 @@
   "wins": 146,
   "baseline_wins": 144,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Played cards moved to the front in their best-scoring order before each play (card-order), both full sets",
+  "theme": "Shipped",
+  "baseline": "v73",
+  "games": 4000,
+  "delta_ante": 0.018,
+  "se": 0.005,
+  "wins": 2497,
+  "baseline_wins": 2460,
+  "outcome": "shipped v74"
  }
 ]

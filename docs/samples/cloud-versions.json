@@ -1213,5 +1213,35 @@
   "died_ante_1_4": 86,
   "died_ante_5_7": 384,
   "died_ante_8": 294
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v74",
+  "version_id": "rust",
+  "change": "Played cards ordered for the best score before each play",
+  "games": 2000,
+  "mean_ante": 7.465,
+  "se": 0.029,
+  "wins": 1238,
+  "win_rate": 0.619,
+  "mean_round": 20.27,
+  "died_ante_1_4": 90,
+  "died_ante_5_7": 362,
+  "died_ante_8": 310
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v74",
+  "version_id": "rust",
+  "change": "Played cards ordered for the best score before each play",
+  "games": 2000,
+  "mean_ante": 7.476,
+  "se": 0.028,
+  "wins": 1259,
+  "win_rate": 0.629,
+  "mean_round": 20.29,
+  "died_ante_1_4": 85,
+  "died_ante_5_7": 362,
+  "died_ante_8": 294
  }
 ]
