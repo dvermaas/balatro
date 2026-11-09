@@ -2869,5 +2869,16 @@
   "wins": 234,
   "baseline_wins": 232,
   "outcome": "shipped v75"
+ },
+ {
+  "experiment": "Rollouts play cards in their best-scoring order too (rollout-card-order)",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.044,
+  "se": 0.034,
+  "wins": 267,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]

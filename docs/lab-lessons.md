@@ -787,6 +787,10 @@ measured the wrong thing or was never asked:
   v74): the joker order search at every round's start, and Luchador sold at the ante-8 boss. On the 366 seeds of both
   sets that hold Riff-raff or Luchador: 234 vs 232 wins (2/0); with the v73 runs above, 8 vs 1 in all. Full sets: b2k
   1,239 wins, c2k 1,260. v75 with no flags replays the flagged games (13 seeds, 0 changed).
+- **Rollouts in the best card order too** (`rollout-card-order`: the forecasts' rollouts reorder played cards like v74,
+  when a Glass or Polychrome card or a first-card / per-card xMult joker makes order matter): c2k 0-449 267 vs 272 wins
+  (27/32), -0.044 +- 0.034 ante. Like every rollout-play upgrade so far, it moves the forecast's comparisons without
+  making them better. Dropped.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
