@@ -807,6 +807,9 @@ measured the wrong thing or was never asked:
   games and the forecast cannot sell a ready one, Diet Cola in 18: too rare to matter.)
 - **Rollouts in the searched joker order, retested on v75** (`fc-order`; neutral on v57, before the round-start order
   search): c2k 0-449 272 vs 272 wins (14/14), -0.022 +- 0.018 ante. Still neutral: the forecast's comparisons barely move.
+- **The joker prior retested on v75** (B = 1 through ante 6): half weight (`joker-prior=0.5`) c2k 0-449 269 vs 272 wins
+  (36/39), +0.013 +- 0.034 ante: neutral. Through ante 8 (`joker-prior-to=8`) 253 vs 272 (14/33, z = -2.8): worse, as
+  ante 7 was on v61. Late, the forecast's rollouts see the rest of the run and the ante-5 values only mislead them.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
