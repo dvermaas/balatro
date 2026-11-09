@@ -3155,5 +3155,16 @@
   "wins": 252,
   "baseline_wins": 255,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Stone cards read without rank or suit (stone-fix)",
+  "theme": "Play",
+  "baseline": "v76",
+  "games": 450,
+  "delta_ante": 0.002,
+  "se": 0.006,
+  "wins": 273,
+  "baseline_wins": 273,
+  "outcome": "neutral"
  }
 ]

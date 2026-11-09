@@ -858,6 +858,11 @@ measured the wrong thing or was never asked:
 - **The other rare scorer fixes on their holders** (`extra-chips,splash,baseball-fix` on the 334 c2k seeds where v76
   held Hiker, Splash or Baseball Card): 252 vs 255 wins (17/20), -0.021 +- 0.027 ante. Neutral, unlike hand-mods: those
   fix an estimate, hand-mods let the bot find hands it could not see.
+- **Stone cards in the bot's scorer** (the v75 audit: plays with a Stone card were misestimated 21% of the time, others
+  10%). The bot's card reads kept the rank and suit under the stone, so rank and suit jokers counted it (a Stone over a
+  Jack took Scary Face's +30 chips; Baron, Odd Todd, Greedy Joker, Flower Pot alike); in the game a Stone card has neither.
+  `stone-fix` reads it without both (a traced game's Stone plays go exact). c2k 0-449 273 vs 273 wins (5/5), +0.002 +-
+  0.006 ante. Correct, too rare to measure: parked to ship with the next change.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
