@@ -556,6 +556,48 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
     } else {
         e.clear_margin.unwrap_or(1.0)
     };
+    if e.tooth_trim && boss == "The Tooth" {
+        // lab (`tooth-trim`): The Tooth takes $1 per played card, so a play keeps only the cards that score (discards cycle for free)
+        for p in plays.iter_mut() {
+            let scoring: Vec<String> = gs::list(gs::get(p, "scoring")).iter().map(|x| gs::s(x).to_string()).collect();
+            let mut si = 0;
+            let mut keep = Vec::new();
+            for i in idx_list(gs::get(p, "cards")) {
+                if si < scoring.len() && hand.get(i).map(describe).as_deref() == Some(scoring[si].as_str()) {
+                    si += 1;
+                    keep.push(i);
+                }
+            }
+            if si == scoring.len() && !keep.is_empty() {
+                let o = p.as_object_mut().unwrap();
+                o.insert("cards".into(), json!(keep));
+                o.insert("kicked".into(), json!([]));
+            }
+        }
+    }
+    if e.ox_avoid && boss == "The Ox" && gs::int(gs::get(gs_, "money")) > 0 {
+        // lab (`ox-avoid`): playing the most played hand (fixed when the last boss round ended; ties go to the weakest
+        // hand, as rumbot measured) sets money to $0. The count now stands in for that snapshot.
+        let mut ox: Option<(&str, i64)> = None;
+        for h in ["High Card", "Pair", "Two Pair", "Three of a Kind", "Straight", "Flush", "Full House", "Four of a Kind",
+                  "Straight Flush", "Five of a Kind", "Flush House", "Flush Five"] {
+            let n = gs::int(gs::mget(gs::d(base_levels.get(h).unwrap_or(&Value::Null)), "played"));
+            if ox.map_or(true, |(_, b)| n > b) {
+                ox = Some((h, n));
+            }
+        }
+        if let Some((oxh, _)) = ox {
+            let other = |p: &Value| gs::s(gs::get(p, "hand")) != oxh;
+            let any_clear = plays.iter().any(|p| clears(p, &info, margin));
+            let other_clear = plays.iter().any(|p| other(p) && clears(p, &info, margin));
+            if other_clear || (!any_clear && gs::num(gs::get(&info, "hands_left")) > 1.0) {
+                let keep: Vec<Value> = plays.iter().filter(|p| other(p)).cloned().collect();
+                if !keep.is_empty() {
+                    plays = keep;
+                }
+            }
+        }
+    }
     let clearing = if crate::experiment::get().clear_pick { clear_pick(gs_, &plays, &info, margin) } else { plays.iter().find(|p| clears(p, &info, margin)) };
     if let Some(c) = clearing {
         let desc = format!("{} ({}) clears the blind", gs::s(gs::get(c, "hand")), gs::int(gs::get(c, "estimate")));

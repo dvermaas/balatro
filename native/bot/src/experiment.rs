@@ -70,6 +70,9 @@
 //!   no-acorn-order   v72: leave the jokers Amber Acorn shuffled where they land (v73 puts them back in the best order)
 //!   no-round-order   v74: the searched joker order in the shop (and under Amber Acorn) only; v75 also at every round's start
 //!   luchador=A       sell Luchador at a boss blind from ante A (the sale disables the boss; v75 default 8, no-luchador = v74)
+//!   ox-avoid        under The Ox, keep off the most played hand (it sets money to $0): a clearing play of another hand
+//!                 comes first, and while nothing clears no play of it before the last hand
+//!   tooth-trim      under The Tooth ($1 per card played), plays drop their unscored kicker cards
 //!   arm-keep        under The Arm, a clearing play prefers a hand at level 1 (The Arm takes a level from any other)
 //!   arm-fix         under The Arm, plays are scored a level lower (the game takes the level before scoring)
 //!   rollout-card-order  the forecasts' rollouts play cards in their best-scoring order too (when order can matter)
@@ -244,6 +247,8 @@ pub struct Exp {
     pub card_order: bool,
     pub arm_fix: bool,
     pub arm_keep: bool,
+    pub ox_avoid: bool,
+    pub tooth_trim: bool,
     pub tarot_measure: bool,
     pub fc_order: bool,
     pub early_jokers: Option<i64>,
@@ -316,6 +321,8 @@ pub fn get() -> &'static Exp {
               card_order: !has("no-card-order"),
               arm_fix: has("arm-fix"),
               arm_keep: has("arm-keep"),
+              ox_avoid: has("ox-avoid"),
+              tooth_trim: has("tooth-trim"),
               tarot_measure: has("tarot-measure"),
               fc_order: has("fc-order"),
               early_jokers: s.split(',').find_map(|x| x.trim().strip_prefix("early-jokers=")?.parse().ok()),
