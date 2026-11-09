@@ -243,6 +243,19 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
             }
         }
     }
+    if let (Some("SELECTING_HAND"), Some(from)) = (state, crate::experiment::get().luchador) {
+        // lab `luchador=A`: Luchador's sale disables the current boss (Violet Vessel's target / 3, The Wall's / 2, The
+        // Needle's hands back, ...); sell it at the first hand of a boss blind from ante A
+        let boss_now = gs::d(gs::get(gs_, "blinds")).values().any(|b| gs::get(b, "type").as_str() == Some("BOSS")
+            && gs::get(b, "status").as_str() == Some("CURRENT"));
+        if boss_now && gs::int(gs::get(gs_, "ante_num")) >= from {
+            for (i, j) in _cards(gs_, "jokers").iter().enumerate() {
+                if gs::get(j, "label").as_str() == Some("Luchador") && !gs::truthy(gs::mget(gs::d(gs::get(j, "state")), "debuff")) {
+                    return Some(("sell".to_string(), json!({"joker": i}), "sell Luchador: disables the boss".to_string()));
+                }
+            }
+        }
+    }
     if matches!(state, Some("SHOP") | Some("SELECTING_HAND")) {
         let jokers = _cards(gs_, "jokers");
         if !crate::experiment::get().no_order_search {
