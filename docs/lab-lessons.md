@@ -864,6 +864,8 @@ measured the wrong thing or was never asked:
   Jack took Scary Face's +30 chips; Baron, Odd Todd, Greedy Joker, Flower Pot alike); in the game a Stone card has neither.
   `stone-fix` reads it without both (a traced game's Stone plays go exact). c2k 0-449 273 vs 273 wins (5/5), +0.002 +-
   0.006 ante. Correct, too rare to measure: parked to ship with the next change.
+  With `arm-fix` and `round-search-played` as one bundle on b2k 0-449 (v76 played there): 281 vs 280 wins (8/7), -0.013
+  +- 0.022 ante. Still neutral; all three stay lab flags until a measured change can carry them.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

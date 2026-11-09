@@ -3166,5 +3166,16 @@
   "wins": 273,
   "baseline_wins": 273,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Correct-but-rare bundle on v76 (stone-fix,arm-fix,round-search-played)",
+  "theme": "Play",
+  "baseline": "v76",
+  "games": 450,
+  "delta_ante": -0.013,
+  "se": 0.022,
+  "wins": 281,
+  "baseline_wins": 280,
+  "outcome": "neutral"
  }
 ]
