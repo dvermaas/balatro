@@ -1,4 +1,4 @@
-# What the lab taught us (v27 → v75)
+# What the lab taught us (v27 → v76)
 
 Cloud sessions ran a few hundred policy-lab experiments: the bot with CodeJev in place of JEV (it takes the top-ranked
 option), arm F, on the rumbot simulator, so code only and free. This page keeps the conclusions, newest at the end of
@@ -28,6 +28,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v73 | Amber Acorn's shuffled jokers put back in the best order | 61.5% | 7.45 |
 | v74 | played cards ordered for the best score before each play | 62.4% | 7.47 |
 | v75 | joker order at every round's start; Luchador sold at the ante-8 boss | 62.5% | 7.47 |
+| v76 | hands classified with Four Fingers, Shortcut and Smeared Joker | 62.7% | 7.48 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -847,6 +848,13 @@ measured the wrong thing or was never asked:
   like 1 and 4 before.
 - **Rollouts spending to $0** (`rollout-shop=0`; they keep $10): c2k 0-449 258 vs 272 wins (41/55, z = -1.4), -0.042 +-
   0.057 ante. Not better; $10 stays ($25 was neutral on v60).
+- **v76, hand-shaping jokers in the classifier** (`hand-mods`, now the default; `no-hand-mods` = v75; see the v71 entry
+  below: right but rare, bundled with other rare fixes it ran neutral). Retested alone on v75's holders (the seeds where
+  v75 held Four Fingers, Shortcut or Smeared Joker at a shop): c2k 115 seeds 80 vs 75 wins (13/8), b2k 80 seeds 59 vs 58
+  (6/5); together 19 vs 13, +0.11 ante; with the v70-v71 holder runs 42 vs 27 (z = 1.8), every run the same way. The 425
+  c2k 0-449 seeds that never held one: 28 changed (an offered Shortcut is worth more), 4 vs 3. Shipped as a correctness
+  fix (the bot classifies as the game does). Full sets (v75 rows with the holder seeds and c2k 0-449 replaced; other
+  non-holders kept): b2k 1,240 wins (62.0%), c2k 1,266 (63.3%). v76 with no flags replays the flagged games (30 seeds).
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
