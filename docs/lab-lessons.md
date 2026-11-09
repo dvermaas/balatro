@@ -767,6 +767,9 @@ measured the wrong thing or was never asked:
   c2k 0-449 268 vs 267 wins (6/5), 54 changed. Before ante 8 the skipped blind's cash and shop cost about what the
   reroll saves. Finishers when reached (v73, 4,000 games): Violet Vessel 50%, Crimson Heart 17%, Verdant Leaf 14%,
   Cerulean Bell 8%, Amber Acorn 4%; rerolling any but Violet Vessel lands on a worse average (~19-20%).
+- **Spending out against Violet Vessel only** (`final-spend,final-sure-se=0` on the 288 c2k seeds that met it, where the
+  run is a coin flip and the money is worthless): 146 vs 144 wins (16/14). A third loss for spending the ante-8
+  reserve: the forecast's extra buys are noise even when the stakes are highest.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

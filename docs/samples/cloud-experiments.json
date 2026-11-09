@@ -2814,5 +2814,16 @@
   "wins": 268,
   "baseline_wins": 267,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Spend out at ante 8 against Violet Vessel only (final-spend,final-sure-se=0), c2k seeds that met it",
+  "theme": "Shop",
+  "baseline": "v73",
+  "games": 288,
+  "delta_ante": 0.0,
+  "se": 0.0,
+  "wins": 146,
+  "baseline_wins": 144,
+  "outcome": "neutral"
  }
 ]
