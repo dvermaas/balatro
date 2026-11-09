@@ -2847,5 +2847,16 @@
   "wins": 257,
   "baseline_wins": 272,
   "outcome": "worse"
+ },
+ {
+  "experiment": "Discards throw plain cards first (toss-plain), retested on v74",
+  "theme": "Play",
+  "baseline": "v74",
+  "games": 450,
+  "delta_ante": -0.002,
+  "se": 0.012,
+  "wins": 271,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]

@@ -781,6 +781,7 @@ measured the wrong thing or was never asked:
   replays the flagged games (30 seeds, 0 changed). Re-run old neutral ideas on today's bot: the bot around them changed.
 - **Old neutral flags retested on v74** (after `card-order` paid on its retest): `tarot-measure` (tarot targets by
   measured mean best play over 24 deals) c2k 0-449 257 vs 272 wins (42/57), -0.098 +- 0.041 ante: worse, as at v57.
+  `toss-plain` (discards throw plain cards before enhanced, editioned or sealed ones) 271 vs 272 (5/6): neutral.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
