@@ -3144,5 +3144,16 @@
   "wins": 139,
   "baseline_wins": 133,
   "outcome": "shipped v76"
+ },
+ {
+  "experiment": "Hiker chips, Splash and Baseball Card in the scorer (extra-chips,splash,baseball-fix; 334 c2k holders)",
+  "theme": "Play",
+  "baseline": "v76",
+  "games": 334,
+  "delta_ante": -0.021,
+  "se": 0.027,
+  "wins": 252,
+  "baseline_wins": 255,
+  "outcome": "neutral"
  }
 ]

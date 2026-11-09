@@ -855,6 +855,9 @@ measured the wrong thing or was never asked:
   c2k 0-449 seeds that never held one: 28 changed (an offered Shortcut is worth more), 4 vs 3. Shipped as a correctness
   fix (the bot classifies as the game does). Full sets (v75 rows with the holder seeds and c2k 0-449 replaced; other
   non-holders kept): b2k 1,240 wins (62.0%), c2k 1,266 (63.3%). v76 with no flags replays the flagged games (30 seeds).
+- **The other rare scorer fixes on their holders** (`extra-chips,splash,baseball-fix` on the 334 c2k seeds where v76
+  held Hiker, Splash or Baseball Card): 252 vs 255 wins (17/20), -0.021 +- 0.027 ante. Neutral, unlike hand-mods: those
+  fix an estimate, hand-mods let the bot find hands it could not see.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
