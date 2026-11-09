@@ -249,7 +249,7 @@ pub fn auto_action(gs_: &Value) -> Option<(String, Value, String)> {
             // v57: in the shop, the joker order with the best sampled score (editions apply at their joker's place,
             // per-card effects run in joker order, copiers copy by place); elsewhere keep the order
             if gs::get(gs_, "state").as_str() != Some("SHOP") {
-                // lab `acorn-order`: Amber Acorn shuffles the jokers at the blind's start; jokers can be moved during a
+                // v73: Amber Acorn shuffles the jokers at the blind's start; jokers can be moved during a
                 // round (face down, but the state still names them), so put them back in the searched best order
                 // lab `round-order`: the same in every round (a Riff-raff or Cartomancer joker made at the blind's
                 // start lands rightmost, past the xMult jokers the shop put last)

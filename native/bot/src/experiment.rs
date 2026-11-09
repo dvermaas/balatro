@@ -67,7 +67,7 @@
 //!   skip-forecast-add=A  the static skips stay; up to ante A the skip forecast may add a skip for another tag
 //!   boss-tag-skip=A+B  skip a Small/Big blind for a Boss Tag when the ante's boss is A or B (v72 default: Violet_Vessel)
 //!   no-boss-tag-skip   v71: no Boss Tag skips
-//!   acorn-order      under Amber Acorn, put the shuffled jokers back in the best sampled order during the round
+//!   no-acorn-order   v72: leave the jokers Amber Acorn shuffled where they land (v73 puts them back in the best order)
 //!   round-order      the searched best joker order in every round too (jokers made at a blind's start land rightmost)
 //!   skip-fc-from=F   the skip forecast acts only from ante F (with skip-forecast-add=8: at ante 8 only)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
@@ -255,7 +255,7 @@ pub struct Exp {
     pub skip_forecast_add: Option<i64>,
     /// lab `skip-fc-from=F`: the skip forecast (skip-forecast / skip-forecast-add) only from ante F (default 1)
     pub skip_fc_from: i64,
-    /// lab `acorn-order`: under Amber Acorn, rearrange the shuffled jokers to the searched best order in the round
+    /// v73: under Amber Acorn, rearrange the shuffled jokers to the searched best order in the round (`no-acorn-order` = v72)
     pub acorn_order: bool,
     /// lab `round-order`: rearrange the jokers to the searched best order in every round, not only the shop
     pub round_order: bool,
@@ -322,7 +322,7 @@ pub fn get() -> &'static Exp {
               skip_forecast_add: s.split(',').find_map(|x| x.trim().strip_prefix("skip-forecast-add=")?.parse().ok()),
               boss_tag_skip: s.split(',').find_map(|x| x.trim().strip_prefix("boss-tag-skip=")).map(|v| v.split('+').map(|n| n.replace('_', " ")).collect())
                   .unwrap_or_else(|| if has("no-boss-tag-skip") { vec![] } else { vec!["Violet Vessel".to_string()] }),
-              acorn_order: has("acorn-order"),
+              acorn_order: !has("no-acorn-order"),
               round_order: has("round-order"),
               skip_fc_from: s.split(',').find_map(|x| x.trim().strip_prefix("skip-fc-from=")?.parse().ok()).unwrap_or(1),
               rollout_free_first: has("rollout-free-first"),

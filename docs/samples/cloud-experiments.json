@@ -2748,5 +2748,16 @@
   "wins": 303,
   "baseline_wins": 286,
   "outcome": "shipped v72"
+ },
+ {
+  "experiment": "Put the jokers Amber Acorn shuffled back in the best order during the round (acorn-order), seeds that met it",
+  "theme": "Shipped",
+  "baseline": "v72",
+  "games": 651,
+  "delta_ante": -0.009,
+  "se": 0.006,
+  "wins": 615,
+  "baseline_wins": 582,
+  "outcome": "shipped v73"
  }
 ]

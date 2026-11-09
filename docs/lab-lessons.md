@@ -1,4 +1,4 @@
-# What the lab taught us (v27 → v72)
+# What the lab taught us (v27 → v73)
 
 Cloud sessions ran a few hundred policy-lab experiments: the bot with CodeJev in place of JEV (it takes the top-ranked
 option), arm F, on the rumbot simulator, so code only and free. This page keeps the conclusions, newest at the end of
@@ -25,6 +25,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v70 | six overrated vouchers never bought | 60.1% | 7.45 |
 | v71 | Pareidolia in the scorer (every card a face card) | 60.3% | 7.46 |
 | v72 | an ante-8 blind skipped for a Boss Tag against Violet Vessel | 60.7% | 7.45 |
+| v73 | Amber Acorn's shuffled jokers put back in the best order | 61.5% | 7.45 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -745,6 +746,15 @@ measured the wrong thing or was never asked:
   19 vs 2 games won by only one side (z = 3.7). Full sets (v71 rows with these seeds replaced): b2k 1,204 wins (60.2%),
   c2k 1,223 (61.2%). v72 with no flags replays the flagged games (30 seeds, 0 changed). Rerolling Crimson Heart or
   Verdant Leaf would not pay: the average other finisher kills ~24% of the runs that meet it, more than either.
+- **v73, Amber Acorn's shuffle undone** (`acorn-order`, now the default; `no-acorn-order` = v72). Amber Acorn turns the
+  jokers face down and shuffles them as its blind starts, and v72 played the round in that order (the v57 order search
+  ran in the shop only), so an xMult joker could land left of the +Mult ones or a copier next to the wrong joker. Jokers
+  can be moved during a round, and the state still names them face down, so the bot now rearranges them to the searched
+  best order at the first hand. Only games that meet Amber Acorn change (651 seeds, 19 + 24 changed): c2k 310 vs 297
+  wins (16/3), b2k 305 vs 285 (22/2); together 38 vs 5 games won by only one side (z = 5.0). Amber Acorn deaths 61 -> 25.
+  Full sets: b2k 1,224 wins (61.2%), c2k 1,236 (61.8%). v73 with no flags replays the flagged games (30 seeds, 0
+  changed). Real-game caveat: this assumes BalatroBot's `rearrange` takes face-down jokers mid-round (rumbot's view
+  allows it, as BalatroBot allows rearranging in SELECTING_HAND).
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
