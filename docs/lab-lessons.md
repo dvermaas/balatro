@@ -837,6 +837,8 @@ measured the wrong thing or was never asked:
   272 wins (40/54, z = -1.4), +0.013 +- 0.038 ante. Not better; the rule stays.
 - **A wider early slot fill on v75** (`early-jokers=5,early-ante=4`; 4 jokers through ante 3): c2k 0-449 271 vs 272
   wins (5/6), 11 games changed. Neutral.
+- **Free discards retested on v75** (`free-discard`): c2k 0-449 272 vs 272 wins (21/21), +0.004 +- 0.027 ante. Neutral
+  for the third time.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.
