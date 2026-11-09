@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v74 + lab tooling (plays unchanged): rollout-card-order makes the forecasts' rollouts play cards in their best-scoring order too. Based on: ",
     "v74 (lab measured): before each play the played cards move to the front of the hand in the order that scores most (cards score left to right, so a Mult card before a Glass card, the best card first for Hanging Chad or Photograph); v73 played them where they sat. Retested from v58 (neutral then, 1,000 seeds) on both full sets: c2k 1,259 vs 1,236 wins (41/18), b2k 1,238 vs 1,224 (40/26); together 81 vs 44 games won by only one side (z = 3.3). `no-card-order` restores v73. Based on: ",
     "v73 (lab measured): Amber Acorn shuffles the jokers when its blind starts; jokers can be moved during a round (face down, but the state still names them), so the bot puts them back in the searched best order (xMult last, copiers before their targets). Only games that meet Amber Acorn change: c2k 16 vs 3 games won by only one side, b2k 22 vs 2 (together 38 vs 5, z = 5.0). `no-acorn-order` restores v72. Based on: ",
     "v72 + lab tooling (plays unchanged): round-order puts the jokers back in the searched best order at every round's start; luchador=A sells Luchador at a boss blind from ante A. Based on: ",

@@ -484,6 +484,51 @@ impl Policy {
         kernel::Scorer::new(levels, self.jokers.clone(), hl, g.discards_left as f64).expect("12 levels")
     }
 
+    /// Lab `rollout-card-order`: the hand order (played positions first) that scores `idx` best, when its order can
+    /// matter (a Glass or Polychrome card played, or a first-card or per-card xMult joker), and beats in place by 0.5%.
+    fn best_card_order(&self, g: &GameState, idx: &[usize]) -> Option<Vec<usize>> {
+        let k = idx.len();
+        if k < 2 || k > 5 {
+            return None;
+        }
+        let infos: Vec<kernel::Card> = g.hand.iter().map(info).collect();
+        const ORDER_JOKERS: &[&str] = &["Hanging Chad", "Photograph", "Bloodstone", "Ancient Joker", "Triboulet", "The Idol"];
+        let sensitive = idx.iter().any(|&p| infos[p].enh == 5 || infos[p].edition == 3)
+            || g.jokers.iter().any(|j| { let j = j.borrow(); !j.debuffed && ORDER_JOKERS.contains(&j.spec.name) });
+        if !sensitive {
+            return None;
+        }
+        let scorer = self.scorer(g);
+        let held: Vec<usize> = (0..infos.len()).filter(|p| !idx.contains(p)).collect();
+        let first: Vec<usize> = (0..k).collect();
+        let score_of = |perm: &[usize]| -> f64 {
+            let re: Vec<kernel::Card> = perm.iter().chain(held.iter()).map(|&p| infos[p]).collect();
+            let cs: Vec<kernel::Card> = first.iter().map(|&p| re[p]).collect();
+            let (name, sc) = kernel::classify(&cs);
+            scorer.score(&re, &first, name, &sc)
+        };
+        let base = score_of(idx);
+        let mut best = (base, idx.to_vec());
+        let mut perm = idx.to_vec();
+        let mut c = vec![0usize; k];
+        let mut i = 0;
+        while i < k {
+            if c[i] < i {
+                if i % 2 == 0 { perm.swap(0, i) } else { perm.swap(c[i], i) }
+                let s = score_of(&perm);
+                if s > best.0 {
+                    best = (s, perm.clone());
+                }
+                c[i] += 1;
+                i = 0;
+            } else {
+                c[i] = 0;
+                i += 1;
+            }
+        }
+        (best.0 > base * 1.005).then(|| best.1.iter().chain(held.iter()).copied().collect())
+    }
+
     /// rollout.Policy.decide: (discard?, hand positions)
     fn decide(&self, g: &GameState) -> (bool, Vec<usize>) {
         let infos: Vec<kernel::Card> = g.hand.iter().map(info).collect();
@@ -1110,6 +1155,8 @@ pub static ROLLOUT_EASY: std::sync::atomic::AtomicU64 = std::sync::atomic::Atomi
 pub static ROLLOUT_EASY_TO: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(99);
 /// Lab (`rollout-last-discard`): rollouts may discard before their last hand when it cannot clear the blind.
 pub static LAST_DISCARD: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+/// Lab `rollout-card-order`: rollouts play cards in their best-scoring order (Policy::best_card_order).
+pub static CARD_ORDER: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 /// Lab (`rollout-shop-value`): rollouts take the affordable joker with the highest learned value (ROLLOUT_VALUE, by joker
 /// key), price breaking ties, instead of the priciest.
 pub static ROLLOUT_SHOP_VALUE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
@@ -1332,6 +1379,14 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                 let t = if is_discard { ActionType::Discard } else { ActionType::Play };
                 let mut idx = idx;
                 idx.sort_unstable(); // rumbot-sim wants positions in order; Jackdaw takes any order
+                if !is_discard && CARD_ORDER.load(std::sync::atomic::Ordering::Relaxed) {
+                    if let Some(order) = pol.best_card_order(g, &idx) {
+                        // lab `rollout-card-order`: the played cards first in their best-scoring order (as the bot, v74)
+                        let old = g.hand.clone();
+                        g.hand = order.iter().map(|&p| old[p].clone()).collect();
+                        idx = (0..idx.len()).collect();
+                    }
+                }
                 let a = Action::with_cards(t, idx);
                 if g.is_legal(&a) {
                     g.step(&a);
