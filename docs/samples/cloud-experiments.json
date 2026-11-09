@@ -2935,5 +2935,16 @@
   "wins": 338,
   "baseline_wins": 341,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "128 forecast rollouts, retested on v75 (fc-n=128)",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.036,
+  "se": 0.054,
+  "wins": 265,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
