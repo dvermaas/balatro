@@ -114,9 +114,12 @@ pub fn card_info(c: &Value) -> Info {
     let m = gs::get(c, "modifier");
     let s = gs::get(c, "state");
     let st = |x: &Value, k: &str| gs::get(x, k).as_str().map(str::to_string);
+    // lab `stone-fix`: a Stone card has no rank or suit (card.lua get_id is a random negative, is_suit false), so the
+    // bot's scorer must not let rank or suit jokers (Scary Face, Odd Todd, Baron, Greedy Joker, ...) see the card under it
+    let stone = crate::experiment::get().stone_fix && gs::get(m, "enhancement").as_str() == Some("STONE");
     Info {
-        rank: st(v, "rank"),
-        suit: st(v, "suit"),
+        rank: if stone { None } else { st(v, "rank") },
+        suit: if stone { None } else { st(v, "suit") },
         enh: st(m, "enhancement"),
         edition: st(m, "edition"),
         seal: st(m, "seal"),
