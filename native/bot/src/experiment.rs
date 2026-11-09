@@ -70,6 +70,8 @@
 //!   no-acorn-order   v72: leave the jokers Amber Acorn shuffled where they land (v73 puts them back in the best order)
 //!   no-round-order   v74: the searched joker order in the shop (and under Amber Acorn) only; v75 also at every round's start
 //!   luchador=A       sell Luchador at a boss blind from ante A (the sale disables the boss; v75 default 8, no-luchador = v74)
+//!   arm-keep        under The Arm, a clearing play prefers a hand at level 1 (The Arm takes a level from any other)
+//!   arm-fix         under The Arm, plays are scored a level lower (the game takes the level before scoring)
 //!   rollout-card-order  the forecasts' rollouts play cards in their best-scoring order too (when order can matter)
 //!   skip-fc-from=F   the skip forecast acts only from ante F (with skip-forecast-add=8: at ante 8 only)
 //!   play-now-ratio=R  CodeJev plays now only if the best play's estimate >= R x the best discard's modeled next
@@ -240,6 +242,8 @@ pub struct Exp {
     pub no_order_search: bool,
     /// v74: before a play, the played cards go to the front of the hand in their best-scoring order (`no-card-order` = v73)
     pub card_order: bool,
+    pub arm_fix: bool,
+    pub arm_keep: bool,
     pub tarot_measure: bool,
     pub fc_order: bool,
     pub early_jokers: Option<i64>,
@@ -310,6 +314,8 @@ pub fn get() -> &'static Exp {
               cj_fc_n: s.split(',').find_map(|x| x.trim().strip_prefix("cj-fc-n=")?.parse().ok()),
               no_order_search: has("no-order-search"),
               card_order: !has("no-card-order"),
+              arm_fix: has("arm-fix"),
+              arm_keep: has("arm-keep"),
               tarot_measure: has("tarot-measure"),
               fc_order: has("fc-order"),
               early_jokers: s.split(',').find_map(|x| x.trim().strip_prefix("early-jokers=")?.parse().ok()),

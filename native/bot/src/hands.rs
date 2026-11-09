@@ -359,6 +359,24 @@ pub fn _boss_levels(levels: &Levels, boss: &str) -> Levels {
         }
         return out;
     }
+    if boss == "The Arm" && crate::experiment::get().arm_fix {
+        // blind.lua debuff_hand: The Arm takes a level from the played hand (if above 1) before it scores
+        let mut out = Map::new();
+        for (n, h) in levels {
+            let mut h2 = gs::d(h).clone();
+            let level = h2.get("level").map_or(1, gs::int);
+            if let (true, Some(ht)) = (level > 1, rumbot_sim::hands::HandType::from_label(n)) {
+                let (lc, lm) = rumbot_sim::hands::level_gain(ht);
+                let chips = h2.get("chips").map_or(0, gs::int);
+                let mult = h2.get("mult").map_or(1, gs::int);
+                h2.insert("chips".into(), json!((chips - lc as i64).max(0)));
+                h2.insert("mult".into(), json!((mult - lm as i64).max(1)));
+                h2.insert("level".into(), json!(level - 1));
+            }
+            out.insert(n.clone(), Value::Object(h2));
+        }
+        return out;
+    }
     levels.clone()
 }
 

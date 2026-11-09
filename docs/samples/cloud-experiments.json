@@ -2902,5 +2902,16 @@
   "wins": 275,
   "baseline_wins": 272,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Round search with 256 shuffles, retested on v75 (round-search=256)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": 0.051,
+  "se": 0.038,
+  "wins": 270,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]

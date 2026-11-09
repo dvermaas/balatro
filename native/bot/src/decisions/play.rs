@@ -345,6 +345,7 @@ fn clear_pick<'a>(gs_: &Value, plays: &'a [Value], info: &Value, margin: f64) ->
     let hands = gs::d(gs::get(gs_, "hands"));
     let played = |h: &str| gs::num(gs::mget(gs::d(hands.get(h).unwrap_or(&Value::Null)), "played"));
     let x2 = crate::experiment::get().clear_pick2;
+    let arm = crate::experiment::get().arm_keep && gs::get(info, "blind").as_str() == Some("The Arm");
     let (supernova, space, midas, lucky_cat, glass_joker) = if x2 {
         (n("j_supernova"), n("j_space"), n("j_midas_mask"), n("j_lucky_cat"), n("j_glass"))
     } else {
@@ -390,6 +391,9 @@ fn clear_pick<'a>(gs_: &Value, plays: &'a [Value], info: &Value, margin: f64) ->
         }
         if bus && scoring.iter().any(|c| c.starts_with("Jack") || c.starts_with("Queen") || c.starts_with("King")) {
             resets += 1;
+        }
+        if arm && gs::int(gs::mget(gs::d(hands.get(h).unwrap_or(&Value::Null)), "level")) > 1 {
+            resets += 1; // lab arm-keep: The Arm takes a level from this hand for good
         }
         let mut grow = 0.0;
         if h.contains("Straight") { grow += runner; }
