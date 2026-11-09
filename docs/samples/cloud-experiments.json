@@ -2803,5 +2803,16 @@
   "wins": 30,
   "baseline_wins": 33,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Boss Tag skips also vs The Wall, Needle, Water, Mouth, Eye (boss-tag-skip=...)",
+  "theme": "Skips",
+  "baseline": "v73",
+  "games": 450,
+  "delta_ante": -0.011,
+  "se": 0.025,
+  "wins": 268,
+  "baseline_wins": 267,
+  "outcome": "neutral"
  }
 ]
