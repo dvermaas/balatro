@@ -853,9 +853,9 @@ measured the wrong thing or was never asked:
   v75 held Four Fingers, Shortcut or Smeared Joker at a shop): c2k 115 seeds 80 vs 75 wins (13/8), b2k 80 seeds 59 vs 58
   (6/5); together 19 vs 13, +0.11 ante; with the v70-v71 holder runs 42 vs 27 (z = 1.8), every run the same way. The 425
   c2k 0-449 seeds that never held one: 28 changed (an offered Shortcut is worth more), 4 vs 3. Shipped as a correctness
-  fix (the bot classifies as the game does). b2k 0-449 run on v76 too: its 432 non-holders 23 changed, 2 vs 3. Full
-  sets (v75 rows with the holder seeds and both 0-449 ranges replaced; other non-holders kept): b2k 1,239 wins (62.0%),
-  c2k 1,266 (63.3%). v76 with no flags replays the flagged games (30 seeds).
+  fix (the bot classifies as the game does). Played on v76 too: b2k 0-449 (432 non-holders: 23 changed, 2 vs 3) and c2k
+  450-899 (430: 31 changed, 5 vs 5). Full sets (v75 rows with the holder seeds, b2k 0-449 and c2k 0-899 replaced; other
+  non-holders kept): b2k 1,239 wins (62.0%), c2k 1,266 (63.3%). v76 with no flags replays the flagged games (30 seeds).
 - **The other rare scorer fixes on their holders** (`extra-chips,splash,baseball-fix` on the 334 c2k seeds where v76
   held Hiker, Splash or Baseball Card): 252 vs 255 wins (17/20), -0.021 +- 0.027 ante. Neutral, unlike hand-mods: those
   fix an estimate, hand-mods let the bot find hands it could not see.

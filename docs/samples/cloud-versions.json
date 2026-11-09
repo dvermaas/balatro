@@ -1295,13 +1295,13 @@
   "version_id": "rust",
   "change": "hands classified with Four Fingers, Shortcut, Smeared Joker",
   "games": 2000,
-  "mean_ante": 7.481,
+  "mean_ante": 7.482,
   "se": 0.028,
   "wins": 1266,
   "win_rate": 0.633,
-  "mean_round": 20.3,
-  "died_ante_1_4": 83,
-  "died_ante_5_7": 361,
+  "mean_round": 20.31,
+  "died_ante_1_4": 82,
+  "died_ante_5_7": 362,
   "died_ante_8": 290
  }
 ]
