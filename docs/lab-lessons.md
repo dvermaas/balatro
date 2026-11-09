@@ -810,6 +810,10 @@ measured the wrong thing or was never asked:
 - **The joker prior retested on v75** (B = 1 through ante 6): half weight (`joker-prior=0.5`) c2k 0-449 269 vs 272 wins
   (36/39), +0.013 +- 0.034 ante: neutral. Through ante 8 (`joker-prior-to=8`) 253 vs 272 (14/33, z = -2.8): worse, as
   ante 7 was on v61. Late, the forecast's rollouts see the rest of the run and the ante-5 values only mislead them.
+  Through ante 5 only (`joker-prior-to=5`): 276 vs 272 (18/14), -0.004 +- 0.018 ante: neutral; ante 6 stays.
+- **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
+  shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
+  (2.7%), so it rarely blocks a buy. Not worth a change.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

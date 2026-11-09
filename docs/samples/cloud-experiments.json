@@ -2979,5 +2979,16 @@
   "wins": 253,
   "baseline_wins": 272,
   "outcome": "worse"
+ },
+ {
+  "experiment": "Joker prior through ante 5 only (joker-prior-to=5)",
+  "theme": "Forecast",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": -0.004,
+  "se": 0.018,
+  "wins": 276,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
