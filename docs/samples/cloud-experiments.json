@@ -3100,5 +3100,16 @@
   "wins": 252,
   "baseline_wins": 272,
   "outcome": "worse"
+ },
+ {
+  "experiment": "Out of discards, the play with the best chance two plays clear (setup-play=clear)",
+  "theme": "Play",
+  "baseline": "v75",
+  "games": 450,
+  "delta_ante": 0.013,
+  "se": 0.009,
+  "wins": 273,
+  "baseline_wins": 272,
+  "outcome": "neutral"
  }
 ]
