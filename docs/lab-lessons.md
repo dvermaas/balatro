@@ -755,6 +755,13 @@ measured the wrong thing or was never asked:
   Full sets: b2k 1,224 wins (61.2%), c2k 1,236 (61.8%). v73 with no flags replays the flagged games (30 seeds, 0
   changed). Real-game caveat: this assumes BalatroBot's `rearrange` takes face-down jokers mid-round (rumbot's view
   allows it, as BalatroBot allows rearranging in SELECTING_HAND).
+- **Joker order every round** (`round-order`: v73's in-round rearrange at every round's start; jokers a Riff-raff makes as
+  a blind starts land rightmost, past the xMult the shop put last): c2k 0-449 plus every other Riff-raff seed of both
+  sets, 730 games, 4 changed, all 4 won by the flag. Correct and rare; to ship with the next change.
+- **Luchador** (its sale disables the current boss: Violet Vessel's target / 3, The Wall's / 2; the bot never sold it;
+  55 of 4,000 v73 runs hold it): sell at the ante-8 boss (`luchador=8`) 34 vs 33 wins (2/1); at any boss from ante 6
+  31 vs 33 (2/4); at the first boss met 30 vs 33 (3/6). Selling early throws away a later, harder boss; at ante 8 it is
+  free but rare. `luchador=8` to ship with the next change.
 - **Three more vouchers banned** (Tarot Merchant, Blank, Magic Trick, the next weakest in v70's check), on the 170
   seeds of both sets where v71 bought one plus 40 controls: c2k 59 vs 63 wins (6/10), b2k 62 vs 59 (12/9). Neutral;
   v70's six stay the list.

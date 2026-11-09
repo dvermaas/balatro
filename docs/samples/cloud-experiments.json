@@ -2759,5 +2759,49 @@
   "wins": 615,
   "baseline_wins": 582,
   "outcome": "shipped v73"
+ },
+ {
+  "experiment": "Searched best joker order at every round's start (round-order), c2k 0-449 + Riff-raff seeds",
+  "theme": "Jokers",
+  "baseline": "v73",
+  "games": 730,
+  "delta_ante": 0.011,
+  "se": 0.006,
+  "wins": 439,
+  "baseline_wins": 435,
+  "outcome": "neutral (correct, rare)"
+ },
+ {
+  "experiment": "Sell Luchador at the ante-8 boss (luchador=8), seeds holding it",
+  "theme": "Bosses",
+  "baseline": "v73",
+  "games": 55,
+  "delta_ante": 0.0,
+  "se": 0.0,
+  "wins": 34,
+  "baseline_wins": 33,
+  "outcome": "neutral (correct, rare)"
+ },
+ {
+  "experiment": "Sell Luchador at any boss from ante 6 (luchador=6), seeds holding it",
+  "theme": "Bosses",
+  "baseline": "v73",
+  "games": 55,
+  "delta_ante": -0.036,
+  "se": 0.052,
+  "wins": 31,
+  "baseline_wins": 33,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Sell Luchador at the first boss (luchador=1), seeds holding it",
+  "theme": "Bosses",
+  "baseline": "v73",
+  "games": 55,
+  "delta_ante": -0.073,
+  "se": 0.093,
+  "wins": 30,
+  "baseline_wins": 33,
+  "outcome": "neutral"
  }
 ]
