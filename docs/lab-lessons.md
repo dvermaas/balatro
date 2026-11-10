@@ -823,8 +823,12 @@ measured the wrong thing or was never asked:
   ranks better out of sample (AUC 0.71 / 0.74 / 0.76 / 0.77 at antes 5-8, was 0.69 / 0.71 / 0.72 / 0.69). In play, c2k
   0-449: 267 vs 273 wins (37/43), -0.040 +- 0.040 ante; at half the tail weight (`value-tail=0.25`, the old model's
   effective weight, as calibrated P(win) runs ~2x higher) 268 vs 273 (31/36). Neutral both ways: a better P(win) at the
-  horizon does not make better shop calls, as the v75 retrain found. The tail's ranking between options is what counts,
-  and it was already good enough.
+  horizon does not make better shop calls, as the v54 and v75 retrains found (v54: 624 vs 640, at 0.25 641 vs 640, the
+  same pattern). Three retrains on 2k-74k games agree: leave the tail model alone.
+- **Smaller discards offered** (`disc-more`: the preserve discard, which cycles what the best play does not score, also
+  offered cut to its 1..n-1 lowest cards; every other discard plan throws the most cards it can): c2k 0-449 274 vs 273
+  wins (29/28), -0.031 +- 0.038 ante. Neutral: the round search already weighs keeping cards, so more of the same kind
+  of option changes little.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

@@ -3221,5 +3221,16 @@
   "wins": 268,
   "baseline_wins": 273,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Smaller discards offered: the preserve discard cut to its k lowest cards (disc-more)",
+  "theme": "Play",
+  "baseline": "v76",
+  "games": 450,
+  "delta_ante": -0.031,
+  "se": 0.038,
+  "wins": 274,
+  "baseline_wins": 273,
+  "outcome": "neutral"
  }
 ]
