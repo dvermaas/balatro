@@ -3254,5 +3254,27 @@
   "wins": 268,
   "baseline_wins": 273,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Packs take The Soul and Wraith (soul-take=1,wraith-take=0.3), c2k 0-899",
+  "theme": "Packs",
+  "baseline": "v76",
+  "games": 900,
+  "delta_ante": 0.011,
+  "se": 0.012,
+  "wins": 565,
+  "baseline_wins": 562,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Packs take The Soul and Wraith (soul-take=1,wraith-take=0.3), b2k 0-899",
+  "theme": "Packs",
+  "baseline": "v76",
+  "games": 900,
+  "delta_ante": -0.002,
+  "se": 0.011,
+  "wins": 564,
+  "baseline_wins": 565,
+  "outcome": "neutral"
  }
 ]

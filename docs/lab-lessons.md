@@ -832,6 +832,12 @@ measured the wrong thing or was never asked:
 - **Two old play/forecast knobs retested on v76** (c2k 0-449): a looser play-now ratio while discards left >= hands left
   (`play-now-spare=0.8`, v55: 874 vs 862) 266 vs 273 wins (23/30), +0.031 +- 0.029 ante; rollouts that discard only when
   further behind (`rollout-behind=0.6`, v54: 427 vs 419) 268 vs 273 (56/61), -0.053 +- 0.055 ante. Both still neutral.
+- **Packs take The Soul and Wraith** (`soul-take=1,wraith-take=0.3`). The pack Picker valued every Spectral card it has no
+  rule for at 0, so v76 never took The Soul (no Legendary joker in 4,000 games) or Wraith. With values (The Soul 1.0 with a
+  free slot, above any joker; Wraith 0.3 - $0.01 per dollar it takes), 20 of 1,800 games got a Legendary (Chicot 5,
+  Perkeo 4, Triboulet 4, Caino 4, Yorick 3); ~6% of games change, mostly by the forecast's sampled packs. c2k 0-899 565 vs
+  562 wins (14/11), +0.011 +- 0.012 ante; b2k 0-899 564 vs 565 (11/12), -0.002 +- 0.011. Soul alone c2k 0-449 4/3.
+  Together 25/23: correct, too rare to measure. Parked with `stone-fix` for the next measured change.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
