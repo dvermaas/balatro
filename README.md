@@ -125,7 +125,7 @@ tested in the simulator first (next section).
   some bosses), `verrow.py` (version rows). How to judge a result: [docs/lab-lessons.md](docs/lab-lessons.md),
   "How to experiment".
 - **Current baseline (v77, 2026-11-10)**, code only (no JEV), arm F, rumbot: on the two 2,000-seed sets the bot wins
-  **62.1%** and **63.2%** of runs (mean ante 7.47 and 7.48). v31 won about 20% (mean ante ~6.6); the gains since
+  **62.7%** and **62.9%** of runs (mean ante 7.48 and 7.48; every seed played on v77). v31 won about 20% (mean ante ~6.6); the gains since
   came from the shop forecast's fixes, blind skips for tags, the joker values and the in-round search
   ([docs/lab-lessons.md](docs/lab-lessons.md) has every experiment; numbers per version in
   `docs/samples/cloud-versions.json`, per experiment in `docs/samples/cloud-experiments.json`). Losses are now mostly

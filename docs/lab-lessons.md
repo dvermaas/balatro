@@ -29,7 +29,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v74 | played cards ordered for the best score before each play | 62.4% | 7.47 |
 | v75 | joker order at every round's start; Luchador sold at the ante-8 boss | 62.5% | 7.47 |
 | v76 | hands classified with Four Fingers, Shortcut and Smeared Joker | 62.7% | 7.48 |
-| v77 | rules correctness: Stone cards, The Arm, The Soul, Wraith (no harm, for the real game) | 62.7% | 7.48 |
+| v77 | rules correctness: Stone cards, The Arm, The Soul, Wraith (no harm, for the real game) | 62.8% | 7.48 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -843,7 +843,8 @@ measured the wrong thing or was never asked:
   `no-stone-fix`, `no-arm-fix`, `no-soul-take`, `no-wraith-take` = v76). Each fix makes the bot read the game as it is
   and was too rare to measure alone; together c2k 0-899 561 vs 562 wins (26/27), -0.004 +- 0.014 ante; b2k 0-899 566 vs
   565 (20/19), -0.009 +- 0.015. No harm in the lab, and the real game gets the right reads; identity check 30/30. Version
-  rows splice the bundle's 0-899 games into v76's (b2k 1,241 wins, c2k 1,265).
+  rows: every seed of both sets played on v77 (b2k 1,254 wins, c2k 1,257); seeds 900-1999 had been v75 rows, and their
+  replays moved b2k +13 (36/23) and c2k -8 (24/32), which is the noise of 1,100 games.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

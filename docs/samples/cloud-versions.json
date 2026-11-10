@@ -1310,13 +1310,13 @@
   "version_id": "rust",
   "change": "rules correctness: Stone cards, The Arm, The Soul, Wraith",
   "games": 2000,
-  "mean_ante": 7.47,
+  "mean_ante": 7.481,
   "se": 0.028,
-  "wins": 1241,
-  "win_rate": 0.621,
-  "mean_round": 20.28,
-  "died_ante_1_4": 90,
-  "died_ante_5_7": 361,
+  "wins": 1254,
+  "win_rate": 0.627,
+  "mean_round": 20.31,
+  "died_ante_1_4": 87,
+  "died_ante_5_7": 351,
   "died_ante_8": 308
  },
  {
@@ -1325,13 +1325,13 @@
   "version_id": "rust",
   "change": "rules correctness: Stone cards, The Arm, The Soul, Wraith",
   "games": 2000,
-  "mean_ante": 7.481,
+  "mean_ante": 7.483,
   "se": 0.028,
-  "wins": 1265,
-  "win_rate": 0.632,
-  "mean_round": 20.3,
-  "died_ante_1_4": 83,
-  "died_ante_5_7": 366,
-  "died_ante_8": 286
+  "wins": 1257,
+  "win_rate": 0.628,
+  "mean_round": 20.31,
+  "died_ante_1_4": 81,
+  "died_ante_5_7": 370,
+  "died_ante_8": 292
  }
 ]
