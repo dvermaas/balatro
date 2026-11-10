@@ -4,7 +4,7 @@ decision is recorded in row["flip"]; its partner is the same seed in SET-v77. Pr
 against the realised change in blinds cleared and wins (flipped minus baseline)."""
 import json, glob, os, sys, collections, math
 L = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "runs", "_policy_lab")
-pat = sys.argv[1] if len(sys.argv) > 1 else "flip-*-s*"
+pat = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("--") else "flip-*-s*"
 base = {}
 def rows(n):
     return [json.loads(l) for l in open(os.path.join(L, n, "results.jsonl")) if l.strip()]
