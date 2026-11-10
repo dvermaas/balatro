@@ -816,6 +816,15 @@ measured the wrong thing or was never asked:
   On v76, B = 1.5 (`joker-prior=1.5`): c2k 0-899 583 vs 562 wins (69/48, z = +1.9), but b2k 0-899 561 vs 565 (61/65)
   and mean ante lower on both (-0.028 +- 0.026, -0.064 +- 0.025). Together 130/113 (z = +1.1): neutral, B = 1 stays.
   The fourth time a stronger prior led one set and not the other.
+- **The forecast's tail model retrained on ~74k v70+ lab games** (`VALUE_MODEL=samples/cloud-lab/value_model_v70w.json`,
+  `ptrain_w.py`: the base inputs, each of the 3,992 seeds weighted once per ante since lab dirs replay the same seeds;
+  unweighted, the repeats overfit). The built-in model (5,000 v32 games) is far off for today's bot: mean P(win) 0.20 at
+  ante 2 where v76 wins 63%, log loss worse than a constant at every ante (`vmeval.py`). The refit is calibrated and
+  ranks better out of sample (AUC 0.71 / 0.74 / 0.76 / 0.77 at antes 5-8, was 0.69 / 0.71 / 0.72 / 0.69). In play, c2k
+  0-449: 267 vs 273 wins (37/43), -0.040 +- 0.040 ante; at half the tail weight (`value-tail=0.25`, the old model's
+  effective weight, as calibrated P(win) runs ~2x higher) 268 vs 273 (31/36). Neutral both ways: a better P(win) at the
+  horizon does not make better shop calls, as the v75 retrain found. The tail's ranking between options is what counts,
+  and it was already good enough.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

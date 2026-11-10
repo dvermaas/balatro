@@ -3199,5 +3199,27 @@
   "wins": 561,
   "baseline_wins": 565,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Forecast tail model retrained on ~74k v70+ lab games, seeds weighted once (VALUE_MODEL=value_model_v70w.json)",
+  "theme": "Forecast",
+  "baseline": "v76",
+  "games": 450,
+  "delta_ante": -0.04,
+  "se": 0.04,
+  "wins": 267,
+  "baseline_wins": 273,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Retrained tail model at half weight (value_model_v70w.json, value-tail=0.25)",
+  "theme": "Forecast",
+  "baseline": "v76",
+  "games": 450,
+  "delta_ante": -0.011,
+  "se": 0.036,
+  "wins": 268,
+  "baseline_wins": 273,
+  "outcome": "neutral"
  }
 ]
