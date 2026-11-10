@@ -120,7 +120,9 @@ impl CodeJev {
             let Some(vs) = r.get("vs_skip") else { continue };
             let pair = gs::list(gs::get(vs, "blinds"));
             let (d, s) = (gs::num(&pair[0]), gs::num(&pair[1]));
-            if d > 1.0 * s.max(1e-9) && best.map_or(true, |(_, bd)| d > bd) {
+            // lab (`item-margin=M`, `item-se=Z`): an item must beat skip by Z paired SEs (default 1) plus M blinds
+            let e = crate::experiment::get();
+            if d > e.item_se.unwrap_or(1.0) * s.max(1e-9) + e.item_margin && best.map_or(true, |(_, bd)| d > bd) {
                 best = Some((k, d));
             }
         }
