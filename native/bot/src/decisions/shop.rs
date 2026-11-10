@@ -999,7 +999,7 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     if mode == "bank" && !early_joker {
         loose_ok = false; // ahead: only clear upgrades (BUY_SCORE) or sure jokers
     }
-    let (choice, action): (String, Action);
+    let (mut choice, mut action): (String, Action);
     let mut infos: Vec<String> = Vec::new();
     if s >= super::BUY_SCORE || (s >= super::BUY_SCORE_LOOSE as f64 && loose_ok) {
         choice = best.to_string();
@@ -1027,6 +1027,43 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     } else {
         choice = fallback.0.to_string();
         action = fallback.1.clone();
+    }
+    {
+        // lab (`flip-shop=K` / `flip-rand=N`): take the other side of the K-th shop decision that has forecast
+        // numbers (K fixed, or 1..N by a hash of the seed): a buy becomes the fallback (reroll or leave), a
+        // fallback becomes the forecast's best item. Paired with the unflipped game, it measures that decision.
+        let e = crate::experiment::get();
+        if e.flip_n > 0 && fc.is_some() && items.iter().any(|it| _d(&it.obj).contains_key("_fc_delta")) {
+            bot._flip_n += 1;
+            let seed = crate::gs::s(&g(gs, "seed")).to_string();
+            let k = if e.flip_rand {
+                let mut h: u64 = 0xcbf29ce484222325;
+                for b in seed.bytes().chain(e.flip_salt.to_string().into_bytes()) { h ^= b as u64; h = h.wrapping_mul(0x100000001b3); }
+                (h % e.flip_n as u64) as i64 + 1
+            } else { e.flip_n as i64 };
+            if bot._flip_n == k {
+                let feat = |it: &Item| json!({"key": it.key, "desc": it.desc, "cost": it.cost, "kind": g(&it.obj, "kind"),
+                    "fc_delta": g(&it.obj, "_fc_delta"), "fc_se": g(&it.obj, "_fc_se"), "blinds": g(&it.obj, "blinds_cleared_horizon"),
+                    "strong": flag(&it.obj, "_strong")});
+                let was_buy = items.iter().any(|it| it.key == choice);
+                let (alt_key, alt_action) = if was_buy {
+                    (fallback.0.to_string(), fallback.1.clone())
+                } else {
+                    let mut bi: Option<&Item> = None;
+                    for it in items.iter().filter(|it| _d(&it.obj).contains_key("_fc_delta")) {
+                        if bi.map_or(true, |b| fnum(&it.obj, "_fc_delta", 0.0) > fnum(&b.obj, "_fc_delta", 0.0)) { bi = Some(it); }
+                    }
+                    let b = bi.unwrap();
+                    (b.key.clone(), b.action.clone())
+                };
+                let jl = crate::gs::mget(crate::gs::area(gs, "jokers"), "limit").clone();
+                bot.emit("flip", json!({"k": k, "ante": g(gs, "ante_num"), "round": g(gs, "round_num"), "money": money, "mode": mode,
+                    "jokers": cards_of(gs, "jokers").len(), "joker_limit": jl, "rerolls": bot._rerolls,
+                    "chosen": choice, "alt": alt_key, "was_buy": was_buy, "items": items.iter().map(|it| feat(it)).collect::<Vec<_>>()}));
+                choice = alt_key;
+                action = alt_action;
+            }
+        }
     }
     for m in infos {
         bot.emit("info", json!({"msg": m}));

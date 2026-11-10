@@ -233,6 +233,9 @@ fn play(seed: &str) -> Result<Value, String> {
     put("prompt_version", summ["prompt_version"].clone());
     put("item_fc", json!(ifs.len()));
     put("item_fc_s", json!(r1(ifs.iter().sum())));
+    if let Some(f) = ev.iter().find(|e| kind(e) == "flip") {
+        put("flip", f.clone());
+    }
     if want_snaps {
         put("snaps", Value::Array(snaps));
     }

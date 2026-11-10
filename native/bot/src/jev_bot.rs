@@ -301,6 +301,8 @@ pub struct JevBot {
     /// `json.dumps(action)` strings.
     pub _failed: HashSet<String>,
     pub _rerolls: i64,
+    /// lab `flip-shop`: shop decisions with forecast numbers seen so far this game
+    pub _flip_n: i64,
     /// v30 `_leaf_failed`: the (seed, ante, round) whose Verdant Leaf sale the API refused, or None (Null).
     pub _leaf_failed: Value,
     /// v38: id of the cheap joker bought before Verdant Leaf to be sold at its start, or None (Null).
@@ -347,7 +349,7 @@ impl JevBot {
             bench_name: String::new(), prompts_dir, runs_root: PathBuf::from("runs"), _auto_failed: HashSet::new(), _round_blind: Value::Null,
             _round_had_bones: false, _error_streak: 0, _finished_seed: Value::Null,
             stats: Stats::default(), last_state: None,
-            _shop_key: Value::Null, _shop_actions: 0, _failed: HashSet::new(), _rerolls: 0, _leaf_failed: Value::Null, _leaf_bait: Value::Null, _mouth_lock: Value::Null, _boss_reroll: Value::Null,
+            _shop_key: Value::Null, _shop_actions: 0, _failed: HashSet::new(), _rerolls: 0, _flip_n: 0, _leaf_failed: Value::Null, _leaf_bait: Value::Null, _mouth_lock: Value::Null, _boss_reroll: Value::Null,
             _recent: vec![], _recent_seed: Value::Null, _forecast_cache: None, _item_forecast_cache: None,
             auto_actions: true, dec: crate::decisions::DecisionCfg::production(), event_hook: None,
         }
