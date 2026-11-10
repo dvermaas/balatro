@@ -345,6 +345,15 @@ impl<'a> Picker<'a> {
     fn consumable_value(&mut self, c: &Value, hand: &[Value], money: &Value, jokers_: &[Value], room: i64) -> (f64, Option<Vec<usize>>) {
         let kv = gs::get(c, "key");
         let key = if gs::truthy(kv) { gs::s(kv) } else { "" };
+        let e = crate::experiment::get();
+        if key == "c_soul" && e.soul_take > 0.0 {
+            // lab (`soul-take=V`): The Soul makes a Legendary joker (needs a free slot); valued V, was 0 (never taken)
+            return (if room < 1 { 0.0 } else { e.soul_take }, None);
+        }
+        if key == "c_wraith" && e.wraith_take > 0.0 {
+            // lab (`wraith-take=V`): Wraith makes a Rare joker and sets money to $0; V minus the money lost
+            return (if room < 1 { 0.0 } else { pmax(0.0, e.wraith_take - MONEY * gs::num(money).max(0.0)) }, None);
+        }
         if let Some((kind, _n, arg)) = tarots::targeted(key) {
             let p = if hand.is_empty() { None } else { tarots::plan(key, hand, &self.b) };
             let p = match p { None => return (0.0, None), Some(p) => p };
