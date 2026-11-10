@@ -6,6 +6,8 @@
 set -u
 R="$(cd "$(dirname "$0")/../.." && pwd)"
 BIN=$1 A=$2 B=$3 N=${4:-60}
+# MAXCHUNKS=K: stop after K chunks that had seeds to play (one tool run stays under its time limit; rerun to continue)
+RAN=0
 for S in $(seq "$A" "$B"); do
   for SET in c2k b2k; do
     for START in 0 450 900 1350 1800; do
@@ -20,6 +22,9 @@ new = [l for l in open(p + "-part/results.jsonl") if l.strip() and "won" in json
 open(p + "/results.jsonl", "a").writelines(l if l.endswith("\n") else l + "\n" for l in new)
 PY
       fi
+      if [ -f "$P/results.jsonl" ] && [ "$(python3 -c "import json,sys; d={json.loads(l)['seed'] for l in open(sys.argv[1]) if l.strip()}; s=open(sys.argv[2]).read().split()[int(sys.argv[3]):int(sys.argv[3])+450]; print(sum(x not in d for x in s))" "$P/results.jsonl" "$R/docs/samples/cloud-lab/seeds-$SET.txt" "$START")" = 0 ]; then continue; fi
+      [ -n "${MAXCHUNKS:-}" ] && [ "$RAN" -ge "$MAXCHUNKS" ] && { echo "$(date -u +%FT%TZ) chunk budget spent"; exit 0; }
+      RAN=$((RAN + 1))
       "$R/scripts/lab/chunk.sh" "$BIN" "$SET" "$START" 450 "flip-$SET-s$S" "$SET-v77" "flip-rand=$N,flip-salt=$S" | tail -1
     done
   done
