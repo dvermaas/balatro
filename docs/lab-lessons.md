@@ -848,6 +848,13 @@ measured the wrong thing or was never asked:
 - **Fuller clearing-play estimates retested on v77** (`clear-pick2,round-search-played`: clear_pick also weighs Supernova,
   Space Joker, Midas Mask, Lucky Cat, glass and money; the round search sees hand types played earlier in the round), c2k
   0-899: 558 vs 561 wins (28/31), +0.008 +- 0.015 ante. Neutral, as on v69 and v75.
+- **Paired decision flips (option 2: a learned shop correction; `flip-shop`/`flip-rand`/`flip-salt`, `flipq.sh`,
+  `flipan.py`).** One forecast-backed shop decision per game is taken the other way; lab games are deterministic, so the
+  game matches its v77 partner up to the flip and the outcome difference is that decision's real value under the bot's
+  own play. First 1,373 flips (c2k salt 1): the alternatives lose (81/114 games won by only one side), so the bot's
+  calls are mostly right; buying a pack the forecast rated ~0 lost 34/59 (z = -2.6), skipping a bought pack gained
+  +0.76 +- 0.35 blinds but on a few outliers. A higher bar for CodeJev's item buys (`item-se=2`, was 1 SE): c2k 0-899
+  564 vs 561 wins (84/81), +0.020 +- 0.030 ante: neutral (the bot already skips the losing ~0 packs). Collection goes on.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

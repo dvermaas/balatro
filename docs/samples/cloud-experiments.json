@@ -3309,5 +3309,16 @@
   "wins": 558,
   "baseline_wins": 561,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Higher bar for CodeJev's item buys, packs/tarots at 2 SE (item-se=2), c2k 0-899",
+  "theme": "Packs",
+  "baseline": "v77",
+  "games": 900,
+  "delta_ante": 0.02,
+  "se": 0.03,
+  "wins": 564,
+  "baseline_wins": 561,
+  "outcome": "neutral"
  }
 ]
