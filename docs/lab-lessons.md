@@ -1,4 +1,4 @@
-# What the lab taught us (v27 → v76)
+# What the lab taught us (v27 → v77)
 
 Cloud sessions ran a few hundred policy-lab experiments: the bot with CodeJev in place of JEV (it takes the top-ranked
 option), arm F, on the rumbot simulator, so code only and free. This page keeps the conclusions, newest at the end of
@@ -29,6 +29,7 @@ Win rate over both fixed 2,000-seed sets (b2k + c2k, `samples/cloud-lab/seeds-*.
 | v74 | played cards ordered for the best score before each play | 62.4% | 7.47 |
 | v75 | joker order at every round's start; Luchador sold at the ante-8 boss | 62.5% | 7.47 |
 | v76 | hands classified with Four Fingers, Shortcut and Smeared Joker | 62.7% | 7.48 |
+| v77 | rules correctness: Stone cards, The Arm, The Soul, Wraith (no harm, for the real game) | 62.7% | 7.48 |
 
 (v59 changed the simulator, so numbers before and after it are not strictly comparable.)
 
@@ -837,7 +838,12 @@ measured the wrong thing or was never asked:
   free slot, above any joker; Wraith 0.3 - $0.01 per dollar it takes), 20 of 1,800 games got a Legendary (Chicot 5,
   Perkeo 4, Triboulet 4, Caino 4, Yorick 3); ~6% of games change, mostly by the forecast's sampled packs. c2k 0-899 565 vs
   562 wins (14/11), +0.011 +- 0.012 ante; b2k 0-899 564 vs 565 (11/12), -0.002 +- 0.011. Soul alone c2k 0-449 4/3.
-  Together 25/23: correct, too rare to measure. Parked with `stone-fix` for the next measured change.
+  Together 25/23: correct, too rare to measure.
+- **v77, a rules-correctness release** (`stone-fix`, `arm-fix`, `soul-take=1`, `wraith-take=0.3`, now the defaults;
+  `no-stone-fix`, `no-arm-fix`, `no-soul-take`, `no-wraith-take` = v76). Each fix makes the bot read the game as it is
+  and was too rare to measure alone; together c2k 0-899 561 vs 562 wins (26/27), -0.004 +- 0.014 ante; b2k 0-899 566 vs
+  565 (20/19), -0.009 +- 0.015. No harm in the lab, and the real game gets the right reads; identity check 30/30. Version
+  rows splice the bundle's 0-899 games into v76's (b2k 1,241 wins, c2k 1,265).
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

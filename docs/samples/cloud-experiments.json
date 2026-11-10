@@ -3276,5 +3276,27 @@
   "wins": 564,
   "baseline_wins": 565,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "v77: rules-correctness bundle (stone-fix, arm-fix, soul-take=1, wraith-take=0.3), c2k 0-899",
+  "theme": "Shipped",
+  "baseline": "v76",
+  "games": 900,
+  "delta_ante": -0.004,
+  "se": 0.014,
+  "wins": 561,
+  "baseline_wins": 562,
+  "outcome": "shipped"
+ },
+ {
+  "experiment": "v77: rules-correctness bundle (stone-fix, arm-fix, soul-take=1, wraith-take=0.3), b2k 0-899",
+  "theme": "Shipped",
+  "baseline": "v76",
+  "games": 900,
+  "delta_ante": -0.009,
+  "se": 0.015,
+  "wins": 566,
+  "baseline_wins": 565,
+  "outcome": "shipped"
  }
 ]

@@ -1303,5 +1303,35 @@
   "died_ante_1_4": 82,
   "died_ante_5_7": 362,
   "died_ante_8": 290
+ },
+ {
+  "seed_set": "fresh 2000",
+  "version": "v77",
+  "version_id": "rust",
+  "change": "rules correctness: Stone cards, The Arm, The Soul, Wraith",
+  "games": 2000,
+  "mean_ante": 7.47,
+  "se": 0.028,
+  "wins": 1241,
+  "win_rate": 0.621,
+  "mean_round": 20.28,
+  "died_ante_1_4": 90,
+  "died_ante_5_7": 361,
+  "died_ante_8": 308
+ },
+ {
+  "seed_set": "fresh 2000 (2nd)",
+  "version": "v77",
+  "version_id": "rust",
+  "change": "rules correctness: Stone cards, The Arm, The Soul, Wraith",
+  "games": 2000,
+  "mean_ante": 7.481,
+  "se": 0.028,
+  "wins": 1265,
+  "win_rate": 0.632,
+  "mean_round": 20.3,
+  "died_ante_1_4": 83,
+  "died_ante_5_7": 366,
+  "died_ante_8": 286
  }
 ]
