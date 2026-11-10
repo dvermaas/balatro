@@ -709,7 +709,19 @@ pub fn selecting_hand(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
         if !pc.is_empty()
             && discards.iter().all(|d| idx_list(gs::get(d, "cards")).into_iter().collect::<HashSet<_>>() != pc)
         {
-            discards.push(preserve);
+            discards.push(preserve.clone());
+        }
+        if crate::experiment::get().disc_more {
+            // lab (`disc-more`): the preserve toss list cut to its k lowest cards, k = 1..n-1
+            let base = idx_list(gs::get(&preserve, "cards"));
+            for k in 1..base.len() {
+                let toss: Vec<usize> = base[..k].to_vec();
+                let ts: HashSet<usize> = toss.iter().copied().collect();
+                if discards.iter().all(|d| idx_list(gs::get(d, "cards")).into_iter().collect::<HashSet<_>>() != ts) {
+                    discards.push(json!({"label": format!("Keep current scoring cards; cycle only the {k} lowest of the rest"),
+                        "cards": toss, "tossed": toss.iter().map(|&i| describe(&hand[i])).collect::<Vec<_>>(), "goal": ["preserve", Value::Null]}));
+                }
+            }
         }
         if crate::experiment::get().round_search_extra {
             // lab (`round-search-extra`): the round search's own discard as one more option
