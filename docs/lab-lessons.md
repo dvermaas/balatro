@@ -845,6 +845,9 @@ measured the wrong thing or was never asked:
   565 (20/19), -0.009 +- 0.015. No harm in the lab, and the real game gets the right reads; identity check 30/30. Version
   rows: every seed of both sets played on v77 (b2k 1,254 wins, c2k 1,257); seeds 900-1999 had been v75 rows, and their
   replays moved b2k +13 (36/23) and c2k -8 (24/32), which is the noise of 1,100 games.
+- **Fuller clearing-play estimates retested on v77** (`clear-pick2,round-search-played`: clear_pick also weighs Supernova,
+  Space Joker, Midas Mask, Lucky Cat, glass and money; the round search sees hand types played earlier in the round), c2k
+  0-899: 558 vs 561 wins (28/31), +0.008 +- 0.015 ante. Neutral, as on v69 and v75.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

@@ -3298,5 +3298,16 @@
   "wins": 566,
   "baseline_wins": 565,
   "outcome": "shipped"
+ },
+ {
+  "experiment": "Fuller clearing-play estimates retested on v77 (clear-pick2,round-search-played), c2k 0-899",
+  "theme": "Play",
+  "baseline": "v77",
+  "games": 900,
+  "delta_ante": 0.008,
+  "se": 0.015,
+  "wins": 558,
+  "baseline_wins": 561,
+  "outcome": "neutral"
  }
 ]
