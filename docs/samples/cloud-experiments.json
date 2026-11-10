@@ -3232,5 +3232,27 @@
   "wins": 274,
   "baseline_wins": 273,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Play-now ratio 0.8 while discards left >= hands left, retested on v76 (play-now-spare=0.8)",
+  "theme": "Play",
+  "baseline": "v76",
+  "games": 450,
+  "delta_ante": 0.031,
+  "se": 0.029,
+  "wins": 266,
+  "baseline_wins": 273,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Rollouts discard only when further behind, retested on v76 (rollout-behind=0.6)",
+  "theme": "Forecast",
+  "baseline": "v76",
+  "games": 450,
+  "delta_ante": -0.053,
+  "se": 0.055,
+  "wins": 268,
+  "baseline_wins": 273,
+  "outcome": "neutral"
  }
 ]

@@ -829,6 +829,9 @@ measured the wrong thing or was never asked:
   offered cut to its 1..n-1 lowest cards; every other discard plan throws the most cards it can): c2k 0-449 274 vs 273
   wins (29/28), -0.031 +- 0.038 ante. Neutral: the round search already weighs keeping cards, so more of the same kind
   of option changes little.
+- **Two old play/forecast knobs retested on v76** (c2k 0-449): a looser play-now ratio while discards left >= hands left
+  (`play-now-spare=0.8`, v55: 874 vs 862) 266 vs 273 wins (23/30), +0.031 +- 0.029 ante; rollouts that discard only when
+  further behind (`rollout-behind=0.6`, v54: 427 vs 419) 268 vs 273 (56/61), -0.053 +- 0.055 ante. Both still neutral.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
