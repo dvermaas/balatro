@@ -3177,5 +3177,27 @@
   "wins": 281,
   "baseline_wins": 280,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker prior B = 1.5 on v76 (joker-prior=1.5), c2k 0-899",
+  "theme": "Shop",
+  "baseline": "v76",
+  "games": 900,
+  "delta_ante": -0.028,
+  "se": 0.026,
+  "wins": 583,
+  "baseline_wins": 562,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker prior B = 1.5 on v76 (joker-prior=1.5), b2k 0-899",
+  "theme": "Shop",
+  "baseline": "v76",
+  "games": 900,
+  "delta_ante": -0.064,
+  "se": 0.025,
+  "wins": 561,
+  "baseline_wins": 565,
+  "outcome": "neutral"
  }
 ]

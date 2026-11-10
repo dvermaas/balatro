@@ -813,6 +813,9 @@ measured the wrong thing or was never asked:
   ante 7 was on v61. Late, the forecast's rollouts see the rest of the run and the ante-5 values only mislead them.
   Through ante 5 only (`joker-prior-to=5`): 276 vs 272 (18/14); on c2k 0-899 558 vs 560 (34/36), +0.000 +- 0.012 ante:
   neutral; ante 6 stays.
+  On v76, B = 1.5 (`joker-prior=1.5`): c2k 0-899 583 vs 562 wins (69/48, z = +1.9), but b2k 0-899 561 vs 565 (61/65)
+  and mean ante lower on both (-0.028 +- 0.026, -0.064 +- 0.025). Together 130/113 (z = +1.1): neutral, B = 1 stays.
+  The fourth time a stronger prior led one set and not the other.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
