@@ -1038,5 +1038,8 @@ What to trust:
 - Violet Vessel kills half the runs that meet it (313 of 1,621 v69 losses): a plan for it from the shops of ante 8,
   when the boss is known, rather than a better hand on the day. v72 rerolls it when a Boss Tag is on offer; Director's
   Cut or Retcon would do the same but are almost never offered with Violet Vessel ahead.
-- A learned value at the forecast horizon trained on far more games (hundreds of thousands), checked out of sample.
+- A learned value at the forecast horizon trained on far more games: tried on ~74k v70+ games (calibrated, better
+  AUC, neutral in play, above); only a much richer input set, not more games of the same inputs, could still help.
+- Plan decisions (commit to a hand, chase xMult, shape the deck) that a 3-boss rollout cannot value: an LLM on top of
+  the forecast (Haiku twice, Sonnet once, 48 games each) was neutral; rule-based plans failed on v27-v35.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).
