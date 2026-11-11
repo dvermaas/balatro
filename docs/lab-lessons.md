@@ -897,7 +897,7 @@ measured the wrong thing or was never asked:
   the 9 games a stopped agent was in were replayed with 3 subagents; 2,907 decisions, all answered): 32 vs 30 wins
   (6/4), -0.08 +- 0.09 ante; against Haiku batch 3, 8/4 games won by only one side. Neutral too. Three batches of 48
   agree: an LLM on top of the forecast neither helps nor hurts; it mostly confirms the code (overrides are 15-30% of
-  decisions and cancel out). Seeing a 5-point win-rate gain would take ~1,000 games, about 300M subagent tokens.
+  decisions and cancel out). Seeing a 5-point win-rate gain at 2 SE would take ~320 paired games (~20% go to one side), ~30M subagent tokens.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
