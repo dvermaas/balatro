@@ -860,6 +860,20 @@ measured the wrong thing or was never asked:
   the hand (a card-destroying item on a small hand, not pinned down) panicked in `Policy::decide` (2 of ~10,000 flipped games; the bot's own games never
   reached it). The rollout now ends as a loss there, like the empty-hand check before the item use; games that ran are
   unchanged.
+  At 6,109 flips the joker-swap lead (swaps rated >= 0 but under the 1-SE bar: +0.35 +- 0.18 blinds, 8/2, at 2,083)
+  had faded to +0.006 +- 0.134, 10/7 (n=157; salt 1 carried it). All swaps rated >= 0: +0.08, 14/7 (n=184). Bought
+  whenever the forecast rates them above zero (`swap-se=0`), c2k 0-449: 264 vs 268 wins (27/31), +0.009 +- 0.025 ante.
+  Neutral: the 1-SE bar stays for swaps too.
+- **Loss review, v77** (10 losses read by hand, plus wins against losses over all 4,000 games, from the round
+  snapshots). Losses are late (c2k: 491 of 743 at antes 7-8) and far short, not near misses: the Violet Vessel losses
+  read had a best hand of 23k-52k against 300k. No single decision stood out. What separates wins from losses is the
+  build: xMult jokers (Polychrome included) at the start of ante 5, 1.32 vs 0.94, and of ante 8, 1.88 vs 1.33 (both
+  sets alike); money at ante 8, $40 vs $32; the most-played hand's level, 5.2 vs 4.7. In wins and losses alike ~40% of
+  planet levels sit on hands played under 10% of the time, and the deck is never thinned (52 -> ~55 cards). These are
+  plan decisions (commit to a hand, chase xMult, shape the deck) that a few-ante rollout with the bot's own play cannot
+  value; the rule-based versions failed on v27-v35 (above). LLM players for comparison: BalatroBench's best was
+  Gemini 3 Pro at 9/15 wins; a community fork (v1.1.1) has gpt-6.1-sol 11/15, Claude Opus 5.5 3/5, Haiku 5.5 and
+  Sonnet 5.5 0/15.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

@@ -3320,5 +3320,16 @@
   "wins": 564,
   "baseline_wins": 561,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Joker swaps bought whenever the forecast rates them above zero (swap-se=0, was 1 SE), c2k 0-449",
+  "theme": "Jokers",
+  "baseline": "v77",
+  "games": 450,
+  "delta_ante": 0.009,
+  "se": 0.025,
+  "wins": 264,
+  "baseline_wins": 268,
+  "outcome": "neutral"
  }
 ]
