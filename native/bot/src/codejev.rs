@@ -122,7 +122,8 @@ impl CodeJev {
             let (d, s) = (gs::num(&pair[0]), gs::num(&pair[1]));
             // lab (`item-margin=M`, `item-se=Z`): an item must beat skip by Z paired SEs (default 1) plus M blinds
             let e = crate::experiment::get();
-            if d > e.item_se.unwrap_or(1.0) * s.max(1e-9) + e.item_margin && best.map_or(true, |(_, bd)| d > bd) {
+            let z = if gs::int(gs::get(&g, "ante_num")) <= e.item_se_to { e.item_se.unwrap_or(1.0) } else { 1.0 };
+            if d > z * s.max(1e-9) + e.item_margin && best.map_or(true, |(_, bd)| d > bd) {
                 best = Some((k, d));
             }
         }
