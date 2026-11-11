@@ -3375,5 +3375,16 @@
   "wins": 270,
   "baseline_wins": 268,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Bundle item-se=3,item-se-to=3 + setup-play=clear, c2k 450-899",
+  "theme": "shop",
+  "baseline": "v77",
+  "games": 450,
+  "delta_ante": 0.031,
+  "se": 0.049,
+  "wins": 298,
+  "baseline_wins": 293,
+  "outcome": "neutral"
  }
 ]

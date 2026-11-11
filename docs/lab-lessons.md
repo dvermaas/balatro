@@ -869,6 +869,8 @@ measured the wrong thing or was never asked:
   code made at antes 1-3 won 27/11 games (n = 198), though antes 4-6 go the other way (11/26) and every skip pooled is
   44/40, so it was picked out of eight bins. `item-se=3,item-se-to=3` (the code's item buys need 3 SE up to ante 3),
   c2k 0-449: 270 vs 268 wins (26/24), +0.056 +- 0.038 ante. Neutral: the lead was noise.
+  Bundled with `setup-play=clear` (the other recent mean-ante lean), c2k 450-899: 298 vs 293 wins (38/33), +0.031 +-
+  0.049 ante. Neutral: two small leans do not add up to a gain.
 - **Loss review, v77** (10 losses read by hand, plus wins against losses over all 4,000 games, from the round
   snapshots). Losses are late (c2k: 491 of 743 at antes 7-8) and far short, not near misses: the Violet Vessel losses
   read had a best hand of 23k-52k against 300k. No single decision stood out. What separates wins from losses is the
