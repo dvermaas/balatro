@@ -3337,8 +3337,8 @@
   "theme": "LLM",
   "baseline": "v77",
   "games": 48,
-  "delta_ante": null,
-  "se": null,
+  "delta_ante": -0.271,
+  "se": 0.192,
   "wins": 31,
   "baseline_wins": 30,
   "outcome": "neutral (pilot)"
