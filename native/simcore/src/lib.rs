@@ -1367,7 +1367,7 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                     if !g.consumables.is_empty() {
                         use_items(g, it, SELECTING_HAND, &mut failed)?;
                         refresh_or_rebuild(g, &mut pol, &mut pol_uids, &mut pol_names, &mut rebuild)?; // Python refreshes here too
-                        // an item that destroys cards (Immolate, ...) can empty the hand: nothing left to play
+                        // an item that destroys cards can empty the hand: nothing left to play
                         if g.hand.is_empty() {
                             out.push((ante, typ, boss, target, g.chips_scored, false));
                             return Ok(out);

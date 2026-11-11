@@ -857,7 +857,7 @@ measured the wrong thing or was never asked:
   564 vs 561 wins (84/81), +0.020 +- 0.030 ante: neutral (the bot already skips the losing ~0 packs). Collection goes on.
   At 5,176 flips (salts 1-2 and most of 3) the picture holds: -0.050 +- 0.030 blinds, 290/370; skipping a bought pack
   +0.20 +- 0.16 blinds (26/19, n=301). The flips found a crash in shipped code: a forecast rollout whose item use empties
-  the hand (Immolate on a small hand) panicked in `Policy::decide` (2 of ~10,000 flipped games; the bot's own games never
+  the hand (a card-destroying item on a small hand, not pinned down) panicked in `Policy::decide` (2 of ~10,000 flipped games; the bot's own games never
   reached it). The rollout now ends as a loss there, like the empty-hand check before the item use; games that ran are
   unchanged.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
