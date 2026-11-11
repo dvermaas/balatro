@@ -916,6 +916,13 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             let reason = format!("{}{why}: beats buying nothing by {} blinds{tail}", if is_item { "item " } else { "" }, signed(delta, 2));
             let (ik, idesc, icost, iaction) = (it.key.clone(), it.desc.clone(), it.cost, it.action.clone());
             let msg = format!("Forecast buy {}: {} blinds", chars_to(&idesc, 40), rep(&g(o, "blinds_cleared_horizon")));
+            if crate::experiment::get().agent_dir.is_some() {
+                if let Some((c, act)) = agent_ask(bot, gs, &items, &fallback, can_reroll, money, mode, &ik, why) {
+                    if c != ik {
+                        return Ok(shop_act(bot, gs, &act)?);
+                    }
+                }
+            }
             bot.emit("auto", json!({"question": "shop", "choice": ik, "action": crate::jev_bot::action_value(&iaction),
                 "desc": format!("${icost} {idesc}"), "reason": reason, "msg": msg, "forecast": Value::Object(numbers),
                 "forecast_seconds": g(src_fc, "seconds"), "forecast_rollouts": g(src_fc, "rollouts"),
@@ -927,6 +934,13 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     if let Some(k) = planet_rule(gs, &items, money).filter(|_| crate::experiment::get().planet_rule.as_deref() != Some("none")) {
         let it = &items[k];
         let (ik, idesc, icost, iaction) = (it.key.clone(), it.desc.clone(), it.cost, it.action.clone());
+        if crate::experiment::get().agent_dir.is_some() {
+            if let Some((c, act)) = agent_ask(bot, gs, &items, &fallback, can_reroll, money, mode, &ik, "planet rule") {
+                if c != ik {
+                    return Ok(shop_act(bot, gs, &act)?);
+                }
+            }
+        }
         bot.emit("auto", json!({"question": "shop", "choice": ik, "action": crate::jev_bot::action_value(&iaction),
             "desc": format!("${icost} {idesc}"),
             "reason": format!("planet rule: level our top hand / open Celestial packs while ${} stays", super::PLANET_FLOOR)}));
@@ -1067,50 +1081,10 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
     }
     {
         // lab (`agent-dir=D`): an outside agent takes each forecast-backed shop decision (scripts/lab/agentq.py)
-        let e = crate::experiment::get();
-        if let Some(dir) = e.agent_dir.as_ref() {
-            if fc.is_some() && items.iter().any(|it| _d(&it.obj).contains_key("_fc_delta")) {
-                bot._agent_n += 1;
-                let n = bot._agent_n;
-                let seed = crate::gs::s(&g(gs, "seed")).to_string();
-                let feat = |it: &Item| json!({"key": it.key, "desc": it.desc, "cost": it.cost, "kind": g(&it.obj, "kind"),
-                    "fc_delta": g(&it.obj, "_fc_delta"), "fc_se": g(&it.obj, "_fc_se"), "blinds": g(&it.obj, "blinds_cleared_horizon"),
-                    "strong": flag(&it.obj, "_strong")});
-                let req = json!({"id": n, "seed": seed, "ante": g(gs, "ante_num"), "round": g(gs, "round_num"), "money": money,
-                    "mode": mode, "rerolls": bot._rerolls, "can_reroll": can_reroll, "fallback": fallback.0, "code_choice": choice,
-                    "items": items.iter().map(|it| feat(it)).collect::<Vec<_>>(), "state": bot.build_state(gs), "extra": agent_extra(gs)});
-                let d = std::path::Path::new(dir);
-                let _ = std::fs::create_dir_all(d.join("req"));
-                let _ = std::fs::create_dir_all(d.join("ans"));
-                let tmp = d.join("req").join(format!("{seed}.json.tmp"));
-                let rq = d.join("req").join(format!("{seed}.json"));
-                let _ = std::fs::write(&tmp, req.to_string());
-                let _ = std::fs::rename(&tmp, &rq);
-                let ans = d.join("ans").join(format!("{seed}-{n}.txt"));
-                let t0 = std::time::Instant::now();
-                while !ans.exists() && t0.elapsed().as_secs_f64() < e.agent_timeout {
-                    std::thread::sleep(std::time::Duration::from_millis(200));
-                }
-                let got = std::fs::read_to_string(&ans).ok().map(|t| t.lines().next().unwrap_or("").trim().to_string());
-                let _ = std::fs::remove_file(&rq);
-                let code = choice.clone();
-                let mut valid = false;
-                if let Some(k) = got.as_deref() {
-                    if k == "leave" {
-                        choice = "leave".into();
-                        action = ("next_round".into(), None);
-                        valid = true;
-                    } else if k == "reroll" && can_reroll {
-                        choice = "reroll".into();
-                        action = ("reroll".into(), None);
-                        valid = true;
-                    } else if let Some(it) = items.iter().find(|it| it.key == k) {
-                        choice = it.key.clone();
-                        action = it.action.clone();
-                        valid = true;
-                    }
-                }
-                bot.emit("agent", json!({"n": n, "ante": g(gs, "ante_num"), "code": code, "agent": choice, "answered": got.is_some(), "valid": valid}));
+        if crate::experiment::get().agent_dir.is_some() && fc.is_some() && items.iter().any(|it| _d(&it.obj).contains_key("_fc_delta")) {
+            if let Some((c, a)) = agent_ask(bot, gs, &items, &fallback, can_reroll, money, mode, &choice, "choice") {
+                choice = c;
+                action = a;
             }
         }
     }
@@ -1196,4 +1170,47 @@ fn agent_extra(gs: &Value) -> Value {
     let boss = gs["blinds"].as_object().and_then(|b| b.values().find(|x| x["type"] == "BOSS")).cloned().unwrap_or(Value::Null);
     json!({"hands": levels, "vouchers": vouchers, "boss": boss, "deck_size": deck.len(), "suits": suits, "ranks": ranks, "enhancements": enh,
            "hand_size": gs["hand"]["limit"]})
+}
+
+/// lab `agent-dir=D`: hand one shop decision to an outside agent (scripts/lab/agentq.py). Writes D/req/SEED.json and
+/// waits for D/ans/SEED-N.txt; Some((choice, action)) for a valid answer, None on a timeout or an unknown key.
+/// `path` names the code path that made `code` (choice, forecast, early slot fill, free joker, planet rule).
+#[allow(clippy::too_many_arguments)]
+fn agent_ask(bot: &mut JevBot, gs: &Value, items: &[Item], fallback: &(&str, Action), can_reroll: bool, money: i64, mode: &str,
+             code: &str, path: &str) -> Option<(String, Action)> {
+    let e = crate::experiment::get();
+    let dir = e.agent_dir.as_ref()?;
+    bot._agent_n += 1;
+    let n = bot._agent_n;
+    let seed = crate::gs::s(&g(gs, "seed")).to_string();
+    let feat = |it: &Item| json!({"key": it.key, "desc": it.desc, "cost": it.cost, "kind": g(&it.obj, "kind"),
+        "fc_delta": g(&it.obj, "_fc_delta"), "fc_se": g(&it.obj, "_fc_se"), "blinds": g(&it.obj, "blinds_cleared_horizon"),
+        "strong": flag(&it.obj, "_strong")});
+    let req = json!({"id": n, "seed": seed, "ante": g(gs, "ante_num"), "round": g(gs, "round_num"), "money": money,
+        "mode": mode, "rerolls": bot._rerolls, "can_reroll": can_reroll, "fallback": fallback.0, "code_choice": code, "code_path": path,
+        "items": items.iter().map(|it| feat(it)).collect::<Vec<_>>(), "state": bot.build_state(gs), "extra": agent_extra(gs)});
+    let d = std::path::Path::new(dir);
+    let _ = std::fs::create_dir_all(d.join("req"));
+    let _ = std::fs::create_dir_all(d.join("ans"));
+    let tmp = d.join("req").join(format!("{seed}.json.tmp"));
+    let rq = d.join("req").join(format!("{seed}.json"));
+    let _ = std::fs::write(&tmp, req.to_string());
+    let _ = std::fs::rename(&tmp, &rq);
+    let ans = d.join("ans").join(format!("{seed}-{n}.txt"));
+    let t0 = std::time::Instant::now();
+    while !ans.exists() && t0.elapsed().as_secs_f64() < e.agent_timeout {
+        std::thread::sleep(std::time::Duration::from_millis(200));
+    }
+    let got = std::fs::read_to_string(&ans).ok().map(|t| t.lines().next().unwrap_or("").trim().to_string());
+    let _ = std::fs::remove_file(&rq);
+    let out: Option<(String, Action)> = match got.as_deref() {
+        Some("leave") => Some(("leave".into(), ("next_round".into(), None))),
+        Some("reroll") if can_reroll => Some(("reroll".into(), ("reroll".into(), None))),
+        Some(k) => items.iter().find(|it| it.key == k).map(|it| (it.key.clone(), it.action.clone())),
+        None => None,
+    };
+    let agent = out.as_ref().map(|o| o.0.clone()).unwrap_or_else(|| code.to_string());
+    bot.emit("agent", json!({"n": n, "ante": g(gs, "ante_num"), "path": path, "code": code, "agent": agent,
+                             "answered": got.is_some(), "valid": out.is_some()}));
+    out
 }

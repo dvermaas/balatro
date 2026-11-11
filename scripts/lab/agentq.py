@@ -43,7 +43,11 @@ def fmt_req(d, r):
     if r.get("can_reroll"):
         out.append("  reroll        reroll the shop")
     out.append("  leave         leave the shop (next blind)")
-    out.append(f"Code's choice: {r['code_choice']}")
+    path = r.get("code_path", "choice")
+    note = {"forecast": " (confident: the forecast says it beats buying nothing by more than 1 SE)",
+            "early slot fill": " (early-ante rule: fill joker slots)", "free joker": " (a free joker)",
+            "planet rule": " (rule: level the top hand / open Celestial packs)"}.get(path, "")
+    out.append(f"Code's choice: {r['code_choice']}{note}")
     out.append(f"Answer with: python3 scripts/lab/agentq.py answer {d} {r['seed']} {r['id']} <key> \"<one-line reason>\"")
     return "\n".join(out)
 
