@@ -18,7 +18,7 @@ for S in $(seq "$A" "$B"); do
         python3 - "$P" <<'PY'
 import json, sys
 p = sys.argv[1]; done = {json.loads(l)["seed"] for l in open(p + "/results.jsonl") if l.strip()}
-new = [l for l in open(p + "-part/results.jsonl") if l.strip() and "won" in json.loads(l) and json.loads(l)["seed"] not in done]
+new = [l for l in open(p + "-part/results.jsonl") if l.strip() and ("won" in json.loads(l) or "error" in json.loads(l)) and json.loads(l)["seed"] not in done]
 open(p + "/results.jsonl", "a").writelines(l if l.endswith("\n") else l + "\n" for l in new)
 PY
       fi
