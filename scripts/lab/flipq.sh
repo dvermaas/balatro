@@ -23,7 +23,7 @@ open(p + "/results.jsonl", "a").writelines(l if l.endswith("\n") else l + "\n" f
 PY
       fi
       if [ -f "$P/results.jsonl" ] && [ "$(python3 -c "import json,sys; d={json.loads(l)['seed'] for l in open(sys.argv[1]) if l.strip()}; s=open(sys.argv[2]).read().split()[int(sys.argv[3]):int(sys.argv[3])+450]; print(sum(x not in d for x in s))" "$P/results.jsonl" "$R/docs/samples/cloud-lab/seeds-$SET.txt" "$START")" = 0 ]; then continue; fi
-      [ -n "${MAXCHUNKS:-}" ] && [ "$RAN" -ge "$MAXCHUNKS" ] && { echo "$(date -u +%FT%TZ) chunk budget spent"; exit 0; }
+      [ -n "${MAXCHUNKS:-}" ] && [ "$RAN" -ge "$MAXCHUNKS" ] && { echo "$(date -u +%FT%TZ) chunk budget spent (ran $RAN of $MAXCHUNKS)"; exit 0; }
       RAN=$((RAN + 1))
       "$R/scripts/lab/chunk.sh" "$BIN" "$SET" "$START" 450 "flip-$SET-s$S" "$SET-v77" "flip-rand=$N,flip-salt=$S" | tail -1
     done
