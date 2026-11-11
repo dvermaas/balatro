@@ -1183,9 +1183,15 @@ fn agent_ask(bot: &mut JevBot, gs: &Value, items: &[Item], fallback: &(&str, Act
     bot._agent_n += 1;
     let n = bot._agent_n;
     let seed = crate::gs::s(&g(gs, "seed")).to_string();
-    let feat = |it: &Item| json!({"key": it.key, "desc": it.desc, "cost": it.cost, "kind": g(&it.obj, "kind"),
-        "fc_delta": g(&it.obj, "_fc_delta"), "fc_se": g(&it.obj, "_fc_se"), "blinds": g(&it.obj, "blinds_cleared_horizon"),
-        "strong": flag(&it.obj, "_strong")});
+    let shop_cards = cards_of(gs, "shop");
+    let feat = |it: &Item| {
+        // the shop card's edition (a swap's text leaves it out)
+        let ix = if it.key.starts_with("buy_card_") || it.key.starts_with("replace_") { it.key.rsplit('_').next().and_then(|x| x.parse::<usize>().ok()) } else { None };
+        let ed = ix.and_then(|i| shop_cards.get(i)).map(|c| g(&g(c, "modifier"), "edition")).unwrap_or(Value::Null);
+        json!({"key": it.key, "desc": it.desc, "cost": it.cost, "kind": g(&it.obj, "kind"), "edition": ed,
+            "fc_delta": g(&it.obj, "_fc_delta"), "fc_se": g(&it.obj, "_fc_se"), "blinds": g(&it.obj, "blinds_cleared_horizon"),
+            "strong": flag(&it.obj, "_strong")})
+    };
     let req = json!({"id": n, "seed": seed, "ante": g(gs, "ante_num"), "round": g(gs, "round_num"), "money": money,
         "mode": mode, "rerolls": bot._rerolls, "can_reroll": can_reroll, "fallback": fallback.0, "code_choice": code, "code_path": path,
         "items": items.iter().map(|it| feat(it)).collect::<Vec<_>>(), "state": bot.build_state(gs), "extra": agent_extra(gs)});
@@ -1194,6 +1200,8 @@ fn agent_ask(bot: &mut JevBot, gs: &Value, items: &[Item], fallback: &(&str, Act
     let _ = std::fs::create_dir_all(d.join("ans"));
     let tmp = d.join("req").join(format!("{seed}.json.tmp"));
     let rq = d.join("req").join(format!("{seed}.json"));
+    let _ = std::fs::create_dir_all(d.join("raw"));
+    let _ = std::fs::write(d.join("raw").join(format!("{seed}-{n}.json")), gs.to_string());
     let _ = std::fs::write(&tmp, req.to_string());
     let _ = std::fs::rename(&tmp, &rq);
     let ans = d.join("ans").join(format!("{seed}-{n}.txt"));

@@ -874,6 +874,17 @@ measured the wrong thing or was never asked:
   value; the rule-based versions failed on v27-v35 (above). LLM players for comparison: BalatroBench's best was
   Gemini 3 Pro at 9/15 wins; a community fork (v1.1.1) has gpt-6.1-sol 11/15, Claude Opus 5.5 3/5, Haiku 5.5 and
   Sonnet 5.5 0/15.
+- **LLM shop strategist in the loop (pilot)** (`agent-dir=D`, `scripts/lab/agentq.py`, `scripts/lab/agent_brief.md`):
+  Haiku subagents (Claude Code's Agent tool, no API key) take the shop decisions; the bot writes each decision (board,
+  hand levels with times played, order-free deck counts, options with forecasts, the code's choice) and waits for the
+  answer. About 30-60 decisions and 90-100k subagent tokens a game. Batch 1, c2k seeds 0-23, close calls only: 13 vs
+  11 wins against v77 (5/3 games won by only one side), -0.62 blinds a game; its only-wins were late rescues (xMult
+  buys, no planets for unplayed hands), its losses two early deaths after early overrides. The code's confident buys
+  and the planet rule bypassed the agent (one sold its The Order), so batch 2 routes every shop decision. Batch 2, c2k
+  seeds 24-47 (v77 won 19): 18 vs 19 wins (1/3), -0.96 blinds. Together 31 vs 30 (6/6), -0.79 blinds a game: Haiku
+  matches the forecast bot, no better. Gaps found on the way: pack picks are still the code's (it sold an xMult the
+  agent had just bought), swap options did not show the shop card's edition (the agent overrode a Holographic
+  Driver's License as a "simulator quirk"; the forecast was right), and jevlab capped agent runs at one game per core.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

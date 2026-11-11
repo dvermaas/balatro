@@ -41,7 +41,9 @@ def fmt_req(d, r):
     out.append("Options (forecast = extra blinds cleared over the next 3 bosses vs buying nothing, mean +- SE of 64 simulated futures):")
     for it in r["items"]:
         fc = f"forecast {it['fc_delta']:+.2f} +- {it['fc_se']:.2f}" if it.get("fc_delta") is not None else "no forecast"
-        out.append(f"  {it['key']:<13} ${it['cost']:<3} [{it['kind']}] {it['desc']}  | {fc}")
+        ed = it.get("edition")
+        ed = f" [{ed.lower()} edition]" if isinstance(ed, str) and ed and ed.upper() != "BASE" else ""
+        out.append(f"  {it['key']:<13} ${it['cost']:<3} [{it['kind']}] {it['desc']}{ed}  | {fc}")
     if r.get("can_reroll"):
         out.append("  reroll        reroll the shop")
     out.append("  leave         leave the shop (next blind)")

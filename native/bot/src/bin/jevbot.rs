@@ -108,6 +108,15 @@ fn main() {
         Some("panel") => run_panel(&argv[1..]),
         Some("extract-loc") => extract_loc(&argv[1..]),
         Some("sim") => run_sim(&argv[1..]),
+        Some("fc-debug") => {
+            // debugging aid: run the shop forecast on a saved raw gamestate (agent-dir writes D/raw/SEED-N.json)
+            let gs: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(&argv[1]).expect("read gamestate")).expect("json");
+            let keys: Vec<String> = argv[2..].to_vec();
+            let n: usize = std::env::var("FC_N").ok().and_then(|v| v.parse().ok()).unwrap_or(64);
+            let f = jevbot::forecast::forecast(&gs, n, 3, if keys.is_empty() { None } else { Some(&keys) }, None);
+            println!("{}", serde_json::to_string_pretty(&f).unwrap());
+            std::process::exit(0);
+        }
         _ => {}
     }
     let a = parse(&argv);

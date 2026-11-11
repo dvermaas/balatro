@@ -40,3 +40,5 @@ levelling it, collecting xMult, scaling jokers, deck shaping. That is your edge.
 - Buffoon packs (jokers) need a free joker slot to help; Celestial packs help when your main hand's planet can
   appear. Standard packs are usually weak.
 - A replace option (replace_X_Y) sells joker X to buy Y when slots are full; check that X is not a key joker.
+- Editions count: Foil +50 Chips, Holographic +10 Mult, Polychrome X1.5 Mult, Negative +1 joker slot. A joker
+  whose own effect is dead can still be worth buying for its edition (the forecast includes it).
