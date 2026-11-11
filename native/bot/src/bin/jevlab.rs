@@ -236,6 +236,15 @@ fn play(seed: &str) -> Result<Value, String> {
     if let Some(f) = ev.iter().find(|e| kind(e) == "flip") {
         put("flip", f.clone());
     }
+    let ag: Vec<Value> = ev.iter().filter(|e| kind(e) == "agent").cloned().collect();
+    if !ag.is_empty() {
+        put("agent", Value::Array(ag));
+    }
+    if let Some(d) = jevbot::experiment::get().agent_dir.as_ref() {
+        let dd = std::path::Path::new(d).join("done");
+        let _ = std::fs::create_dir_all(&dd);
+        let _ = std::fs::write(dd.join(seed), "");
+    }
     if want_snaps {
         put("snaps", Value::Array(snaps));
     }

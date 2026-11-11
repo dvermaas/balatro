@@ -1065,6 +1065,55 @@ pub fn shop(bot: &mut JevBot, gs: &Value) -> Result<(), Stop> {
             }
         }
     }
+    {
+        // lab (`agent-dir=D`): an outside agent takes each forecast-backed shop decision (scripts/lab/agentq.py)
+        let e = crate::experiment::get();
+        if let Some(dir) = e.agent_dir.as_ref() {
+            if fc.is_some() && items.iter().any(|it| _d(&it.obj).contains_key("_fc_delta")) {
+                bot._agent_n += 1;
+                let n = bot._agent_n;
+                let seed = crate::gs::s(&g(gs, "seed")).to_string();
+                let feat = |it: &Item| json!({"key": it.key, "desc": it.desc, "cost": it.cost, "kind": g(&it.obj, "kind"),
+                    "fc_delta": g(&it.obj, "_fc_delta"), "fc_se": g(&it.obj, "_fc_se"), "blinds": g(&it.obj, "blinds_cleared_horizon"),
+                    "strong": flag(&it.obj, "_strong")});
+                let req = json!({"id": n, "seed": seed, "ante": g(gs, "ante_num"), "round": g(gs, "round_num"), "money": money,
+                    "mode": mode, "rerolls": bot._rerolls, "can_reroll": can_reroll, "fallback": fallback.0, "code_choice": choice,
+                    "items": items.iter().map(|it| feat(it)).collect::<Vec<_>>(), "state": bot.build_state(gs), "extra": agent_extra(gs)});
+                let d = std::path::Path::new(dir);
+                let _ = std::fs::create_dir_all(d.join("req"));
+                let _ = std::fs::create_dir_all(d.join("ans"));
+                let tmp = d.join("req").join(format!("{seed}.json.tmp"));
+                let rq = d.join("req").join(format!("{seed}.json"));
+                let _ = std::fs::write(&tmp, req.to_string());
+                let _ = std::fs::rename(&tmp, &rq);
+                let ans = d.join("ans").join(format!("{seed}-{n}.txt"));
+                let t0 = std::time::Instant::now();
+                while !ans.exists() && t0.elapsed().as_secs_f64() < e.agent_timeout {
+                    std::thread::sleep(std::time::Duration::from_millis(200));
+                }
+                let got = std::fs::read_to_string(&ans).ok().map(|t| t.lines().next().unwrap_or("").trim().to_string());
+                let _ = std::fs::remove_file(&rq);
+                let code = choice.clone();
+                let mut valid = false;
+                if let Some(k) = got.as_deref() {
+                    if k == "leave" {
+                        choice = "leave".into();
+                        action = ("next_round".into(), None);
+                        valid = true;
+                    } else if k == "reroll" && can_reroll {
+                        choice = "reroll".into();
+                        action = ("reroll".into(), None);
+                        valid = true;
+                    } else if let Some(it) = items.iter().find(|it| it.key == k) {
+                        choice = it.key.clone();
+                        action = it.action.clone();
+                        valid = true;
+                    }
+                }
+                bot.emit("agent", json!({"n": n, "ante": g(gs, "ante_num"), "code": code, "agent": choice, "answered": got.is_some(), "valid": valid}));
+            }
+        }
+    }
     for m in infos {
         bot.emit("info", json!({"msg": m}));
     }
@@ -1121,4 +1170,30 @@ pub(crate) fn shop_act(bot: &mut JevBot, gs: &Value, action: &Action) -> Result<
         return Err(e);
     }
     Ok(())
+}
+
+/// lab `agent-dir`: board facts the JEV summary leaves out, all order-free (never the draw order): hand levels with
+/// times played, vouchers, the ante's boss, and the deck's suit, rank and enhancement counts.
+fn agent_extra(gs: &Value) -> Value {
+    let cards = |a: &str| gs[a]["cards"].as_array().cloned().unwrap_or_default();
+    let deck: Vec<Value> = cards("cards").into_iter().chain(cards("hand")).collect();
+    let mut suits = Map::new();
+    let mut ranks = Map::new();
+    let mut enh = Map::new();
+    for c in &deck {
+        let bump = |m: &mut Map<String, Value>, k: &str| { let v = m.get(k).and_then(|x| x.as_i64()).unwrap_or(0); m.insert(k.to_string(), json!(v + 1)); };
+        if let Some(x) = c["value"]["suit"].as_str() { bump(&mut suits, x); }
+        if let Some(x) = c["value"]["rank"].as_str() { bump(&mut ranks, x); }
+        if let Some(x) = c["modifier"]["enhancement"].as_str().filter(|e| !e.is_empty()) { bump(&mut enh, x); }
+    }
+    let levels: Map<String, Value> = gs["hands"].as_object().map(|h| h.iter()
+        .map(|(k, v)| (k.clone(), json!({"level": v["level"], "played": v["played"]}))).collect()).unwrap_or_default();
+    let vouchers: Vec<Value> = match &gs["used_vouchers"] {
+        Value::Object(m) => m.keys().map(|k| json!(k)).collect(),
+        Value::Array(a) => a.clone(),
+        _ => vec![],
+    };
+    let boss = gs["blinds"].as_object().and_then(|b| b.values().find(|x| x["type"] == "BOSS")).cloned().unwrap_or(Value::Null);
+    json!({"hands": levels, "vouchers": vouchers, "boss": boss, "deck_size": deck.len(), "suits": suits, "ranks": ranks, "enhancements": enh,
+           "hand_size": gs["hand"]["limit"]})
 }
