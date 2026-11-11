@@ -69,7 +69,7 @@ def nxt(d, seed, wait=100.0):
             if not os.path.exists(os.path.join(d, "ans", f"{seed}-{r['id']}.txt")):
                 print(fmt_req(d, r)); return 0
         if os.path.exists(os.path.join(d, "done", seed)):
-            print(f"GAME OVER for seed {seed}. You are done: stop now and report a two-line summary of your plan.")
+            print(f"GAME OVER for seed {seed}. Go on to your next seed; after your last seed, reply with one line per seed: the plan you followed.")
             return 0
         time.sleep(0.3)
     print(f"No decision yet (the bot is still playing). Run: python3 scripts/lab/agentq.py next {d} {seed}")
