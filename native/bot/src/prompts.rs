@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v77 + lab tooling (plays unchanged): swap-se=X gives joker swaps (replace_*) their own forecast auto-buy bar. Based on: ",
     "v77 + crash fix (plays unchanged where they ran): a forecast rollout whose item use empties the hand (a card-destroying item on a small hand) ends that rollout as a loss instead of panicking in Policy::decide. Based on: ",
     "v77 + lab tooling (plays unchanged): flip-shop=K / flip-rand=N take the other side of one forecast-backed shop decision per game and record it, so paired games measure what single shop decisions are really worth; item-margin=M and item-se=Z raise the bar for CodeJev's item buys (packs, shop tarots and spectrals). Based on: ",
     "v77 (lab measured, rules correctness): Stone cards are read without rank or suit (rank and suit jokers stopped counting the card under the stone); plays under The Arm are scored a level lower, as the game takes the level before scoring; packs take The Soul (a Legendary joker) when a joker slot is free and Wraith (a Rare joker, money to $0) at 0.3 minus $0.01 per dollar, where v76 valued every Spectral without a rule at 0 and never took them. Each alone was too rare to measure; together c2k 0-899 561 vs 562 wins (26/27), b2k 0-899 566 vs 565 (20/19): no harm. no-stone-fix, no-arm-fix, no-soul-take, no-wraith-take restore v76. Based on: ",

@@ -79,6 +79,13 @@ pub fn sure_se(ante: i64) -> f64 {
         _ => e.sure_se.unwrap_or(SURE_SE as f64),
     }
 }
+/// The auto-buy bar for one item: lab `swap-se=X` gives joker swaps (replace_*) their own bar.
+pub fn sure_se_for(ante: i64, key: &str) -> f64 {
+    match crate::experiment::get().swap_se {
+        Some(x) if key.starts_with("replace_") => x,
+        _ => sure_se(ante),
+    }
+}
 pub const HIDE_SE: i64 = 2;
 pub const REROLL_SE: i64 = 1;
 pub const ITEM_MIN_BUDGET: f64 = 1.0;
