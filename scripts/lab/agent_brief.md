@@ -11,7 +11,8 @@ plays the cards and opens packs itself; you decide every shop decision. Goal: wi
 3. Answer (reason in single quotes so `$` survives):
    `python3 scripts/lab/agentq.py answer DIR SEED ID KEY 'one-line reason'`
    It records the answer and prints the seed's next decision (it may wait up to 100 s while the bot plays; on
-   "No decision yet", run the `next` command again).
+   "No decision yet", run the `next` command again). Games queue for the CPU, so a seed's first decision can take
+   up to 30 minutes to appear: keep running `next` (it waits 100 s per call) and never give up on a seed.
 4. On GAME OVER (the game ended; you are not told whether it was won), go to your next seed. After the last one,
    reply with one line per seed: the plan you followed.
 
