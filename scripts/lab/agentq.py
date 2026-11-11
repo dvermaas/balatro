@@ -35,7 +35,9 @@ def fmt_req(d, r):
                + ("; enhanced " + ", ".join(f"{k} {v}" for k, v in en.items()) if en else "; no enhanced cards"))
     eng = g.get("engine") or {}
     if eng:
-        out.append(f"Engine: has {eng.get('has')}; missing {', '.join(eng.get('missing', [])) or 'nothing'}")
+        miss = eng.get("missing", [])
+        miss = miss if isinstance(miss, str) else ", ".join(miss)
+        out.append(f"Engine: has {eng.get('has')}; missing {miss or 'nothing'}")
     out.append("Options (forecast = extra blinds cleared over the next 3 bosses vs buying nothing, mean +- SE of 64 simulated futures):")
     for it in r["items"]:
         fc = f"forecast {it['fc_delta']:+.2f} +- {it['fc_se']:.2f}" if it.get("fc_delta") is not None else "no forecast"
