@@ -999,7 +999,8 @@ shop planet and pack pick goes to Pair (Mercury buys 0.17 -> 0.85 a game); Pair 
 Half Joker, Supernova, Card Sharp, Spare Trousers, Mad, Clever) clear the auto-buy bar 1 SE earlier and are
 never sold (0.5 -> 1.7 held at death); a Pair within 85% of the best play is played. Baseline 6.50 (10 wins):
 planets -0.08 +- 0.13 (8 wins), + jokers -0.23 +- 0.14 (8), + plays -0.08 +- 0.15 (8). Not confirmed on 200
-seeds: no arm was ahead. The commitment happens and does not pay. Probable reasons (not tested): the
+seeds: no arm was ahead. The commitment happens and does not pay. Retested on v77 (all four flags, c2k 0-449): 240 vs 268 wins
+(43/71, z = -2.6), -0.038 +- 0.047 ante: worse. A forced plan loses to the forecast's flexible one. Probable reasons (not tested): the
 teacher's Pair wins come from its oracle and shop search finding the right Pair jokers, and our Pair decks
 win more because good seeds deal pairs, not because Pair is the better plan. Rows: `samples/cloud-lab/pair-sim60.jsonl.gz`.
 

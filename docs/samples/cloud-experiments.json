@@ -3386,5 +3386,16 @@
   "wins": 298,
   "baseline_wins": 293,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "Full Pair commitment (pair-planets, pair-jokers, pair-keep, pair-play) retested on v77, c2k 0-449",
+  "theme": "plan",
+  "baseline": "v77",
+  "games": 450,
+  "delta_ante": -0.038,
+  "se": 0.047,
+  "wins": 240,
+  "baseline_wins": 268,
+  "outcome": "worse"
  }
 ]
