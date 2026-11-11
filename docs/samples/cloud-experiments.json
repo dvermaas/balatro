@@ -3364,5 +3364,16 @@
   "wins": 32,
   "baseline_wins": 30,
   "outcome": "neutral"
+ },
+ {
+  "experiment": "item-se=3,item-se-to=3 (stricter item-buy bar at antes 1-3, from the flip lead), c2k 0-449",
+  "theme": "shop",
+  "baseline": "v77",
+  "games": 450,
+  "delta_ante": 0.056,
+  "se": 0.038,
+  "wins": 270,
+  "baseline_wins": 268,
+  "outcome": "neutral"
  }
 ]

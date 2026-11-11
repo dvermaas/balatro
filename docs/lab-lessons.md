@@ -867,7 +867,8 @@ measured the wrong thing or was never asked:
   At 6,869 flips (salts 1-4; the salt-4 games alone, c2k 2,000 + b2k 450, are v77 with one random decision flipped:
   1,246 vs 1,257 and 281 vs 286 wins) the total is -0.045 +- 0.026 blinds, 394/494. One lead: skipping a buy the
   code made at antes 1-3 won 27/11 games (n = 198), though antes 4-6 go the other way (11/26) and every skip pooled is
-  44/40, so it was picked out of eight bins. Tested with `item-se=3,item-se-to=3` (below).
+  44/40, so it was picked out of eight bins. `item-se=3,item-se-to=3` (the code's item buys need 3 SE up to ante 3),
+  c2k 0-449: 270 vs 268 wins (26/24), +0.056 +- 0.038 ante. Neutral: the lead was noise.
 - **Loss review, v77** (10 losses read by hand, plus wins against losses over all 4,000 games, from the round
   snapshots). Losses are late (c2k: 491 of 743 at antes 7-8) and far short, not near misses: the Violet Vessel losses
   read had a best hand of 23k-52k against 300k. No single decision stood out. What separates wins from losses is the
