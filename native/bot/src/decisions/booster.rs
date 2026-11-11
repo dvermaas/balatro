@@ -163,6 +163,14 @@ pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             }
         }
         let runner = if ranked.len() > 1 { fixed(ranked[1].0, 3) } else { "none".to_string() };
+        if crate::experiment::get().agent_dir.is_some() {
+            if let Some((c, m, pp)) = agent_pack(bot, gs_, &items, &pack, &key, "clear pick") {
+                if c != key {
+                    bot.act(&m, Some(&pp))?;
+                    return Ok(());
+                }
+            }
+        }
         bot.emit(
             "auto",
             json!({
@@ -224,6 +232,13 @@ pub fn booster(bot: &mut JevBot, gs_: &Value) -> Result<(), Stop> {
             choice = items[bj].0.clone();
             method = items[bj].1 .2 .0.clone();
             params = params_of(bj);
+        }
+    }
+    if crate::experiment::get().agent_dir.is_some() {
+        if let Some((c, m, pp)) = agent_pack(bot, gs_, &items, &pack, &choice, "choice") {
+            choice = c;
+            method = m;
+            params = pp;
         }
     }
     let options: Map<String, Value> = items.iter().map(|(k, it)| (k.clone(), json!(it.0))).collect();
@@ -388,4 +403,28 @@ fn pack_joker_forecast(bot: &mut JevBot, gs_: &Value, jokers_full: bool) -> Opti
         }
     }
     best
+}
+
+/// lab `agent-dir=D`: hand a pack pick to the outside agent (scripts/lab/agentq.py). Some((choice, method, params)) for
+/// a valid answer (`skip` or a take_I the bot can take).
+fn agent_pack(bot: &mut JevBot, gs_: &Value, items: &ShopItems, pack: &[Value], code: &str, path: &str) -> Option<(String, String, Value)> {
+    let jok = area(gs_, "jokers");
+    let cards: Vec<Value> = pack.iter().enumerate().map(|(i, c)| {
+        let key = format!("take_{i}");
+        let it = items.iter().find(|(k, _)| *k == key);
+        json!({"key": key, "desc": item_desc(c, None), "set": gs::get(c, "set"), "edition": gs::get(gs::get(c, "modifier"), "edition"),
+               "takeable": it.is_some(), "use": it.map(|x| gs::get(&x.1 .1, "use").clone()).unwrap_or(Value::Null)})
+    }).collect();
+    let req = json!({"question": "pack", "code_choice": code, "code_path": path, "pack": cards,
+                     "joker_slots": format!("{}/{}", int_or(jok, "count", 0), int_or(jok, "limit", 5)), "money": gs::get(gs_, "money")});
+    let (n, k) = super::agent_exchange(bot, gs_, req)?;
+    let out = if k == "skip" {
+        Some(("skip".to_string(), "pack".to_string(), json!({"skip": true})))
+    } else {
+        items.iter().find(|(kk, _)| *kk == k).map(|(kk, it)| (kk.clone(), it.2 .0.clone(), it.2 .1.clone().unwrap_or(Value::Null)))
+    };
+    let agent = out.as_ref().map(|o| o.0.clone()).unwrap_or_else(|| code.to_string());
+    bot.emit("agent", json!({"n": n, "ante": gs::get(gs_, "ante_num"), "path": format!("pack {path}"), "code": code, "agent": agent,
+                             "answered": true, "valid": out.is_some()}));
+    out
 }

@@ -1148,7 +1148,7 @@ pub(crate) fn shop_act(bot: &mut JevBot, gs: &Value, action: &Action) -> Result<
 
 /// lab `agent-dir`: board facts the JEV summary leaves out, all order-free (never the draw order): hand levels with
 /// times played, vouchers, the ante's boss, and the deck's suit, rank and enhancement counts.
-fn agent_extra(gs: &Value) -> Value {
+pub(crate) fn agent_extra(gs: &Value) -> Value {
     let cards = |a: &str| gs[a]["cards"].as_array().cloned().unwrap_or_default();
     let deck: Vec<Value> = cards("cards").into_iter().chain(cards("hand")).collect();
     let mut suits = Map::new();
@@ -1178,11 +1178,7 @@ fn agent_extra(gs: &Value) -> Value {
 #[allow(clippy::too_many_arguments)]
 fn agent_ask(bot: &mut JevBot, gs: &Value, items: &[Item], fallback: &(&str, Action), can_reroll: bool, money: i64, mode: &str,
              code: &str, path: &str) -> Option<(String, Action)> {
-    let e = crate::experiment::get();
-    let dir = e.agent_dir.as_ref()?;
-    bot._agent_n += 1;
-    let n = bot._agent_n;
-    let seed = crate::gs::s(&g(gs, "seed")).to_string();
+    crate::experiment::get().agent_dir.as_ref()?;
     let shop_cards = cards_of(gs, "shop");
     let feat = |it: &Item| {
         // the shop card's edition (a swap's text leaves it out)
@@ -1192,33 +1188,16 @@ fn agent_ask(bot: &mut JevBot, gs: &Value, items: &[Item], fallback: &(&str, Act
             "fc_delta": g(&it.obj, "_fc_delta"), "fc_se": g(&it.obj, "_fc_se"), "blinds": g(&it.obj, "blinds_cleared_horizon"),
             "strong": flag(&it.obj, "_strong")})
     };
-    let req = json!({"id": n, "seed": seed, "ante": g(gs, "ante_num"), "round": g(gs, "round_num"), "money": money,
-        "mode": mode, "rerolls": bot._rerolls, "can_reroll": can_reroll, "fallback": fallback.0, "code_choice": code, "code_path": path,
-        "items": items.iter().map(|it| feat(it)).collect::<Vec<_>>(), "state": bot.build_state(gs), "extra": agent_extra(gs)});
-    let d = std::path::Path::new(dir);
-    let _ = std::fs::create_dir_all(d.join("req"));
-    let _ = std::fs::create_dir_all(d.join("ans"));
-    let tmp = d.join("req").join(format!("{seed}.json.tmp"));
-    let rq = d.join("req").join(format!("{seed}.json"));
-    let _ = std::fs::create_dir_all(d.join("raw"));
-    let _ = std::fs::write(d.join("raw").join(format!("{seed}-{n}.json")), gs.to_string());
-    let _ = std::fs::write(&tmp, req.to_string());
-    let _ = std::fs::rename(&tmp, &rq);
-    let ans = d.join("ans").join(format!("{seed}-{n}.txt"));
-    let t0 = std::time::Instant::now();
-    while !ans.exists() && t0.elapsed().as_secs_f64() < e.agent_timeout {
-        std::thread::sleep(std::time::Duration::from_millis(200));
-    }
-    let got = std::fs::read_to_string(&ans).ok().map(|t| t.lines().next().unwrap_or("").trim().to_string());
-    let _ = std::fs::remove_file(&rq);
-    let out: Option<(String, Action)> = match got.as_deref() {
-        Some("leave") => Some(("leave".into(), ("next_round".into(), None))),
-        Some("reroll") if can_reroll => Some(("reroll".into(), ("reroll".into(), None))),
-        Some(k) => items.iter().find(|it| it.key == k).map(|it| (it.key.clone(), it.action.clone())),
-        None => None,
+    let req = json!({"question": "shop", "money": money, "mode": mode, "rerolls": bot._rerolls, "can_reroll": can_reroll,
+        "fallback": fallback.0, "code_choice": code, "code_path": path, "items": items.iter().map(|it| feat(it)).collect::<Vec<_>>()});
+    let (n, k) = super::agent_exchange(bot, gs, req)?;
+    let out: Option<(String, Action)> = match k.as_str() {
+        "leave" => Some(("leave".into(), ("next_round".into(), None))),
+        "reroll" if can_reroll => Some(("reroll".into(), ("reroll".into(), None))),
+        k => items.iter().find(|it| it.key == k).map(|it| (it.key.clone(), it.action.clone())),
     };
     let agent = out.as_ref().map(|o| o.0.clone()).unwrap_or_else(|| code.to_string());
     bot.emit("agent", json!({"n": n, "ante": g(gs, "ante_num"), "path": path, "code": code, "agent": agent,
-                             "answered": got.is_some(), "valid": out.is_some()}));
+                             "answered": true, "valid": out.is_some()}));
     out
 }

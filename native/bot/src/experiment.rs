@@ -28,6 +28,7 @@
 //!   agent-dir=D   an outside agent (an LLM subagent, scripts/lab/agentq.py) takes every forecast-backed shop
 //!                 decision: the bot writes D/req/SEED.json and waits for D/ans/SEED-N.txt (agent-timeout=S, default
 //!                 900 s; on a timeout or an unknown key the code's choice stands)
+//!   agent-from=A  the agent decides from ante A on (default 1; earlier decisions stay the code's)
 //!   rollout-nodiscard  forecast rollouts never discard (a probe: how much do their discards matter?)
 //!   rollout-discard2=S  rollouts discard toward the keep set (old rule, flush draw, straight draw, pairs, best
 //!                 play) with the best mean score over S order-free redraws (simcore::SMART_DISCARD)
@@ -267,6 +268,7 @@ pub struct Exp {
     pub swap_se: Option<f64>,
     pub agent_dir: Option<String>,
     pub agent_timeout: f64,
+    pub agent_from: i64,
     pub boss_reroll: Vec<String>,
     pub rollout_nodiscard: bool,
     pub rollout_discard2: usize,
@@ -343,7 +345,7 @@ pub fn get() -> &'static Exp {
               swap_sells: s.split(',').find_map(|x| x.trim().strip_prefix("swap-sells=")?.parse().ok()),
               synth: s.split(',').find_map(|x| x.trim().strip_prefix("synth=")?.parse().ok()),
               planet_deals: s.split(',').find_map(|x| x.trim().strip_prefix("planet-deals=")?.parse().ok()),
-              sure_se: s.split(',').find_map(|x| x.trim().strip_prefix("sure-se=")?.parse().ok()), final_sure_se: s.split(',').find_map(|x| x.trim().strip_prefix("final-sure-se=")?.parse().ok()), swap_se: s.split(',').find_map(|x| x.trim().strip_prefix("swap-se=")?.parse().ok()), agent_dir: s.split(',').find_map(|x| x.trim().strip_prefix("agent-dir=").map(str::to_string)), agent_timeout: s.split(',').find_map(|x| x.trim().strip_prefix("agent-timeout=")?.parse().ok()).unwrap_or(900.0),
+              sure_se: s.split(',').find_map(|x| x.trim().strip_prefix("sure-se=")?.parse().ok()), final_sure_se: s.split(',').find_map(|x| x.trim().strip_prefix("final-sure-se=")?.parse().ok()), swap_se: s.split(',').find_map(|x| x.trim().strip_prefix("swap-se=")?.parse().ok()), agent_dir: s.split(',').find_map(|x| x.trim().strip_prefix("agent-dir=").map(str::to_string)), agent_timeout: s.split(',').find_map(|x| x.trim().strip_prefix("agent-timeout=")?.parse().ok()).unwrap_or(900.0), agent_from: s.split(',').find_map(|x| x.trim().strip_prefix("agent-from=")?.parse().ok()).unwrap_or(1),
               rollout_nodiscard: has("rollout-nodiscard"),
               rollout_discard2: num("rollout-discard2") as usize,
               play_now_ratio: s.split(',').find_map(|x| x.trim().strip_prefix("play-now-ratio=")?.parse().ok()),

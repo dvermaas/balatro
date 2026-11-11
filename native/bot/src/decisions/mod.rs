@@ -511,3 +511,40 @@ pub(crate) fn card_order_scored(gs_: &Value, hand: &[Value], cards: &[usize]) ->
     }
     best.map(|b| (base, b.0, b.1))
 }
+
+/// lab `agent-dir=D`: one request/answer exchange with the outside agent (scripts/lab/agentq.py). Adds id, seed, ante,
+/// round, the JEV board summary and the order-free extras to `req`, writes D/req/SEED.json (and the raw gamestate to
+/// D/raw/SEED-N.json) and waits for D/ans/SEED-N.txt. None when the agent is off for this ante, or on a timeout.
+pub(crate) fn agent_exchange(bot: &mut JevBot, gs: &Value, mut req: Value) -> Option<(i64, String)> {
+    let e = crate::experiment::get();
+    let dir = e.agent_dir.as_ref()?;
+    if gs::int(gs::get(gs, "ante_num")) < e.agent_from {
+        return None;
+    }
+    bot._agent_n += 1;
+    let n = bot._agent_n;
+    let seed = gs::s(gs::get(gs, "seed")).to_string();
+    req["id"] = json!(n);
+    req["seed"] = json!(seed);
+    req["ante"] = gs::get(gs, "ante_num").clone();
+    req["round"] = gs::get(gs, "round_num").clone();
+    req["state"] = bot.build_state(gs);
+    req["extra"] = shop::agent_extra(gs);
+    let d = std::path::Path::new(dir);
+    for sub in ["req", "ans", "raw"] {
+        let _ = std::fs::create_dir_all(d.join(sub));
+    }
+    let _ = std::fs::write(d.join("raw").join(format!("{seed}-{n}.json")), gs.to_string());
+    let tmp = d.join("req").join(format!("{seed}.json.tmp"));
+    let rq = d.join("req").join(format!("{seed}.json"));
+    let _ = std::fs::write(&tmp, req.to_string());
+    let _ = std::fs::rename(&tmp, &rq);
+    let ans = d.join("ans").join(format!("{seed}-{n}.txt"));
+    let t0 = std::time::Instant::now();
+    while !ans.exists() && t0.elapsed().as_secs_f64() < e.agent_timeout {
+        std::thread::sleep(std::time::Duration::from_millis(200));
+    }
+    let got = std::fs::read_to_string(&ans).ok().map(|t| t.lines().next().unwrap_or("").trim().to_string());
+    let _ = std::fs::remove_file(&rq);
+    got.map(|k| (n, k))
+}

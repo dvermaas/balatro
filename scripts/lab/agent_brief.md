@@ -1,7 +1,9 @@
 # Shop strategist brief (jevlab `agent-dir` hook, scripts/lab/agentq.py)
 
-You decide the shop purchases for games of Balatro (Red deck, White stake) that a bot plays in a simulator. The bot
-plays the cards and opens packs itself; you decide every shop decision. Goal: win each run (beat the ante-8 boss).
+You decide the shop purchases and pack picks for games of Balatro (Red deck, White stake) that a bot plays in a
+simulator. The bot plays the cards; you decide every shop decision and which card to take from each opened pack
+(PACK PICK: answer a take_N key or skip; the pack is already paid for, and some runs hand you only antes 3+).
+Goal: win each run (beat the ante-8 boss).
 
 ## Loop (work directory /home/user/balatro; use only the Bash tool and these two commands)
 
@@ -39,6 +41,8 @@ levelling it, collecting xMult, scaling jokers, deck shaping. That is your edge.
   idle money beyond that should become power (rerolls, packs, jokers).
 - Buffoon packs (jokers) need a free joker slot to help; Celestial packs help when your main hand's planet can
   appear. Standard packs are usually weak.
+- In a pack, take the planet of your main hand; from a Buffoon pack take the joker that fits the build (xMult
+  first); tarots that enhance or convert cards (or give money) are usually worth taking over skip.
 - A replace option (replace_X_Y) sells joker X to buy Y when slots are full; check that X is not a key joker.
 - Editions count: Foil +50 Chips, Holographic +10 Mult, Polychrome X1.5 Mult, Negative +1 joker slot. A joker
   whose own effect is dead can still be worth buying for its edition (the forecast includes it).

@@ -13,7 +13,45 @@ import json, os, sys, time
 R = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
+def board(r):
+    g = r["state"]["game"]; x = r.get("extra", {})
+    out = []
+    b = x.get("boss") or {}
+    if b:
+        out.append(f"Boss of this ante: {b.get('name')} ({b.get('effect', '')})")
+    out.append(f"Jokers {g.get('joker_slots', '')} (left to right):")
+    out += [f"  - {j}" for j in g.get("jokers", [])] or ["  (none)"]
+    out.append(f"Consumables {g.get('consumable_slots', '')}: {', '.join(g.get('consumables', [])) or 'none'}")
+    hs = x.get("hands", {})
+    lv = {k: v for k, v in hs.items() if (v.get("played") or 0) > 0 or (v.get("level") or 1) > 1}
+    lv = sorted(lv.items(), key=lambda kv: -(kv[1].get("played") or 0))
+    out.append("Hands (level, times played): " + ", ".join(f"{k} L{v.get('level')} x{v.get('played') or 0}" for k, v in lv))
+    s = x.get("suits", {}); rk = x.get("ranks", {}); en = x.get("enhancements", {})
+    out.append(f"Deck: {x.get('deck_size')} cards, hand size {x.get('hand_size')}; suits "
+               + " ".join(f"{k[:1]}{v}" for k, v in sorted(s.items()))
+               + ("; enhanced " + ", ".join(f"{k} {v}" for k, v in en.items()) if en else "; no enhanced cards"))
+    return out
+
+
+def fmt_pack(d, r):
+    out = [f"PACK PICK {r['id']} | seed {r['seed']} | ante {r['ante']} round {r['round']} | money ${r.get('money')} | joker slots {r.get('joker_slots')}"]
+    out += board(r)
+    out.append("The pack is open and already paid for. Cards:")
+    for c in r["pack"]:
+        ed = c.get("edition")
+        ed = f" [{ed.lower()} edition]" if isinstance(ed, str) and ed and ed.upper() != "BASE" else ""
+        use = f" | use: {c['use']}" if c.get("use") else ""
+        tk = "" if c.get("takeable") else "   (cannot take: no free joker slot or banned)"
+        out.append(f"  {c['key']:<8} [{str(c.get('set', '')).lower()}] {c['desc']}{ed}{use}{tk}")
+    out.append("  skip     take nothing")
+    out.append(f"Code's choice: {r['code_choice']}")
+    out.append(f"Answer with: python3 scripts/lab/agentq.py answer {d} {r['seed']} {r['id']} <key> '<one-line reason>'")
+    return "\n".join(out)
+
+
 def fmt_req(d, r):
+    if r.get("question") == "pack":
+        return fmt_pack(d, r)
     g = r["state"]["game"]; x = r.get("extra", {})
     out = [f"DECISION {r['id']} | seed {r['seed']} | ante {r['ante']} round {r['round']} | money ${r['money']}"
            f" (interest +${g.get('interest_per_round', 0)}/round) | rerolls this shop {r['rerolls']}"]
@@ -52,11 +90,13 @@ def fmt_req(d, r):
             "early slot fill": " (early-ante rule: fill joker slots)", "free joker": " (a free joker)",
             "planet rule": " (rule: level the top hand / open Celestial packs)"}.get(path, "")
     out.append(f"Code's choice: {r['code_choice']}{note}")
-    out.append(f"Answer with: python3 scripts/lab/agentq.py answer {d} {r['seed']} {r['id']} <key> \"<one-line reason>\"")
+    out.append(f"Answer with: python3 scripts/lab/agentq.py answer {d} {r['seed']} {r['id']} <key> '<one-line reason>'")
     return "\n".join(out)
 
 
 def options(r):
+    if r.get("question") == "pack":
+        return [c["key"] for c in r["pack"] if c.get("takeable")] + ["skip"]
     k = [it["key"] for it in r["items"]] + ["leave"]
     return k + (["reroll"] if r.get("can_reroll") else [])
 
