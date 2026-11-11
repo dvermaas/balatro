@@ -3342,5 +3342,16 @@
   "wins": 31,
   "baseline_wins": 30,
   "outcome": "neutral (pilot)"
+ },
+ {
+  "experiment": "LLM shop strategist (Haiku subagents) from ante 3 on, shop decisions and pack picks, c2k seeds 0-47",
+  "theme": "LLM",
+  "baseline": "v77",
+  "games": 48,
+  "delta_ante": 0.021,
+  "se": 0.076,
+  "wins": 28,
+  "baseline_wins": 30,
+  "outcome": "neutral"
  }
 ]

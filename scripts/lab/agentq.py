@@ -41,7 +41,7 @@ def fmt_pack(d, r):
         ed = c.get("edition")
         ed = f" [{ed.lower()} edition]" if isinstance(ed, str) and ed and ed.upper() != "BASE" else ""
         use = f" | use: {c['use']}" if c.get("use") else ""
-        tk = "" if c.get("takeable") else "   (cannot take: no free joker slot or banned)"
+        tk = "" if c.get("takeable") else "   (cannot take: no free joker slot, no target in hand, or banned)"
         out.append(f"  {c['key']:<8} [{str(c.get('set', '')).lower()}] {c['desc']}{ed}{use}{tk}")
     out.append("  skip     take nothing")
     out.append(f"Code's choice: {r['code_choice']}")
@@ -77,11 +77,17 @@ def fmt_req(d, r):
         miss = miss if isinstance(miss, str) else ", ".join(miss)
         out.append(f"Engine: has {eng.get('has')}; missing {miss or 'nothing'}")
     out.append("Options (forecast = extra blinds cleared over the next 3 bosses vs buying nothing, mean +- SE of 64 simulated futures):")
+    card_desc = {it["key"].rsplit("_", 1)[1]: it["desc"] for it in r["items"] if it["key"].startswith("buy_card_")}
     for it in r["items"]:
         fc = f"forecast {it['fc_delta']:+.2f} +- {it['fc_se']:.2f}" if it.get("fc_delta") is not None else "no forecast"
         ed = it.get("edition")
         ed = f" [{ed.lower()} edition]" if isinstance(ed, str) and ed and ed.upper() != "BASE" else ""
-        out.append(f"  {it['key']:<13} ${it['cost']:<3} [{it['kind']}] {it['desc']}{ed}  | {fc}")
+        desc = it["desc"]
+        if it["key"].startswith("replace_") and desc.startswith("sell ") and " for " in desc:
+            a, b = desc[5:].split(" for ", 1)
+            full = card_desc.get(it["key"].rsplit("_", 1)[1])
+            desc = f"SELL {a} (you lose it), then BUY {full or b}"
+        out.append(f"  {it['key']:<13} ${it['cost']:<3} [{it['kind']}] {desc}{ed}  | {fc}")
     if r.get("can_reroll"):
         out.append("  reroll        reroll the shop")
     out.append("  leave         leave the shop (next blind)")

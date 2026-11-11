@@ -87,7 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
-    "v77 + lab tooling (plays unchanged): agent-dir=D hands each forecast-backed shop decision (the close calls, the confident forecast buys, early slot fills and the planet rule) to an outside agent (an LLM subagent through scripts/lab/agentq.py); jevlab then runs more games than cores. Pack picks go to the agent too, and agent-from=A keeps antes before A with the code. Based on: ",
+    "v77 + lab tooling (plays unchanged): agent-dir=D hands each forecast-backed shop decision (the close calls, the confident forecast buys, early slot fills and the planet rule) to an outside agent (an LLM subagent through scripts/lab/agentq.py); jevlab then runs more games than cores. Pack picks go to the agent too, and agent-from=A keeps antes before A with the code; a targeted tarot with no target is not offered as a pick. Based on: ",
     "v77 + lab tooling (plays unchanged): swap-se=X gives joker swaps (replace_*) their own forecast auto-buy bar. Based on: ",
     "v77 + crash fix (plays unchanged where they ran): a forecast rollout whose item use empties the hand (a card-destroying item on a small hand) ends that rollout as a loss instead of panicking in Policy::decide. Based on: ",
     "v77 + lab tooling (plays unchanged): flip-shop=K / flip-rand=N take the other side of one forecast-backed shop decision per game and record it, so paired games measure what single shop decisions are really worth; item-margin=M and item-se=Z raise the bar for CodeJev's item buys (packs, shop tarots and spectrals). Based on: ",

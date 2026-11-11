@@ -885,6 +885,14 @@ measured the wrong thing or was never asked:
   matches the forecast bot, no better. Gaps found on the way: pack picks are still the code's (it sold an xMult the
   agent had just bought), swap options did not show the shop card's edition (the agent overrode a Holographic
   Driver's License as a "simulator quirk"; the forecast was right), and jevlab capped agent runs at one game per core.
+  Batch 3 (`agent-from=3`: antes 1-2 stay with the code, where the pilot's losses began; pack picks go to the agent
+  too; same 48 seeds): 28 vs 30 wins (5/7), +0.02 +- 0.08 ante, 2,723 decisions with 0 timeouts. Neutral again. Seeds
+  won by only one side in both runs split evenly (agent G6MTPMNN, VGDW4G9K, XKJN7TMN; code F8QEJV91, P2RY2LMN,
+  RZSTXX2S), so the difference is chaos, not a style. What the agents got wrong: misread `replace_X_Y` and sold the
+  wrong joker (now rendered "SELL X (you lose it), then BUY Y: effect"), took a targeted tarot with no target in hand
+  (the take failed and was offered again; such a card is no longer offered), and misread bosses (Verdant Leaf's sale
+  is in the blind, not the shop). What they say the forecast misses: Hologram's growth rate, Madness eating jokers,
+  The Arm/The Ox. Next: Sonnet on the same seeds.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.

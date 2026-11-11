@@ -411,7 +411,8 @@ fn agent_pack(bot: &mut JevBot, gs_: &Value, items: &ShopItems, pack: &[Value], 
     let jok = area(gs_, "jokers");
     let cards: Vec<Value> = pack.iter().enumerate().map(|(i, c)| {
         let key = format!("take_{i}");
-        let it = items.iter().find(|(k, _)| *k == key);
+        // a targeted tarot with no target cannot be used from the pack (the take fails), so it is not offered
+        let it = items.iter().find(|(k, x)| *k == key && gs::get(&x.1, "use") != &json!("no good target in this hand"));
         json!({"key": key, "desc": item_desc(c, None), "set": gs::get(c, "set"), "edition": gs::get(gs::get(c, "modifier"), "edition"),
                "takeable": it.is_some(), "use": it.map(|x| gs::get(&x.1 .1, "use").clone()).unwrap_or(Value::Null)})
     }).collect();
@@ -421,7 +422,7 @@ fn agent_pack(bot: &mut JevBot, gs_: &Value, items: &ShopItems, pack: &[Value], 
     let out = if k == "skip" {
         Some(("skip".to_string(), "pack".to_string(), json!({"skip": true})))
     } else {
-        items.iter().find(|(kk, _)| *kk == k).map(|(kk, it)| (kk.clone(), it.2 .0.clone(), it.2 .1.clone().unwrap_or(Value::Null)))
+        items.iter().find(|(kk, x)| *kk == k && gs::get(&x.1, "use") != &json!("no good target in this hand")).map(|(kk, it)| (kk.clone(), it.2 .0.clone(), it.2 .1.clone().unwrap_or(Value::Null)))
     };
     let agent = out.as_ref().map(|o| o.0.clone()).unwrap_or_else(|| code.to_string());
     bot.emit("agent", json!({"n": n, "ante": gs::get(gs_, "ante_num"), "path": format!("pack {path}"), "code": code, "agent": agent,
