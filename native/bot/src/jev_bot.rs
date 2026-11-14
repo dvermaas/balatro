@@ -716,6 +716,11 @@ impl JevBot {
     /// Lab tooling: a decision outside a round taken by `strategic` (see the field).
     fn strategic_step(&mut self, gs_: &Value, handler: &str) -> Result<(), Stop> {
         if handler == "round_eval" {
+            // After the final boss's cash_out the sim reports won=true at ROUND_EVAL again;
+            // v77 re-runs on_round_eval there (round_end again plus the victory finish).
+            if gs::truthy(gs::get(gs_, "won")) {
+                return self.on_round_eval(gs_);
+            }
             let round = gs::get(gs_, "round_num").clone();
             if self._rl_round_end != round {
                 self._rl_round_end = round;

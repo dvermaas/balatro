@@ -918,6 +918,20 @@ measured the wrong thing or was never asked:
   and so is any gain. With the flips, the tail retrains and the LLM strategist this is the fourth way of re-valuing
   the options v77 already considers that changes games and not wins. What is missing is more likely what v77 never
   does (thin the deck, level the hand it plays, feed jokers that grow) than a choice it gets wrong.
+- **A network cloned from v77's decisions outside rounds** (the first step of the learned policy; `native/rlcore`,
+  `native/rlenv`, `scripts/rl/`). 1,000 v77 games on e16k 0-999 logged as raw simulator actions (`JEVLAB_RLLOG`; 140,140
+  decisions, none the 723-action vocabulary could not express), a small network trained on them (`train_bc.py`), and
+  the network put back into jevlab for every blind-select, shop, pack and cash-out decision while v77's code plays the
+  rounds (`JEVLAB_RLPOLICY`). It picks v77's action on 74% of non-forced held-out decisions (shop 63%, pack 73%; always
+  picking the most frequent action gets 48%), and that stops rising after ~800 games. Wins on c2k 0-449, v77 = 268:
+  v77's shops without the round search (`no-round-search`) 252 (16/32, z = -2.3); the clone with the round search 95;
+  the clone without it 83 (632 training games) and 99 (1,000); with sells weighted 3x in training 121 (63/41 against
+  unweighted), and 154 on c2k 450-899 where v77 wins 293. In the rollouts' round player instead of v77's (`rlenv`, 160
+  games/s) the same kind of clone wins 11 of 450. So: three quarters agreement is half of v77's wins (errors compound
+  over ~110 decisions a game); the round search is worth ~14 wins in 450 whoever shops, so training can run without it
+  at ~1 CPU-s a game (4 games/s on 4 cores; half of that is the joker-order search run on every shop step); and the
+  rollouts' round player is no stand-in for v77's. Selling is what the clone misses most: 4,902 of v77's 4,905 sells
+  are the first half of a swap (slots full, a buy follows at once), and it finds 6% of them unweighted, 18% at 3x.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
@@ -1059,6 +1073,8 @@ What to trust:
 - Plan decisions (commit to a hand, chase xMult, shape the deck) that a 3-boss rollout cannot value: an LLM on top of
   the forecast (Haiku twice, Sonnet once, 48 games each) was neutral; rule-based plans failed on v27-v35.
 - A learned policy over the simulator's own actions (wider than the bot's options), cloned from v77 and then improved
-  by reinforcement learning in a fast environment where `simcore` plays the rounds: started 2026-11-14 after the
-  horizon retest (above), judged like every change on b2k and c2k against v77.
+  by reinforcement learning with v77's own round play minus the round search (`simcore`'s round player is too weak,
+  see the clone entry in the log): started 2026-11-14 after the horizon retest, judged like every change on b2k and
+  c2k against v77. The clone is at about half of v77's wins; next are a sell-and-buy swap as one action and the
+  training loop.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).

@@ -145,7 +145,7 @@ impl RlDriver {
     fn decide(&mut self, gs_: &Value, handler: &str) -> Option<(String, Value)> {
         use rumbot_sim::game::{ActionType, PackChoice};
         if handler == "shop" {
-            if let Some(o) = v77_shop_order(gs_) {
+            if let Some(o) = jevbot::prof::time("rl.v77_order", || v77_shop_order(gs_)) {
                 self.reorders += 1;
                 return Some(("rearrange".into(), json!({"jokers": o})));
             }
@@ -156,8 +156,8 @@ impl RlDriver {
         if !rlcore::vocab::strategic_phase(g.phase) {
             return None;
         }
-        let (oi, ov) = self.enc.encode(g);
-        let legal = rlcore::vocab::legal_with_ids(g);
+        let (oi, ov) = jevbot::prof::time("rl.encode", || self.enc.encode(g));
+        let legal = jevbot::prof::time("rl.legal", || rlcore::vocab::legal_with_ids(g));
         let mut mask: Vec<u16> = legal.iter().map(|(v, _)| *v as u16).collect();
         mask.sort_unstable();
         mask.dedup();
@@ -165,7 +165,7 @@ impl RlDriver {
             return None;
         }
         let u = if self.temp.is_some() { self.uniform() } else { 0.0 };
-        let (id, _, _) = self.net.choose(&oi, &ov, &mask, self.temp, u);
+        let (id, _, _) = jevbot::prof::time("rl.net", || self.net.choose(&oi, &ov, &mask, self.temp, u));
         let cands: Vec<rumbot_sim::game::Action> = legal.iter().filter(|(v, _)| *v == id).map(|(_, a)| a.clone()).collect();
         let mut a = rlcore::vocab::to_action_from(g, &cands, None)?;
         if !a.cards.is_empty() {
@@ -179,7 +179,7 @@ impl RlDriver {
                 _ => None,
             };
             let key = name.and_then(rumbot_sim::shop_pool::key_by_consumable_name);
-            let planned = key.and_then(|k| jevbot::tarots::plan(k, jevbot::gs::cards_of(gs_, "hand"), &jevbot::build::decide(gs_)));
+            let planned = jevbot::prof::time("rl.targets", || key.and_then(|k| jevbot::tarots::plan(k, jevbot::gs::cards_of(gs_, "hand"), &jevbot::build::decide(gs_))));
             match planned.map(|(mut t, _)| {
                 t.sort_unstable();
                 t
@@ -303,7 +303,7 @@ fn play(seed: &str) -> Result<Value, String> {
     });
     if let Some(d) = &rl_driver {
         let d = d.clone();
-        bot.strategic = Some(Box::new(move |gs_, h| d.borrow_mut().decide(gs_, h)));
+        bot.strategic = Some(Box::new(move |gs_, h| jevbot::prof::time("rl.hook", || d.borrow_mut().decide(gs_, h))));
     }
     let e = jevbot::experiment::get();
     bot.dec = jevbot::decisions::DecisionCfg::lab_with(e.fc_n.unwrap_or(64), e.fc_bosses.unwrap_or(3));
@@ -324,7 +324,7 @@ fn play(seed: &str) -> Result<Value, String> {
                 }
             }
         }
-        match bot.step() {
+        match jevbot::prof::time("bot.step", || bot.step()) {
             Ok(_) => {}
             Err(Stop::BenchmarkComplete) => break,
             Err(Stop::Runtime(m)) if m.contains("Victory reported") => {
