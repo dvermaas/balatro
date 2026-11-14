@@ -62,6 +62,143 @@ impl jevbot::iface::Game for RecGame {
     }
 }
 
+/// The rumbot game, shared between the bot (through `RecGame`) and the lab's RL driver.
+struct SharedGame(Rc<RefCell<RumbotGame>>);
+impl jevbot::iface::Game for SharedGame {
+    fn call(&mut self, method: &str, params: Option<&Value>) -> Result<Value, jevbot::iface::RpcError> {
+        self.0.borrow_mut().call(method, params)
+    }
+    fn backend(&self) -> &str {
+        jevbot::engine::BACKEND_NAME
+    }
+}
+
+/// JEVLAB_RLPOLICY=<weights.brlw>: the network (rlcore::net) takes every decision outside a round; JEVLAB_RLTEMP=T
+/// samples at temperature T (argmax without it), JEVLAB_RLSEED=K seeds the sampling.
+static RL_NET: std::sync::OnceLock<Option<rlcore::net::Net>> = std::sync::OnceLock::new();
+fn rl_net() -> Option<&'static rlcore::net::Net> {
+    RL_NET
+        .get_or_init(|| std::env::var_os("JEVLAB_RLPOLICY").map(|p| rlcore::net::Net::load(std::path::Path::new(&p)).unwrap_or_else(|e| panic!("JEVLAB_RLPOLICY: {e}"))))
+        .as_ref()
+}
+
+struct RlDriver {
+    game: Rc<RefCell<RumbotGame>>,
+    net: &'static rlcore::net::Net,
+    temp: Option<f32>,
+    rng: u64,
+    enc: rlcore::obs::Encoder,
+    decisions: u64,
+    reorders: u64,
+    targets_planned: u64,
+    targets_fallback: u64,
+}
+
+/// v77's joker order in the shop (strategy::auto_action's SHOP branch): Ceremonial Dagger last, then the searched
+/// order (readiness::best_joker_order) when it keeps the Dagger last.
+fn v77_shop_order(gs_: &Value) -> Option<Vec<usize>> {
+    let jokers = jevbot::gs::cards_of(gs_, "jokers");
+    let labels: Vec<&str> = jokers.iter().map(|j| jevbot::gs::get(j, "label").as_str().unwrap_or("")).collect();
+    let ident: Vec<usize> = (0..jokers.len()).collect();
+    let dl = jevbot::strategy::dagger_last(&labels, ident.clone());
+    if dl != ident {
+        return Some(dl);
+    }
+    let best = jevbot::readiness::best_joker_order(gs_, 12);
+    let best = if labels.contains(&"Ceremonial Dagger") { best.filter(|o| jevbot::strategy::dagger_last(&labels, o.clone()) == *o) } else { best };
+    best.filter(|o| *o != ident)
+}
+
+/// The BalatroBot call that steps rumbot action `a` through the bot's engine (engine/actions.rs, inverted).
+fn rpc_of(a: &rumbot_sim::game::Action) -> (String, Value) {
+    use rumbot_sim::game::ActionType as T;
+    let i = a.index;
+    let (m, p) = match a.r#type {
+        T::SelectBlind => ("select", json!({})),
+        T::SkipBlind => ("skip", json!({})),
+        T::RerollBoss => ("reroll_boss", json!({})),
+        T::CashOut => ("cash_out", json!({})),
+        T::Reroll => ("reroll", json!({})),
+        T::LeaveShop => ("next_round", json!({})),
+        T::SkipPack => ("pack", json!({"skip": true})),
+        T::Buy => ("buy", json!({"card": i})),
+        T::BuyVoucher => ("buy", json!({"voucher": i})),
+        T::BuyPack => ("buy", json!({"pack": i})),
+        T::SellJoker => ("sell", json!({"joker": i})),
+        T::SellConsumable => ("sell", json!({"consumable": i})),
+        T::UseConsumable => ("use", json!({"consumable": i, "cards": a.cards})),
+        T::PickPack => ("pack", json!({"card": i, "targets": a.cards})),
+        t => panic!("no RPC for {t:?}"),
+    };
+    (m.to_string(), p)
+}
+
+impl RlDriver {
+    fn uniform(&mut self) -> f64 {
+        self.rng = self.rng.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut z = self.rng;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        ((z ^ (z >> 31)) >> 11) as f64 / (1u64 << 53) as f64
+    }
+
+    fn decide(&mut self, gs_: &Value, handler: &str) -> Option<(String, Value)> {
+        use rumbot_sim::game::{ActionType, PackChoice};
+        if handler == "shop" {
+            if let Some(o) = v77_shop_order(gs_) {
+                self.reorders += 1;
+                return Some(("rearrange".into(), json!({"jokers": o})));
+            }
+        }
+        let game = self.game.clone();
+        let eng = game.borrow();
+        let g = eng.g.as_ref()?;
+        if !rlcore::vocab::strategic_phase(g.phase) {
+            return None;
+        }
+        let (oi, ov) = self.enc.encode(g);
+        let legal = rlcore::vocab::legal_with_ids(g);
+        let mut mask: Vec<u16> = legal.iter().map(|(v, _)| *v as u16).collect();
+        mask.sort_unstable();
+        mask.dedup();
+        if mask.is_empty() {
+            return None;
+        }
+        let u = if self.temp.is_some() { self.uniform() } else { 0.0 };
+        let (id, _, _) = self.net.choose(&oi, &ov, &mask, self.temp, u);
+        let cands: Vec<rumbot_sim::game::Action> = legal.iter().filter(|(v, _)| *v == id).map(|(_, a)| a.clone()).collect();
+        let mut a = rlcore::vocab::to_action_from(g, &cands, None)?;
+        if !a.cards.is_empty() {
+            // a targeted consumable: v77's own target chooser (tarots::plan on the build, as decisions/booster.rs)
+            let name = match a.r#type {
+                ActionType::PickPack => match &g.pack_options[a.index as usize] {
+                    PackChoice::Consumable(spec) => Some(spec.name),
+                    _ => None,
+                },
+                ActionType::UseConsumable => Some(g.consumables[a.index as usize].borrow().spec.name),
+                _ => None,
+            };
+            let key = name.and_then(rumbot_sim::shop_pool::key_by_consumable_name);
+            let planned = key.and_then(|k| jevbot::tarots::plan(k, jevbot::gs::cards_of(gs_, "hand"), &jevbot::build::decide(gs_)));
+            match planned.map(|(mut t, _)| {
+                t.sort_unstable();
+                t
+            }) {
+                Some(t) => match rlcore::vocab::to_action_from(g, &cands, Some(&t)) {
+                    Some(b) if b.cards == t => {
+                        a = b;
+                        self.targets_planned += 1;
+                    }
+                    _ => self.targets_fallback += 1,
+                },
+                None => self.targets_fallback += 1,
+            }
+        }
+        self.decisions += 1;
+        Some(rpc_of(&a))
+    }
+}
+
 /// Strip card `id` fields and timing keys, for comparison.
 fn norm(v: &Value) -> Value {
     match jevbot::replay::strip_timing(v) {
@@ -145,10 +282,29 @@ fn play(seed: &str) -> Result<Value, String> {
         let l = l.clone();
         rumbot.on_step = Some(Box::new(move |g, a| l.borrow_mut().on_step(g, a)));
     }
+    let rumbot = Rc::new(RefCell::new(rumbot));
     let mut bot = JevBot::new(
-        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(rumbot), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
+        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(SharedGame(rumbot.clone())), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
+    let rl_driver = rl_net().map(|net| {
+        let k: u64 = std::env::var("JEVLAB_RLSEED").ok().and_then(|x| x.parse().ok()).unwrap_or(0);
+        Rc::new(RefCell::new(RlDriver {
+            game: rumbot.clone(),
+            net,
+            temp: std::env::var("JEVLAB_RLTEMP").ok().and_then(|x| x.parse().ok()),
+            rng: rumbot_sim::state::fnv1a64(seed.as_bytes()) ^ k.wrapping_mul(0x9E37_79B9_7F4A_7C15),
+            enc: rlcore::obs::Encoder::new(),
+            decisions: 0,
+            reorders: 0,
+            targets_planned: 0,
+            targets_fallback: 0,
+        }))
+    });
+    if let Some(d) = &rl_driver {
+        let d = d.clone();
+        bot.strategic = Some(Box::new(move |gs_, h| d.borrow_mut().decide(gs_, h)));
+    }
     let e = jevbot::experiment::get();
     bot.dec = jevbot::decisions::DecisionCfg::lab_with(e.fc_n.unwrap_or(64), e.fc_bosses.unwrap_or(3));
     bot.recorder.raw_states = want_trace; // only decisions.jsonl is read back
@@ -266,6 +422,13 @@ fn play(seed: &str) -> Result<Value, String> {
         for r in log.iter() { writeln!(gz, "{r}").map_err(|e| e.to_string())?; }
         let _ = writeln!(gz, "{}", json!({"k": "end", "result": row}));
         eprintln!("{seed}: first divergence: {}", diff_trace(seed, &log));
+    }
+    if let Some(d) = &rl_driver {
+        let d = d.borrow();
+        row.insert("rl_decisions".into(), json!(d.decisions));
+        row.insert("rl_reorders".into(), json!(d.reorders));
+        row.insert("rl_targets_planned".into(), json!(d.targets_planned));
+        row.insert("rl_targets_fallback".into(), json!(d.targets_fallback));
     }
     if let (Some(d), Some(l)) = (&rl_dir, &rl_log) {
         let t = std::time::Instant::now();

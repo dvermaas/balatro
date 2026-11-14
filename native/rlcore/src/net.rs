@@ -1,4 +1,4 @@
-//! Policy network inference: sparse first layer, ReLU MLP trunk, masked policy logits, value head.
+//! Policy network inference (used by rlenv and by jevlab's JEVLAB_RLPOLICY): sparse first layer, ReLU MLP trunk, masked policy logits, value head.
 //!
 //! Weight file (little endian), written by `scripts/rl/train_bc.py` (`export_weights`):
 //!
@@ -68,13 +68,13 @@ impl Net {
         }
         let hash = u64::from_le_bytes(b.get(p..p + 8).ok_or("truncated")?.try_into().unwrap());
         p += 8;
-        if hash != rlcore::schema_hash() {
-            return Err(format!("weights are for schema hash {hash:016x}, this build is {:016x}", rlcore::schema_hash()));
+        if hash != crate::schema_hash() {
+            return Err(format!("weights are for schema hash {hash:016x}, this build is {:016x}", crate::schema_hash()));
         }
         let obs_dim = rd_u32(b, &mut p)? as usize;
         let n_actions = rd_u32(b, &mut p)? as usize;
-        if obs_dim != rlcore::obs_dim() || n_actions != rlcore::n_actions() {
-            return Err(format!("weights are {obs_dim} x {n_actions}, schema is {} x {}", rlcore::obs_dim(), rlcore::n_actions()));
+        if obs_dim != crate::obs_dim() || n_actions != crate::n_actions() {
+            return Err(format!("weights are {obs_dim} x {n_actions}, schema is {} x {}", crate::obs_dim(), crate::n_actions()));
         }
         let nl = rd_u32(b, &mut p)? as usize;
         if nl == 0 || nl > 16 {
@@ -133,6 +133,44 @@ impl Net {
     /// All `n_actions` logits (unmasked).
     pub fn logits(&self, t: &Trunk) -> Vec<f32> {
         (0..self.n_actions).map(|a| self.logit(t, a)).collect()
+    }
+
+    /// One decision over the legal ids (ascending): argmax (`temp` None; first maximum) or a sample from
+    /// softmax(logits / temp) driven by `u` uniform in [0, 1). Returns (id, log-probability of id under the
+    /// distribution used (argmax: under temperature 1), [P(win), expected final blinds]).
+    pub fn choose(&self, idx: &[u16], val: &[f32], legal: &[u16], temp: Option<f32>, u: f64) -> (usize, f32, [f32; 2]) {
+        let t = self.trunk(idx, val);
+        let logits: Vec<f32> = legal.iter().map(|&a| self.logit(&t, a as usize)).collect();
+        let v = self.value(&t);
+        let value = [1.0 / (1.0 + (-v[0]).exp()), v.get(1).copied().unwrap_or(0.0) * 24.0];
+        let tt = temp.unwrap_or(1.0).max(1e-6);
+        let m = logits.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+        let ex: Vec<f64> = logits.iter().map(|&l| (((l - m) / tt) as f64).exp()).collect();
+        let z: f64 = ex.iter().sum();
+        let k = match temp {
+            None => {
+                let mut best = 0;
+                for i in 1..logits.len() {
+                    if logits[i] > logits[best] {
+                        best = i;
+                    }
+                }
+                best
+            }
+            Some(_) => {
+                let mut r = u * z;
+                let mut k = ex.len() - 1;
+                for (i, e) in ex.iter().enumerate() {
+                    if r < *e {
+                        k = i;
+                        break;
+                    }
+                    r -= e;
+                }
+                k
+            }
+        };
+        (legal[k] as usize, (ex[k] / z).ln() as f32, value)
     }
 
     /// Raw value outputs: [win logit, final blinds / 24].

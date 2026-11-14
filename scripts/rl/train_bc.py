@@ -92,6 +92,7 @@ class Data:
         g = ds["game"]
         self.won = ds["game_won"][g].astype(np.float32)
         self.blinds = (ds["game_blinds"][g] / 24.0).astype(np.float32)
+        self.w = np.ones(len(self.act), dtype=np.float32)
 
     def batch(self, rows):
         ds = self.ds
@@ -101,14 +102,18 @@ class Data:
         mask = torch.zeros((len(rows), self.n_actions), dtype=torch.bool)
         mask[torch.from_numpy(np.repeat(np.arange(len(rows)), mlens)), torch.from_numpy(mids.astype(np.int64))] = True
         return (torch.from_numpy(idx.astype(np.int64)), torch.from_numpy(excl.astype(np.int64)), torch.from_numpy(val),
-                mask, torch.from_numpy(self.act[rows]), torch.from_numpy(self.won[rows]), torch.from_numpy(self.blinds[rows]))
+                mask, torch.from_numpy(self.act[rows]), torch.from_numpy(self.won[rows]), torch.from_numpy(self.blinds[rows]),
+                torch.from_numpy(self.w[rows]))
 
 
-def losses(model, b):
-    idx, off, val, mask, act, won, blinds = b
+def losses(model, b, weighted=False):
+    idx, off, val, mask, act, won, blinds, w = b
     logits, v = model(idx, off, val)
     ml = logits.masked_fill(~mask, -1e9)
-    ce = F.cross_entropy(ml, act)
+    if weighted:
+        ce = (F.cross_entropy(ml, act, reduction="none") * w).sum() / w.sum()
+    else:
+        ce = F.cross_entropy(ml, act)
     vl = F.binary_cross_entropy_with_logits(v[:, 0], won) + F.mse_loss(v[:, 1], blinds)
     return ce, vl, ml
 
@@ -144,7 +149,7 @@ def train(data, tr, va, hidden, epochs, lr, bs, seed, log=True):
         tot = [0.0, 0.0, 0]
         for i in range(0, len(perm), bs):
             b = data.batch(perm[i:i + bs])
-            ce, vl, _ = losses(model, b)
+            ce, vl, _ = losses(model, b, weighted=True)
             loss = ce + VALUE_WEIGHT * vl
             opt.zero_grad()
             loss.backward()
@@ -212,6 +217,7 @@ def main():
     ap.add_argument("--rlenv", default="native/target/release/rlenv")
     ap.add_argument("--limit", type=int)
     ap.add_argument("--value-weight", type=float, default=0.5)
+    ap.add_argument("--weight-family", default="", help="loss weights by chosen action family, e.g. sell_joker=5")
     ap.add_argument("--value-detach", action="store_true", help="value head on a detached trunk (no gradient into the trunk)")
     a = ap.parse_args()
     global VALUE_WEIGHT, VALUE_DETACH
@@ -225,6 +231,9 @@ def main():
     fams = fam_of(names)
     phases = ds["schema"]["phases"]
     data = Data(ds)
+    for kv in filter(None, a.weight_family.split(",")):
+        f, x = kv.split("=")
+        data.w[fams[np.minimum(data.act, len(names) - 1)] == f] = float(x)
     seeds = ds["game_seed"]
     is_val_game = np.array([int(hashlib.sha1(s.encode()).hexdigest(), 16) % 10 == 0 for s in seeds])
     ok = ds["action"] != UNEXP
@@ -295,6 +304,19 @@ def main():
     for (x, y), n in conf.most_common(15):
         print(f"    {x:22s} -> {y:22s} {n}")
     rep["disagreements"] = [[x, y, n] for (x, y), n in conf.most_common(30)]
+    # selling: what follows a sell in v77's games (all games), and what the clone does instead (validation)
+    allf = np.where(ds["action"] == UNEXP, "?", fams[np.minimum(ds["action"], len(names) - 1)])
+    sells = np.where(allf == "sell_joker")[0]
+    nxt = collections.Counter(allf[i + 1] if i + 1 < len(allf) and ds["game"][i + 1] == ds["game"][i] else "END" for i in sells)
+    sl = ds["schema"]["blocks"][0]
+    free_i = sl["offset"] + sl["rows"].index("joker_free_div5")
+    def obs_at(r, i):
+        s0, e0 = ds["obs_indptr"][r], ds["obs_indptr"][r + 1]
+        k = np.searchsorted(ds["obs_indices"][s0:e0], i)
+        return float(ds["obs_values"][s0 + k]) if k < e0 - s0 and ds["obs_indices"][s0 + k] == i else 0.0
+    full = sum(obs_at(r, free_i) <= 0 for r in sells)
+    print(f"  sells in the data: {len(sells)}; next action after a sell: {dict(nxt.most_common(6))}; with no free joker slot: {full}")
+    rep["sells"] = {"n": int(len(sells)), "next": dict(nxt.most_common(10)), "slots_full": int(full)}
 
     if a.curve:
         print()
@@ -311,8 +333,11 @@ def main():
                 m, _ = train(data, rows_of(order[:n]), va, hidden, a.epochs, a.lr, a.bs, a.seed, log=False)
                 p2, _ = evaluate(m, data, va)
                 acc = float((p2 == act)[unforced].mean())
-            curve.append([n, acc])
-            print(f"  {n:6d} training games: {acc:.3f}", flush=True)
+                sell = float((p2 == act)[unforced & (cf == "sell_joker")].mean())
+            if n == len(tr_games):
+                sell = float(hit[unforced & (cf == "sell_joker")].mean())
+            curve.append([n, acc, sell])
+            print(f"  {n:6d} training games: {acc:.3f}   sell_joker {sell:.3f}", flush=True)
         rep["curve"] = curve
 
     if a.check:

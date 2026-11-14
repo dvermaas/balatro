@@ -322,7 +322,15 @@ pub struct JevBot {
     /// decisions.py module constants the lab overrides (FORECAST_N etc.).
     pub dec: crate::decisions::DecisionCfg,
     pub event_hook: Option<EventHook>,
+    /// Lab tooling (`JEVLAB_RLPOLICY`): when set, it takes every decision outside a round (blind select, shop, pack,
+    /// round eval): called with the gamestate and the handler name, it returns the (method, params) to act; the
+    /// bot's own handlers and auto actions then run only in rounds. None everywhere else.
+    pub strategic: Option<StrategicHook>,
+    /// the round whose round_end the strategic path has emitted (it can visit ROUND_EVAL several times)
+    pub _rl_round_end: Value,
 }
+
+pub type StrategicHook = Box<dyn FnMut(&Value, &str) -> Option<(String, Value)>>;
 
 impl JevBot {
     /// `JevBot(deck, stake, model, log_dir, game, jev)`. `version` is PROMPT_VERSION (the recorder
@@ -353,6 +361,7 @@ impl JevBot {
             _shop_key: Value::Null, _shop_actions: 0, _failed: HashSet::new(), _rerolls: 0, _flip_n: 0, _agent_n: 0, _leaf_failed: Value::Null, _leaf_bait: Value::Null, _mouth_lock: Value::Null, _boss_reroll: Value::Null,
             _recent: vec![], _recent_seed: Value::Null, _forecast_cache: None, _item_forecast_cache: None,
             auto_actions: true, dec: crate::decisions::DecisionCfg::production(), event_hook: None,
+            strategic: None, _rl_round_end: Value::Null,
         }
     }
 
@@ -557,6 +566,9 @@ impl JevBot {
     }
 
     fn step_handler(&mut self, gs_: &Value, st: Option<&str>, handler: &str) -> Result<(), Stop> {
+        if self.strategic.is_some() && matches!(handler, "blind_select" | "shop" | "smods_booster_opened" | "round_eval") {
+            return self.strategic_step(gs_, handler);
+        }
         let auto: Option<(String, Value, String)> = if self.auto_actions {
             crate::prof::time("bot.auto_action", || strategy::auto_action(gs_).or_else(|| tarots::auto_use(gs_).map(|(m, p, r)| (m.to_string(), p, r))))
         } else {
@@ -701,7 +713,35 @@ impl JevBot {
         self._finish_run(gs_, won)
     }
 
+    /// Lab tooling: a decision outside a round taken by `strategic` (see the field).
+    fn strategic_step(&mut self, gs_: &Value, handler: &str) -> Result<(), Stop> {
+        if handler == "round_eval" {
+            let round = gs::get(gs_, "round_num").clone();
+            if self._rl_round_end != round {
+                self._rl_round_end = round;
+                if self.round_end(gs_)? {
+                    return Ok(());
+                }
+            }
+        }
+        let mut f = self.strategic.take().expect("strategic hook");
+        let choice = f(gs_, handler);
+        self.strategic = Some(f);
+        let (method, params) = choice.ok_or_else(|| Stop::Runtime(format!("strategic hook gave no action in {handler}")))?;
+        self.act(&method, Some(&params))?;
+        Ok(())
+    }
+
     pub fn on_round_eval(&mut self, gs_: &Value) -> Result<(), Stop> {
+        if self.round_end(gs_)? {
+            return Ok(());
+        }
+        self.act("cash_out", None)?;
+        Ok(())
+    }
+
+    /// The round_end event, and the end of the run when the final boss fell (true then).
+    fn round_end(&mut self, gs_: &Value) -> Result<bool, Stop> {
         let rnd = gs::get(gs_, "round");
         let blind = self._round_blind.clone(); // already marked defeated here
         let jokers: Vec<Value> = cards_of(gs_, "jokers").iter().map(|c| gs::get(c, "label").clone()).collect();
@@ -726,9 +766,9 @@ impl JevBot {
             }
             // Preserve the actual winning state even though there is no next Jev question.
             self.recorder.write_raw(self._event_id + 1, gs_);
-            return self._finish_run(gs_, true);
+            self._finish_run(gs_, true)?;
+            return Ok(true);
         }
-        self.act("cash_out", None)?;
-        Ok(())
+        Ok(false)
     }
 }

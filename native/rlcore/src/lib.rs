@@ -10,6 +10,7 @@
 
 pub mod ids;
 pub mod log;
+pub mod net;
 pub mod obs;
 pub mod vocab;
 

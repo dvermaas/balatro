@@ -2,6 +2,6 @@
 //! trajectory files (`traj`).
 
 pub mod env;
-pub mod net;
+pub use rlcore::net;
 pub mod policy;
 pub mod traj;

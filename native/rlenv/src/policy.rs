@@ -152,43 +152,13 @@ pub struct NetPolicy {
 
 impl Policy for NetPolicy {
     fn decide(&mut self, c: &mut Ctx) -> Decision {
-        let t = self.net.trunk(c.obs_idx, c.obs_val);
-        let logits: Vec<f32> = c.legal.iter().map(|&a| self.net.logit(&t, a as usize)).collect();
-        let v = self.net.value(&t);
-        let value = [1.0 / (1.0 + (-v[0]).exp()), v.get(1).copied().unwrap_or(0.0) * 24.0];
         let temp = match self.mode {
-            NetMode::Argmax => 1.0,
-            NetMode::Sample(t) => t.max(1e-6),
+            NetMode::Argmax => None,
+            NetMode::Sample(t) => Some(t),
         };
-        let m = logits.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
-        let ex: Vec<f64> = logits.iter().map(|&l| (((l - m) / temp) as f64).exp()).collect();
-        let z: f64 = ex.iter().sum();
-        let k = match self.mode {
-            NetMode::Argmax => {
-                // first maximum (legal ids ascending): deterministic
-                let mut best = 0;
-                for i in 1..logits.len() {
-                    if logits[i] > logits[best] {
-                        best = i;
-                    }
-                }
-                best
-            }
-            NetMode::Sample(_) => {
-                let mut u = c.rng.f64() * z;
-                let mut k = ex.len() - 1;
-                for (i, e) in ex.iter().enumerate() {
-                    if u < *e {
-                        k = i;
-                        break;
-                    }
-                    u -= e;
-                }
-                k
-            }
-        };
-        let logp = (ex[k] / z).ln() as f32;
-        Decision { id: c.legal[k] as usize, logp, value }
+        let u = if temp.is_some() { c.rng.f64() } else { 0.0 };
+        let (id, logp, value) = self.net.choose(c.obs_idx, c.obs_val, c.legal, temp, u);
+        Decision { id, logp, value }
     }
 }
 
