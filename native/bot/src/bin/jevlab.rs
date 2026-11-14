@@ -97,6 +97,31 @@ struct RlDriver {
     swaps: u64,
     /// the JEVLAB_RLLOG logger, told which sales are swaps (rlcore::log::GameLog::explicit)
     log: Option<Rc<RefCell<rlcore::log::GameLog>>>,
+    /// milestone 6 interventions (lab): JEVLAB_RLREROLL, JEVLAB_RLNOGLYPH
+    override_rerolls: u64,
+    override_records: Vec<u32>,
+    after_override: bool,
+    buys_after_override: u64,
+    swaps_after_override: u64,
+}
+
+/// JEVLAB_RLREROLL=interest | <dollars>: when the network leaves a shop where a reroll is legal and the money after
+/// paying for it stays at or above the floor, reroll instead (the network then chooses among the new offers; the
+/// rule applies again). "interest": the floor is where interest is maxed ($5 x the interest cap: $25, more with Seed
+/// Money / Money Tree; $0 for a deck without interest); a number: that floor. Unset: off.
+fn rl_reroll_floor(g: &rumbot_sim::game::GameState) -> Option<i32> {
+    static V: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+    match V.get_or_init(|| std::env::var("JEVLAB_RLREROLL").ok()).as_deref() {
+        None => None,
+        Some("interest") => Some(if g.deck_config().no_interest { 0 } else { 5 * g.interest_cap() }),
+        Some(x) => Some(x.parse().unwrap_or_else(|_| panic!("JEVLAB_RLREROLL={x}: interest | dollars"))),
+    }
+}
+
+/// JEVLAB_RLNOGLYPH=1: the network may not buy Hieroglyph or Petroglyph (their ids leave the mask).
+fn rl_no_glyph() -> bool {
+    static V: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *V.get_or_init(|| std::env::var_os("JEVLAB_RLNOGLYPH").is_some())
 }
 
 /// JEVLAB_RLORDER: "v77" (default) runs v77's shop order rule below at every shop decision; "dagger" keeps only
@@ -186,11 +211,41 @@ impl RlDriver {
         let mut mask: Vec<u16> = legal.iter().map(|(v, _)| *v as u16).chain(swaps.iter().map(|(v, _, _)| *v as u16)).collect();
         mask.sort_unstable();
         mask.dedup();
+        if rl_no_glyph() {
+            let n = rlcore::vocab::n_actions();
+            mask.retain(|&v| {
+                let name = if (v as usize) < n { rlcore::vocab::action_name(v as usize) } else { "" };
+                name != "buy_voucher:v_hieroglyph" && name != "buy_voucher:v_petroglyph"
+            });
+        }
         if mask.is_empty() {
             return None;
         }
         let u = if self.temp.is_some() { self.uniform() } else { 0.0 };
         let (id, _, _) = jevbot::prof::time("rl.net", || self.net.choose(&oi, &ov, &mask, self.temp, u));
+        if g.phase == rumbot_sim::game::Phase::Shop {
+            if id == rlcore::vocab::LEAVE_SHOP {
+                if let Some(floor) = rl_reroll_floor(g) {
+                    let discount: i32 = g.vouchers.iter().map(|v| v.reroll_discount).sum();
+                    let cost = g.shop.as_ref().map_or(i32::MAX, |sh| sh.reroll_cost(discount));
+                    if mask.binary_search(&(rlcore::vocab::REROLL as u16)).is_ok() && g.money - cost >= floor {
+                        self.override_rerolls += 1;
+                        self.override_records.push(self.log.as_ref().map_or(0, |l| l.borrow().records()));
+                        self.after_override = true;
+                        self.decisions += 1;
+                        return Some(("reroll".into(), json!({})));
+                    }
+                }
+                self.after_override = false;
+            } else if self.after_override {
+                match rlcore::vocab::decode(id) {
+                    Some((rlcore::vocab::Family::ReplaceJoker, _)) => self.swaps_after_override += 1,
+                    Some((f, _)) if matches!(f, rlcore::vocab::Family::BuyJoker | rlcore::vocab::Family::BuyConsumable
+                        | rlcore::vocab::Family::BuyVoucher | rlcore::vocab::Family::BuyPack | rlcore::vocab::Family::BuyCard) => self.buys_after_override += 1,
+                    _ => {}
+                }
+            }
+        }
         if let Some((_, sell, buy)) = swaps.iter().find(|(v, _, _)| *v == id) {
             self.swaps += 1;
             self.decisions += 1;
@@ -339,6 +394,11 @@ fn play(seed: &str) -> Result<Value, String> {
             pending_buy: None,
             swaps: 0,
             log: rl_log.clone(),
+            override_rerolls: 0,
+            override_records: Vec::new(),
+            after_override: false,
+            buys_after_override: 0,
+            swaps_after_override: 0,
         }))
     });
     if let Some(d) = &rl_driver {
@@ -470,6 +530,12 @@ fn play(seed: &str) -> Result<Value, String> {
         row.insert("rl_targets_planned".into(), json!(d.targets_planned));
         row.insert("rl_targets_fallback".into(), json!(d.targets_fallback));
         row.insert("rl_swaps".into(), json!(d.swaps));
+        if std::env::var_os("JEVLAB_RLREROLL").is_some() {
+            row.insert("rl_override_rerolls".into(), json!(d.override_rerolls));
+            row.insert("rl_override_records".into(), json!(d.override_records));
+            row.insert("rl_buys_after_override".into(), json!(d.buys_after_override));
+            row.insert("rl_swaps_after_override".into(), json!(d.swaps_after_override));
+        }
     }
     if let (Some(d), Some(l)) = (&rl_dir, &rl_log) {
         let t = std::time::Instant::now();
