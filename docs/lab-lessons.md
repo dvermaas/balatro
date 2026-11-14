@@ -905,6 +905,19 @@ measured the wrong thing or was never asked:
   (6/4), -0.08 +- 0.09 ante; against Haiku batch 3, 8/4 games won by only one side. Neutral too. Three batches of 48
   agree: an LLM on top of the forecast neither helps nor hurts; it mostly confirms the code (overrides are 15-30% of
   decisions and cancel out). Seeing a 5-point win-rate gain at 2 SE would take ~320 paired games (~20% go to one side), ~30M subagent tokens.
+- **How short v77's losses fall** (all 4,000 v77 games, 1,489 losses): 66% die at antes 7-8 (ante 8: 600). The median
+  ante-8 loss ends at 67% of the target; 30% reach 80%, 29% stay under half. Build power (p75 of `snaps.power`, log10) at
+  each ante's first shop, wins / died at ante 8: ante 3 3.33 / 3.35, ante 5 3.93 / 3.88, ante 7 4.28 / 4.17, ante 8
+  4.42 / 4.26. The same builds through ante 3, then winners pull ahead to ~1.45x by ante 8: about one x1.5 joker. Power
+  grows ~1.4x an ante from ante 6, the targets 1.4-1.75x.
+- **The forecast horizon retested on v77** (does a rollout that reaches the end of the run value scaling?), c2k 0-449,
+  v77 = 268 wins. 8 bosses (`fc-bosses=8`): 262 wins (40/46, z = -0.65), +0.009 +- 0.039 ante, 137 games changed.
+  8 bosses with rollouts that buy the highest-valued joker (`fc-bosses=8,rollout-shop-value`): 266 wins (51/53, z =
+  -0.20), -0.067 +- 0.053 ante, 171 changed; against the plain 8-boss arm 44/40. Ante-8 deaths 70 / 71 (v77 70) and
+  power entering ante 8 4.39 / 4.36 (v77 4.38) do not move. Neutral both ways: v62's 8-boss loss (306 vs 333) is gone,
+  and so is any gain. With the flips, the tail retrains and the LLM strategist this is the fourth way of re-valuing
+  the options v77 already considers that changes games and not wins. What is missing is more likely what v77 never
+  does (thin the deck, level the hand it plays, feed jokers that grow) than a choice it gets wrong.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
@@ -1045,4 +1058,7 @@ What to trust:
   AUC, neutral in play, above); only a much richer input set, not more games of the same inputs, could still help.
 - Plan decisions (commit to a hand, chase xMult, shape the deck) that a 3-boss rollout cannot value: an LLM on top of
   the forecast (Haiku twice, Sonnet once, 48 games each) was neutral; rule-based plans failed on v27-v35.
+- A learned policy over the simulator's own actions (wider than the bot's options), cloned from v77 and then improved
+  by reinforcement learning in a fast environment where `simcore` plays the rounds: started 2026-11-14 after the
+  horizon retest (above), judged like every change on b2k and c2k against v77.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).

@@ -3397,5 +3397,27 @@
   "wins": 240,
   "baseline_wins": 268,
   "outcome": "worse"
+ },
+ {
+  "experiment": "8-boss forecast horizon retested on v77 (fc-bosses=8), c2k 0-449",
+  "theme": "Forecast",
+  "baseline": "v77",
+  "games": 450,
+  "delta_ante": 0.009,
+  "se": 0.039,
+  "wins": 262,
+  "baseline_wins": 268,
+  "outcome": "neutral"
+ },
+ {
+  "experiment": "8-boss forecast horizon with rollouts buying the highest-valued joker (fc-bosses=8,rollout-shop-value), c2k 0-449",
+  "theme": "Forecast",
+  "baseline": "v77",
+  "games": 450,
+  "delta_ante": -0.067,
+  "se": 0.053,
+  "wins": 266,
+  "baseline_wins": 268,
+  "outcome": "neutral"
  }
 ]
