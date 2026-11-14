@@ -92,6 +92,22 @@ struct RlDriver {
     reorders: u64,
     targets_planned: u64,
     targets_fallback: u64,
+    /// schema v2: a joker swap is stepped as its sale, then (the next shop decision) this buy
+    pending_buy: Option<(String, Value)>,
+    swaps: u64,
+    /// the JEVLAB_RLLOG logger, told which sales are swaps (rlcore::log::GameLog::explicit)
+    log: Option<Rc<RefCell<rlcore::log::GameLog>>>,
+}
+
+/// JEVLAB_RLORDER: "v77" (default) runs v77's shop order rule below at every shop decision; "dagger" keeps only
+/// its Ceremonial Dagger rule (RL speed: the search was half of config (b)'s CPU).
+fn rl_order_dagger_only() -> bool {
+    static V: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *V.get_or_init(|| match std::env::var("JEVLAB_RLORDER").as_deref() {
+        Ok("dagger") => true,
+        Ok("v77") | Err(_) => false,
+        Ok(x) => panic!("JEVLAB_RLORDER={x}: v77 | dagger"),
+    })
 }
 
 /// v77's joker order in the shop (strategy::auto_action's SHOP branch): Ceremonial Dagger last, then the searched
@@ -103,6 +119,11 @@ fn v77_shop_order(gs_: &Value) -> Option<Vec<usize>> {
     let dl = jevbot::strategy::dagger_last(&labels, ident.clone());
     if dl != ident {
         return Some(dl);
+    }
+    if rl_order_dagger_only() {
+        // JEVLAB_RLORDER=dagger: no order search in the shop; the round's own reorder (v75 round_order, at the
+        // first SELECTING_HAND) puts the searched order back before anything scores
+        return None;
     }
     let best = jevbot::readiness::best_joker_order(gs_, 12);
     let best = if labels.contains(&"Ceremonial Dagger") { best.filter(|o| jevbot::strategy::dagger_last(&labels, o.clone()) == *o) } else { best };
@@ -145,6 +166,9 @@ impl RlDriver {
     fn decide(&mut self, gs_: &Value, handler: &str) -> Option<(String, Value)> {
         use rumbot_sim::game::{ActionType, PackChoice};
         if handler == "shop" {
+            if let Some(b) = self.pending_buy.take() {
+                return Some(b);
+            }
             if let Some(o) = jevbot::prof::time("rl.v77_order", || v77_shop_order(gs_)) {
                 self.reorders += 1;
                 return Some(("rearrange".into(), json!({"jokers": o})));
@@ -158,7 +182,8 @@ impl RlDriver {
         }
         let (oi, ov) = jevbot::prof::time("rl.encode", || self.enc.encode(g));
         let legal = jevbot::prof::time("rl.legal", || rlcore::vocab::legal_with_ids(g));
-        let mut mask: Vec<u16> = legal.iter().map(|(v, _)| *v as u16).collect();
+        let swaps = jevbot::prof::time("rl.swaps", || rlcore::vocab::legal_replaces(g));
+        let mut mask: Vec<u16> = legal.iter().map(|(v, _)| *v as u16).chain(swaps.iter().map(|(v, _, _)| *v as u16)).collect();
         mask.sort_unstable();
         mask.dedup();
         if mask.is_empty() {
@@ -166,6 +191,15 @@ impl RlDriver {
         }
         let u = if self.temp.is_some() { self.uniform() } else { 0.0 };
         let (id, _, _) = jevbot::prof::time("rl.net", || self.net.choose(&oi, &ov, &mask, self.temp, u));
+        if let Some((_, sell, buy)) = swaps.iter().find(|(v, _, _)| *v == id) {
+            self.swaps += 1;
+            self.decisions += 1;
+            if let Some(l) = &self.log {
+                l.borrow_mut().swap_next = true;
+            }
+            self.pending_buy = Some(rpc_of(buy));
+            return Some(rpc_of(sell));
+        }
         let cands: Vec<rumbot_sim::game::Action> = legal.iter().filter(|(v, _)| *v == id).map(|(_, a)| a.clone()).collect();
         let mut a = rlcore::vocab::to_action_from(g, &cands, None)?;
         if !a.cards.is_empty() {
@@ -287,6 +321,9 @@ fn play(seed: &str) -> Result<Value, String> {
         "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(SharedGame(rumbot.clone())), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
+    if let (Some(l), Some(_)) = (&rl_log, rl_net()) {
+        l.borrow_mut().explicit = true;
+    }
     let rl_driver = rl_net().map(|net| {
         let k: u64 = std::env::var("JEVLAB_RLSEED").ok().and_then(|x| x.parse().ok()).unwrap_or(0);
         Rc::new(RefCell::new(RlDriver {
@@ -299,6 +336,9 @@ fn play(seed: &str) -> Result<Value, String> {
             reorders: 0,
             targets_planned: 0,
             targets_fallback: 0,
+            pending_buy: None,
+            swaps: 0,
+            log: rl_log.clone(),
         }))
     });
     if let Some(d) = &rl_driver {
@@ -429,6 +469,7 @@ fn play(seed: &str) -> Result<Value, String> {
         row.insert("rl_reorders".into(), json!(d.reorders));
         row.insert("rl_targets_planned".into(), json!(d.targets_planned));
         row.insert("rl_targets_fallback".into(), json!(d.targets_fallback));
+        row.insert("rl_swaps".into(), json!(d.swaps));
     }
     if let (Some(d), Some(l)) = (&rl_dir, &rl_log) {
         let t = std::time::Instant::now();
@@ -476,6 +517,11 @@ fn main() {
                 let Some(seed) = seeds.get(i) else { break };
                 let r = std::panic::catch_unwind(|| jevbot::prof::time("GAME", || play(seed))).unwrap_or_else(|p| Err(jevbot::replay::panic_msg(&*p)));
                 let row = r.unwrap_or_else(|e| json!({"seed": seed, "arm": arm(), "error": e}));
+                // JEVLAB_RMDIRS=1 (RL training): also drop the run dir of a game that errored (a finished game's
+                // is dropped anyway unless JEVLAB_TRACE)
+                if std::env::var_os("JEVLAB_RMDIRS").is_some() && std::env::var_os("JEVLAB_TRACE").is_none() {
+                    let _ = std::fs::remove_dir_all(std::env::temp_dir().join(format!("plab_{}_{}", seed, std::process::id())));
+                }
                 eprintln!("{seed}: ante {} won {} {}s", row["ante"], row["won"], row["seconds"]);
                 writeln!(file.lock().unwrap(), "{row}").unwrap();
             });

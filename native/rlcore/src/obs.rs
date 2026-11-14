@@ -119,6 +119,7 @@ fn build_layout() -> Layout {
     let mut pack_j = s(&["count"]);
     pack_j.extend(s(&ed4));
     pack_j.extend(s(&["eternal", "perishable", "rental", "pickable"]));
+    let jokers_slot = jokers.clone();
     let slots = |n: usize| (0..n).map(|i| format!("slot{i}")).collect::<Vec<_>>();
     let targets = {
         let mut v: Vec<String> = RANK_NAMES.iter().map(|r| format!("idol_rank_{r}")).collect();
@@ -149,6 +150,8 @@ fn build_layout() -> Layout {
         ("pack_jokers", jokers, pack_j),
         ("pack_consumables", cons, s(&["count", "pickable"])),
         ("pack_cards", slots(PACK_SLOTS), card_cols(&["present"])),
+        // v2: which joker each shop slot holds (replace_joker names its shop slot)
+        ("shop_slot_jokers", slots(SHOP_CARD_SLOTS), jokers_slot),
     ];
     let mut blocks = Vec::new();
     let mut off = 0;
@@ -199,6 +202,7 @@ struct Offsets {
     pack_jokers: B,
     pack_consumables: B,
     pack_cards: B,
+    shop_slot_jokers: B,
 }
 
 fn sc(name: &str) -> usize {
@@ -241,6 +245,7 @@ impl Encoder {
                 pack_jokers: b("pack_jokers"),
                 pack_consumables: b("pack_consumables"),
                 pack_cards: b("pack_cards"),
+                shop_slot_jokers: b("shop_slot_jokers"),
             },
         }
     }
@@ -291,6 +296,7 @@ impl Encoder {
         let (vouchers_owned, shop_vouchers, hand_levels, joker_targets, deck) = (o.vouchers_owned, o.shop_vouchers, o.hand_levels, o.joker_targets, o.deck);
         let (pack_hand, held_jokers, held_consumables, shop_jokers, shop_consumables) = (o.pack_hand, o.held_jokers, o.held_consumables, o.shop_jokers, o.shop_consumables);
         let (shop_cards, shop_packs, pack_jokers, pack_consumables, pack_cards) = (o.shop_cards, o.shop_packs, o.pack_jokers, o.pack_consumables, o.pack_cards);
+        let shop_slot_jokers = o.shop_slot_jokers;
         let _ = scalars;
         let ids = ids();
         let mut unknown = 0;
@@ -473,6 +479,9 @@ impl Encoder {
                         continue;
                     };
                     self.add(shop_jokers, i, 0, 1.0);
+                    if slot_i < SHOP_CARD_SLOTS {
+                        self.set(shop_slot_jokers, slot_i, i, 1.0);
+                    }
                     self.joker_flags(shop_jokers, i, j);
                     self.set(shop_jokers, i, 8, slog(price as f64));
                     if afford && g.room_for_joker(j) {

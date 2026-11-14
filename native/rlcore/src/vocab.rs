@@ -14,6 +14,9 @@
 //! - Card targets (`Action.cards`: a Tarot used or picked from an Arcana pack while a hand is dealt) are
 //!   not part of the vocabulary: the entry names the item, and `to_action` takes the targets from a hint
 //!   when legal, else the first legal target set (`legal_actions` order). A target chooser plugs in there.
+//! - v2: a joker swap is one entry, `replace_joker[sold joker][shop slot]` (`legal_replaces`): sell the sold
+//!   joker's canonical copy, then buy that shop slot's joker, which had no room before the sale. The
+//!   observation names each shop slot's joker (`shop_slot_jokers`). A lone `sell_joker` stays.
 //! - Joker order (`SwapJokerLeft`) is left to code and is not in the vocabulary; `BuyAndUse` is not
 //!   offered by rumbot's `legal_actions` and is not either.
 
@@ -47,9 +50,11 @@ pub enum Family {
     PickPackJoker,
     PickPackConsumable,
     PickPackCard,
+    /// v2: sell a held joker (its worst copy) and buy a shop slot's joker that has no room before the sale
+    ReplaceJoker,
 }
 
-pub const FAMILIES: [(Family, &str, usize); 11] = [
+pub const FAMILIES: [(Family, &str, usize); 12] = [
     (Family::BuyJoker, "buy_joker", N_JOKERS),
     (Family::BuyConsumable, "buy_consumable", N_CONSUMABLES),
     (Family::BuyVoucher, "buy_voucher", N_VOUCHERS),
@@ -61,6 +66,7 @@ pub const FAMILIES: [(Family, &str, usize); 11] = [
     (Family::PickPackJoker, "pick_pack_joker", N_JOKERS),
     (Family::PickPackConsumable, "pick_pack_consumable", N_CONSUMABLES),
     (Family::PickPackCard, "pick_pack_card", PACK_SLOTS),
+    (Family::ReplaceJoker, "replace_joker", N_JOKERS * SHOP_CARD_SLOTS),
 ];
 
 struct Table {
@@ -84,6 +90,7 @@ fn table() -> &'static Table {
                     Family::BuyVoucher => ids.voucher_keys[i].to_string(),
                     Family::BuyPack => pack_name(i),
                     Family::BuyCard | Family::PickPackCard => format!("slot{i}"),
+                    Family::ReplaceJoker => format!("{}@slot{}", ids.joker_keys[i / SHOP_CARD_SLOTS], i % SHOP_CARD_SLOTS),
                 };
                 names.push(format!("{fname}:{item}"));
             }
@@ -230,9 +237,64 @@ pub fn legal_with_ids(g: &GameState) -> Vec<(usize, Action)> {
     g.legal_actions().into_iter().filter_map(|a| vocab_of(g, &a).ok().map(|v| (v, a))).collect()
 }
 
-/// The legal vocabulary ids, ascending and unique.
+/// v2: the vocabulary id of "sell held joker `sold` (joker id), buy shop slot `slot`'s joker".
+pub fn replace_id(sold: usize, slot: usize) -> usize {
+    id_of(Family::ReplaceJoker, sold * SHOP_CARD_SLOTS + slot)
+}
+
+/// v2: the legal joker swaps of a Shop state, as (vocabulary id, sell, buy): for every shop slot (below
+/// SHOP_CARD_SLOTS) whose joker has no room now and every sold joker identity (its canonical, worst copy),
+/// when the buy is legal right after that sale. Exact: the sale is stepped on a deep clone (sort ids put back,
+/// so the real game is untouched). The two actions are stepped in order: the sale does not move shop slots.
+pub fn legal_replaces(g: &GameState) -> Vec<(usize, Action, Action)> {
+    let mut out = Vec::new();
+    if g.phase != Phase::Shop {
+        return out;
+    }
+    let Some(shop) = &g.shop else { return out };
+    let targets: Vec<usize> = shop
+        .slots
+        .iter()
+        .enumerate()
+        .filter(|(s, slot)| *s < SHOP_CARD_SLOTS && slot.joker.as_ref().is_some_and(|j| !g.room_for_joker(j)))
+        .map(|(s, _)| s)
+        .collect();
+    if targets.is_empty() {
+        return out;
+    }
+    let start = family_start(Family::SellJoker);
+    let mut sells: Vec<(usize, Action)> = Vec::new();
+    for a in g.legal_actions().into_iter().filter(|a| a.r#type == ActionType::SellJoker) {
+        let Ok(v) = vocab_of(g, &a) else { continue };
+        match sells.iter_mut().find(|(w, _)| *w == v - start) {
+            Some(e) => {
+                if canonical(g, &a) < canonical(g, &e.1) {
+                    e.1 = a;
+                }
+            }
+            None => sells.push((v - start, a)),
+        }
+    }
+    sells.sort_by_key(|(k, _)| *k);
+    let mark = rumbot_sim::cards::sort_id_now();
+    for (sold, sell) in sells {
+        let mut h = g.deep_clone();
+        h.step(&sell);
+        for &s in &targets {
+            let buy = Action { r#type: ActionType::Buy, index: s as i32, cards: Vec::new() };
+            if h.phase == Phase::Shop && h.is_legal(&buy) {
+                out.push((replace_id(sold, s), sell.clone(), buy));
+            }
+        }
+    }
+    rumbot_sim::cards::set_sort_id(mark);
+    out
+}
+
+/// The legal vocabulary ids, ascending and unique (single actions and v2 joker swaps).
 pub fn legal_mask_ids(g: &GameState) -> Vec<u16> {
     let mut v: Vec<u16> = legal_with_ids(g).into_iter().map(|(v, _)| v as u16).collect();
+    v.extend(legal_replaces(g).into_iter().map(|(v, _, _)| v as u16));
     v.sort_unstable();
     v.dedup();
     v

@@ -11,8 +11,9 @@ As a module: `ds = load_dir(dir)` returns a dict of arrays (one row per record):
   obs_indptr, obs_indices, obs_values   CSR observation (dim = ds["obs_dim"]); obs_csr(ds) gives scipy CSR
   mask_indptr, mask_ids                 CSR legal vocabulary ids;  mask_dense(ds, rows) gives booleans
   action                                chosen vocabulary id (65535 = unexpressible)
-  step, ante, phase, blind_index, round, money, blinds_cleared, flags, atype, aindex, game
-  game_seed, game_won, game_ante, game_blinds, game_round, game_counters   (one entry per game)
+  step, ante, phase, blind_index, round, money, blinds_cleared, blinds_passed (v2; -1 in v1), flags, atype, aindex, game
+  game_seed, game_won, game_ante, game_blinds, game_round, game_counters, game_passed (v2)   (one entry per game)
+v2 (BRL2) flags bit 128: a joker swap (replace_joker id; the record's action fields are the sale).
 plus "schema" (the dir's schema.json).
 """
 import argparse
@@ -27,16 +28,20 @@ import sys
 import numpy as np
 
 MAGIC = b"BRL1"
+MAGIC2 = b"BRL2"  # schema v2: + blinds_passed per record, passed_final in the footer
 MAGIC_TRAJ = b"BRT1"  # fast-env trajectories (native/rlenv/src/traj.rs): + logp, value_win, value_blinds, reward
 UNEXPRESSIBLE = 0xFFFF
 REC_HEAD = struct.Struct("<IhBBHiHHBhB")  # step ante phase blind round money blinds_cleared action atype aindex ncards
+REC_HEAD2 = struct.Struct("<IhBBHiHHHBhB")  # v2: blinds_passed after blinds_cleared
 
 
 def read_game(path):
     raw = gzip.open(path, "rb").read()
-    if raw[:4] not in (MAGIC, MAGIC_TRAJ):
+    if raw[:4] not in (MAGIC, MAGIC2, MAGIC_TRAJ):
         raise ValueError(f"{path}: bad magic")
     traj = raw[:4] == MAGIC_TRAJ
+    v2 = raw[:4] == MAGIC2
+    rh = REC_HEAD2 if v2 else REC_HEAD
     version, shash, obs_dim, n_actions = struct.unpack_from("<IQII", raw, 4)
     p = 4 + 20
     (slen,) = struct.unpack_from("<H", raw, p)
@@ -45,15 +50,17 @@ def read_game(path):
     p += slen
     (n,) = struct.unpack_from("<I", raw, p)
     p += 4
-    head = np.zeros((n, 11), dtype=np.int64)
+    head = np.zeros((n, 12), dtype=np.int64)
     flags = np.zeros(n, dtype=np.uint8)
     cards, oi, ov, mk = [], [], [], []
     rl = np.zeros((n, 4), dtype=np.float32)
     for r in range(n):
-        h = REC_HEAD.unpack_from(raw, p)
-        p += REC_HEAD.size
+        h = rh.unpack_from(raw, p)
+        p += rh.size
+        if not v2:
+            h = h[:7] + (-1,) + h[7:]
         head[r] = h
-        nc = h[10]
+        nc = h[11]
         cards.append(tuple(raw[p:p + nc]))
         p += nc
         flags[r] = raw[p]
@@ -73,6 +80,11 @@ def read_game(path):
             p += 16
     won, ante, blinds, rnd, nctr = struct.unpack_from("<BhHHI", raw, p)
     p += struct.calcsize("<BhHHI")
+    passed_final = -1
+    if v2:  # passed_final sits before n_counters
+        p -= 4
+        passed_final, nctr = struct.unpack_from("<HI", raw, p)
+        p += 6
     counters = {}
     for _ in range(nctr):
         (kl,) = struct.unpack_from("<H", raw, p)
@@ -95,7 +107,7 @@ def read_game(path):
         raise ValueError(f"{path}: {len(raw) - p} trailing bytes")
     return dict(version=version, schema_hash=shash, obs_dim=obs_dim, n_actions=n_actions, seed=seed, head=head,
                 flags=flags, cards=cards, obs_idx=oi, obs_val=ov, mask=mk, won=bool(won), ante=ante, blinds=blinds,
-                round=rnd, counters=counters, traj=traj, rl=rl, power=power)
+                round=rnd, counters=counters, traj=traj, rl=rl, power=power, passed_final=passed_final)
 
 
 def load_dir(d, limit=None):
@@ -114,13 +126,13 @@ def load_dir(d, limit=None):
     if os.path.exists(sp):
         schema = json.load(open(sp))
         assert schema["obs_dim"] == g0["obs_dim"] and schema["n_actions"] == g0["n_actions"], "schema.json disagrees with the files"
-    head = np.concatenate([g["head"] for g in games]) if games else np.zeros((0, 11), np.int64)
+    head = np.concatenate([g["head"] for g in games]) if games else np.zeros((0, 12), np.int64)
     oi = [a for g in games for a in g["obs_idx"]]
     ov = [a for g in games for a in g["obs_val"]]
     mk = [a for g in games for a in g["mask"]]
     lens = np.array([len(a) for a in oi], dtype=np.int64)
     mlens = np.array([len(a) for a in mk], dtype=np.int64)
-    cols = ["step", "ante", "phase", "blind_index", "round", "money", "blinds_cleared", "action", "atype", "aindex", "ncards"]
+    cols = ["step", "ante", "phase", "blind_index", "round", "money", "blinds_cleared", "blinds_passed", "action", "atype", "aindex", "ncards"]
     ds = {c: head[:, i] for i, c in enumerate(cols)}
     ds.update(
         obs_dim=g0["obs_dim"], n_actions=g0["n_actions"], schema_version=g0["version"], schema_hash=g0["schema_hash"], schema=schema,
@@ -135,6 +147,7 @@ def load_dir(d, limit=None):
         game_seed=[g["seed"] for g in games], game_won=np.array([g["won"] for g in games]),
         game_ante=np.array([g["ante"] for g in games]), game_blinds=np.array([g["blinds"] for g in games]),
         game_round=np.array([g["round"] for g in games]), game_counters=[g["counters"] for g in games],
+        game_passed=np.array([g["passed_final"] for g in games]),
     )
     if g0["traj"]:
         rl = np.concatenate([g["rl"] for g in games])

@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v77 + lab tooling (plays unchanged): rlcore schema v2 (replace_joker: a joker swap as one action, stepped as the sale then the buy; JEVLAB_RLLOG logs it as one record); JEVLAB_RMDIRS=1 drops an errored game's run dir; JEVLAB_RLORDER=dagger skips the shop's joker order search under a policy. Based on: ",
     "v77 + lab tooling (plays unchanged): JEVLAB_RLPOLICY=W makes jevlab hand every decision outside a round (blind select, shop, pack, round eval) to the rlcore network W (JEVLAB_RLTEMP, JEVLAB_RLSEED to sample); rounds stay the bot's own. JevBot gets a strategic hook for it, and on_round_eval's round_end / victory part moved into round_end() unchanged (the hook's won=true ROUND_EVAL goes to on_round_eval, as v77); jevlab gets rl.* JEV_PERF timers. Based on: ",
     "v77 + lab tooling (plays unchanged): simcore exposes the rollouts' round player for the RL fast environment (native/rlenv): policy_step (the Playing move play_horizon_rebuild makes, moved out of it unchanged), play_round (play one round to its end with it) and a public refresh_or_rebuild. Based on: ",
     "v77 + lab tooling (plays unchanged): JEVLAB_RLLOG=DIR makes jevlab log every rumbot action the bot takes outside the Playing phase (observation, legal mask, chosen action in the rlcore schema) to DIR/<seed>.rlb.gz for behaviour cloning; the rumbot backend gets a step hook for it. Based on: ",

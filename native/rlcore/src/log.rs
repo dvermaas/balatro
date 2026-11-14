@@ -4,12 +4,12 @@
 //! File `<seed>.rlb.gz`, little endian inside the gzip stream:
 //!
 //! ```text
-//! header  b"BRL1" u32 schema_version  u64 schema_hash  u32 obs_dim  u32 n_actions  u16 seed_len  seed
+//! header  b"BRL2" u32 schema_version  u64 schema_hash  u32 obs_dim  u32 n_actions  u16 seed_len  seed
 //!         u32 n_records
 //! record  u32 step  i16 ante  u8 phase  u8 blind_index  u16 round  i32 money  u16 blinds_cleared
-//!         u16 action_id (0xFFFF = unexpressible)  u8 action_type  i16 action_index  u8 n_cards  u8[n_cards]
+//!         u16 blinds_passed  u16 action_id (0xFFFF = unexpressible)  u8 action_type  i16 action_index  u8 n_cards  u8[n_cards]
 //!         u8 flags  u16 nnz  u16[nnz] obs_index  f32[nnz] obs_value  u16 n_legal  u16[n_legal] legal_ids
-//! footer  u8 won  i16 ante  u16 blinds  u16 round  u32 n_counters  { u16 len  name  u64 value }*
+//! footer  u8 won  i16 ante  u16 blinds  u16 round  u16 passed_final  u32 n_counters  { u16 len  name  u64 value }*
 //! ```
 //!
 //! `step` counts every rumbot step of the game (Playing included). `phase` / `action_type` are the
@@ -17,16 +17,22 @@
 //! this action (`round_number`: rounds started, all of them won while the run is alive outside Playing).
 //! flags: 1 chosen id in the legal mask, 2 round trip gives the same type and item, 4 round trip gives
 //! the identical action (slot too), 8 the action carries card targets, 16 the round trip kept them,
-//! 32 the default target choice (no hint) equals them, 64 rumbot called the action legal.
+//! 32 the default target choice (no hint) equals them, 64 rumbot called the action legal, 128 a joker swap
+//! (v2): the record is the sale (action fields), the id is the replace_joker entry, and the next rumbot step,
+//! the buy of the id's shop slot, has no record of its own.
+//!
+//! v2 (BRL2) adds `blinds_passed` (blinds beaten or skipped before this decision, `blinds_passed`) and
+//! `passed_final` (24 for a win, else the blinds passed before the round that ended the run): the RL reward's
+//! progress potential. A sale is held until the next action so a swap becomes one record.
 
 use crate::obs::Encoder;
-use crate::vocab::{legal_with_ids, strategic_phase, to_action_from, vocab_of};
+use crate::vocab::{legal_replaces, legal_with_ids, strategic_phase, to_action_from, vocab_of};
 use rumbot_sim::game::{Action, ActionType, GameState, Phase};
 use std::collections::BTreeMap;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
-pub const MAGIC: &[u8; 4] = b"BRL1";
+pub const MAGIC: &[u8; 4] = b"BRL2";
 
 pub fn phase_code(p: Phase) -> u8 {
     match p {
@@ -74,6 +80,64 @@ pub struct GameLog {
     pub counters: BTreeMap<String, u64>,
     /// seconds spent in `on_step` (encoding, masks, round trip)
     pub secs: f64,
+    /// v2: a shop sale that may be the first half of a joker swap, held until the next action shows
+    /// whether a buy of a swap's slot follows (then one replace_joker record) or not (a lone sale)
+    pending: Option<(Rec, Vec<(usize, Action, Action)>)>,
+    /// v2: blinds passed (beaten or skipped) before the round being played, seen in the last Playing step
+    passed_playing: u16,
+    /// v2, set by an RL driver: swaps are only what the driver says (`swap_next` before it steps a swap's
+    /// sale), never inferred from a sale followed by a buy (a lone sale then a buy is two decisions there)
+    pub explicit: bool,
+    pub swap_next: bool,
+}
+
+/// One record before serialisation.
+struct Rec {
+    step: u32,
+    ante: i16,
+    phase: u8,
+    blind_index: u8,
+    round: u16,
+    money: i32,
+    passed: u16,
+    id: u16,
+    action_type: u8,
+    index: i16,
+    cards: Vec<u8>,
+    flags: u8,
+    idx: Vec<u16>,
+    val: Vec<f32>,
+    mask: Vec<u16>,
+}
+
+impl Rec {
+    fn put(&self, b: &mut Vec<u8>) {
+        put_u32(b, self.step);
+        b.extend_from_slice(&self.ante.to_le_bytes());
+        b.push(self.phase);
+        b.push(self.blind_index);
+        put_u16(b, self.round);
+        b.extend_from_slice(&self.money.to_le_bytes());
+        put_u16(b, self.round);
+        put_u16(b, self.passed);
+        put_u16(b, self.id);
+        b.push(self.action_type);
+        b.extend_from_slice(&self.index.to_le_bytes());
+        b.push(self.cards.len() as u8);
+        b.extend_from_slice(&self.cards);
+        b.push(self.flags);
+        put_u16(b, self.idx.len() as u16);
+        for i in &self.idx {
+            put_u16(b, *i);
+        }
+        for v in &self.val {
+            b.extend_from_slice(&v.to_le_bytes());
+        }
+        put_u16(b, self.mask.len() as u16);
+        for m in &self.mask {
+            put_u16(b, *m);
+        }
+    }
 }
 
 fn put_u16(b: &mut Vec<u8>, v: u16) {
@@ -83,9 +147,27 @@ fn put_u32(b: &mut Vec<u8>, v: u32) {
     b.extend_from_slice(&v.to_le_bytes());
 }
 
+/// Blinds passed (beaten or skipped) before the current decision, outside Playing: every round started
+/// was won while the run is alive there.
+pub fn blinds_passed(g: &GameState) -> u16 {
+    (g.round_number.max(0) + g.blinds_skipped.max(0) as i32) as u16
+}
+
 impl GameLog {
     pub fn new(seed: &str) -> Self {
-        GameLog { seed: seed.to_string(), enc: Encoder::new(), steps: 0, n_records: 0, buf: Vec::with_capacity(1 << 16), counters: BTreeMap::new(), secs: 0.0 }
+        GameLog {
+            seed: seed.to_string(),
+            enc: Encoder::new(),
+            steps: 0,
+            n_records: 0,
+            buf: Vec::with_capacity(1 << 16),
+            counters: BTreeMap::new(),
+            secs: 0.0,
+            pending: None,
+            passed_playing: 0,
+            explicit: false,
+            swap_next: false,
+        }
     }
 
     fn count(&mut self, k: &str) {
@@ -93,7 +175,19 @@ impl GameLog {
     }
 
     pub fn records(&self) -> u32 {
-        self.n_records
+        self.n_records + self.pending.is_some() as u32
+    }
+
+    fn push(&mut self, r: &Rec) {
+        r.put(&mut self.buf);
+        self.n_records += 1;
+    }
+
+    fn flush_pending(&mut self) {
+        if let Some((r, _)) = self.pending.take() {
+            self.count("sell_lone");
+            self.push(&r);
+        }
     }
 
     /// Called with the state before `a` is stepped.
@@ -101,15 +195,38 @@ impl GameLog {
         let step = self.steps;
         self.steps += 1;
         if !strategic_phase(g.phase) {
+            self.flush_pending();
+            if g.phase == Phase::Playing {
+                self.passed_playing = (g.round_number.max(1) - 1 + g.blinds_skipped.max(0) as i32) as u16;
+            }
             if !matches!(a.r#type, ActionType::Play | ActionType::Discard) {
                 self.count(&format!("in_round:{}", a.r#type.as_str()));
             }
             return;
         }
         let t0 = std::time::Instant::now();
+        // the buy half of a joker swap: the held sale becomes one replace_joker record
+        if let Some((mut r, swaps)) = self.pending.take() {
+            let hit = if a.r#type == ActionType::Buy { swaps.iter().find(|(_, _, b)| b.index == a.index) } else { None };
+            match hit {
+                Some((v, _, _)) => {
+                    r.id = *v as u16;
+                    r.flags |= 128 | 1 | 2 | 4;
+                    self.count("replace");
+                    self.push(&r);
+                    self.secs += t0.elapsed().as_secs_f64();
+                    return;
+                }
+                None => {
+                    self.pending = Some((r, swaps));
+                    self.flush_pending();
+                }
+            }
+        }
         let (idx, val) = self.enc.encode(g);
         let legal = legal_with_ids(g);
-        let mut mask: Vec<u16> = legal.iter().map(|(v, _)| *v as u16).collect();
+        let swaps = legal_replaces(g);
+        let mut mask: Vec<u16> = legal.iter().map(|(v, _)| *v as u16).chain(swaps.iter().map(|(v, _, _)| *v as u16)).collect();
         mask.sort_unstable();
         mask.dedup();
         let mut flags = 0u8;
@@ -166,32 +283,38 @@ impl GameLog {
         };
         self.count(&format!("records:{}", g.phase.as_str()));
         self.count(&format!("type:{}", a.r#type.as_str()));
-        let b = &mut self.buf;
-        put_u32(b, step);
-        b.extend_from_slice(&(g.ante as i16).to_le_bytes());
-        b.push(phase_code(g.phase));
-        b.push(g.blind_index.clamp(0, 255) as u8);
-        put_u16(b, g.round_number.max(0) as u16);
-        b.extend_from_slice(&g.money.to_le_bytes());
-        put_u16(b, g.round_number.max(0) as u16);
-        put_u16(b, id);
-        b.push(action_type_code(a.r#type));
-        b.extend_from_slice(&(a.index as i16).to_le_bytes());
-        b.push(a.cards.len() as u8);
-        b.extend(a.cards.iter().map(|&c| c as u8));
-        b.push(flags);
-        put_u16(b, idx.len() as u16);
-        for i in &idx {
-            put_u16(b, *i);
+        let r = Rec {
+            step,
+            ante: g.ante as i16,
+            phase: phase_code(g.phase),
+            blind_index: g.blind_index.clamp(0, 255) as u8,
+            round: g.round_number.max(0) as u16,
+            money: g.money,
+            passed: blinds_passed(g),
+            id,
+            action_type: action_type_code(a.r#type),
+            index: a.index as i16,
+            cards: a.cards.iter().map(|&c| c as u8).collect(),
+            flags,
+            idx,
+            val,
+            mask,
+        };
+        // a sale that some swap starts with (the swap's canonical copy): hold it for the next action
+        let says = !self.explicit || std::mem::take(&mut self.swap_next);
+        let own: Vec<(usize, Action, Action)> = if a.r#type == ActionType::SellJoker && says {
+            swaps.into_iter().filter(|(_, s, _)| s.index == a.index).collect()
+        } else {
+            Vec::new()
+        };
+        if self.explicit && says && own.is_empty() {
+            self.count("swap_not_found");
         }
-        for v in &val {
-            b.extend_from_slice(&v.to_le_bytes());
+        if own.is_empty() {
+            self.push(&r);
+        } else {
+            self.pending = Some((r, own));
         }
-        put_u16(b, mask.len() as u16);
-        for m in &mask {
-            put_u16(b, *m);
-        }
-        self.n_records += 1;
         self.secs += t0.elapsed().as_secs_f64();
     }
 
@@ -207,12 +330,16 @@ impl GameLog {
         put_u32(&mut out, crate::n_actions() as u32);
         put_u16(&mut out, self.seed.len() as u16);
         out.extend_from_slice(self.seed.as_bytes());
-        put_u32(&mut out, self.n_records);
+        put_u32(&mut out, self.records());
         out.extend_from_slice(&self.buf);
+        if let Some((r, _)) = &self.pending {
+            r.put(&mut out);
+        }
         out.push(won as u8);
         out.extend_from_slice(&(ante as i16).to_le_bytes());
         put_u16(&mut out, blinds.max(0) as u16);
         put_u16(&mut out, round.max(0) as u16);
+        put_u16(&mut out, if won { 24 } else { self.passed_playing });
         let mut counters = self.counters.clone();
         counters.insert("steps".into(), self.steps as u64);
         counters.insert("log_us".into(), (self.secs * 1e6) as u64);

@@ -17,7 +17,7 @@ pub mod vocab;
 #[cfg(test)]
 mod tests;
 
-pub const SCHEMA_VERSION: u32 = 1;
+pub const SCHEMA_VERSION: u32 = 2;
 
 pub fn obs_dim() -> usize {
     obs::layout().dim

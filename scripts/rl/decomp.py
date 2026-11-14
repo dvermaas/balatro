@@ -22,7 +22,7 @@ for name in sys.argv[1:]:
     common = [s for s in r if s in base]
     only_a = sum(1 for s in common if r[s]["won"] and not base[s]["won"])
     only_b = sum(1 for s in common if base[s]["won"] and not r[s]["won"])
-    ex = {k: sum(x.get(k, 0) for x in r.values()) / n for k in ("rl_decisions", "rl_reorders", "rl_targets_planned", "rl_targets_fallback")}
+    ex = {k: sum(x.get(k, 0) for x in r.values()) / n for k in ("rl_decisions", "rl_reorders", "rl_swaps", "rl_targets_planned", "rl_targets_fallback")}
     print(f"{name}: n={n} wins={w} ({100*w/n:.1f}%) mean_ante={ante:.2f} sec/game={sec:.2f} "
           f"onlywins {only_a}/{only_b} (vs v77 {sum(bool(base[s]['won']) for s in common)})")
     print("   deaths by ante:", " ".join(f"{a}:{deaths[a]}" for a in sorted(deaths)))
