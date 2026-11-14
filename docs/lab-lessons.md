@@ -969,6 +969,20 @@ measured the wrong thing or was never asked:
     v77's and sits 0.03-0.06 log10 lower from ante 5.
   Exploration costs it about 13 points (sampled 34%, argmax 47% on the same games' seeds): ~25 off-argmax actions a
   game, the lone joker sales the worst.
+- **The policy's late shops are where it loses** (`JEVLAB_RLANTES=lo-hi`: the network decides outside rounds only in
+  those antes, v77's handlers and forecasts decide the rest; c2k 0-449, no round search, `rl-ppo-a` iteration 74):
+
+  | who shops | wins | vs policy alone (192) | vs v77 (252) | deaths by ante 1-8 |
+  |---|---|---|---|---|
+  | policy antes 1-4, v77 from 5 (`rl-ho-p14`) | 238 | 91/45, z = +3.9 | 74/88, z = -1.1 | 2 4 4 15 23 33 59 72 |
+  | v77 antes 1-4, policy from 5 (`rl-ho-p58`) | 152 | 66/106, z = -3.1 | 19/119, z = -8.5 | 3 8 7 5 51 71 92 61 |
+
+  The policy's first four antes are about as good as v77's and no mix beats v77. Handed the policy's $49 at ante 5,
+  v77 rerolls 4.6 times there (the policy 1.3), buys 2.3 jokers and leaves ante 8's shops with $28 (the policy $63).
+  Handed v77's $18, the policy saves back up to $57-63 by antes 7-8 instead of building, and does worse than on its
+  own. The ante is the state's `ante_num`, which turns when the boss round closes, so a whole shop visit always has
+  one side. A second run from the same policy with the position-based reward and entropy 0.003 (`rl-ppo-b`, 10
+  iterations, 8,000 games) stayed flat: held-out 141, 145, 141 of 300, sampled 31%.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
@@ -1112,6 +1126,7 @@ What to trust:
 - A learned policy over the simulator's own actions (wider than the bot's options), cloned from v77 and then improved
   by reinforcement learning with v77's own round play minus the round search (`simcore`'s round player is too weak,
   see the clone entry in the log): started 2026-11-14 after the horizon retest, judged like every change on b2k and
-  c2k against v77. The clone is at about half of v77's wins; next are a sell-and-buy swap as one action and the
-  training loop.
+  c2k against v77. After 65,000 games of PPO the policy shops the first four antes about as well as v77 and the late
+  ones much worse (192 wins against 252 on c2k 0-449 without round search; log, "The policy's late shops"); next is
+  teaching it v77's late decisions at the states its own early game reaches.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).
