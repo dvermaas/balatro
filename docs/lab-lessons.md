@@ -983,6 +983,16 @@ measured the wrong thing or was never asked:
   own. The ante is the state's `ante_num`, which turns when the boss round closes, so a whole shop visit always has
   one side. A second run from the same policy with the position-based reward and entropy 0.003 (`rl-ppo-b`, 10
   iterations, 8,000 games) stayed flat: held-out 141, 145, 141 of 300, sampled 31%.
+- **Teaching the policy v77's late decisions (DAgger) makes it worse** (`gen_dagger.sh`, `train_dagger.py`: the
+  policy plays antes 1-k for k = 4..7 on e16k training seeds and v77 labels the rest, 2,000 games a round; fine-tuned
+  from iteration 74 with a KL keep term on its own antes 1-4; c2k 0-449, no round search). Held-out agreement with
+  v77 at antes 5+ rises from 58% to 77%, yet round 0 wins 154 (43/81 against the policy's 192, z = -3.4; 3x weight on
+  sales and swaps 155) and rounds 0+1 167 (55/80, z = -2.2). The early game is kept (deaths by ante 4: 26-32 against
+  26). It learned when v77 spends, not what v77 buys: rerolls 81% right and leaving the shop 82%, but when v77 swaps
+  a joker it swaps 31% of the time and then picks the same pair 31% of the time (exact swap agreement 10%, unchanged).
+  So it spends down to v77's $28-45 at antes 5-8 and buys fewer jokers than before (0.4-1.0 a shop visit at antes
+  6-8 against the policy's 1.8). With the forced-reroll result above, both failures say the same thing: this network
+  cannot value a joker for the build in front of it, which v77 does with 64 rollouts per option.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
