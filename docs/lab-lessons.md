@@ -950,6 +950,25 @@ measured the wrong thing or was never asked:
   shops in the same setting 252 (61/108, z = -3.6), v77 268. Deaths by ante 1-8: 1 5 6 13 28 48 72 72 (v77: 4 6 6 6
   13 29 48 70), so what is left is mostly antes 5-7. Still rising, more slowly (+14 points sampled in the first
   chunk, +6 in the second).
+- **Why the first PPO run flattened** (`rl-ppo-a` stopped at 71 policy iterations, 57,000 games: sampled 34%,
+  held-out argmax 129-149 of 300, c2k 0-449 192 wins at iteration 74 against 205 at 61). Three things measured:
+  - *The critic is not the wall* (`varstudy.py`, 1,000 fresh seeds x 4 rollouts of the iteration-74 policy). The seed
+    explains ~38% of the win's variance (417 seeds never won, 97 always). A per-seed baseline (the other rollouts'
+    mean return) lifts the critic's out-of-sample explained variance from 0.16 to 0.36, yet the advantages change
+    little (correlation 0.74 with the run's, 12-24% less spread) and a 45-minute run with it stayed on the plateau.
+    A scoring-power input adds nothing to the critic; the full observation helps a little from 2,000 games on.
+  - *The reward paid for ante -1*: counting blinds passed pays a losing run more with Hieroglyph or Petroglyph. v77
+    never buys them, the policy did in 16% of games. Masking them changes nothing (192 vs 192, 12/12), so it gamed the
+    reward without costing wins; the reward is position-based from `rl-ppo-b` on.
+  - *The policy holds $62-68 leaving the shop at antes 5-8 (v77 $26-31) and that money is not idle.* Forcing a
+    reroll whenever it would leave with money above a floor loses games, the lower the floor the more: floor $45 176
+    wins (42/58), floor at the interest cap 150 (47/89, z = -3.6), floor $10 84 (28/136). An extra reroll leads to
+    0.2 purchases, and a poorer policy buys fewer packs and jokers later. It takes the jokers v77 buys late more often
+    than v77 does and swaps 45% more (4.4-4.7 a game against 3.1), partly churn (Swashbuckler and Odd Todd are among
+    both its most-sold and most-bought). Its scoring margin against the boss target falls through the late antes like
+    v77's and sits 0.03-0.06 log10 lower from ante 5.
+  Exploration costs it about 13 points (sampled 34%, argmax 47% on the same games' seeds): ~25 off-argmax actions a
+  game, the lone joker sales the worst.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
