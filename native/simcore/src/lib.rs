@@ -1240,6 +1240,69 @@ pub fn card_str(c: &CardRef) -> String {
     s
 }
 
+/// One Playing-phase move with the rollouts' play logic (`Policy::decide`, the lab card order, the legal
+/// fallback): the move `play_horizon_rebuild` makes in a round. Lab tooling (rlenv) plays rounds with it too.
+pub fn policy_step(g: &mut GameState, pol: &Policy, mut trace: Option<&mut Vec<String>>) {
+    let (is_discard, idx) = pol.decide(g);
+    if let Some(t) = trace.as_mut() {
+        let hand: Vec<String> = g.hand.iter().map(card_str).collect();
+        let counters: Vec<String> = g.jokers.iter().map(|j| format!("{:?}", j.borrow().counter)).collect();
+        t.push(format!("{} {:?} hand={} chips={} hl={} dl={} counters=[{}] jk={}", if is_discard { "discard" } else { "play" }, idx,
+                       hand.join(","), g.chips_scored, g.hands_left, g.discards_left, counters.join(","), g.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect::<Vec<_>>().join("|")));
+    }
+    let t = if is_discard { ActionType::Discard } else { ActionType::Play };
+    let mut idx = idx;
+    idx.sort_unstable(); // rumbot-sim wants positions in order; Jackdaw takes any order
+    if !is_discard && CARD_ORDER.load(std::sync::atomic::Ordering::Relaxed) {
+        if let Some(order) = pol.best_card_order(g, &idx) {
+            // lab `rollout-card-order`: the played cards first in their best-scoring order (as the bot, v74)
+            let old = g.hand.clone();
+            g.hand = order.iter().map(|&p| old[p].clone()).collect();
+            idx = (0..idx.len()).collect();
+        }
+    }
+    let a = Action::with_cards(t, idx);
+    if g.is_legal(&a) {
+        g.step(&a);
+    } else {
+        let forced: Vec<usize> = match &g.forced_card {
+            Some(f) => {
+                let uid = cards::uid_of(f);
+                g.hand.iter().position(|c| cards::uid_of(c) == uid).into_iter().collect()
+            }
+            None => vec![],
+        };
+        g.step(&Action::with_cards(ActionType::Play, if forced.is_empty() { vec![0] } else { forced }));
+    }
+}
+
+/// Lab tooling (rlenv): play the current round to its end (phase leaves Playing) with the rollouts' round
+/// player, items used as in `play_horizon_rebuild` (`use_items` and the policy refresh before each move).
+/// Returns false when the hand is empty with the round still on (a rollout counts that as lost).
+pub fn play_round(g: &mut GameState, pol: &mut Policy, items: Option<&ItemsDesc>, failed: &mut HashSet<(String, u8)>, mut rebuild: Option<Rebuild>, max_steps: usize) -> Result<bool, String> {
+    let mut uids: Vec<u64> = g.jokers.iter().map(|j| j.borrow().uid).collect();
+    let mut names = joker_names(g);
+    for _ in 0..max_steps {
+        if g.phase != Phase::Playing {
+            return Ok(true);
+        }
+        if g.hand.is_empty() {
+            return Ok(false);
+        }
+        if let Some(it) = items {
+            if !g.consumables.is_empty() {
+                use_items(g, it, SELECTING_HAND, failed)?;
+                refresh_or_rebuild(g, pol, &mut uids, &mut names, &mut rebuild)?;
+                if g.hand.is_empty() {
+                    return Ok(false);
+                }
+            }
+        }
+        policy_step(g, pol, None);
+    }
+    Err("round did not finish".into())
+}
+
 pub fn play_horizon(g: &mut GameState, policy: &Policy, bosses: usize, max_steps: usize) -> Result<Vec<Row>, String> {
     play_horizon_traced(g, policy, bosses, max_steps, None, None)
 }
@@ -1288,7 +1351,7 @@ pub fn play_horizon_traced(g: &mut GameState, policy: &Policy, bosses: usize, ma
 /// Without it that case is STRICT_ABORT.
 pub type Rebuild<'a> = &'a mut dyn FnMut(&GameState) -> Policy;
 
-fn refresh_or_rebuild(g: &GameState, pol: &mut Policy, uids: &mut Vec<u64>, names: &mut Vec<String>, rebuild: &mut Option<Rebuild>) -> Result<(), String> {
+pub fn refresh_or_rebuild(g: &GameState, pol: &mut Policy, uids: &mut Vec<u64>, names: &mut Vec<String>, rebuild: &mut Option<Rebuild>) -> Result<(), String> {
     match refresh_policy(g, pol, uids, names) {
         Err(e) if e == STRICT_ABORT && rebuild.is_some() => {
             *pol = (rebuild.as_mut().unwrap())(g);
@@ -1374,37 +1437,7 @@ pub fn play_horizon_rebuild(g: &mut GameState, policy: &Policy, bosses: usize, m
                         }
                     }
                 }
-                let (is_discard, idx) = pol.decide(g);
-                if let Some(t) = trace.as_mut() {
-                    let hand: Vec<String> = g.hand.iter().map(card_str).collect();
-                    let counters: Vec<String> = g.jokers.iter().map(|j| format!("{:?}", j.borrow().counter)).collect();
-                    t.push(format!("{} {:?} hand={} chips={} hl={} dl={} counters=[{}] jk={}", if is_discard { "discard" } else { "play" }, idx,
-                                   hand.join(","), g.chips_scored, g.hands_left, g.discards_left, counters.join(","), g.jokers.iter().map(|j| j.borrow().spec.name.to_string()).collect::<Vec<_>>().join("|")));
-                }
-                let t = if is_discard { ActionType::Discard } else { ActionType::Play };
-                let mut idx = idx;
-                idx.sort_unstable(); // rumbot-sim wants positions in order; Jackdaw takes any order
-                if !is_discard && CARD_ORDER.load(std::sync::atomic::Ordering::Relaxed) {
-                    if let Some(order) = pol.best_card_order(g, &idx) {
-                        // lab `rollout-card-order`: the played cards first in their best-scoring order (as the bot, v74)
-                        let old = g.hand.clone();
-                        g.hand = order.iter().map(|&p| old[p].clone()).collect();
-                        idx = (0..idx.len()).collect();
-                    }
-                }
-                let a = Action::with_cards(t, idx);
-                if g.is_legal(&a) {
-                    g.step(&a);
-                } else {
-                    let forced: Vec<usize> = match &g.forced_card {
-                        Some(f) => {
-                            let uid = cards::uid_of(f);
-                            g.hand.iter().position(|c| cards::uid_of(c) == uid).into_iter().collect()
-                        }
-                        None => vec![],
-                    };
-                    g.step(&Action::with_cards(ActionType::Play, if forced.is_empty() { vec![0] } else { forced }));
-                }
+                policy_step(g, &pol, trace.as_deref_mut());
             }
             Phase::RoundEval | Phase::GameOver | Phase::Won => {
                 let (ante, typ, boss, target) = cur.clone().ok_or("round end without a blind")?;

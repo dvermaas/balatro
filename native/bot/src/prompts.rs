@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v77 + lab tooling (plays unchanged): simcore exposes the rollouts' round player for the RL fast environment (native/rlenv): policy_step (the Playing move play_horizon_rebuild makes, moved out of it unchanged), play_round (play one round to its end with it) and a public refresh_or_rebuild. Based on: ",
     "v77 + lab tooling (plays unchanged): JEVLAB_RLLOG=DIR makes jevlab log every rumbot action the bot takes outside the Playing phase (observation, legal mask, chosen action in the rlcore schema) to DIR/<seed>.rlb.gz for behaviour cloning; the rumbot backend gets a step hook for it. Based on: ",
     "v77 + lab tooling (plays unchanged): item-se-to=A applies item-se only up to ante A. Based on: ",
     "v77 + lab tooling (plays unchanged): agent-dir=D hands each forecast-backed shop decision (the close calls, the confident forecast buys, early slot fills and the planet rule) to an outside agent (an LLM subagent through scripts/lab/agentq.py); jevlab then runs more games than cores. Pack picks go to the agent too, and agent-from=A keeps antes before A with the code; a targeted tarot with no target is not offered as a pick. Based on: ",

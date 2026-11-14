@@ -6,3 +6,5 @@ runs/*
 # Rust build output (the workspace lock file native/Cargo.lock is kept)
 native/**/target/
 native/*/Cargo.lock
+# Python bytecode caches
+__pycache__/

@@ -1,0 +1,21 @@
+[package]
+name = "rlenv"
+version = "0.1.0"
+edition = "2021"
+description = "Fast RL environment on rumbot-sim: a policy takes the strategic decisions (rlcore vocabulary), simcore's rollout round player plays the rounds; plus Rust inference for the policy network"
+license = "MIT"
+
+[lib]
+name = "rlenv"
+
+[[bin]]
+name = "rlenv"
+path = "src/main.rs"
+
+[dependencies]
+rlcore = { path = "../rlcore" }
+rumbot_sim = { path = "../rumbot" }
+simcore = { path = "../simcore" }
+jevbot = { path = "../bot" }
+serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
+flate2 = "1"

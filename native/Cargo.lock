@@ -515,6 +515,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "rlenv"
+version = "0.1.0"
+dependencies = [
+ "flate2",
+ "jevbot",
+ "rlcore",
+ "rumbot_sim",
+ "serde_json",
+ "simcore",
+]
+
+[[package]]
 name = "rumbot_sim"
 version = "0.1.0"
 

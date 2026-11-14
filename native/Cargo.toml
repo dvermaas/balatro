@@ -2,7 +2,7 @@
 # native/target/release). See README "Rust bot".
 [workspace]
 resolver = "2"
-members = ["bot", "kernel", "simcore", "rumbot", "pycompat", "typesafe", "rlcore"]
+members = ["bot", "kernel", "simcore", "rumbot", "pycompat", "typesafe", "rlcore", "rlenv"]
 
 [profile.release]
 lto = true

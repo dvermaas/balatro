@@ -4,6 +4,9 @@ native/rlcore/src/log.rs) into numpy arrays, and print dataset stats.
 
     /home/user/rlvenv/bin/python scripts/rl/read_rlb.py runs/_rl/bc-v77/games [--limit N]
 
+Also reads fast-env trajectories (`<seed>.brt.gz`, native/rlenv/src/traj.rs): then ds also has logp,
+value_win, value_blinds, reward (per record) and game_power (per game: [(ante, log10 power samples)]).
+
 As a module: `ds = load_dir(dir)` returns a dict of arrays (one row per record):
   obs_indptr, obs_indices, obs_values   CSR observation (dim = ds["obs_dim"]); obs_csr(ds) gives scipy CSR
   mask_indptr, mask_ids                 CSR legal vocabulary ids;  mask_dense(ds, rows) gives booleans
@@ -24,14 +27,16 @@ import sys
 import numpy as np
 
 MAGIC = b"BRL1"
+MAGIC_TRAJ = b"BRT1"  # fast-env trajectories (native/rlenv/src/traj.rs): + logp, value_win, value_blinds, reward
 UNEXPRESSIBLE = 0xFFFF
 REC_HEAD = struct.Struct("<IhBBHiHHBhB")  # step ante phase blind round money blinds_cleared action atype aindex ncards
 
 
 def read_game(path):
     raw = gzip.open(path, "rb").read()
-    if raw[:4] != MAGIC:
+    if raw[:4] not in (MAGIC, MAGIC_TRAJ):
         raise ValueError(f"{path}: bad magic")
+    traj = raw[:4] == MAGIC_TRAJ
     version, shash, obs_dim, n_actions = struct.unpack_from("<IQII", raw, 4)
     p = 4 + 20
     (slen,) = struct.unpack_from("<H", raw, p)
@@ -43,6 +48,7 @@ def read_game(path):
     head = np.zeros((n, 11), dtype=np.int64)
     flags = np.zeros(n, dtype=np.uint8)
     cards, oi, ov, mk = [], [], [], []
+    rl = np.zeros((n, 4), dtype=np.float32)
     for r in range(n):
         h = REC_HEAD.unpack_from(raw, p)
         p += REC_HEAD.size
@@ -62,6 +68,9 @@ def read_game(path):
         p += 2
         mk.append(np.frombuffer(raw, dtype="<u2", count=nm, offset=p))
         p += 2 * nm
+        if traj:
+            rl[r] = struct.unpack_from("<4f", raw, p)
+            p += 16
     won, ante, blinds, rnd, nctr = struct.unpack_from("<BhHHI", raw, p)
     p += struct.calcsize("<BhHHI")
     counters = {}
@@ -73,19 +82,28 @@ def read_game(path):
         (v,) = struct.unpack_from("<Q", raw, p)
         p += 8
         counters[k] = v
+    power = []
+    if traj:
+        (npw,) = struct.unpack_from("<H", raw, p)
+        p += 2
+        for _ in range(npw):
+            a, k = struct.unpack_from("<hH", raw, p)
+            p += 4
+            power.append((a, np.frombuffer(raw, dtype="<f4", count=k, offset=p).copy()))
+            p += 4 * k
     if p != len(raw):
         raise ValueError(f"{path}: {len(raw) - p} trailing bytes")
     return dict(version=version, schema_hash=shash, obs_dim=obs_dim, n_actions=n_actions, seed=seed, head=head,
                 flags=flags, cards=cards, obs_idx=oi, obs_val=ov, mask=mk, won=bool(won), ante=ante, blinds=blinds,
-                round=rnd, counters=counters)
+                round=rnd, counters=counters, traj=traj, rl=rl, power=power)
 
 
 def load_dir(d, limit=None):
-    files = sorted(glob.glob(os.path.join(d, "*.rlb.gz")))
+    files = sorted(glob.glob(os.path.join(d, "*.rlb.gz"))) or sorted(glob.glob(os.path.join(d, "*.brt.gz")))
     if limit:
         files = files[:limit]
     if not files:
-        raise SystemExit(f"no *.rlb.gz under {d}")
+        raise SystemExit(f"no *.rlb.gz / *.brt.gz under {d}")
     games = [read_game(f) for f in files]
     g0 = games[0]
     for g in games:
@@ -118,6 +136,9 @@ def load_dir(d, limit=None):
         game_ante=np.array([g["ante"] for g in games]), game_blinds=np.array([g["blinds"] for g in games]),
         game_round=np.array([g["round"] for g in games]), game_counters=[g["counters"] for g in games],
     )
+    if g0["traj"]:
+        rl = np.concatenate([g["rl"] for g in games])
+        ds.update(logp=rl[:, 0], value_win=rl[:, 1], value_blinds=rl[:, 2], reward=rl[:, 3], game_power=[g["power"] for g in games])
     return ds
 
 
