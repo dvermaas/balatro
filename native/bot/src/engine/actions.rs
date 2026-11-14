@@ -202,6 +202,14 @@ pub fn act(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), Rpc
     r
 }
 
+// every rumbot step of the game goes through here, so the lab's step hook sees each one
+fn step(hook: &mut Option<super::StepHook>, g: &mut GameState, a: &Action) {
+    if let Some(h) = hook.as_mut() {
+        h(g, a);
+    }
+    g.step(a);
+}
+
 fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), RpcError> {
     if method == "rearrange" {
         return rearrange(eng, params);
@@ -210,7 +218,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
     match method {
         "select" => {
             phase_check(g, &[Phase::BlindSelect])?;
-            g.step(&Action::new(ActionType::SelectBlind));
+            step(&mut eng.on_step, g, &Action::new(ActionType::SelectBlind));
             eng.round_started = true;
             eng.last_chips = 0;
             eng.last_round = (g.hands_left, g.discards_left, g.discards_used);
@@ -222,7 +230,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
             if !g.is_legal(&Action::new(ActionType::SkipBlind)) {
                 return Err(illegal("Cannot skip Boss blind"));
             }
-            g.step(&Action::new(ActionType::SkipBlind));
+            step(&mut eng.on_step, g, &Action::new(ActionType::SkipBlind));
         }
         "play" | "discard" => {
             let play = method == "play";
@@ -261,7 +269,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
                 eng.round_hands_played += 1;
             }
             let (hl, dl, du) = (g.hands_left, g.discards_left, g.discards_used);
-            g.step(&a);
+            step(&mut eng.on_step, g, &a);
             eng.last_chips = g.chips_scored;
             eng.last_round = if g.phase == Phase::Playing {
                 (g.hands_left, g.discards_left, g.discards_used)
@@ -287,7 +295,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
                     }
                     return Err(illegal(if slot.kind == "joker" { "No room for joker" } else { "No room for consumable" }));
                 }
-                g.step(&a);
+                step(&mut eng.on_step, g, &a);
             } else if let Some(i) = params.get("voucher") {
                 let i = i.as_i64().ok_or_else(|| bad("buy: bad voucher index"))?;
                 phase_check(g, &[Phase::Shop])?;
@@ -299,7 +307,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
                 if !g.is_legal(&a) {
                     return Err(illegal("Cannot afford voucher"));
                 }
-                g.step(&a);
+                step(&mut eng.on_step, g, &a);
             } else if let Some(i) = params.get("pack") {
                 let i = i.as_i64().ok_or_else(|| bad("buy: bad pack index"))?;
                 if i == 0 && eng.first_shop == 1 { eng.first_pack_gone = true; }
@@ -312,7 +320,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
                 if !g.is_legal(&a) {
                     return Err(illegal("Cannot afford booster"));
                 }
-                g.step(&a);
+                step(&mut eng.on_step, g, &a);
                 eng.pack_from_shop = true;
             } else {
                 return Err(bad(format!("buy: unrecognized params {params}")));
@@ -340,7 +348,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
             if !g.is_legal(&a) {
                 return Err(illegal(format!("Cannot sell in phase {}", phase_name(g.phase))));
             }
-            g.step(&a);
+            step(&mut eng.on_step, g, &a);
         }
         "use" => {
             if params.get("consumable").is_none() {
@@ -369,7 +377,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
             if !g.is_legal(&a) {
                 return Err(cannot(g));
             }
-            g.step(&a);
+            step(&mut eng.on_step, g, &a);
         }
         "reroll_boss" => {
             phase_check(g, &[Phase::BlindSelect])?;
@@ -377,7 +385,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
             if !g.is_legal(&a) {
                 return Err(illegal("Cannot reroll the boss"));
             }
-            g.step(&a);
+            step(&mut eng.on_step, g, &a);
         }
         "reroll" => {
             phase_check(g, &[Phase::Shop])?;
@@ -385,21 +393,21 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
             if !g.is_legal(&a) {
                 return Err(illegal("Cannot afford reroll"));
             }
-            g.step(&a);
+            step(&mut eng.on_step, g, &a);
         }
         "next_round" => {
             phase_check(g, &[Phase::Shop])?;
-            g.step(&Action::new(ActionType::LeaveShop));
+            step(&mut eng.on_step, g, &Action::new(ActionType::LeaveShop));
             eng.pack_from_shop = false;
         }
         "cash_out" => {
             phase_check(g, &[Phase::RoundEval])?;
-            g.step(&Action::new(ActionType::CashOut));
+            step(&mut eng.on_step, g, &Action::new(ActionType::CashOut));
         }
         "pack" => {
             if truthy(params.get("skip")) {
                 phase_check(g, &[Phase::Pack])?;
-                g.step(&Action::new(ActionType::SkipPack));
+                step(&mut eng.on_step, g, &Action::new(ActionType::SkipPack));
             } else if params.get("card").is_some() {
                 let i = idx_param(params, "card")?;
                 let targets = index_list(params.get("targets"))?;
@@ -418,7 +426,7 @@ fn act_inner(eng: &mut RumbotGame, method: &str, params: &Value) -> Result<(), R
                 if targets.iter().any(|&c| c < 0) || !g.is_legal(&a) {
                     return Err(illegal("Cannot pick that pack card (no room, or wrong targets)"));
                 }
-                g.step(&a);
+                step(&mut eng.on_step, g, &a);
             } else {
                 return Err(bad(format!("pack: unrecognized params {params}")));
             }

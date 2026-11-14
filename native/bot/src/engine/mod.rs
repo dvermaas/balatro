@@ -49,7 +49,12 @@ pub struct RumbotGame {
     /// `_bb_shop_frozen`: (count, limit) of shop, vouchers, packs as of the last shop view.
     pub(crate) shop_frozen: Option<[(usize, usize); 3]>,
     pub(crate) deck_limit: usize,
+    /// Lab tooling (`JEVLAB_RLLOG`): called with the state and the action just before every rumbot step
+    /// this game takes (None everywhere else, the forecasts' games included).
+    pub on_step: Option<StepHook>,
 }
+
+pub type StepHook = Box<dyn FnMut(&GameState, &rumbot_sim::game::Action)>;
 
 impl RumbotGame {
     pub fn new() -> Self {
@@ -67,6 +72,7 @@ impl RumbotGame {
             pack_from_shop: false,
             shop_frozen: None,
             deck_limit: 52,
+            on_step: None,
         }
     }
 

@@ -354,6 +354,7 @@ dependencies = [
  "mimalloc",
  "pycompat",
  "regex",
+ "rlcore",
  "rumbot_sim",
  "serde",
  "serde_json",
@@ -503,6 +504,14 @@ dependencies = [
  "libc",
  "untrusted",
  "windows-sys",
+]
+
+[[package]]
+name = "rlcore"
+version = "0.1.0"
+dependencies = [
+ "flate2",
+ "rumbot_sim",
 ]
 
 [[package]]

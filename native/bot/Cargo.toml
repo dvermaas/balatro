@@ -14,6 +14,7 @@ jev_kernel = { path = "../kernel" }
 rumbot_sim = { path = "../rumbot" }
 simcore = { path = "../simcore" }
 pycompat = { path = "../pycompat" }
+rlcore = { path = "../rlcore" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order", "float_roundtrip"] }
 flate2 = "1"

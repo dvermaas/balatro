@@ -137,8 +137,16 @@ fn play(seed: &str) -> Result<Value, String> {
     let calls: Rc<RefCell<Vec<Value>>> = Rc::new(RefCell::new(Vec::new()));
     let want_trace = std::env::var_os("JEVLAB_TRACE").is_some();
     let jev = CodeJev::new(ARM_F.load(Ordering::SeqCst), oracle.clone());
+    // JEVLAB_RLLOG=<dir>: log every strategic rumbot action of this game for behaviour cloning (rlcore::log)
+    let rl_dir = std::env::var_os("JEVLAB_RLLOG").map(std::path::PathBuf::from);
+    let rl_log = rl_dir.as_ref().map(|_| Rc::new(RefCell::new(rlcore::log::GameLog::new(seed))));
+    let mut rumbot = RumbotGame::new();
+    if let Some(l) = &rl_log {
+        let l = l.clone();
+        rumbot.on_step = Some(Box::new(move |g, a| l.borrow_mut().on_step(g, a)));
+    }
     let mut bot = JevBot::new(
-        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(RumbotGame::new()), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
+        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(rumbot), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
     let e = jevbot::experiment::get();
@@ -258,6 +266,16 @@ fn play(seed: &str) -> Result<Value, String> {
         for r in log.iter() { writeln!(gz, "{r}").map_err(|e| e.to_string())?; }
         let _ = writeln!(gz, "{}", json!({"k": "end", "result": row}));
         eprintln!("{seed}: first divergence: {}", diff_trace(seed, &log));
+    }
+    if let (Some(d), Some(l)) = (&rl_dir, &rl_log) {
+        let t = std::time::Instant::now();
+        let l = l.borrow();
+        let i = |k: &str| row.get(k).and_then(Value::as_i64).unwrap_or(0) as i32;
+        let (_, bytes) = l.write(d, won, i("ante"), i("blinds"), i("round")).map_err(|e| format!("rl log: {e}"))?;
+        row.insert("rl_records".into(), json!(l.records()));
+        row.insert("rl_unexpressible".into(), json!(l.counters.get("unexpressible").copied().unwrap_or(0)));
+        row.insert("rl_bytes".into(), json!(bytes));
+        row.insert("rl_s".into(), json!(((l.secs + t.elapsed().as_secs_f64()) * 1000.0).round() / 1000.0));
     }
     Ok(Value::Object(row))
 }
