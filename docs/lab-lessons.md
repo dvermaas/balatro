@@ -1008,6 +1008,14 @@ measured the wrong thing or was never asked:
   there at a quarter of the data (0.53 at 997 games, 0.53 at 1,994, 0.56 at 3,988; the flat MLP 0.29, 0.32, 0.32),
   and both curves are nearly flat, so more v77 labels will not close the rest; whether to swap at all stays hard
   for every model. Whether it wins more games is untested here.
+- **The item scorer in play: better copies, no more wins** (rlcore `net.rs` reads weights format 2, the flat body
+  plus a shared scorer for buy_joker and replace_joker; `nets.py`, `train_item.py`, `netparity.py`: Rust and PyTorch
+  logits agree to 2e-5 on 2,000 records; 45 against 22 microseconds a decision; c2k 0-449, no round search). The
+  item-network analogue of the DAgger network (`rl-it-mix`: iteration 74's own antes 1-4, v77's labels from ante 5)
+  wins 166 against the flat one's 167 (61/62) and iteration 74's 192 (66/92, z = -2.1), although it picks v77's
+  joker on 55% of late swaps against 33%. A clone of all v77 labels (`rl-it-clone`) wins 154; the flat clones won
+  99-121, but on less data, so that gain is not attributed. Both item networks acquire fewer jokers late than the
+  flat ones (0.2-0.7 a shop visit at antes 6-8): which joker was not what limited play, when to acquire one is.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
