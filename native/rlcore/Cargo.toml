@@ -1,0 +1,13 @@
+[package]
+name = "rlcore"
+version = "0.1.0"
+edition = "2021"
+description = "RL schema on rumbot-sim: order-free observation encoder, item-keyed action vocabulary, and the behaviour-cloning game log"
+license = "MIT"
+
+[lib]
+name = "rlcore"
+
+[dependencies]
+rumbot_sim = { path = "../rumbot" }
+flate2 = "1"
