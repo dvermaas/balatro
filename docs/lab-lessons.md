@@ -993,6 +993,21 @@ measured the wrong thing or was never asked:
   So it spends down to v77's $28-45 at antes 5-8 and buys fewer jokers than before (0.4-1.0 a shop visit at antes
   6-8 against the policy's 1.8). With the forced-reroll result above, both failures say the same thing: this network
   cannot value a joker for the build in front of it, which v77 does with 64 rollouts per option.
+- **A network that scores jokers with shared weights copies v77's joker choice much better** (`screen_items.py`,
+  offline: v77's 253k labelled records from 3,988 games, test on 10% of games held out; no games played). The
+  measure is the model's top choice among the legal joker-acquiring actions on records where v77 acquired a joker:
+
+  | model | lone buys (n = 287, chance 0.48) | swaps (n = 1,531, chance 0.14) | swap recall |
+  |---|---|---|---|
+  | flat MLP (as in every run so far) | 0.79 | 0.32 | 0.28 |
+  | item scorer, mean over owned jokers | 0.91 | 0.54 | 0.30 |
+  | item scorer, attention over owned jokers | 0.90 | 0.56 | 0.40 |
+
+  The flat MLP has separate output weights for each shop slot and each (sold joker, slot) pair; the item scorer runs
+  one small MLP over (context, shop joker, sold joker, owned-joker summary) for every buy and swap. Its advantage is
+  there at a quarter of the data (0.53 at 997 games, 0.53 at 1,994, 0.56 at 3,988; the flat MLP 0.29, 0.32, 0.32),
+  and both curves are nearly flat, so more v77 labels will not close the rest; whether to swap at all stays hard
+  for every model. Whether it wins more games is untested here.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
