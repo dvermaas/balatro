@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v77 + lab tooling (plays unchanged): under JEVLAB_RLANTES the JEVLAB_RLLOG logger infers v77's joker swaps in its antes (a sale then a buy of that slot: one replace_joker record, as in v77's own logs) and takes only the network's from the driver. Based on: ",
     "v77 + lab tooling (plays unchanged): JEVLAB_RLANTES=lo-hi hands the decisions outside rounds to the policy only in those antes (v77's handlers decide the rest; JevBot gets a strategic gate). Based on: ",
     "v77 + lab tooling (plays unchanged): JEVLAB_RLREROLL=interest|N rerolls instead of the policy leaving a shop while money after the reroll stays at or above the floor; JEVLAB_RLNOGLYPH=1 keeps the policy off Hieroglyph and Petroglyph. Based on: ",
     "v77 + lab tooling (plays unchanged): rlcore schema v2 (replace_joker: a joker swap as one action, stepped as the sale then the buy; JEVLAB_RLLOG logs it as one record); JEVLAB_RMDIRS=1 drops an errored game's run dir; JEVLAB_RLORDER=dagger skips the shop's joker order search under a policy. Based on: ",

@@ -422,11 +422,17 @@ fn play(seed: &str) -> Result<Value, String> {
     let v77_decisions = Rc::new(std::cell::Cell::new(0u64));
     if let (Some(_), Some((lo, hi))) = (&rl_driver, rl_antes()) {
         let c = v77_decisions.clone();
+        // the logger infers v77's swaps (a sale then a buy of that slot: one replace_joker record, as in v77's own
+        // logs, bc-v77-s2) and takes the network's swaps from the driver; a record's side is its ante
+        let log = rl_log.clone();
         bot.strategic_gate = Some(Box::new(move |gs_| {
             let a = jevbot::gs::int(jevbot::gs::get(gs_, "ante_num"));
             let mine = a >= lo && a <= hi;
             if !mine {
                 c.set(c.get() + 1);
+            }
+            if let Some(l) = &log {
+                l.borrow_mut().explicit = mine;
             }
             mine
         }));
