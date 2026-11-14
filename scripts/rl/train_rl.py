@@ -57,6 +57,22 @@ WIN_BONUS = 1.0
 
 # ---------------------------------------------------------------- reward (swap here)
 
+PROGRESS = "count"  # "count" (rl-ppo-a) or "position"; set from --progress
+
+
+def game_rewards(ds, rows, gi):
+    """The rewards of game gi's records `rows` (step order) under PROGRESS:
+    count     blinds passed (beaten or skipped) / 24: what rl-ppo-a used. Hieroglyph / Petroglyph (ante -1) make
+              more blinds to pass, so a run that buys them and still loses collects more than 24/24 (milestone 5).
+    position  where the run stands, 3 (ante - 1) + blind index (capped 0..24) / 24: an ante shift moves it back,
+              and a lost run ends where its last decision stood (the blind it died on); a win ends at 24."""
+    if PROGRESS == "count":
+        return rewards(ds["blinds_passed"][rows], ds["game_passed"][gi], ds["game_won"][gi])
+    pos = np.clip(3 * (ds["ante"][rows].astype(np.int64) - 1) + ds["blind_index"][rows], 0, 24)
+    won = bool(ds["game_won"][gi])
+    return rewards(pos, 24 if won else pos[-1], won)
+
+
 def rewards(passed, passed_final, won):
     """Per-decision rewards of one game. passed: blinds passed before each decision (records in step order);
     passed_final: blinds passed when the run ended (24 for a win). Return to go from decision t is then
@@ -196,7 +212,7 @@ class Batch:
         ends = np.r_[starts[1:], len(rows)]
         for s, e in zip(starts, ends):
             k = g[s]
-            r = rewards(ds["blinds_passed"][rows[s:e]], ds["game_passed"][k], ds["game_won"][k])
+            r = game_rewards(ds, rows[s:e], k)
             v = values[s:e]
             vn = np.append(v[1:], 0.0)
             delta = r + vn - v
@@ -222,16 +238,20 @@ class Critic(torch.nn.Module):
     memorise games (validation explained variance below 0 while training EV passes 0.9); these blocks generalise
     (validation EV 0.14, about what blinds passed alone gives) and keep improving with the fresh games of each iteration."""
 
-    def __init__(self, cols, hidden=64):
+    def __init__(self, cols, hidden=64, n_extra=0):
         super().__init__()
         self.register_buffer("cols", torch.as_tensor(cols, dtype=torch.int64))
-        self.net = torch.nn.Sequential(torch.nn.Linear(len(cols), hidden), torch.nn.ReLU(), torch.nn.Linear(hidden, hidden), torch.nn.ReLU(),
+        self.n_extra = n_extra
+        self.net = torch.nn.Sequential(torch.nn.Linear(len(cols) + n_extra, hidden), torch.nn.ReLU(), torch.nn.Linear(hidden, hidden), torch.nn.ReLU(),
                                        torch.nn.Linear(hidden, 1))
 
-    def features(self, ds, rows):
+    def features(self, ds, rows, extra=None):
         import scipy.sparse as sp
         X = sp.csr_matrix((ds["obs_values"], ds["obs_indices"], ds["obs_indptr"]), shape=(len(ds["action"]), ds["obs_dim"]))
-        return torch.from_numpy(X[rows][:, self.cols.numpy()].toarray().astype(np.float32))
+        X = X[rows][:, self.cols.numpy()].toarray().astype(np.float32)
+        if self.n_extra:
+            X = np.concatenate([X, extra.astype(np.float32)], 1)
+        return torch.from_numpy(X)
 
     def forward(self, x):
         return self.net(x)[:, 0]
@@ -244,6 +264,37 @@ def critic_cols(schema):
         b = blocks[n]
         out += range(b["offset"], b["offset"] + len(b["rows"]) * len(b["cols"]))
     return sorted(out)
+
+
+def seed_features(ds, rows):
+    """Per record, the per-seed baseline from the same iteration's other rollouts of its seed (milestone 5: the seed
+    explains ~40% of the win variance): [has others, b = their mean total return - this rollout's reward so far,
+    b2 = the same over the rollouts that passed at least as many blinds (else b)]. Generic in the reward
+    (`game_rewards`); valid as a baseline: it does not depend on this rollout's actions."""
+    g = ds["game"][rows]
+    total = {}
+    past = np.zeros(len(rows), np.float64)
+    starts = np.flatnonzero(np.r_[True, g[1:] != g[:-1]])
+    ends = np.r_[starts[1:], len(rows)]
+    for s_, e in zip(starts, ends):
+        r = game_rewards(ds, rows[s_:e], g[s_]).astype(np.float64)
+        total[g[s_]] = r.sum()
+        past[s_:e] = np.concatenate([[0.0], np.cumsum(r)[:-1]])
+    by_seed = {}
+    for gi in total:
+        by_seed.setdefault(ds["game_seed"][gi], []).append(gi)
+    p24 = ds["blinds_passed"][rows]
+    out = np.zeros((len(rows), 3), np.float32)
+    for i in range(len(rows)):
+        oth = [h for h in by_seed[ds["game_seed"][g[i]]] if h != g[i]]
+        if not oth:
+            continue
+        f = np.array([total[h] for h in oth])
+        b = f.mean() - past[i]
+        reach = ds["game_passed"][oth] >= p24[i]
+        b2 = f[reach].mean() - past[i] if reach.any() else b
+        out[i] = [1.0, b, b2]
+    return out
 
 
 def critic_values(critic, X):
@@ -326,7 +377,9 @@ def new_net(shape, hidden, n_value):
 
 
 CFG_KEYS = ("bin", "init", "games", "jobs", "warmup", "eval_every", "eval_n", "exp", "order", "lr", "critic_lr", "critic_epochs", "critic_target",
-            "ppo_epochs", "bs", "clip", "ent", "target_kl", "lam", "max_grad", "clone_kl", "clone_kl_decay")
+            "ppo_epochs", "bs", "clip", "ent", "target_kl", "lam", "max_grad", "clone_kl", "clone_kl_decay", "rollouts", "seed_baseline",
+            "critic_buffer", "init_ckpt", "progress")
+CFG_DEFAULTS = {"rollouts": 1, "seed_baseline": False, "critic_buffer": 1, "init_ckpt": None, "progress": "count"}  # runs from before milestone 5
 
 
 def main():
@@ -356,6 +409,11 @@ def main():
     ap.add_argument("--max-grad", type=float, default=1.0)
     ap.add_argument("--clone-kl", type=float, default=0.0)
     ap.add_argument("--clone-kl-decay", type=float, default=0.9)
+    ap.add_argument("--rollouts", type=int, default=1, help="play each seed K times per iteration (games / K seeds), for the per-seed baseline")
+    ap.add_argument("--seed-baseline", action="store_true", help="the critic also sees the per-seed baseline of the other rollouts (needs --rollouts > 1)")
+    ap.add_argument("--critic-buffer", type=int, default=1, help="the critic trains on the last N iterations' games")
+    ap.add_argument("--progress", default="count", help="reward potential: count (blinds passed, rl-ppo-a) or position (ante and blind)")
+    ap.add_argument("--init-ckpt", help="a new run starts from this run's actor (ckpt.pt); fresh critic, warm-up as usual")
     a = ap.parse_args()
 
     d = os.path.join(ROOT, "runs/_rl/ppo", a.name)
@@ -369,14 +427,22 @@ def main():
             if getattr(a, k) and os.path.abspath(getattr(a, k)) != cfg[k]:
                 raise SystemExit(f"--{k} differs from the run's ({cfg[k]}); start a new NAME")
     else:
+        if a.init_ckpt and not a.init:
+            a.init = torch.load(a.init_ckpt, map_location="cpu", weights_only=False)["cfg"]["init"]
         if not (a.init and a.bin):
-            raise SystemExit("a new run needs --init and --bin")
+            raise SystemExit("a new run needs --init (or --init-ckpt) and --bin")
+        if a.seed_baseline and a.rollouts < 2:
+            raise SystemExit("--seed-baseline needs --rollouts 2 or more")
         cfg = {k: getattr(a, k) for k in CFG_KEYS}
         cfg["bin"] = os.path.abspath(a.bin)
         cfg["init"] = os.path.abspath(a.init)
+        cfg["init_ckpt"] = os.path.abspath(a.init_ckpt) if a.init_ckpt else None
         ck = None
+    cfg = {**CFG_DEFAULTS, **cfg}
     for k, v in cfg.items():
         setattr(a, k, v)
+    global PROGRESS
+    PROGRESS = a.progress
     if "/native/target/" in os.path.realpath(a.bin):
         raise SystemExit("copy the jevlab binary out of native/target first (runs/_rl/bin)")
     torch.set_num_threads(a.jobs)
@@ -395,15 +461,17 @@ def main():
     opt_c = None
     if ck:
         actor.load_state_dict(ck["actor"])
-        critic = Critic(ck["critic"]["cols"].tolist())
+        critic = Critic(ck["critic"]["cols"].tolist(), n_extra=ck["critic"]["net.0.weight"].shape[1] - len(ck["critic"]["cols"]))
         critic.load_state_dict(ck["critic"])
         opt_c = torch.optim.AdamW(critic.parameters(), lr=a.critic_lr, weight_decay=1e-4)
         opt_a.load_state_dict(ck["opt_a"])
         opt_c.load_state_dict(ck["opt_c"])
         it0, rows_done = ck["iter"], ck["curve"]
     else:
-        actor.load_state_dict(clone_sd)
+        actor.load_state_dict(torch.load(a.init_ckpt, map_location="cpu", weights_only=False)["actor"] if a.init_ckpt else clone_sd)
         it0, rows_done = 0, []
+    buf_dir = os.path.join(d, "buffer")
+    os.makedirs(buf_dir, exist_ok=True)
     curve = os.path.join(d, "curve.jsonl")
 
     def export(name):
@@ -424,17 +492,32 @@ def main():
         wpath = export(f"it{it}.brlw")
         traj = os.path.join(d, "traj")
         shutil.rmtree(traj, ignore_errors=True)
-        seeds = fresh_seeds(a.name, it, a.games, reserved)
-        rows, wall = run_jevlab(a, os.path.join(d, "lab"), f"it{it}", seeds, wpath, 1.0, sampling_seed(a.name, it), traj)
+        K = a.rollouts
+        seeds = fresh_seeds(a.name, it, a.games // K, reserved)
+        rows, wall = [], 0.0
+        for j in range(K):
+            # K rollouts of the same seeds, each with its own sampling seed; logs renamed <seed>~r<j> into one dir
+            sub = traj if K == 1 else os.path.join(d, f"traj-r{j}")
+            shutil.rmtree(sub, ignore_errors=True) if K > 1 else None
+            rr, w = run_jevlab(a, os.path.join(d, "lab"), f"it{it}" if K == 1 else f"it{it}r{j}", seeds, wpath, 1.0,
+                               sampling_seed(a.name, it) + j, sub)
+            rows += rr
+            wall += w
+            if K > 1:
+                os.makedirs(traj, exist_ok=True)
+                for fn in os.listdir(sub):
+                    dst = fn.replace(".rlb.gz", f"~r{j}.rlb.gz") if fn.endswith(".rlb.gz") else fn
+                    os.replace(os.path.join(sub, fn), os.path.join(traj, dst))
+                shutil.rmtree(sub, ignore_errors=True)
         gs = game_stats(rows)
         ds = R.load_dir(traj)
         assert ds["schema_hash"] == schema_hash, "trajectories and weights disagree on the schema"
         batch = Batch(ds)
         if critic is None:
             torch.manual_seed(0)
-            critic = Critic(critic_cols(ds["schema"]))
+            critic = Critic(critic_cols(ds["schema"]), n_extra=3 if a.seed_baseline else 0)
             opt_c = torch.optim.AdamW(critic.parameters(), lr=a.critic_lr, weight_decay=1e-4)
-        X = critic.features(ds, batch.rows)
+        X = critic.features(ds, batch.rows, seed_features(ds, batch.rows) if critic.n_extra else None)
         old_logp, _ = batch.forward(actor, batch.rows)
         v0 = critic_values(critic, X)
         adv, ret, ret_mc = batch.targets(v0, a.lam)
@@ -447,7 +530,18 @@ def main():
             pst = ppo_update(actor, clone, opt_a, batch, old_logp, adv, a, beta, rng)
             pst["clone_kl_beta"] = beta
         tgt = ret_mc if a.critic_target == "mc" else ret
-        vloss = fit_critic(critic, opt_c, X, tgt, a.critic_epochs, 1024, rng)
+        # the critic's buffer: this iteration's games plus the last critic_buffer - 1 iterations' (buffer/itK.npz)
+        np.savez(os.path.join(buf_dir, f"it{it}.npz.tmp.npz"), X=X.numpy().astype(np.float16), y=tgt.astype(np.float32))
+        os.replace(os.path.join(buf_dir, f"it{it}.npz.tmp.npz"), os.path.join(buf_dir, f"it{it}.npz"))
+        Xs, ys = [X], [tgt]
+        for k in range(it - 1, it - a.critic_buffer, -1):
+            p_ = os.path.join(buf_dir, f"it{k}.npz")
+            if k >= 0 and os.path.exists(p_):
+                z = np.load(p_)
+                if z["X"].shape[1] == X.shape[1]:
+                    Xs.append(torch.from_numpy(z["X"].astype(np.float32)))
+                    ys.append(z["y"])
+        vloss = fit_critic(critic, opt_c, torch.cat(Xs), np.concatenate(ys), a.critic_epochs, 1024, rng)
         v1 = critic_values(critic, X)
         row = dict(iter=it, phase="warmup" if warm else "ppo", **{f"sampled_{k}": v for k, v in gs.items()},
                    records=int(len(batch.rows)), not_in_mask=not_in_mask, ev=ev, ev_after_fit=explained_variance(v1, ret_mc),
@@ -464,6 +558,10 @@ def main():
                       "opt_a": opt_a.state_dict(), "opt_c": opt_c.state_dict()}, cp)
         atomic_write(curve, "".join(json.dumps(r) + "\n" for r in rows_done))
         shutil.rmtree(traj, ignore_errors=True)
+        for fn in os.listdir(buf_dir):  # bounded: only the last critic_buffer iterations
+            k = fn[2:].split(".")[0]
+            if k.isdigit() and int(k) < it - a.critic_buffer:  # it was advanced: keep it-1 .. it-N
+                os.remove(os.path.join(buf_dir, fn))
         keep = {"it0.brlw", f"it{it}.brlw"} | {f"{r['eval_policy']}.brlw" for r in rows_done if "eval_policy" in r}
         for fn in os.listdir(os.path.join(d, "weights")):
             if fn.endswith(".brlw") and fn not in keep:

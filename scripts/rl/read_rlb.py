@@ -117,6 +117,8 @@ def load_dir(d, limit=None):
     if not files:
         raise SystemExit(f"no *.rlb.gz / *.brt.gz under {d}")
     games = [read_game(f) for f in files]
+    for g, f in zip(games, files):
+        g["file"] = os.path.basename(f)
     g0 = games[0]
     for g in games:
         if (g["version"], g["schema_hash"], g["obs_dim"], g["n_actions"]) != (g0["version"], g0["schema_hash"], g0["obs_dim"], g0["n_actions"]):
@@ -144,7 +146,7 @@ def load_dir(d, limit=None):
         flags=np.concatenate([g["flags"] for g in games]),
         cards=[c for g in games for c in g["cards"]],
         game=np.concatenate([np.full(len(g["head"]), k) for k, g in enumerate(games)]),
-        game_seed=[g["seed"] for g in games], game_won=np.array([g["won"] for g in games]),
+        game_seed=[g["seed"] for g in games], game_file=[g["file"] for g in games], game_won=np.array([g["won"] for g in games]),
         game_ante=np.array([g["ante"] for g in games]), game_blinds=np.array([g["blinds"] for g in games]),
         game_round=np.array([g["round"] for g in games]), game_counters=[g["counters"] for g in games],
         game_passed=np.array([g["passed_final"] for g in games]),
