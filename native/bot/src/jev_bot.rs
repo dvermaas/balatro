@@ -326,6 +326,9 @@ pub struct JevBot {
     /// round eval): called with the gamestate and the handler name, it returns the (method, params) to act; the
     /// bot's own handlers and auto actions then run only in rounds. None everywhere else.
     pub strategic: Option<StrategicHook>,
+    /// Lab tooling (`JEVLAB_RLANTES`): when set, `strategic` decides only the states this returns true for; the rest go
+    /// to the bot's own handlers, as without a hook.
+    pub strategic_gate: Option<Box<dyn FnMut(&Value) -> bool>>,
     /// the round whose round_end the strategic path has emitted (it can visit ROUND_EVAL several times)
     pub _rl_round_end: Value,
 }
@@ -361,7 +364,8 @@ impl JevBot {
             _shop_key: Value::Null, _shop_actions: 0, _failed: HashSet::new(), _rerolls: 0, _flip_n: 0, _agent_n: 0, _leaf_failed: Value::Null, _leaf_bait: Value::Null, _mouth_lock: Value::Null, _boss_reroll: Value::Null,
             _recent: vec![], _recent_seed: Value::Null, _forecast_cache: None, _item_forecast_cache: None,
             auto_actions: true, dec: crate::decisions::DecisionCfg::production(), event_hook: None,
-            strategic: None, _rl_round_end: Value::Null,
+            strategic: None,
+            strategic_gate: None, _rl_round_end: Value::Null,
         }
     }
 
@@ -566,7 +570,10 @@ impl JevBot {
     }
 
     fn step_handler(&mut self, gs_: &Value, st: Option<&str>, handler: &str) -> Result<(), Stop> {
-        if self.strategic.is_some() && matches!(handler, "blind_select" | "shop" | "smods_booster_opened" | "round_eval") {
+        if self.strategic.is_some()
+            && matches!(handler, "blind_select" | "shop" | "smods_booster_opened" | "round_eval")
+            && self.strategic_gate.as_mut().map_or(true, |f| f(gs_))
+        {
             return self.strategic_step(gs_, handler);
         }
         let auto: Option<(String, Value, String)> = if self.auto_actions {

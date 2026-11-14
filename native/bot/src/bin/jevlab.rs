@@ -118,6 +118,17 @@ fn rl_reroll_floor(g: &rumbot_sim::game::GameState) -> Option<i32> {
     }
 }
 
+/// JEVLAB_RLANTES=lo-hi (with JEVLAB_RLPOLICY): the antes in which the network decides outside rounds.
+fn rl_antes() -> Option<(i64, i64)> {
+    static V: std::sync::OnceLock<Option<(i64, i64)>> = std::sync::OnceLock::new();
+    *V.get_or_init(|| {
+        std::env::var("JEVLAB_RLANTES").ok().map(|x| {
+            let (a, b) = x.split_once('-').unwrap_or_else(|| panic!("JEVLAB_RLANTES={x}: lo-hi"));
+            (a.parse().expect("JEVLAB_RLANTES lo"), b.parse().expect("JEVLAB_RLANTES hi"))
+        })
+    })
+}
+
 /// JEVLAB_RLNOGLYPH=1: the network may not buy Hieroglyph or Petroglyph (their ids leave the mask).
 fn rl_no_glyph() -> bool {
     static V: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
@@ -405,6 +416,21 @@ fn play(seed: &str) -> Result<Value, String> {
         let d = d.clone();
         bot.strategic = Some(Box::new(move |gs_, h| jevbot::prof::time("rl.hook", || d.borrow_mut().decide(gs_, h))));
     }
+    // JEVLAB_RLANTES=lo-hi: the network decides outside rounds only while the game's ante (the state's ante_num: after a
+    // boss the ante has already turned, so that round's cash-out, its shop and the next blind select belong to the next
+    // ante) is in lo..hi; otherwise v77's own handlers decide. Counts the states each side took.
+    let v77_decisions = Rc::new(std::cell::Cell::new(0u64));
+    if let (Some(_), Some((lo, hi))) = (&rl_driver, rl_antes()) {
+        let c = v77_decisions.clone();
+        bot.strategic_gate = Some(Box::new(move |gs_| {
+            let a = jevbot::gs::int(jevbot::gs::get(gs_, "ante_num"));
+            let mine = a >= lo && a <= hi;
+            if !mine {
+                c.set(c.get() + 1);
+            }
+            mine
+        }));
+    }
     let e = jevbot::experiment::get();
     bot.dec = jevbot::decisions::DecisionCfg::lab_with(e.fc_n.unwrap_or(64), e.fc_bosses.unwrap_or(3));
     bot.recorder.raw_states = want_trace; // only decisions.jsonl is read back
@@ -530,6 +556,9 @@ fn play(seed: &str) -> Result<Value, String> {
         row.insert("rl_targets_planned".into(), json!(d.targets_planned));
         row.insert("rl_targets_fallback".into(), json!(d.targets_fallback));
         row.insert("rl_swaps".into(), json!(d.swaps));
+        if rl_antes().is_some() {
+            row.insert("rl_v77_states".into(), json!(v77_decisions.get()));
+        }
         if std::env::var_os("JEVLAB_RLREROLL").is_some() {
             row.insert("rl_override_rerolls".into(), json!(d.override_rerolls));
             row.insert("rl_override_records".into(), json!(d.override_records));
