@@ -932,6 +932,19 @@ measured the wrong thing or was never asked:
   at ~1 CPU-s a game (4 games/s on 4 cores; half of that is the joker-order search run on every shop step); and the
   rollouts' round player is no stand-in for v77's. Selling is what the clone misses most: 4,902 of v77's 4,905 sells
   are the first half of a swap (slots full, a buy follows at once), and it finds 6% of them unweighted, 18% at 3x.
+- **Reinforcement learning from the clone: the first run climbs** (`scripts/rl/train_rl.py`, run `rl-ppo-a`). Setup:
+  rlcore schema v2 makes sell-and-buy one action (`replace_joker`; the 1,000 v77 games logged again, identical games);
+  PPO from the clone on fresh seeds every iteration (never b2k, c2k or e16k), 800 games an iteration with the policy
+  sampled, v77's round play without the round search and without the joker-order search on shop steps
+  (`JEVLAB_RLORDER=dagger`, 5.6 games/s, -3 wins in 450); reward = blinds passed / 24 + 1 for a win; a small separate
+  critic (one on the full observation memorises games; this one explains ~10% of the return's variance). After 30
+  policy iterations (24,000 games, 1.85 h on 4 cores): sampled win rate 13% -> 27%, mean ante 5.7 -> 6.6; argmax on
+  300 held-out seeds (e16k 15000-15299) 71 -> 110 wins (68/29 by games won by only one side, z = 4.0), mean ante 6.31
+  -> 7.13; still rising when the chunk ended. It swaps jokers more as it improves (4.2 -> 6.3 a game sampled).
+  Two things the clone step taught on the way: the swap as one action makes the *clone* worse (best v2 clone 101 wins
+  on c2k 0-449 against 121 for v1 with sells weighted, two training seeds, z ~ -2), kept because exploration needs it;
+  and the clone under-buys packs (a third fewer from ante 4) and vouchers and holds $4-6 more than v77
+  (`behaviour.py`, 106 held-out games). Not yet measured against v77 on c2k.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
