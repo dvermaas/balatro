@@ -944,7 +944,12 @@ measured the wrong thing or was never asked:
   Two things the clone step taught on the way: the swap as one action makes the *clone* worse (best v2 clone 101 wins
   on c2k 0-449 against 121 for v1 with sells weighted, two training seeds, z ~ -2), kept because exploration needs it;
   and the clone under-buys packs (a third fewer from ante 4) and vouchers and holds $4-6 more than v77
-  (`behaviour.py`, 106 held-out games). Not yet measured against v77 on c2k.
+  (`behaviour.py`, 106 held-out games).
+  After 58 policy iterations (46,400 games, 3.7 h): sampled win rate 33%, held-out argmax 131-144 of 300, and on c2k
+  0-449 without the round search (`rl-ppoa61-nors`) 205 wins: the clone it started from 101 (132/28, z = +8.2), v77's
+  shops in the same setting 252 (61/108, z = -3.6), v77 268. Deaths by ante 1-8: 1 5 6 13 28 48 72 72 (v77: 4 6 6 6
+  13 29 48 70), so what is left is mostly antes 5-7. Still rising, more slowly (+14 points sampled in the first
+  chunk, +6 in the second).
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
