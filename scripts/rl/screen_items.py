@@ -10,7 +10,7 @@ train_dagger.py, so v1a never trained on it), == 1 the validation set (early sto
 rest training (--fracs takes the first fraction of the training games in a fixed shuffled order: learning curve).
 Models, all trained from scratch with cross-entropy over the legal mask on every v77 record:
   flat     train_bc.Net (sparse embedding, 256-256 MLP, one logit per vocabulary id)
-  item     the same trunk gives a context vector and the logits of every other id; buy_joker:<key> and
+  item     nets.ItemNet (attention=False): the same trunk gives a context vector and the logits of every other id; buy_joker:<key> and
            replace_joker:<sold>@slot<k> logits come from one shared scorer MLP over (context, the shop joker's
            embedding, the sold joker's embedding (zero for a buy), the mean of the owned jokers' embeddings) plus a
            family bias. A joker's embedding = a shared per-key embedding + a linear map of its observation row:
@@ -34,17 +34,16 @@ import time
 
 import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import read_rlb as R  # noqa: E402
 import train_bc as B  # noqa: E402
 import train_dagger as D  # noqa: E402
+import nets as N  # noqa: E402
 
 BUY0, NBUY = 7, 150
 REP0, NREP = 723, 900
-NJ = 150
 
 
 def load(dagger_dirs, v77_dirs):
@@ -62,94 +61,8 @@ def load(dagger_dirs, v77_dirs):
     return D.merge(dss), np.concatenate(keep)
 
 
-def block(schema, name):
-    b = next(x for x in schema["blocks"] if x["name"] == name)
-    return b["offset"], len(b["rows"]), len(b["cols"])
-
-
-class ItemNet(nn.Module):
-    def __init__(self, obs_dim, n_actions, sch, hidden=(256, 256), d=64, attention=False):
-        super().__init__()
-        self.flat = B.Net(obs_dim, n_actions, list(hidden))
-        self.attention = attention
-        self.held = block(sch, "held_jokers")
-        self.shop = block(sch, "shop_jokers")
-        self.slots = block(sch, "shop_slot_jokers")
-        self.E = nn.Embedding(NJ, d)
-        nn.init.normal_(self.E.weight, std=0.1)
-        self.fh = nn.Linear(self.held[2], d)
-        self.fs = nn.Linear(self.shop[2], d)
-        self.ctx = nn.Linear(hidden[-1], d)
-        self.q = nn.Linear(3 * d, d)
-        self.k = nn.Linear(d, d)
-        self.score = nn.Sequential(nn.Linear(4 * d + 1, 128), nn.ReLU(), nn.Linear(128, 64), nn.ReLU(), nn.Linear(64, 1))
-        self.fam_bias = nn.Parameter(torch.zeros(2))
-        self.d = d
-
-    def forward(self, idx, off, vals, mask):
-        f = self.flat
-        h = F.relu(f.emb(idx, off, per_sample_weights=vals) + f.b0)
-        for l in f.layers:
-            h = F.relu(l(h))
-        logits = f.pi(h)
-        Bn = h.shape[0]
-        # dense observation of the joker blocks
-        seg = torch.repeat_interleave(torch.arange(Bn), torch.diff(torch.cat([off, torch.tensor([len(idx)])])))
-        def dense(o, n):
-            m = (idx >= o) & (idx < o + n)
-            out = torch.zeros(Bn, n)
-            out[seg[m], idx[m] - o] = vals[m]
-            return out
-        ho, hr, hc = self.held
-        so, sr, sc = self.shop
-        lo, lr, lc = self.slots
-        held = dense(ho, hr * hc).view(Bn, hr, hc)
-        shop = dense(so, sr * sc).view(Bn, sr, sc)
-        slotj = dense(lo, lr * lc).view(Bn, lr, lc)
-        eh = self.E.weight[None] + self.fh(held)  # B, 150, d
-        es = self.E.weight[None] + self.fs(shop)
-        owned = (held[:, :, 0] > 0).float()  # B, 150
-        c = self.ctx(h)  # B, d
-        # the legal joker-acquiring ids, as (record, id) pairs
-        r_, a_ = torch.nonzero(mask[:, BUY0:BUY0 + NBUY] | False, as_tuple=True)
-        a_ = a_ + BUY0
-        r2, a2 = torch.nonzero(mask[:, REP0:REP0 + NREP], as_tuple=True)
-        a2 = a2 + REP0
-        rr = torch.cat([r_, r2])
-        aa = torch.cat([a_, a2])
-        if len(rr) == 0:
-            return logits, None
-        is_swap = aa >= REP0
-        buy_key = torch.where(is_swap, torch.zeros_like(aa), aa - BUY0)
-        sold = torch.where(is_swap, (aa - REP0) // 6, torch.zeros_like(aa))
-        slot = torch.where(is_swap, (aa - REP0) % 6, torch.zeros_like(aa))
-        slot_key = slotj[rr, slot].argmax(1)
-        in_key = torch.where(is_swap, slot_key, buy_key)
-        e_in = es[rr, in_key]
-        e_out = eh[rr, sold] * is_swap[:, None].float()
-        cr = c[rr]
-        own = owned[rr].clone()
-        own[torch.arange(len(rr)), sold] *= (~is_swap).float()  # the sold joker is no longer owned
-        if self.attention:
-            q = self.q(torch.cat([e_in, e_out, cr], 1))  # P, d
-            kk = self.k(eh[rr])  # P, 150, d
-            att = (kk @ q[:, :, None])[:, :, 0] / np.sqrt(self.d)
-            att = att.masked_fill(own == 0, -1e9)
-            w = torch.softmax(att, 1) * (own.sum(1, keepdim=True) > 0).float()
-            summ = (w[:, :, None] * eh[rr]).sum(1)
-        else:
-            summ = (own[:, :, None] * eh[rr]).sum(1) / own.sum(1, keepdim=True).clamp(min=1)
-        x = torch.cat([cr, e_in, e_out, summ, is_swap[:, None].float()], 1)
-        s = self.score(x)[:, 0] + self.fam_bias[is_swap.long()]
-        logits = logits.index_put((rr, aa), s)
-        return logits, None
-
-
 def fwd(model, b):
-    if isinstance(model, ItemNet):
-        lg, _ = model(b[0], b[1], b[2], b[3])
-    else:
-        lg, _ = model(b[0], b[1], b[2])
+    lg, _ = model(b[0], b[1], b[2], b[3])
     return lg.masked_fill(~b[3], -1e9)
 
 
@@ -277,7 +190,7 @@ def main():
             if mname == "flat":
                 model = B.Net(ds["obs_dim"], ds["n_actions"], [256, 256])
             else:
-                model = ItemNet(ds["obs_dim"], ds["n_actions"], ds["schema"], attention=(mname == "itematt"))
+                model = N.ItemNet(ds["obs_dim"], ds["n_actions"], N.item_layout(ds["schema"]), attention=(mname == "itematt"))
             vce = train(model, data, tr, va, a.lr, a.bs, a.epochs, a.patience, 0, log)
             lg, ce = predict(model, data, te)
             m = metrics(lg, ds, te, fams)

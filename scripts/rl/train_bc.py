@@ -48,7 +48,7 @@ class Net(nn.Module):
 
     value_detach = False
 
-    def forward(self, idx, offsets, vals):
+    def forward(self, idx, offsets, vals, mask=None):  # mask: unused (nets.ItemNet's signature)
         h = F.relu(self.emb(idx, offsets, per_sample_weights=vals) + self.b0)
         for l in self.layers:
             h = F.relu(l(h))

@@ -24,6 +24,9 @@ Guards: PPO clip, entropy bonus, a per-update KL stop (approximate KL past --tar
 optional KL-to-clone penalty (--clone-kl B, decaying by --clone-kl-decay per iteration; default 0, off: clip plus the KL
 stop already bound each update, and an anchor to a clone that wins a quarter of its games caps what can be learned).
 
+Networks: --init may hold a flat network (train_bc.py) or an item network (train_item.py, scripts/rl/nets.py); the actor
+and the clone take its kind and shapes, and the weights it exports have its format (BRLW 1 or 2).
+
 Operations: everything lives in runs/_rl/ppo/NAME/: ckpt.pt (config, iteration, actor, critic, optimisers and the
 curve, one atomic file), curve.jsonl (rewritten from it), weights/itK.brlw (the clone it0, the current and every
 evaluated policy), lab/ (jevlab's rows: itK sampled, evalK argmax). Resumable: rerun with the NAME alone; a killed
@@ -47,6 +50,7 @@ import torch.nn.functional as F
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import read_rlb as R  # noqa: E402
 import train_bc as B  # noqa: E402
+import nets as N  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 SEED_DIR = os.path.join(ROOT, "docs/samples/cloud-lab")
@@ -195,7 +199,7 @@ class Batch:
         with torch.no_grad():
             for i in range(0, len(rows), bs):
                 b = self.data.batch(rows[i:i + bs])
-                logits, v = model(b[0], b[1], b[2])
+                logits, v = model(b[0], b[1], b[2], b[3])
                 ml = logits.masked_fill(~b[3], -1e9)
                 outs_l.append(F.log_softmax(ml, 1).gather(1, b[4][:, None])[:, 0].numpy())
                 outs_v.append(v[:, 0].numpy())
@@ -331,7 +335,7 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
         for i in range(0, len(perm), a.bs):
             k = perm[i:i + a.bs]
             b = batch.data.batch(rows[k])
-            logits, _ = actor(b[0], b[1], b[2])
+            logits, _ = actor(b[0], b[1], b[2], b[3])
             ml = logits.masked_fill(~b[3], -1e9)
             lp_all = F.log_softmax(ml, 1)
             lp = lp_all.gather(1, b[4][:, None])[:, 0]
@@ -345,7 +349,7 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
             ck = torch.zeros(())
             if beta > 0:
                 with torch.no_grad():
-                    cl, _ = clone(b[0], b[1], b[2])
+                    cl, _ = clone(b[0], b[1], b[2], b[3])
                     clp = F.log_softmax(cl.masked_fill(~b[3], -1e9), 1)
                 ck = (p_all * (lp_all - clp)).sum(1).mean()
                 loss = loss + beta * ck
@@ -370,10 +374,6 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
     out = {k: v / n for k, v in stats.items()}
     out.update(epochs=epochs_done, kl_stop=stopped)
     return out
-
-
-def new_net(shape, hidden, n_value):
-    return B.Net(shape["obs_dim"], shape["n_actions"], hidden, n_value=n_value)
 
 
 CFG_KEYS = ("bin", "init", "games", "jobs", "warmup", "eval_every", "eval_n", "exp", "order", "lr", "critic_lr", "critic_epochs", "critic_target",
@@ -447,16 +447,14 @@ def main():
         raise SystemExit("copy the jevlab binary out of native/target first (runs/_rl/bin)")
     torch.set_num_threads(a.jobs)
 
-    clone_sd = torch.load(os.path.join(a.init, "model.pt"), map_location="cpu")["state"]  # train_bc.py's checkpoint
-    n_layers = len([k for k in clone_sd if k.startswith("layers.") and k.endswith(".weight")])
-    hidden = [clone_sd["emb.weight"].shape[1]] + [clone_sd[f"layers.{i}.weight"].shape[0] for i in range(n_layers)]
-    shape = {"obs_dim": clone_sd["emb.weight"].shape[0], "n_actions": clone_sd["pi.weight"].shape[0]}
-    n_value = clone_sd["v.weight"].shape[0]
+    clone_sd = torch.load(os.path.join(a.init, "model.pt"), map_location="cpu")["state"]  # train_bc.py / train_item.py's checkpoint
     with open(os.path.join(a.init, "weights.brlw"), "rb") as f:
         schema_hash = int.from_bytes(f.read(24)[8:16], "little")
-    actor, clone = new_net(shape, hidden, n_value), new_net(shape, hidden, n_value)
+    # a flat network or an item network (nets.py), with the clone's shapes
+    actor, clone = N.net_from_state(clone_sd), N.net_from_state(clone_sd)
+    pre = "flat." if N.is_item_state(clone_sd) else ""
+    shape = {"obs_dim": clone_sd[pre + "emb.weight"].shape[0], "n_actions": clone_sd[pre + "pi.weight"].shape[0]}
     critic = None  # built from the first trajectories' schema (its blocks), or from the checkpoint
-    clone.load_state_dict(clone_sd)
     opt_a = torch.optim.Adam(actor.parameters(), lr=a.lr)
     opt_c = None
     if ck:
@@ -476,7 +474,7 @@ def main():
 
     def export(name):
         p = os.path.join(d, "weights", name)
-        B.export_weights(actor, p + ".tmp", schema_hash, shape["obs_dim"], shape["n_actions"])
+        N.export_weights(actor, p + ".tmp", schema_hash, shape["obs_dim"], shape["n_actions"])
         os.replace(p + ".tmp", p)
         return p
 

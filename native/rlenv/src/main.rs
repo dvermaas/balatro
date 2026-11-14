@@ -38,6 +38,7 @@ fn main() {
 fn netcheck(opt: &dyn Fn(&str) -> Option<String>) {
     let net = Net::load(std::path::Path::new(&opt("--weights").expect("--weights"))).unwrap_or_else(|e| panic!("{e}"));
     let b = std::fs::read(opt("--obs").expect("--obs")).expect("read obs");
+    let masked = opt("--masked").is_some();
     let mut p = 0usize;
     let u16_at = |p: usize| u16::from_le_bytes([b[p], b[p + 1]]);
     let n = u32::from_le_bytes(b[0..4].try_into().unwrap()) as usize;
@@ -55,7 +56,18 @@ fn netcheck(opt: &dyn Fn(&str) -> Option<String>) {
         let val: Vec<f32> = (0..nnz).map(|k| f32::from_le_bytes(b[p + 4 * k..p + 4 * k + 4].try_into().unwrap())).collect();
         p += 4 * nnz;
         let t = net.trunk(&idx, &val);
-        for l in net.logits(&t) {
+        // --masked: each record also carries its legal ids (u16 count, u16 ids); the logits are then what
+        // choose ranks (a format-2 network's item scorer on the legal joker-acquiring ids)
+        let logits = if masked {
+            let nm = u16_at(p) as usize;
+            p += 2;
+            let legal: Vec<u16> = (0..nm).map(|k| u16_at(p + 2 * k)).collect();
+            p += 2 * nm;
+            net.logits_legal(&idx, &val, &legal)
+        } else {
+            net.logits(&t)
+        };
+        for l in logits {
             out.extend_from_slice(&l.to_le_bytes());
         }
         for v in net.value(&t) {
