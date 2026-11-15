@@ -1225,7 +1225,12 @@ What to trust:
   v77 from ante 5 win exactly as many games as v77, its late shops lose at every late ante (log, "early game equals
   v77's"). PPO on antes 1-4 only, with v77 playing the rest (`train_rl.py --antes 1-4`), changed how it plays and
   won exactly as many games after 10,000 (530 against 530 on c2k 0-899; log, "PPO on antes 1-4"). What is left
-  untried: v77's forecast numbers as inputs to the network (it then starts from v77's late game too, at v77's cost per
-  game), which needs more cores than the cloud box. A by-product worth a test: the policy for antes 1-4 with full v77
-  after plays at a quarter of the forecast cost.
+  untried: v77's forecast numbers as inputs to the network for the late shops (it then starts from v77's late game
+  too; ~11 s a game, as v77's forecasts from ante 5 are the cheap ones). The limit is games, not cost per game: a +1 to
+  +2 point gain needs several hundred thousand at this noise, a week on 4 cores. The policy as the shopper inside the
+  forecast's rollouts is not a fresh idea: rollouts have shopped since v60, which joker they buy did not matter
+  (`rollout-shop-first`, `rollout-shop-value`), nor did an 8-boss horizon or 128 rollouts on v75-v77, and a network
+  forward pass per rollout decision would cost several times the rollout itself. A by-product worth a test: the policy
+  for antes 1-4 with full v77 after plays at a quarter of the forecast cost (started on c2k 0-449 with the round search
+  on; lost with the container on 2026-11-15 before it finished).
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).
