@@ -62,6 +62,15 @@ WIN_BONUS = 1.0
 # ---------------------------------------------------------------- reward (swap here)
 
 PROGRESS = "count"  # "count" (rl-ppo-a) or "position"; set from --progress
+ANTES = None  # --antes: [(lo, hi), ...], the antes the network decides in (JEVLAB_RLANTES); v77 decides the rest
+
+
+def in_antes(ante):
+    """Which records are the network's under ANTES (all of them without it)."""
+    ok = np.zeros(len(ante), bool) if ANTES else np.ones(len(ante), bool)
+    for lo, hi in ANTES or ():
+        ok |= (ante >= lo) & (ante <= hi)
+    return ok
 
 
 def game_rewards(ds, rows, gi):
@@ -74,7 +83,11 @@ def game_rewards(ds, rows, gi):
         return rewards(ds["blinds_passed"][rows], ds["game_passed"][gi], ds["game_won"][gi])
     pos = np.clip(3 * (ds["ante"][rows].astype(np.int64) - 1) + ds["blind_index"][rows], 0, 24)
     won = bool(ds["game_won"][gi])
-    return rewards(pos, 24 if won else pos[-1], won)
+    last = pos[-1]
+    if ANTES:  # v77 played on after the network's last record: the run ends where the game's last record stood
+        j = np.searchsorted(ds["game"], gi, "right") - 1
+        last = int(np.clip(3 * (int(ds["ante"][j]) - 1) + int(ds["blind_index"][j]), 0, 24))
+    return rewards(pos, 24 if won else last, won)
 
 
 def rewards(passed, passed_final, won):
@@ -142,6 +155,10 @@ def run_jevlab(a, out, name, seeds, weights, temp, rlseed, logdir):
         env["JEVLAB_RLSEED"] = str(rlseed)
     else:
         env.pop("JEVLAB_RLTEMP", None)
+    if a.antes:
+        env["JEVLAB_RLANTES"] = a.antes
+    else:
+        env.pop("JEVLAB_RLANTES", None)
     if logdir:
         env["JEVLAB_RLLOG"] = logdir
     else:
@@ -191,6 +208,7 @@ class Batch:
         order = np.lexsort((ds["step"], ds["game"]))
         assert (order == np.arange(n)).all(), "records are in game, step order"
         self.ok = ds["action"] != R.UNEXPRESSIBLE  # joker rearranges (code's) carry no policy decision
+        self.ok &= in_antes(ds["ante"])  # under --antes v77's records are the environment, not decisions to learn from
         self.rows = np.nonzero(self.ok)[0]
         self.n_mask = np.diff(ds["mask_indptr"])
 
@@ -378,8 +396,8 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
 
 CFG_KEYS = ("bin", "init", "games", "jobs", "warmup", "eval_every", "eval_n", "exp", "order", "lr", "critic_lr", "critic_epochs", "critic_target",
             "ppo_epochs", "bs", "clip", "ent", "target_kl", "lam", "max_grad", "clone_kl", "clone_kl_decay", "rollouts", "seed_baseline",
-            "critic_buffer", "init_ckpt", "progress")
-CFG_DEFAULTS = {"rollouts": 1, "seed_baseline": False, "critic_buffer": 1, "init_ckpt": None, "progress": "count"}  # runs from before milestone 5
+            "critic_buffer", "init_ckpt", "progress", "antes")
+CFG_DEFAULTS = {"rollouts": 1, "seed_baseline": False, "critic_buffer": 1, "init_ckpt": None, "progress": "count", "antes": None}  # runs from before milestone 5
 
 
 def main():
@@ -413,6 +431,7 @@ def main():
     ap.add_argument("--seed-baseline", action="store_true", help="the critic also sees the per-seed baseline of the other rollouts (needs --rollouts > 1)")
     ap.add_argument("--critic-buffer", type=int, default=1, help="the critic trains on the last N iterations' games")
     ap.add_argument("--progress", default="count", help="reward potential: count (blinds passed, rl-ppo-a) or position (ante and blind)")
+    ap.add_argument("--antes", help="JEVLAB_RLANTES of the actors (lo-hi[,lo-hi]): the network decides and learns only in those antes, v77 plays the rest")
     ap.add_argument("--init-ckpt", help="a new run starts from this run's actor (ckpt.pt); fresh critic, warm-up as usual")
     a = ap.parse_args()
 
@@ -443,6 +462,8 @@ def main():
         setattr(a, k, v)
     global PROGRESS
     PROGRESS = a.progress
+    global ANTES
+    ANTES = [tuple(int(x) for x in r.split("-")) for r in a.antes.split(",")] if a.antes else None
     if "/native/target/" in os.path.realpath(a.bin):
         raise SystemExit("copy the jevlab binary out of native/target first (runs/_rl/bin)")
     torch.set_num_threads(a.jobs)
