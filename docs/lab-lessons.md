@@ -1217,6 +1217,10 @@ What to trust:
 - Violet Vessel kills half the runs that meet it (313 of 1,621 v69 losses): a plan for it from the shops of ante 8,
   when the boss is known, rather than a better hand on the day. v72 rerolls it when a Boss Tag is on offer; Director's
   Cut or Retcon would do the same but are almost never offered with Violet Vessel ahead.
+  On v77 (c2k 0-899) it is the ante-8 boss in 128 games and v77 wins 57 (the other finishers: 81-95%); its 67 deaths
+  end at a median 46% of the 300,000 target (6 reach 80%) holding a median $37. A build about twice too weak, not a
+  near miss: nothing bought at ante 8 closes that (spending out has lost three times), so the lever is power built
+  before the boss is known.
 - A learned value at the forecast horizon trained on far more games: tried on ~74k v70+ games (calibrated, better
   AUC, neutral in play, above); only a much richer input set, not more games of the same inputs, could still help.
 - Plan decisions (commit to a hand, chase xMult, shape the deck) that a 3-boss rollout cannot value: an LLM on top of
