@@ -24,7 +24,8 @@ format 2.
   (`JEVLAB_RLORDER=dagger JEVLAB_RLPOLICY=models/rl/ppo-item/it40.brlw`, `JEVLAB_EXP=no-round-search`); iteration 26
   won 210 (in git history, `f75f451`).
 - `init/`: the network the run started from (`runs/_rl/item/mix`, `scripts/rl/train_item.py --labels mix`).
-- `curve.jsonl`: one row per iteration, as of `it40`.
+- `ckpt.pt`: the run's resume point at iteration 55 (41,600 games; iteration 55 won 214, no better than 40).
+- `curve.jsonl`: one row per iteration, as of iteration 55.
 
 Started with: `python scripts/rl/train_rl.py rl-ppo-item --init runs/_rl/item/mix --bin runs/_rl/bin/jevlab-rl12
 --games 800 --warmup 3 --eval-every 5 --eval-n 300 --lr 0.0002 --ent 0.003 --progress position --hours H`.
