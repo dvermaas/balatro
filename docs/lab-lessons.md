@@ -1016,6 +1016,26 @@ measured the wrong thing or was never asked:
   joker on 55% of late swaps against 33%. A clone of all v77 labels (`rl-it-clone`) wins 154; the flat clones won
   99-121, but on less data, so that gain is not attributed. Both item networks acquire fewer jokers late than the
   flat ones (0.2-0.7 a shop visit at antes 6-8): which joker was not what limited play, when to acquire one is.
+- **PPO from the item network passes the flat network's plateau** (`rl-ppo-item`: `train_rl.py --init
+  runs/_rl/item/mix`, entropy 0.003, position progress, lr 0.0002, 800 games an iteration; binary rl12; saved in
+  `models/rl/ppo-item`). Held-out argmax wins of 300 (e16k 15000-15299) at policy iterations 0, 5, 10, ...: 115, 126,
+  137, 144, 155, 159, 161, 162; the flat runs stopped at 129-149 (run A, 71 iterations) and 141-145 (run B). Sampled
+  wins rose from 31% to 41-43% (flat: 34%). c2k 0-449 without round search:
+
+  | policy | games trained | wins | mean ante | deaths at antes 1-5 / 6 / 7 / 8 |
+  |---|---|---|---|---|
+  | `rl-it-mix` (start) | 0 | 166 | 7.03 | 61 / 66 / 69 / 88 |
+  | iteration 26 | 18,400 | 210 | 7.31 | 44 / 38 / 60 / 98 |
+  | iteration 40 | 29,600 | 224 | 7.35 | 42 / 39 / 53 / 92 |
+  | flat, iteration 61 (best) | 46,400 | 205 | 7.18 | 53 / 48 / 72 / 72 |
+  | v77 without round search | | 252 | 7.36 | 36 / 41 / 45 / 76 |
+
+  Iteration 40 against the flat best 77/58 (z = +1.6), against the flat policy with v77 from ante 5 (`rl-ho-p14`, 238)
+  70/84 (z = -1.1), against v77 without round search 69/97 (z = -2.2), against v77 268 with it 58/102 (z = -3.5). The
+  policy now reaches as far as v77 on average and loses more of the ante 7 and 8 games; a game takes 1.2 s against
+  v77's 41 s (its forecasts). So the item scorer did not help a copy play (entry above) but does help learning from
+  play: the same weights learn about every joker at once. The gain per iteration is shrinking (the last three
+  held-out readings rose by 4, 2 and 1), so more of the same on this machine is unlikely to close the rest.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
@@ -1160,6 +1180,9 @@ What to trust:
   by reinforcement learning with v77's own round play minus the round search (`simcore`'s round player is too weak,
   see the clone entry in the log): started 2026-11-14 after the horizon retest, judged like every change on b2k and
   c2k against v77. After 65,000 games of PPO the policy shops the first four antes about as well as v77 and the late
-  ones much worse (192 wins against 252 on c2k 0-449 without round search; log, "The policy's late shops"); next is
-  teaching it v77's late decisions at the states its own early game reaches.
+  ones much worse (192 wins against 252 on c2k 0-449 without round search; log, "The policy's late shops"). Teaching
+  it v77's late decisions made it worse (log, DAgger); a network that scores jokers with shared weights, trained by
+  PPO, reached 224 after 29,600 games and is still rising slowly (log, "PPO from the item network"). Open: the same
+  shared scoring for the other item families (packs, vouchers, consumables, pack picks), and more games per
+  iteration on a larger machine.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).

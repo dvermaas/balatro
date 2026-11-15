@@ -20,10 +20,11 @@ stores absolute paths (`/home/user/balatro/...`), so use the same location or ed
 Plays with jevlab built from commit `7efcbe1` or later (`runs/_rl/bin/jevlab-rl12`); older binaries cannot read
 format 2.
 
-- `it26.brlw`: the policy after 23 policy iterations (18,400 games). c2k 0-449 without the round search: 210 wins
-  (`JEVLAB_RLORDER=dagger JEVLAB_RLPOLICY=models/rl/ppo-item/it26.brlw`, `JEVLAB_EXP=no-round-search`).
+- `it40.brlw`: the policy after 37 policy iterations (29,600 games). c2k 0-449 without the round search: 224 wins
+  (`JEVLAB_RLORDER=dagger JEVLAB_RLPOLICY=models/rl/ppo-item/it40.brlw`, `JEVLAB_EXP=no-round-search`); iteration 26
+  won 210 (in git history, `f75f451`).
 - `init/`: the network the run started from (`runs/_rl/item/mix`, `scripts/rl/train_item.py --labels mix`).
-- `curve.jsonl`: one row per iteration, as of `it26`.
+- `curve.jsonl`: one row per iteration, as of `it40`.
 
 Started with: `python scripts/rl/train_rl.py rl-ppo-item --init runs/_rl/item/mix --bin runs/_rl/bin/jevlab-rl12
 --games 800 --warmup 3 --eval-every 5 --eval-n 300 --lr 0.0002 --ent 0.003 --progress position --hours H`.
