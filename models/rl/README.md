@@ -29,3 +29,13 @@ format 2.
 
 Started with: `python scripts/rl/train_rl.py rl-ppo-item --init runs/_rl/item/mix --bin runs/_rl/bin/jevlab-rl12
 --games 800 --warmup 3 --eval-every 5 --eval-n 300 --lr 0.0002 --ent 0.003 --progress position --hours H`.
+
+## ppo-early (runs `rl-ppo-early`, `rl-ppo-early2`: antes 1-4 only, v77 plays the rest)
+
+Curves only (`curve-early.jsonl`, `curve-early2.jsonl`, one row per iteration). The trained policy won exactly as many
+games as the one it started from (`ppo-item/ckpt.pt`, iteration 55): 530 against 530 on c2k 0-899 with v77 from
+ante 5 (docs/lab-lessons.md, "PPO on antes 1-4"), so its weights are not kept.
+
+Started with: `python scripts/rl/train_rl.py rl-ppo-early --init-ckpt runs/_rl/ppo/rl-ppo-item/ckpt.pt --init
+runs/_rl/item/mix --bin runs/_rl/bin/jevlab-rl13 --antes 1-4 --games 500 --warmup 1 --eval-every 100 --lr 0.0001
+--ent 0.003 --progress position --hours H`; `rl-ppo-early2` the same from `rl-ppo-early`'s checkpoint with `--lr 0.0003`.

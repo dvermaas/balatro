@@ -25,6 +25,7 @@ STEPS = [
     ("item_copy", "New network that scores jokers, copy only", "Policy alone", "rl-it-mix", "Picks v77's joker far more often, wins no more."),
     ("ppo_item", "New network, learning from play", "Policy alone", "rl-ppoitem40-nors", "29,600 games of self-play (best checkpoint)."),
     ("hybrid", "Policy for antes 1–4, v77 after", "Policy early, v77 late", "rl-ho40-p14", "The policy's early game is level with v77's."),
+    ("early", "Antes 1–4 trained further, v77 after", "Policy early, v77 late", "rl-ho-e2it9-p14", "10,000 more games on the early game only. Over 900 seeds it wins exactly as many as before the training (530 against 530)."),
     ("v77_nors", "v77 without round search", "v77", "rl-v77-nors", "Same settings as the policies above."),
     ("v77", "v77 (full)", "v77", "c2k-v77", "With round search."),
 ]

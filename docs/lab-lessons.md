@@ -1055,6 +1055,26 @@ measured the wrong thing or was never asked:
   antes 7 and 8: 67 and 85 with v77 at 5-6, 48 and 78 with v77 to the end). Two antes of the policy's shops at the
   end cost 26 wins: v77's forecast plays out the blinds that remain, and near the end that is close to an exact answer
   to "does this purchase win the run", which a network without a simulation has to guess.
+- **PPO on antes 1-4 against v77's late game moved the play and not the wins** (`train_rl.py --antes 1-4`: the network
+  decides and learns only there, v77 without the round search plays antes 5-8; 500 games an iteration, ~10 s a game;
+  from `rl-ppo-item`'s iteration 55). `rl-ppo-early` (lr 1e-4, 12 updates, KL 0.002 an update): sampled wins flat at
+  55.3% (51-59% an iteration), held out 173 -> 175 of 300. `rl-ppo-early2` (lr 3e-4, 8 updates, KL 0.006-0.010):
+  sampled wins 56.0, 57.6, 58.2, then 53.8, 51.2, 53.0, 52.0, 49.4% as the entropy rose from 0.32 to 0.40 (the fall is
+  the sampling, not the policy). Its last policy at argmax, on c2k with v77 from ante 5, against the policy it started
+  from:
+
+  | c2k seeds | trained (10,000 games) | start | only one side wins |
+  |---|---|---|---|
+  | 0-449 | 254 | 245 | 58/49 |
+  | 450-899 | 276 | 285 | 47/56 |
+  | 0-899 | 530 | 530 | 105/105 |
+
+  (v77 without the round search 252 on 0-449; full v77 561 on 0-899.) The play did change: -0.131 +- 0.044 ante, deaths
+  at ante 4 46 against 25 and at antes 7-8 197 against 233, 0.28 blinds skipped at ante 1 against 0.10, more jokers
+  bought at antes 3-4 (2.8 against 2.3). It trades early deaths for late survival one for one. Stopped. The win bonus
+  through four more antes of v77's play is too noisy a signal at this size: one iteration's win rate has an SE of 2.2
+  points and the critic explains 5-10% of the return, so a real +1 to +2 points would need several times these games
+  to learn and ~2,500 paired games to see. Policies: `runs/_rl/keep/ppo-early2-it9.brlw` (not kept in git).
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
@@ -1203,6 +1223,9 @@ What to trust:
   it v77's late decisions made it worse (log, DAgger); a network that scores jokers with shared weights, trained by
   PPO, reached 210-224 and stopped rising after about 30,000 games (log, "PPO from the item network"). Its antes 1-4 with
   v77 from ante 5 win exactly as many games as v77, its late shops lose at every late ante (log, "early game equals
-  v77's"). Running: PPO on antes 1-4 only with v77 playing the rest (`train_rl.py --antes 1-4`, run `rl-ppo-early`),
-  the one setup that starts at v77's level; about 10 s a game.
+  v77's"). PPO on antes 1-4 only, with v77 playing the rest (`train_rl.py --antes 1-4`), changed how it plays and
+  won exactly as many games after 10,000 (530 against 530 on c2k 0-899; log, "PPO on antes 1-4"). What is left
+  untried: v77's forecast numbers as inputs to the network (it then starts from v77's late game too, at v77's cost per
+  game), which needs more cores than the cloud box. A by-product worth a test: the policy for antes 1-4 with full v77
+  after plays at a quarter of the forecast cost.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).
