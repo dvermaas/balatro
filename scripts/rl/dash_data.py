@@ -27,6 +27,7 @@ STEPS = [
     ("hybrid", "Policy for antes 1–4, v77 after", "Policy early, v77 late", "rl-ho40-p14", "The policy's early game is level with v77's."),
     ("early", "Antes 1–4 trained further, v77 after", "Policy early, v77 late", "rl-ho-e2it9-p14", "10,000 more games on the early game only. Over 900 seeds it wins exactly as many as before the training (530 against 530)."),
     ("v77_nors", "v77 without round search", "v77", "rl-v77-nors", "Same settings as the policies above."),
+    ("hybrid_rs", "Policy for antes 1–4 inside the full bot", "Policy early, v77 late", "rl-ho40-p14-rs", "With round search, so compare with v77 (full). Over 900 seeds: 544 against v77's 561, within the noise, at 35% less time per game."),
     ("v77", "v77 (full)", "v77", "c2k-v77", "With round search."),
 ]
 CURVES = [("rl-ppo-a", "First network"), ("rl-ppo-item", "New network (scores jokers)")]

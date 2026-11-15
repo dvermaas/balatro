@@ -1075,6 +1075,12 @@ measured the wrong thing or was never asked:
   through four more antes of v77's play is too noisy a signal at this size: one iteration's win rate has an SE of 2.2
   points and the critic explains 5-10% of the return, so a real +1 to +2 points would need several times these games
   to learn and ~2,500 paired games to see. Policies: `runs/_rl/keep/ppo-early2-it9.brlw` (not kept in git).
+- **The policy's early game inside the full bot** (`models/rl/ppo-item/it40.brlw` at antes 1-4, `JEVLAB_RLANTES=1-4`,
+  v77 with the round search for everything else), c2k 0-899 on a new container (v77 replayed there: 268 and 293 wins
+  on the two halves, as before; 19.0 s a game on its faster cores): 544 vs 561 wins (138/155, z = -0.99), +0.004 +-
+  0.049 ante, 12.4 s a game (-35%); halves 256 vs 268 (71/83) and 288 vs 293 (67/72). Without the round search it was
+  252 vs 252. Not separable from level, and 17 wins short both ways of calling it: too close to v77 to learn from and
+  not safe as a faster stand-in for it. Left as a lab mode.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
@@ -1230,7 +1236,6 @@ What to trust:
   +2 point gain needs several hundred thousand at this noise, a week on 4 cores. The policy as the shopper inside the
   forecast's rollouts is not a fresh idea: rollouts have shopped since v60, which joker they buy did not matter
   (`rollout-shop-first`, `rollout-shop-value`), nor did an 8-boss horizon or 128 rollouts on v75-v77, and a network
-  forward pass per rollout decision would cost several times the rollout itself. A by-product worth a test: the policy
-  for antes 1-4 with full v77 after plays at a quarter of the forecast cost (started on c2k 0-449 with the round search
-  on; lost with the container on 2026-11-15 before it finished).
+  forward pass per rollout decision would cost several times the rollout itself. The policy for antes 1-4 inside full v77 is 35% faster
+  and wins 544 against 561 on 900 seeds (log, "The policy's early game inside the full bot"): not a stand-in for v77.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).
