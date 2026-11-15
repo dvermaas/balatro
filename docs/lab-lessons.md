@@ -1037,6 +1037,24 @@ measured the wrong thing or was never asked:
   v77's 41 s (its forecasts). So the item scorer did not help a copy play (entry above) but does help learning from
   play: the same weights learn about every joker at once. It stopped rising after about 35 policy iterations
   (iteration 55 against iteration 40: 51/61), so the new plateau is 210-224 on these seeds, 155-162 of 300 held out.
+- **The item-network policy's early game equals v77's; its late shops lose at every late ante** (iteration 40,
+  `JEVLAB_RLANTES`, which now takes several ranges; c2k 0-449, no round search; v77 252, the policy alone 224):
+
+  | the policy decides antes | wins | against v77 252 | seconds a game |
+  |---|---|---|---|
+  | 1-4 (v77 from 5) | 252 | 78/78 | 10 |
+  | 5-8 (v77 until 4) | 208 | 35/79, z = -4.1 | 10 |
+  | 1-4 and 6-8 (v77 only at 5) | 226 | 68/94 | 4.6 |
+  | 1-4 and 7-8 (v77 at 5 and 6) | 226 | 73/99 | 8.0 |
+
+  The early game, level with v77's, is played differently: it leaves ante 4 with $51 on average against v77's $18
+  (fewer jokers and rerolls at antes 3-4) and dies less in antes 1-3 (7 against 18) and more at ante 4 (14 against 5).
+  With the flat policy this handover won 238 and the late one 152. From the same ante-4 states v77 buys 2.4 jokers
+  at ante 5 and the policy 1.5 (same rerolls, $7-11 more kept through antes 5-7), but handing v77 only ante 5, or
+  antes 5 and 6, wins nothing back (226 against 224): the loss moves to the antes the policy still shops (deaths at
+  antes 7 and 8: 67 and 85 with v77 at 5-6, 48 and 78 with v77 to the end). Two antes of the policy's shops at the
+  end cost 26 wins: v77's forecast plays out the blinds that remain, and near the end that is close to an exact answer
+  to "does this purchase win the run", which a network without a simulation has to guess.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
@@ -1183,7 +1201,8 @@ What to trust:
   c2k against v77. After 65,000 games of PPO the policy shops the first four antes about as well as v77 and the late
   ones much worse (192 wins against 252 on c2k 0-449 without round search; log, "The policy's late shops"). Teaching
   it v77's late decisions made it worse (log, DAgger); a network that scores jokers with shared weights, trained by
-  PPO, reached 210-224 and stopped rising after about 30,000 games (log, "PPO from the item network"). Open: the same
-  shared scoring for the other item families (packs, vouchers, consumables, pack picks), and more games per
-  iteration on a larger machine.
+  PPO, reached 210-224 and stopped rising after about 30,000 games (log, "PPO from the item network"). Its antes 1-4 with
+  v77 from ante 5 win exactly as many games as v77, its late shops lose at every late ante (log, "early game equals
+  v77's"). Running: PPO on antes 1-4 only with v77 playing the rest (`train_rl.py --antes 1-4`, run `rl-ppo-early`),
+  the one setup that starts at v77's level; about 10 s a game.
 - A JEV benchmark of the current bot on the real game, to see whether the lab gains carry over (last: v23).
