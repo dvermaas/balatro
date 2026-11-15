@@ -118,15 +118,20 @@ fn rl_reroll_floor(g: &rumbot_sim::game::GameState) -> Option<i32> {
     }
 }
 
-/// JEVLAB_RLANTES=lo-hi (with JEVLAB_RLPOLICY): the antes in which the network decides outside rounds.
-fn rl_antes() -> Option<(i64, i64)> {
-    static V: std::sync::OnceLock<Option<(i64, i64)>> = std::sync::OnceLock::new();
-    *V.get_or_init(|| {
+/// JEVLAB_RLANTES=lo-hi[,lo-hi ...] (with JEVLAB_RLPOLICY): the antes in which the network decides outside rounds.
+fn rl_antes() -> Option<&'static [(i64, i64)]> {
+    static V: std::sync::OnceLock<Option<Vec<(i64, i64)>>> = std::sync::OnceLock::new();
+    V.get_or_init(|| {
         std::env::var("JEVLAB_RLANTES").ok().map(|x| {
-            let (a, b) = x.split_once('-').unwrap_or_else(|| panic!("JEVLAB_RLANTES={x}: lo-hi"));
-            (a.parse().expect("JEVLAB_RLANTES lo"), b.parse().expect("JEVLAB_RLANTES hi"))
+            x.split(',')
+                .map(|r| {
+                    let (a, b) = r.split_once('-').unwrap_or_else(|| panic!("JEVLAB_RLANTES={x}: lo-hi[,lo-hi ...]"));
+                    (a.parse().expect("JEVLAB_RLANTES lo"), b.parse().expect("JEVLAB_RLANTES hi"))
+                })
+                .collect()
         })
     })
+    .as_deref()
 }
 
 /// JEVLAB_RLNOGLYPH=1: the network may not buy Hieroglyph or Petroglyph (their ids leave the mask).
@@ -416,18 +421,18 @@ fn play(seed: &str) -> Result<Value, String> {
         let d = d.clone();
         bot.strategic = Some(Box::new(move |gs_, h| jevbot::prof::time("rl.hook", || d.borrow_mut().decide(gs_, h))));
     }
-    // JEVLAB_RLANTES=lo-hi: the network decides outside rounds only while the game's ante (the state's ante_num: after a
+    // JEVLAB_RLANTES=lo-hi[,lo-hi ...]: the network decides outside rounds only while the game's ante (ante_num: after a
     // boss the ante has already turned, so that round's cash-out, its shop and the next blind select belong to the next
-    // ante) is in lo..hi; otherwise v77's own handlers decide. Counts the states each side took.
+    // ante) is in one of the ranges; otherwise v77's own handlers decide. Counts the states each side took.
     let v77_decisions = Rc::new(std::cell::Cell::new(0u64));
-    if let (Some(_), Some((lo, hi))) = (&rl_driver, rl_antes()) {
+    if let (Some(_), Some(ranges)) = (&rl_driver, rl_antes()) {
         let c = v77_decisions.clone();
         // the logger infers v77's swaps (a sale then a buy of that slot: one replace_joker record, as in v77's own
         // logs, bc-v77-s2) and takes the network's swaps from the driver; a record's side is its ante
         let log = rl_log.clone();
         bot.strategic_gate = Some(Box::new(move |gs_| {
             let a = jevbot::gs::int(jevbot::gs::get(gs_, "ante_num"));
-            let mine = a >= lo && a <= hi;
+            let mine = ranges.iter().any(|&(lo, hi)| a >= lo && a <= hi);
             if !mine {
                 c.set(c.get() + 1);
             }

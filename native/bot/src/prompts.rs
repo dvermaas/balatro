@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v77 + lab tooling (plays unchanged): JEVLAB_RLANTES takes several ranges (lo-hi,lo-hi). Based on: ",
     "v77 + lab tooling (plays unchanged): rlcore reads BRLW format 2, the item-level policy network (a shared joker scorer for buy_joker / replace_joker on top of the flat network); format-1 networks choose exactly as before. Based on: ",
     "v77 + lab tooling (plays unchanged): under JEVLAB_RLANTES the JEVLAB_RLLOG logger infers v77's joker swaps in its antes (a sale then a buy of that slot: one replace_joker record, as in v77's own logs) and takes only the network's from the driver. Based on: ",
     "v77 + lab tooling (plays unchanged): JEVLAB_RLANTES=lo-hi hands the decisions outside rounds to the policy only in those antes (v77's handlers decide the rest; JevBot gets a strategic gate). Based on: ",
