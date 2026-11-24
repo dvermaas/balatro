@@ -1092,6 +1092,12 @@ measured the wrong thing or was never asked:
   5, z = 4.6), more scaling jokers and higher score power (p75 +0.04 log10 at ante 4, z = 3.0). Nothing differs at
   antes 2-3: the plays part in antes 4-5. `scripts/lab/cmp4.py` scores a run against the mean of the four plays (SE
   2.0 points on 450 seeds instead of ~2.5).
+- **xMult jokers valued higher in the shop** (`JOKER_PRIOR=docs/samples/cloud-lab/joker-prior-xm05.json`: v61's
+  learned table with +0.5 on every xMult joker, the unlisted ones from 0; lab only, no code change). c2k 0-449: 275 vs
+  268 wins (34/27; it shares v77's rollout seeds, so fewer games split), +1.5 +- 1.7 points against the mean of v77's
+  four plays (z = 0.9). It did build toward xMult (held at ante 5: 1.46 vs 1.14; ante 8: 1.87 vs 1.67), more than the
+  +0.18 that separates won from lost plays of a seed, but the wins barely moved: the xMult count is mostly a sign of a
+  strong run, not a lever. +1.0 (`joker-prior-xm10.json`) tested next for a dose response.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
