@@ -192,6 +192,12 @@ impl Net {
     /// softmax(logits / temp) driven by `u` uniform in [0, 1). Returns (id, log-probability of id under the
     /// distribution used (argmax: under temperature 1), [P(win), expected final blinds]).
     pub fn choose(&self, idx: &[u16], val: &[f32], legal: &[u16], temp: Option<f32>, u: f64) -> (usize, f32, [f32; 2]) {
+        self.choose_biased(idx, val, legal, temp, u, None)
+    }
+
+    /// `choose` with `bias = (id, b)`: b is added to that action's logit (the lab advisor: the bot's own action, so a
+    /// network that knows nothing follows the bot). The returned log-probability includes the bias.
+    pub fn choose_biased(&self, idx: &[u16], val: &[f32], legal: &[u16], temp: Option<f32>, u: f64, bias: Option<(u16, f32)>) -> (usize, f32, [f32; 2]) {
         let t = self.trunk(idx, val);
         let logits: Vec<f32> = match &self.item {
             None => legal.iter().map(|&a| self.logit(&t, a as usize)).collect(),
@@ -201,6 +207,12 @@ impl Net {
                 l
             }
         };
+        let mut logits = logits;
+        if let Some((id, b)) = bias {
+            if let Some(k) = legal.iter().position(|&a| a == id) {
+                logits[k] += b;
+            }
+        }
         let v = self.value(&t);
         let value = [1.0 / (1.0 + (-v[0]).exp()), v.get(1).copied().unwrap_or(0.0) * 24.0];
         let tt = temp.unwrap_or(1.0).max(1e-6);

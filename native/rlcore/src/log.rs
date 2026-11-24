@@ -174,6 +174,11 @@ impl GameLog {
         *self.counters.entry(k.to_string()).or_insert(0) += 1;
     }
 
+    /// rumbot steps seen so far (the next record's `step`)
+    pub fn steps(&self) -> u32 {
+        self.steps
+    }
+
     pub fn records(&self) -> u32 {
         self.n_records + self.pending.is_some() as u32
     }

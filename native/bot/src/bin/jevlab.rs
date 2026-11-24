@@ -62,10 +62,18 @@ impl jevbot::iface::Game for RecGame {
     }
 }
 
-/// The rumbot game, shared between the bot (through `RecGame`) and the lab's RL driver.
-struct SharedGame(Rc<RefCell<RumbotGame>>);
+/// The rumbot game, shared between the bot (through `RecGame`) and the lab's RL driver; with the advisor
+/// (JEVLAB_RLADVISE) every action call the bot makes outside rounds in the advised antes goes through it first.
+struct SharedGame(Rc<RefCell<RumbotGame>>, Option<Rc<RefCell<Advisor>>>);
 impl jevbot::iface::Game for SharedGame {
     fn call(&mut self, method: &str, params: Option<&Value>) -> Result<Value, jevbot::iface::RpcError> {
+        if let Some(adv) = &self.1 {
+            if !matches!(method, "gamestate" | "menu" | "start" | "health" | "rearrange" | "play" | "discard") {
+                if let Some(r) = adv.borrow_mut().advise(&self.0, method, params) {
+                    return r;
+                }
+            }
+        }
         self.0.borrow_mut().call(method, params)
     }
     fn backend(&self) -> &str {
@@ -193,6 +201,111 @@ fn rpc_of(a: &rumbot_sim::game::Action) -> (String, Value) {
         t => panic!("no RPC for {t:?}"),
     };
     (m.to_string(), p)
+}
+
+/// JEVLAB_RLADVISE=B (with JEVLAB_RLPOLICY and JEVLAB_RLANTES): v77 plays the whole game, but in the given antes each
+/// action it takes outside a round is first probed (the step hook vetoes it, so the game is unchanged), and the
+/// network then chooses among the legal actions (no joker-swap entries: a swap is its sale and its buy) with B added
+/// to the logit of v77's action; when it picks another action that one is played instead and v77 carries on from the
+/// new state. With B large and a network that knows nothing it plays v77. Each decision is kept as
+/// [step, v77's id, the chosen id (-1: the override failed and v77's action was played), ante] in
+/// JEVLAB_RLLOG/<seed>.adv.json, so the learner can match it to the log's record of that step.
+struct Advisor {
+    net: &'static rlcore::net::Net,
+    temp: Option<f32>,
+    rng: u64,
+    enc: rlcore::obs::Encoder,
+    beta: f32,
+    ranges: &'static [(i64, i64)],
+    probe: Rc<RefCell<Option<Option<rumbot_sim::game::Action>>>>,
+    log: Option<Rc<RefCell<rlcore::log::GameLog>>>,
+    recs: Vec<Value>,
+    decisions: u64,
+    overrides: u64,
+    failed: u64,
+}
+
+impl Advisor {
+    fn uniform(&mut self) -> f64 {
+        self.rng = self.rng.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut z = self.rng;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        ((z ^ (z >> 31)) >> 11) as f64 / (1u64 << 53) as f64
+    }
+
+    /// None: not advised (the caller makes v77's call as is); Some: the call's result.
+    fn advise(&mut self, game: &Rc<RefCell<RumbotGame>>, method: &str, params: Option<&Value>) -> Option<Result<Value, jevbot::iface::RpcError>> {
+        let ante = {
+            let eng = game.borrow();
+            let g = eng.g.as_ref()?;
+            if !rlcore::vocab::strategic_phase(g.phase) {
+                return None;
+            }
+            g.ante as i64
+        };
+        if !self.ranges.iter().any(|&(lo, hi)| ante >= lo && ante <= hi) {
+            return None;
+        }
+        *self.probe.borrow_mut() = Some(None);
+        let r = jevbot::iface::Game::call(&mut *game.borrow_mut(), method, params);
+        let probed = self.probe.borrow_mut().take().flatten();
+        let a77 = match (r, probed) {
+            (Err(e), Some(a)) if e.code == jevbot::engine::PROBE_CODE => a,
+            (r, _) => return Some(r), // refused before any step (v77 sees the same error), or done without a step
+        };
+        let (id, id77, rpc) = {
+            let eng = game.borrow();
+            let g = eng.g.as_ref().unwrap();
+            let id77 = match rlcore::vocab::vocab_of(g, &a77) {
+                Ok(v) => v,
+                Err(_) => return None,
+            };
+            let legal = rlcore::vocab::legal_with_ids(g);
+            let mut mask: Vec<u16> = legal.iter().map(|(v, _)| *v as u16).collect();
+            mask.sort_unstable();
+            mask.dedup();
+            if rl_no_glyph() {
+                let n = rlcore::vocab::n_actions();
+                mask.retain(|&v| {
+                    let name = if (v as usize) < n { rlcore::vocab::action_name(v as usize) } else { "" };
+                    name != "buy_voucher:v_hieroglyph" && name != "buy_voucher:v_petroglyph"
+                });
+            }
+            if mask.len() < 2 || mask.binary_search(&(id77 as u16)).is_err() {
+                return None;
+            }
+            let (oi, ov) = self.enc.encode(g);
+            let u = if self.temp.is_some() { self.uniform() } else { 0.0 };
+            let (id, _, _) = jevbot::prof::time("rl.net", || self.net.choose_biased(&oi, &ov, &mask, self.temp, u, Some((id77 as u16, self.beta))));
+            let rpc = if id == id77 {
+                None
+            } else {
+                let cands: Vec<rumbot_sim::game::Action> = legal.iter().filter(|(v, _)| *v == id).map(|(_, a)| a.clone()).collect();
+                rlcore::vocab::to_action_from(g, &cands, None).map(|a| rpc_of(&a))
+            };
+            (id, id77, rpc)
+        };
+        let step = self.log.as_ref().map_or(0, |l| l.borrow().steps());
+        self.decisions += 1;
+        let (m, p) = match rpc {
+            None => {
+                self.recs.push(json!([step, id77, id, ante]));
+                return None;
+            }
+            Some(x) => x,
+        };
+        let r = jevbot::iface::Game::call(&mut *game.borrow_mut(), &m, Some(&p));
+        if r.is_ok() {
+            self.overrides += 1;
+            self.recs.push(json!([step, id77, id, ante]));
+            Some(r)
+        } else {
+            self.failed += 1;
+            self.recs.push(json!([step, id77, -1, ante]));
+            None
+        }
+    }
 }
 
 impl RlDriver {
@@ -383,19 +496,51 @@ fn play(seed: &str) -> Result<Value, String> {
     let rl_dir = std::env::var_os("JEVLAB_RLLOG").map(std::path::PathBuf::from);
     let rl_log = rl_dir.as_ref().map(|_| Rc::new(RefCell::new(rlcore::log::GameLog::new(seed))));
     let mut rumbot = RumbotGame::new();
-    if let Some(l) = &rl_log {
-        let l = l.clone();
-        rumbot.on_step = Some(Box::new(move |g, a| l.borrow_mut().on_step(g, a)));
+    let advise_beta: Option<f32> = std::env::var("JEVLAB_RLADVISE").ok().map(|x| x.parse().expect("JEVLAB_RLADVISE=<logit bias>"));
+    let probe: Rc<RefCell<Option<Option<rumbot_sim::game::Action>>>> = Rc::new(RefCell::new(None));
+    if rl_log.is_some() || advise_beta.is_some() {
+        let l = rl_log.clone();
+        let pr = probe.clone();
+        rumbot.on_step = Some(Box::new(move |g, a| {
+            let mut p = pr.borrow_mut();
+            if p.is_some() {
+                *p = Some(Some(a.clone()));
+                return false;
+            }
+            drop(p);
+            if let Some(l) = &l {
+                l.borrow_mut().on_step(g, a);
+            }
+            true
+        }));
     }
     let rumbot = Rc::new(RefCell::new(rumbot));
+    let advisor = advise_beta.map(|beta| {
+        let net = rl_net().expect("JEVLAB_RLADVISE needs JEVLAB_RLPOLICY");
+        let k: u64 = std::env::var("JEVLAB_RLSEED").ok().and_then(|x| x.parse().ok()).unwrap_or(0);
+        Rc::new(RefCell::new(Advisor {
+            net,
+            temp: std::env::var("JEVLAB_RLTEMP").ok().and_then(|x| x.parse().ok()),
+            rng: rumbot_sim::state::fnv1a64(seed.as_bytes()) ^ k.wrapping_mul(0x9E37_79B9_7F4A_7C15),
+            enc: rlcore::obs::Encoder::new(),
+            beta,
+            ranges: rl_antes().expect("JEVLAB_RLADVISE needs JEVLAB_RLANTES"),
+            probe: probe.clone(),
+            log: rl_log.clone(),
+            recs: Vec::new(),
+            decisions: 0,
+            overrides: 0,
+            failed: 0,
+        }))
+    });
     let mut bot = JevBot::new(
-        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(SharedGame(rumbot.clone())), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
+        "RED", "WHITE", "code-top-option", &tmp, Box::new(RecGame { inner: Box::new(SharedGame(rumbot.clone(), advisor.clone())), log: calls.clone(), rec: want_trace }), Box::new(jev), oracle,
         Box::new(RealClock::new()), "rust", "rust", "rust", Box::new(SystemClock),
     );
     if let (Some(l), Some(_)) = (&rl_log, rl_net()) {
         l.borrow_mut().explicit = true;
     }
-    let rl_driver = rl_net().map(|net| {
+    let rl_driver = rl_net().filter(|_| advisor.is_none()).map(|net| {
         let k: u64 = std::env::var("JEVLAB_RLSEED").ok().and_then(|x| x.parse().ok()).unwrap_or(0);
         Rc::new(RefCell::new(RlDriver {
             game: rumbot.clone(),
@@ -575,6 +720,18 @@ fn play(seed: &str) -> Result<Value, String> {
             row.insert("rl_override_records".into(), json!(d.override_records));
             row.insert("rl_buys_after_override".into(), json!(d.buys_after_override));
             row.insert("rl_swaps_after_override".into(), json!(d.swaps_after_override));
+        }
+    }
+    if let Some(a) = &advisor {
+        let a = a.borrow();
+        row.insert("rl_decisions".into(), json!(a.decisions));
+        row.insert("rl_overrides".into(), json!(a.overrides));
+        row.insert("rl_override_failed".into(), json!(a.failed));
+        if let Some(d) = &rl_dir {
+            let p = d.join(format!("{seed}.adv.json"));
+            let tmp = d.join(format!("{seed}.adv.json.tmp"));
+            std::fs::write(&tmp, serde_json::to_string(&a.recs).unwrap()).map_err(|e| format!("adv log: {e}"))?;
+            std::fs::rename(&tmp, &p).map_err(|e| format!("adv log: {e}"))?;
         }
     }
     if let (Some(d), Some(l)) = (&rl_dir, &rl_log) {

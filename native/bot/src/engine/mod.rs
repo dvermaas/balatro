@@ -54,7 +54,10 @@ pub struct RumbotGame {
     pub on_step: Option<StepHook>,
 }
 
-pub type StepHook = Box<dyn FnMut(&GameState, &rumbot_sim::game::Action)>;
+/// Returns false to veto the step (the call then fails with `PROBE_CODE` and the game is unchanged).
+pub type StepHook = Box<dyn FnMut(&GameState, &rumbot_sim::game::Action) -> bool>;
+/// The error code of a call whose step the lab's step hook vetoed.
+pub const PROBE_CODE: i64 = -32099;
 
 impl RumbotGame {
     pub fn new() -> Self {

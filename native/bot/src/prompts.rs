@@ -87,6 +87,7 @@ macro_rules! py_note {
 
 /// What changed in this version, newest first; each note ends "Based on: " + the one before.
 pub const VERSION_NOTE: &str = concat!(
+    "v77 + lab tooling (plays unchanged): JEVLAB_RLADVISE=B: in the JEVLAB_RLANTES antes v77 plays but the rlcore network may replace each of its actions outside rounds (B added to v77's logit; the engine's step hook can veto a step to probe the bot's action). Based on: ",
     "v77 + lab tooling (plays unchanged): fc-salt=S salts the forecast rollouts' seeds (a replay of the run with other rollout luck). Based on: ",
     "v77 + lab tooling (plays unchanged): JEVLAB_RLANTES takes several ranges (lo-hi,lo-hi). Based on: ",
     "v77 + lab tooling (plays unchanged): rlcore reads BRLW format 2, the item-level policy network (a shared joker scorer for buy_joker / replace_joker on top of the flat network); format-1 networks choose exactly as before. Based on: ",

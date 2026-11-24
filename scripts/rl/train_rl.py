@@ -65,6 +65,32 @@ PROGRESS = "count"  # "count" (rl-ppo-a) or "position"; set from --progress
 ANTES = None  # --antes: [(lo, hi), ...], the antes the network decides in (JEVLAB_RLANTES); v77 decides the rest
 
 
+ADVISE = None  # --advise B: v77 plays and the network may replace its actions in --antes (JEVLAB_RLADVISE); B is v77's logit bias
+REPLACE = None  # (start, len) of the replace_joker family: never legal under --advise (a swap is its sale and its buy)
+
+
+def load_advice(ds, d):
+    """--advise: v77's id per record (-1: not a network decision), from each game's <seed>.adv.json
+    ([step, v77 id, chosen id (-1: the override failed), ante] per advised decision)."""
+    v77 = np.full(len(ds["action"]), -1, np.int64)
+    starts = np.searchsorted(ds["game"], np.arange(len(ds["game_file"])))
+    ends = np.r_[starts[1:], len(ds["action"])]
+    bad = 0
+    for k, fn in enumerate(ds["game_file"]):
+        p = os.path.join(d, fn.replace(".rlb.gz", ".adv.json"))
+        if not os.path.exists(p):
+            continue
+        s, e = starts[k], ends[k]
+        pos = {int(st): s + i for i, st in enumerate(ds["step"][s:e])}
+        for step, i77, chosen, _ in json.load(open(p)):
+            r = pos.get(int(step))
+            if r is None or chosen < 0 or int(ds["action"][r]) != chosen:
+                bad += 1
+                continue
+            v77[r] = i77
+    return v77, bad
+
+
 def in_antes(ante):
     """Which records are the network's under ANTES (all of them without it)."""
     ok = np.zeros(len(ante), bool) if ANTES else np.ones(len(ante), bool)
@@ -159,6 +185,10 @@ def run_jevlab(a, out, name, seeds, weights, temp, rlseed, logdir):
         env["JEVLAB_RLANTES"] = a.antes
     else:
         env.pop("JEVLAB_RLANTES", None)
+    if a.advise is not None:
+        env["JEVLAB_RLADVISE"] = str(a.advise)
+    else:
+        env.pop("JEVLAB_RLADVISE", None)
     if logdir:
         env["JEVLAB_RLLOG"] = logdir
     else:
@@ -209,16 +239,35 @@ class Batch:
         assert (order == np.arange(n)).all(), "records are in game, step order"
         self.ok = ds["action"] != R.UNEXPRESSIBLE  # joker rearranges (code's) carry no policy decision
         self.ok &= in_antes(ds["ante"])  # under --antes v77's records are the environment, not decisions to learn from
-        self.rows = np.nonzero(self.ok)[0]
         self.n_mask = np.diff(ds["mask_indptr"])
+        if ADVISE is not None:  # only the advised decisions (v77's id known, the network's choice played)
+            self.v77 = ds["v77"]
+            self.ok &= self.v77 >= 0
+        self.rows = np.nonzero(self.ok)[0]
+        if ADVISE is not None:  # forced = one legal action once replace_joker entries are gone
+            m = R.mask_dense(ds, self.rows)
+            m[:, REPLACE[0]:REPLACE[0] + REPLACE[1]] = False
+            self.n_mask = self.n_mask.copy()
+            self.n_mask[self.rows] = m.sum(1)
+
+    def logits(self, model, rows, b):
+        """The policy's masked logits for batch b of rows (v77's bias and mask under --advise)."""
+        logits, v = model(b[0], b[1], b[2], b[3])
+        mask = b[3]
+        if ADVISE is not None:
+            mask = mask.clone()
+            mask[:, REPLACE[0]:REPLACE[0] + REPLACE[1]] = False
+            bias = torch.zeros_like(logits)
+            bias[torch.arange(len(rows)), torch.from_numpy(self.v77[rows])] = ADVISE
+            logits = logits + bias
+        return logits.masked_fill(~mask, -1e9), v
 
     def forward(self, model, rows, bs=8192):
         outs_l, outs_v = [], []
         with torch.no_grad():
             for i in range(0, len(rows), bs):
                 b = self.data.batch(rows[i:i + bs])
-                logits, v = model(b[0], b[1], b[2], b[3])
-                ml = logits.masked_fill(~b[3], -1e9)
+                ml, v = self.logits(model, rows[i:i + bs], b)
                 outs_l.append(F.log_softmax(ml, 1).gather(1, b[4][:, None])[:, 0].numpy())
                 outs_v.append(v[:, 0].numpy())
         return np.concatenate(outs_l), np.concatenate(outs_v)
@@ -353,8 +402,7 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
         for i in range(0, len(perm), a.bs):
             k = perm[i:i + a.bs]
             b = batch.data.batch(rows[k])
-            logits, _ = actor(b[0], b[1], b[2], b[3])
-            ml = logits.masked_fill(~b[3], -1e9)
+            ml, _ = batch.logits(actor, rows[k], b)
             lp_all = F.log_softmax(ml, 1)
             lp = lp_all.gather(1, b[4][:, None])[:, 0]
             olp = torch.from_numpy(old_logp[k])
@@ -396,8 +444,8 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
 
 CFG_KEYS = ("bin", "init", "games", "jobs", "warmup", "eval_every", "eval_n", "exp", "order", "lr", "critic_lr", "critic_epochs", "critic_target",
             "ppo_epochs", "bs", "clip", "ent", "target_kl", "lam", "max_grad", "clone_kl", "clone_kl_decay", "rollouts", "seed_baseline",
-            "critic_buffer", "init_ckpt", "progress", "antes")
-CFG_DEFAULTS = {"rollouts": 1, "seed_baseline": False, "critic_buffer": 1, "init_ckpt": None, "progress": "count", "antes": None}  # runs from before milestone 5
+            "critic_buffer", "init_ckpt", "progress", "antes", "advise")
+CFG_DEFAULTS = {"rollouts": 1, "seed_baseline": False, "critic_buffer": 1, "init_ckpt": None, "progress": "count", "antes": None, "advise": None}  # runs from before milestone 5
 
 
 def main():
@@ -432,6 +480,7 @@ def main():
     ap.add_argument("--critic-buffer", type=int, default=1, help="the critic trains on the last N iterations' games")
     ap.add_argument("--progress", default="count", help="reward potential: count (blinds passed, rl-ppo-a) or position (ante and blind)")
     ap.add_argument("--antes", help="JEVLAB_RLANTES of the actors (lo-hi[,lo-hi]): the network decides and learns only in those antes, v77 plays the rest")
+    ap.add_argument("--advise", type=float, help="v77 plays and the network may replace its actions in --antes, with this logit bias on v77's action (JEVLAB_RLADVISE)")
     ap.add_argument("--init-ckpt", help="a new run starts from this run's actor (ckpt.pt); fresh critic, warm-up as usual")
     a = ap.parse_args()
 
@@ -464,6 +513,10 @@ def main():
     PROGRESS = a.progress
     global ANTES
     ANTES = [tuple(int(x) for x in r.split("-")) for r in a.antes.split(",")] if a.antes else None
+    global ADVISE
+    ADVISE = a.advise
+    if ADVISE is not None and not ANTES:
+        raise SystemExit("--advise needs --antes")
     if "/native/target/" in os.path.realpath(a.bin):
         raise SystemExit("copy the jevlab binary out of native/target first (runs/_rl/bin)")
     torch.set_num_threads(a.jobs)
@@ -475,6 +528,11 @@ def main():
     actor, clone = N.net_from_state(clone_sd), N.net_from_state(clone_sd)
     pre = "flat." if N.is_item_state(clone_sd) else ""
     shape = {"obs_dim": clone_sd[pre + "emb.weight"].shape[0], "n_actions": clone_sd[pre + "pi.weight"].shape[0]}
+    if ADVISE is not None:
+        global REPLACE
+        if not N.is_item_state(clone_sd):
+            raise SystemExit("--advise needs an item network (its layout names the replace_joker family)")
+        REPLACE = (int(clone_sd["layout"][2]), int(clone_sd["layout"][3]))
     critic = None  # built from the first trajectories' schema (its blocks), or from the checkpoint
     opt_a = torch.optim.Adam(actor.parameters(), lr=a.lr)
     opt_c = None
@@ -531,6 +589,9 @@ def main():
         gs = game_stats(rows)
         ds = R.load_dir(traj)
         assert ds["schema_hash"] == schema_hash, "trajectories and weights disagree on the schema"
+        adv_bad = 0
+        if ADVISE is not None:
+            ds["v77"], adv_bad = load_advice(ds, traj)
         batch = Batch(ds)
         if critic is None:
             torch.manual_seed(0)
@@ -566,6 +627,11 @@ def main():
                    records=int(len(batch.rows)), not_in_mask=not_in_mask, ev=ev, ev_after_fit=explained_variance(v1, ret_mc),
                    value_loss=vloss, ret_mean=float(ret_mc.mean()), adv_std=float(adv.std()),
                    games_per_s=gs["games"] / wall, jevlab_s=wall, **pst)
+        if ADVISE is not None:
+            ok = [r for r in rows if "won" in r]
+            row.update(adv_unmatched=adv_bad, overrides=sum(r.get("rl_overrides", 0) for r in ok) / max(1, len(ok)),
+                       advised=sum(r.get("rl_decisions", 0) for r in ok) / max(1, len(ok)),
+                       override_failed=sum(r.get("rl_override_failed", 0) for r in ok))
         it += 1
         nxt = export(f"it{it}.brlw")
         if it == a.warmup or (it > a.warmup and (it - a.warmup) % a.eval_every == 0):
