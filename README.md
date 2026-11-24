@@ -1,5 +1,9 @@
 # JEV × Balatro
 
+> **Status (2026-11):** the JEV lane is parked. The hand-written policy plateaued at about 63% wins in the
+> simulator and JEV mostly followed its recommendations, so work has moved to learning better behaviour in the
+> simulator without JEV (`scripts/rl/`, [docs/lab-lessons.md](docs/lab-lessons.md)).
+
 A stress test for **JEV**, TypeSafe's typed "System One" model: a bot that plays
 [Balatro](https://store.steampowered.com/app/2379780/Balatro/) by reading the live game state,
 asking JEV to pick the next move, executing it, and repeating. Every decision is recorded so

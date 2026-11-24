@@ -1,9 +1,24 @@
 # CLAUDE.md
 
-Bot that plays Balatro with JEV (TypeSafe's typed System One model) as a JEV stress test, plus a
+Bot that plays Balatro, started as a stress test for JEV (TypeSafe's typed System One model), plus a
 local control panel for watching runs and comparing prompt versions. Everything is Rust, in the
 `native/` workspace; the Python original (through v32, which the Rust bot matches seed by seed) is in
 git history up to `4628654`. See README.md for setup.
+
+## Status and direction (2026-11)
+
+- **JEV is parked.** Both levers got stuck: the hand-written policy (v77, 62.7% / 62.9% in the lab) stopped
+  improving, and JEV mostly went with the code's recommendations (the user's observation from the real-game
+  runs), so it cannot add beyond them. JEV comes back once the bot has better behaviour to offer it. Until
+  then the work is code-only (no JEV, no API key) in the simulator: `jevlab`, the lab method below.
+- **The goal now is learning better behaviour than v77.** Reinforcement learning (`scripts/rl/`, `native/rlcore`,
+  `native/rlenv`, checkpoints in `models/rl/`) matched v77's early game but never beat it; the lab log's RL
+  entries and "Open ideas" hold every result and what is left. v77's gap is structural: it builds just enough to
+  survive each ante (few xMult jokers, no hand commitment, no deck shaping), so the ante-8 bosses, Violet Vessel
+  above all, beat it. Re-valuing the options v77 already considers has been neutral many times over.
+- **Progress dashboard** (the user checks it): claude.ai/code/artifact/a5f11200-8061-490e-b642-8845b21c8988;
+  `scripts/rl/dash_data.py` writes its RL data files.
+- The user is happy for this to run for days; mind their token budget (box time is cheap, agent turns are not).
 
 ## Commands
 
@@ -68,6 +83,19 @@ git history up to `4628654`. See README.md for setup.
   1. vanilla Balatro;
   2. the modded game we play (SMODS + BalatroBot), which is the reference;
   3. rumbot-sim (Jackdaw, the Python engine, until the Python removal).
+
+## Cloud sessions
+
+- The container can be wiped without warning: everything outside git goes (runs/, native/target, Python venvs).
+  Keep finished lab rows in git with `scripts/lab/stash.py save NAME` (to `docs/samples/cloud-lab/rows/`;
+  `stash.py restore` brings them back) and checkpoints in `models/rl/`. Commit and push after each result.
+- Sim games need `runs/_loc/en-us.lua` (the game's text, never committed): after a wipe ask the user to attach it
+  to a message (the other two loc files are optional). Without it every game panics in `simtext::loc`.
+- 4 cores, no GPU; background tasks stop after 2 h, so split lab runs into chunks (~150 seeds an hour with the
+  round search) and pin the binary in `runs/_rl/bin/`. The RL scripts need a venv with torch and numpy
+  (`python3 -m venv ~/rlvenv && ~/rlvenv/bin/pip install torch numpy`).
+- `JEVLAB_EXP=fc-salt=S` replays v77 with other rollout luck (its self-disagreement is the noise floor of a
+  paired comparison).
 
 ## Gotchas
 
