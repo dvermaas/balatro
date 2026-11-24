@@ -8,9 +8,12 @@ use crate::{gs, hands, jokers};
 use serde_json::{json, Map, Value};
 use simcore::{play_horizon, Policy, Row};
 
-/// rollout._seed(k)
+/// rollout._seed(k); lab `fc-salt=S` (S != 0) gives the rollouts other seeds
 pub fn seed(k: usize) -> String {
-    format!("RO{k:06}")
+    match crate::experiment::get().fc_salt {
+        0 => format!("RO{k:06}"),
+        s => format!("RO{k:06}S{s}"),
+    }
 }
 
 /// sim_bridge.policy_jokers(Policy(joker_dicts))
