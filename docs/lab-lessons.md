@@ -1097,7 +1097,9 @@ measured the wrong thing or was never asked:
   268 wins (34/27; it shares v77's rollout seeds, so fewer games split), +1.5 +- 1.7 points against the mean of v77's
   four plays (z = 0.9). It did build toward xMult (held at ante 5: 1.46 vs 1.14; ante 8: 1.87 vs 1.67), more than the
   +0.18 that separates won from lost plays of a seed, but the wins barely moved: the xMult count is mostly a sign of a
-  strong run, not a lever. +1.0 (`joker-prior-xm10.json`) tested next for a dose response.
+  strong run, not a lever. At +1.0 (`joker-prior-xm10.json`): 272 wins, +0.8 +- 1.8 points (z = 0.5), xMult held at
+  ante 5 1.68 (ante 8 2.07). No dose response: twice the xMult build, no more wins. Dropped. With the paired flips
+  above (the bot's shop picks beat their alternatives), this closes re-valuing shop options as a lane.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
