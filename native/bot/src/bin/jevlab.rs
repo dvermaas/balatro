@@ -728,6 +728,7 @@ fn play(seed: &str) -> Result<Value, String> {
         row.insert("rl_overrides".into(), json!(a.overrides));
         row.insert("rl_override_failed".into(), json!(a.failed));
         if let Some(d) = &rl_dir {
+            std::fs::create_dir_all(d).map_err(|e| format!("adv log: {e}"))?;
             let p = d.join(format!("{seed}.adv.json"));
             let tmp = d.join(format!("{seed}.adv.json.tmp"));
             std::fs::write(&tmp, serde_json::to_string(&a.recs).unwrap()).map_err(|e| format!("adv log: {e}"))?;

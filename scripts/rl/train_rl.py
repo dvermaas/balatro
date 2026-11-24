@@ -541,8 +541,9 @@ def main():
         critic = Critic(ck["critic"]["cols"].tolist(), n_extra=ck["critic"]["net.0.weight"].shape[1] - len(ck["critic"]["cols"]))
         critic.load_state_dict(ck["critic"])
         opt_c = torch.optim.AdamW(critic.parameters(), lr=a.critic_lr, weight_decay=1e-4)
-        opt_a.load_state_dict(ck["opt_a"])
-        opt_c.load_state_dict(ck["opt_c"])
+        if "opt_a" in ck:  # a slim checkpoint (save_slim.py: kept in git) restarts the optimisers
+            opt_a.load_state_dict(ck["opt_a"])
+            opt_c.load_state_dict(ck["opt_c"])
         it0, rows_done = ck["iter"], ck["curve"]
     else:
         actor.load_state_dict(torch.load(a.init_ckpt, map_location="cpu", weights_only=False)["actor"] if a.init_ckpt else clone_sd)
