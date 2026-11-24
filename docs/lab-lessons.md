@@ -1081,6 +1081,17 @@ measured the wrong thing or was never asked:
   0.049 ante, 12.4 s a game (-35%); halves 256 vs 268 (71/83) and 288 vs 293 (67/72). Without the round search it was
   252 vs 252. Not separable from level, and 17 wins short both ways of calling it: too close to v77 to learn from and
   not safe as a faster stand-in for it. Left as a lab mode.
+- **v77 against itself: the noise floor** (`fc-salt=S`, S = 1-3: the same bot with other rollout seeds, so only the
+  luck inside its forecasts changes; rows in `docs/samples/cloud-lab/rows/c2k-v77-salt*`). c2k 0-449, each salt
+  against the plain run: 276 vs 268 (68/60), 261 vs 268 (59/66), 268 vs 268 (63/63). **28% of games are won by only one
+  of two identical bots**, so +-10 wins on 450 seeds is noise and a gain needs about +3 points (14 wins) to show; most
+  "neutral" results since v36 sat below this floor. Over the four plays: 149 seeds won 4/4, 79 lost 4/4, 222 split
+  (49%); mean 59.6%, best of four 82%. The always-lost seeds die late as well (ante 7-8: 192 of 316 deaths; Violet
+  Vessel 77) and early (ante 1-2: 31). On the split seeds, the plays that won had, at the same seed, more xMult jokers
+  (Polychrome included) from ante 5 on (+0.18 at ante 5, z = 5.4; +0.21 at 6; +0.27 at 8), more money (+$3.3 at ante
+  5, z = 4.6), more scaling jokers and higher score power (p75 +0.04 log10 at ante 4, z = 3.0). Nothing differs at
+  antes 2-3: the plays part in antes 4-5. `scripts/lab/cmp4.py` scores a run against the mean of the four plays (SE
+  2.0 points on 450 seeds instead of ~2.5).
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
@@ -1199,6 +1210,8 @@ The loop:
    Then add version rows (`scripts/lab/verrow.py`), experiment rows, this page's entry, and refresh the dashboard.
 
 What to trust:
+- v77 disagrees with itself (other rollout seeds) on 28% of games: on 450 seeds a real gain needs ~+3 points. Score
+  against the mean of v77's four plays (`cmp4.py`) where they exist.
 - Pair every comparison by seed and count **games won by only one side** (z = (a - b) / sqrt(a + b)); mean ante and
   raw totals mislead. At ~60% wins, 450 seeds show only gross effects: +-10 wins is noise.
 - Two seed sets disagree surprisingly often (v66: c2k 46/12, b2k 23/22; v69: 27/10 vs 19/17). Judge on both.
