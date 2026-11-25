@@ -39,3 +39,15 @@ ante 5 (docs/lab-lessons.md, "PPO on antes 1-4"), so its weights are not kept.
 Started with: `python scripts/rl/train_rl.py rl-ppo-early --init-ckpt runs/_rl/ppo/rl-ppo-item/ckpt.pt --init
 runs/_rl/item/mix --bin runs/_rl/bin/jevlab-rl13 --antes 1-4 --games 500 --warmup 1 --eval-every 100 --lr 0.0001
 --ent 0.003 --progress position --hours H`; `rl-ppo-early2` the same from `rl-ppo-early`'s checkpoint with `--lr 0.0003`.
+
+## rl-adv-late, rl-adv-late2: the network may overrule v77 in antes 5-8 (`train_rl.py --advise`, `scripts/rl/advchunk.sh`)
+
+v77 (with the round search) plays every game; in antes 5-8 each of its actions outside a round is probed and the
+network (PPO it40's item network) picks among the legal actions with +6 on v77's logit (about 5 overrules a game at
+first). Validation (200 e16k seeds, `seeds-val200.txt`): v77 wins 123 (61.5%); the untrained network at argmax 109.
+- `rl-adv-late`: lr 1e-4 barely moved the policy (KL ~0.0005 an update); raised to 5e-4 from iteration 6, the
+  overrules rose (5.5 -> 7.6 a game) and the sampled wins fell (56% -> 47% by iteration 9). Most likely the entropy
+  bonus (0.01): over ~70 near-certain decisions a game it steadily rewards overruling v77, while the advantage signal
+  is noisy. Stopped at iteration 10.
+- `rl-adv-late2`: restarted from rl-adv-late's iteration 2 (warmed critic, untrained actor) with no entropy bonus and
+  lr 3e-4.
