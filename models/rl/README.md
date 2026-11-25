@@ -51,3 +51,9 @@ first). Validation (200 e16k seeds, `seeds-val200.txt`): v77 wins 123 (61.5%); t
   is noisy. Stopped at iteration 10.
 - `rl-adv-late2`: restarted from rl-adv-late's iteration 2 (warmed critic, untrained actor) with no entropy bonus and
   lr 3e-4.
+- `rl-adv-late2` with `--anchor` (a -log p(v77's action) loss term; 0.5 from iteration 4, 0.2 from 8): the drift
+  stopped (overrules 5.8 -> ~1.1 a game in sampled play, sampled wins 54-60%), and so did the learning (KL ~0.001 an
+  update). Validation at iteration 12 (argmax): 123 of 200, the same as v77, 197 of 200 games with the same outcome,
+  0.075 overrules a game. After ~5,500 games the network holds no preference strong enough to beat the +6 on v77's
+  action: it plays v77. Stopped there: one win/loss bit a game over ~70 decisions, under v77's own 28% luck, is too
+  little signal for this budget (log, "The network may overrule v77").

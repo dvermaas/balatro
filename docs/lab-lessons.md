@@ -1100,6 +1100,17 @@ measured the wrong thing or was never asked:
   strong run, not a lever. At +1.0 (`joker-prior-xm10.json`): 272 wins, +0.8 +- 1.8 points (z = 0.5), xMult held at
   ante 5 1.68 (ante 8 2.07). No dose response: twice the xMult build, no more wins. Dropped. With the paired flips
   above (the bot's shop picks beat their alternatives), this closes re-valuing shop options as a lane.
+- **The network may overrule v77 in antes 5-8** (`JEVLAB_RLADVISE`, `train_rl.py --advise --anchor`,
+  `scripts/rl/advchunk.sh`, `models/rl/README.md`): v77 with the round search plays every game; each of its actions
+  outside a round in antes 5-8 is probed and PPO it40's item network picks among the legal actions with +6 on v77's
+  logit (~5 overrules a game at first; untrained, argmax, 109 of 200 validation wins against v77's 123). Without a
+  restoring force the policy drifted toward overruling (5.5 -> 7.6 a game, sampled wins 56% -> 47%): it starts at
+  v77's corner, so any noise in the updates moves it toward more overrules. With a -log p(v77) term the drift
+  stopped and so did the learning: at iteration 12 (~5,500 games) argmax play is v77's (123 of 200, 197 games with the
+  same outcome, 0.075 overrules a game). A win/loss bit a game over ~70 decisions, under v77's 28% self-disagreement,
+  is too little signal: an overrule worth +1 point needs ~10,000 samples of its situation. What would carry more
+  information per game: paired replays (the simulator is deterministic, so a seed replayed with one decision changed
+  gives that decision's exact effect, as the flips did) and a dense reward for score power built each ante.
 - **Held tarots that never get used** (60 traced v75 games): The Lovers is the consumable held most often (84 of 1,692
   shop decisions; `tarots::plan` uses it only for a flush build), but the slots are full in only 46 shop decisions
   (2.7%), so it rarely blocks a buy. Not worth a change.
