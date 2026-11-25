@@ -394,7 +394,7 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
     keep = batch.n_mask[rows] > 1  # forced records have no gradient
     idx = np.nonzero(keep)[0]
     advn = (adv - adv[idx].mean()) / (adv[idx].std() + 1e-8)
-    stats = dict(pi_loss=0.0, entropy=0.0, kl=0.0, clipfrac=0.0, clone_kl=0.0, n=0)
+    stats = dict(pi_loss=0.0, entropy=0.0, kl=0.0, clipfrac=0.0, clone_kl=0.0, anchor_nll=0.0, n=0)
     epochs_done, stopped = 0, False
     for ep in range(a.ppo_epochs):
         perm = rng.permutation(idx)
@@ -412,6 +412,10 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
             p_all = lp_all.exp()
             ent = -(p_all * lp_all).sum(1).mean()
             loss = pl - a.ent * ent
+            anc = torch.zeros(())
+            if ADVISE is not None and a.anchor > 0:  # pull toward v77's action: random drift cannot pile up overrules
+                anc = -lp_all.gather(1, torch.from_numpy(batch.v77[rows[k]])[:, None])[:, 0].mean()
+                loss = loss + a.anchor * anc
             ck = torch.zeros(())
             if beta > 0:
                 with torch.no_grad():
@@ -431,6 +435,7 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
                 stats["kl"] += kl
                 stats["clipfrac"] += float(((ratio - 1).abs() > a.clip).float().mean())
                 stats["clone_kl"] += float(ck)
+                stats["anchor_nll"] += float(anc)
                 stats["n"] += 1
         epochs_done += 1
         if np.mean(kls) > a.target_kl:
@@ -444,8 +449,8 @@ def ppo_update(actor, clone, opt, batch, old_logp, adv, a, beta, rng):
 
 CFG_KEYS = ("bin", "init", "games", "jobs", "warmup", "eval_every", "eval_n", "exp", "order", "lr", "critic_lr", "critic_epochs", "critic_target",
             "ppo_epochs", "bs", "clip", "ent", "target_kl", "lam", "max_grad", "clone_kl", "clone_kl_decay", "rollouts", "seed_baseline",
-            "critic_buffer", "init_ckpt", "progress", "antes", "advise")
-CFG_DEFAULTS = {"rollouts": 1, "seed_baseline": False, "critic_buffer": 1, "init_ckpt": None, "progress": "count", "antes": None, "advise": None}  # runs from before milestone 5
+            "critic_buffer", "init_ckpt", "progress", "antes", "advise", "anchor")
+CFG_DEFAULTS = {"rollouts": 1, "seed_baseline": False, "critic_buffer": 1, "init_ckpt": None, "progress": "count", "antes": None, "advise": None, "anchor": 0.0}  # runs from before milestone 5
 
 
 def main():
@@ -481,6 +486,7 @@ def main():
     ap.add_argument("--progress", default="count", help="reward potential: count (blinds passed, rl-ppo-a) or position (ante and blind)")
     ap.add_argument("--antes", help="JEVLAB_RLANTES of the actors (lo-hi[,lo-hi]): the network decides and learns only in those antes, v77 plays the rest")
     ap.add_argument("--advise", type=float, help="v77 plays and the network may replace its actions in --antes, with this logit bias on v77's action (JEVLAB_RLADVISE)")
+    ap.add_argument("--anchor", type=float, default=0.0, help="--advise: loss weight of -log p(v77's action) over the advised decisions (a restoring force toward v77)")
     ap.add_argument("--init-ckpt", help="a new run starts from this run's actor (ckpt.pt); fresh critic, warm-up as usual")
     a = ap.parse_args()
 
